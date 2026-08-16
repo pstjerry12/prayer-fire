@@ -1,0 +1,17 @@
+# Dependencies
+/node_modules
+
+# Next.js build output
+/.next
+/out
+
+# Environment variables (these have your SECRET passwords — never upload them!)
+.env
+.env*.local
+.env.example
+
+# Misc
+.DS_Store
+*.log
+npm-debug.log*
+tsconfig.tsbuildinfo
