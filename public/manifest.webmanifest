@@ -1,0 +1,21 @@
+{
+  "name": "Prayer Fire Movement — Pray 3x",
+  "short_name": "Pray 3x",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0a1628",
+  "description": "Pray 3 Times a Day — A Cure for Prayerlessness.",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

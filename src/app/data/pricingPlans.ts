@@ -102,7 +102,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       'Family & personal prayer lists',
       'Scripture Vault & KJV Bible library',
       'Fasting tracker',
-      'Learn to Pray wisdom library',
+      'Pray 3x guide (three-times-a-day teaching)',
     ],
   },
   {
