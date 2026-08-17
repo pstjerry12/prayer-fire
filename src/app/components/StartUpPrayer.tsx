@@ -88,10 +88,10 @@ export default function StartUpPrayer() {
       {/* Top bar */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="font-serif-heading text-xl font-bold text-slate-900">Start-Up Prayer</h1>
-          <p className="text-xs text-slate-500">7-step guided prayer · Praying like Daniel</p>
+          <h1 className="font-serif-heading text-xl font-bold text-ink">Start-Up Prayer</h1>
+          <p className="text-xs text-ink-muted">7-step guided prayer · Praying like Daniel</p>
         </div>
-        <Link href="/" className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-600 text-xs font-semibold transition-colors">
+        <Link href="/" className="flex items-center gap-1.5 px-3 py-1.5 bg-card-3 hover:bg-card-3 rounded-full text-ink-muted text-xs font-semibold transition-colors">
           <Home className="w-4 h-4" /> Home
         </Link>
       </div>
@@ -102,7 +102,7 @@ export default function StartUpPrayer() {
           <button
             key={s.id}
             onClick={() => goToStep(s.id)}
-            className={cn('w-3 h-3 rounded-full transition-all', step === s.id ? 'bg-emerald-600 scale-125' : s.id < step ? 'bg-emerald-400' : 'bg-slate-300')}
+            className={cn('w-3 h-3 rounded-full transition-all', step === s.id ? 'bg-emerald-600 scale-125' : s.id < step ? 'bg-emerald-400' : 'bg-card-3')}
           />
         ))}
       </div>
@@ -121,25 +121,25 @@ export default function StartUpPrayer() {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-bold text-slate-900">{formatTime(timer)}</span>
-            <span className="text-xs text-slate-500">remaining</span>
+            <span className="text-3xl font-bold text-ink">{formatTime(timer)}</span>
+            <span className="text-xs text-ink-muted">remaining</span>
           </div>
         </div>
       </div>
 
       {/* Step content */}
       <div className="text-center mb-5">
-        <div className={cn('inline-flex items-center justify-center w-14 h-14 rounded-full mb-3', step <= 4 ? 'bg-emerald-50 text-emerald-600' : step <= 6 ? 'bg-slate-100 text-slate-600' : 'bg-red-50 text-red-600')}>
+        <div className={cn('inline-flex items-center justify-center w-14 h-14 rounded-full mb-3', step <= 4 ? 'bg-acc-soft text-acc' : step <= 6 ? 'bg-card-3 text-ink-muted' : 'bg-danger-soft text-danger')}>
           {currentStep?.icon}
         </div>
-        <h3 className="text-xl font-bold text-slate-900 mb-1">{currentStep?.title}</h3>
-        <p className="text-slate-500 text-sm">{currentStep?.subtitle}</p>
+        <h3 className="text-xl font-bold text-ink mb-1">{currentStep?.title}</h3>
+        <p className="text-ink-muted text-sm">{currentStep?.subtitle}</p>
       </div>
 
       {currentStep?.verse && (
-        <div className="rounded-xl p-4 mb-5 border bg-emerald-50 border-emerald-200">
-          <p className="text-emerald-700 text-xs mb-2 font-semibold">{currentStep.verse}</p>
-          <p className="text-slate-700 text-sm leading-relaxed italic">"{currentStep.verseText}"</p>
+        <div className="rounded-xl p-4 mb-5 border bg-acc-soft border-acc-edge">
+          <p className="text-acc-strong text-xs mb-2 font-semibold">{currentStep.verse}</p>
+          <p className="text-ink-soft text-sm leading-relaxed italic">"{currentStep.verseText}"</p>
         </div>
       )}
 
@@ -152,18 +152,18 @@ export default function StartUpPrayer() {
       {currentStep?.isSpecialPrayer && (
         <div className="mb-5 space-y-2 max-h-80 overflow-y-auto">
           {prayers.length === 0 ? (
-            <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 text-center">
-              <Sparkles className="w-6 h-6 text-slate-300 mx-auto mb-1" />
-              <p className="text-slate-500 text-xs">No special prayers yet.</p>
-              <p className="text-slate-400 text-[10px] mt-0.5">Add them in the Prayer Workshop → Special Prayer.</p>
+            <div className="bg-card-2 rounded-xl p-3 border border-edge text-center">
+              <Sparkles className="w-6 h-6 text-ink-ghost mx-auto mb-1" />
+              <p className="text-ink-muted text-xs">No special prayers yet.</p>
+              <p className="text-ink-faint text-[10px] mt-0.5">Add them in the Prayer Workshop → Special Prayer.</p>
             </div>
           ) : (
             prayers.map((prayer) => (
-              <div key={prayer.id} className={cn('rounded-xl p-3 border-l-4 transition-all', prayer.isAnswered ? 'bg-emerald-50 border-l-emerald-500 border border-emerald-200' : prayer.urgency === 'high' ? 'bg-white border-l-red-500 border border-slate-200' : 'bg-white border-l-slate-400 border border-slate-200')}>
-                <p className="text-[10px] font-semibold uppercase tracking-wider mb-1 text-slate-500">🙏 {prayer.category} · Special Prayer</p>
-                <h4 className="text-slate-900 font-bold text-sm">{prayer.title}</h4>
-                {prayer.notes && <p className="text-slate-600 text-xs mt-1 italic">{prayer.notes}</p>}
-                {prayer.scripture && <p className="text-emerald-700 text-xs mt-1 italic">📖 {prayer.scripture}</p>}
+              <div key={prayer.id} className={cn('rounded-xl p-3 border-l-4 transition-all', prayer.isAnswered ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge' : prayer.urgency === 'high' ? 'bg-card border-l-red-500 border border-edge' : 'bg-card border-l-edge-strong border border-edge')}>
+                <p className="text-[10px] font-semibold uppercase tracking-wider mb-1 text-ink-muted">🙏 {prayer.category} · Special Prayer</p>
+                <h4 className="text-ink font-bold text-sm">{prayer.title}</h4>
+                {prayer.notes && <p className="text-ink-muted text-xs mt-1 italic">{prayer.notes}</p>}
+                {prayer.scripture && <p className="text-acc-strong text-xs mt-1 italic">📖 {prayer.scripture}</p>}
               </div>
             ))
           )}
@@ -172,13 +172,13 @@ export default function StartUpPrayer() {
 
       {currentStep?.isIntercessory && (
         <div className="mb-5 space-y-3">
-          <div className="bg-red-50 border border-red-200 rounded-xl p-3 space-y-2">
-            <p className="text-red-700 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1"><Plus className="w-3 h-3" /> Add Intercessory Prayer</p>
-            <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full bg-white rounded-lg px-2 py-1.5 text-xs text-slate-900 border border-slate-300">
+          <div className="bg-danger-soft border border-danger-edge rounded-xl p-3 space-y-2">
+            <p className="text-danger-strong text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1"><Plus className="w-3 h-3" /> Add Intercessory Prayer</p>
+            <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full bg-card rounded-lg px-2 py-1.5 text-xs text-ink border border-edge-strong">
               {['Individual by Name & Challenge', 'Family Member — By Name', 'Church Family / Fellow Believer', 'Business / Career', 'Government Officials', 'Missionaries / Evangelists', 'Youth & Children', 'The Sick & Suffering', 'The Lost & Searching', 'Persecuted Church'].map((cat) => <option key={cat} value={cat}>{cat}</option>)}
             </select>
-            <input type="text" placeholder="Name or title (e.g. Sister Mary)" value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full bg-white rounded-lg px-2 py-1.5 text-xs text-slate-900 placeholder-slate-400 border border-slate-300" />
-            <textarea placeholder="Prayer details (e.g. healing, salvation...)" value={newDetails} onChange={(e) => setNewDetails(e.target.value)} rows={2} className="w-full bg-white rounded-lg px-2 py-1.5 text-xs text-slate-900 placeholder-slate-400 border border-slate-300 resize-none" />
+            <input type="text" placeholder="Name or title (e.g. Sister Mary)" value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full bg-card rounded-lg px-2 py-1.5 text-xs text-ink placeholder-ink-faint border border-edge-strong" />
+            <textarea placeholder="Prayer details (e.g. healing, salvation...)" value={newDetails} onChange={(e) => setNewDetails(e.target.value)} rows={2} className="w-full bg-card rounded-lg px-2 py-1.5 text-xs text-ink placeholder-ink-faint border border-edge-strong resize-none" />
             <button
               onClick={() => {
                 if (!newName.trim()) return;
@@ -196,12 +196,12 @@ export default function StartUpPrayer() {
 
           <div className="max-h-48 overflow-y-auto space-y-2">
             {intercessoryPrayers.length === 0 ? (
-              <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 text-center"><p className="text-slate-500 text-xs">No prayers added yet.</p></div>
+              <div className="bg-card-2 rounded-xl p-3 border border-edge text-center"><p className="text-ink-muted text-xs">No prayers added yet.</p></div>
             ) : (
               intercessoryPrayers.map((prayer) => (
-                <div key={prayer.id} className="bg-red-50/50 border border-red-200 rounded-xl p-3 border-l-4 border-l-red-500">
-                  <h4 className="text-slate-900 font-bold text-sm">[{prayer.category}] {prayer.title}</h4>
-                  {prayer.details && <p className="text-slate-600 text-xs mt-1 italic">{prayer.details}</p>}
+                <div key={prayer.id} className="bg-danger-soft/50 border border-danger-edge rounded-xl p-3 border-l-4 border-l-red-500">
+                  <h4 className="text-ink font-bold text-sm">[{prayer.category}] {prayer.title}</h4>
+                  {prayer.details && <p className="text-ink-muted text-xs mt-1 italic">{prayer.details}</p>}
                 </div>
               ))
             )}
@@ -211,7 +211,7 @@ export default function StartUpPrayer() {
 
       {/* Controls */}
       <div className="flex gap-3">
-        <button onClick={() => setIsActive(!isActive)} className={cn('flex-1 py-3 rounded-xl font-bold transition-all', isActive ? 'bg-slate-200 text-slate-700' : 'bg-emerald-600 text-white hover:bg-emerald-500')}>
+        <button onClick={() => setIsActive(!isActive)} className={cn('flex-1 py-3 rounded-xl font-bold transition-all', isActive ? 'bg-card-3 text-ink-soft' : 'bg-emerald-600 text-white hover:bg-emerald-500')}>
           {isActive ? 'Pause' : 'Start'}
         </button>
         <button onClick={handleNext} className="flex-1 py-3 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-500 transition-all">
@@ -222,22 +222,22 @@ export default function StartUpPrayer() {
       {/* Celebration popup */}
       {showCelebration && (
         <div className="fixed inset-0 z-[55] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-sm border border-slate-200 shadow-2xl overflow-hidden">
+          <div className="bg-card rounded-3xl w-full max-w-sm border border-edge shadow-2xl overflow-hidden">
             <div className="bg-gradient-to-br from-emerald-600 to-emerald-500 px-6 py-8 text-center">
               <div className="text-5xl mb-3">🎉🙏🎊</div>
               <h2 className="font-serif-heading text-2xl font-bold text-white mb-1">Congratulations!</h2>
               <p className="text-emerald-50 text-sm">Your prayer session is complete</p>
             </div>
             <div className="p-6 text-center space-y-4">
-              <p className="text-slate-700 text-sm leading-relaxed">
+              <p className="text-ink-soft text-sm leading-relaxed">
                 Well done! You have spent time in the presence of God. He sees you, He hears you, and He will answer you. Keep the fire burning! 🔥
               </p>
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                <p className="text-emerald-700 text-xs font-semibold uppercase tracking-wider mb-1">📖 James 5:16</p>
-                <p className="text-slate-700 text-sm italic">"The effectual fervent prayer of a righteous man availeth much."</p>
+              <div className="bg-acc-soft border border-acc-edge rounded-xl p-4">
+                <p className="text-acc-strong text-xs font-semibold uppercase tracking-wider mb-1">📖 James 5:16</p>
+                <p className="text-ink-soft text-sm italic">"The effectual fervent prayer of a righteous man availeth much."</p>
               </div>
               <div className="flex gap-2">
-                <button onClick={resetAll} className="flex-1 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all">Pray Again</button>
+                <button onClick={resetAll} className="flex-1 py-3 bg-card border border-edge-strong text-ink-soft rounded-xl font-bold text-sm hover:bg-card-2 transition-all">Pray Again</button>
                 <Link href="/" onClick={resetAll} className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500 transition-all flex items-center justify-center">Amen 🙏</Link>
               </div>
             </div>

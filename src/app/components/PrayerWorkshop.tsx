@@ -33,13 +33,13 @@ function SpeechToTextButton({
         title={isListening ? 'Stop listening' : 'Speak instead of typing'}
         className={cn(
           'absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-colors',
-          isListening ? 'bg-red-100 text-red-600 animate-pulse' : 'text-slate-400 hover:text-emerald-600 hover:bg-slate-100'
+          isListening ? 'bg-danger-soft-2 text-danger animate-pulse' : 'text-ink-faint hover:text-acc hover:bg-card-3'
         )}
       >
         {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
       </button>
       {error && (
-        <div className="absolute right-0 top-full mt-1 text-[10px] text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200 z-10">{error}</div>
+        <div className="absolute right-0 top-full mt-1 text-[10px] text-danger bg-danger-soft px-2 py-1 rounded border border-danger-edge z-10">{error}</div>
       )}
     </>
   );
@@ -106,35 +106,35 @@ function FamilyPrayerSession() {
   return (
     <div className="space-y-2">
       {categories.map((cat) => (
-        <div key={cat.id} className="bg-slate-50 rounded-lg overflow-hidden border border-slate-200">
+        <div key={cat.id} className="bg-card-2 rounded-lg overflow-hidden border border-edge">
           <button
             onClick={() => setExpandedCat(expandedCat === cat.id ? null : cat.id)}
-            className="w-full p-3 flex items-center justify-between hover:bg-slate-100"
+            className="w-full p-3 flex items-center justify-between hover:bg-card-3"
           >
             <div className="flex items-center gap-2">
-              {CATEGORY_ICONS[cat.name] || <Sparkles className="w-4 h-4 text-emerald-600" />}
-              <span className="text-slate-900 text-sm font-medium">{cat.name}</span>
-              <span className="text-slate-400 text-[10px]">({cat.subCategories.reduce((acc, s) => acc + s.entries.length, 0)})</span>
+              {CATEGORY_ICONS[cat.name] || <Sparkles className="w-4 h-4 text-acc" />}
+              <span className="text-ink text-sm font-medium">{cat.name}</span>
+              <span className="text-ink-faint text-[10px]">({cat.subCategories.reduce((acc, s) => acc + s.entries.length, 0)})</span>
             </div>
-            {expandedCat === cat.id ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+            {expandedCat === cat.id ? <ChevronUp className="w-4 h-4 text-ink-faint" /> : <ChevronDown className="w-4 h-4 text-ink-faint" />}
           </button>
           {expandedCat === cat.id && (
             <div className="p-3 pt-0 space-y-2">
               {cat.subCategories.map((sub) => (
-                <div key={sub.id} className="bg-white rounded-lg overflow-hidden border border-slate-200">
+                <div key={sub.id} className="bg-card rounded-lg overflow-hidden border border-edge">
                   <button
                     onClick={() => setExpandedSub(expandedSub === sub.id ? null : sub.id)}
-                    className="w-full p-2 flex items-center justify-between hover:bg-slate-50"
+                    className="w-full p-2 flex items-center justify-between hover:bg-card-2"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-emerald-700 text-xs font-semibold">{sub.name}</span>
+                      <span className="text-acc-strong text-xs font-semibold">{sub.name}</span>
                       {sub.entries.length > 0 && (
-                        <span className="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded">
+                        <span className="bg-acc-soft-2 text-acc-strong text-[10px] px-1.5 py-0.5 rounded">
                           {sub.entries.filter((e) => e.isAnswered).length}/{sub.entries.length}
                         </span>
                       )}
                     </div>
-                    {expandedSub === sub.id ? <ChevronUp className="w-3 h-3 text-slate-400" /> : <ChevronDown className="w-3 h-3 text-slate-400" />}
+                    {expandedSub === sub.id ? <ChevronUp className="w-3 h-3 text-ink-faint" /> : <ChevronDown className="w-3 h-3 text-ink-faint" />}
                   </button>
                   {expandedSub === sub.id && (
                     <div className="p-2 pt-0 space-y-2">
@@ -144,13 +144,13 @@ function FamilyPrayerSession() {
                           className={cn(
                             'rounded-xl p-4 border-l-4 transition-all',
                             entry.isAnswered
-                              ? 'bg-emerald-50 border-l-emerald-500 border border-emerald-200'
-                              : 'bg-white border-l-emerald-500 border border-slate-200'
+                              ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge'
+                              : 'bg-card border-l-emerald-500 border border-edge'
                           )}
                         >
                           {editingId === entry.id ? (
                             <div className="space-y-2">
-                              <p className="text-emerald-700 text-[10px] font-semibold flex items-center gap-1">
+                              <p className="text-acc-strong text-[10px] font-semibold flex items-center gap-1">
                                 <Plus className="w-3 h-3" /> NEW ENTRY — [{sub.name}] · {cat.name}
                               </p>
                               <div className="relative">
@@ -160,7 +160,7 @@ function FamilyPrayerSession() {
                                   value={editName}
                                   onChange={(e) => setEditName(e.target.value)}
                                   autoFocus
-                                  className="w-full bg-white border border-slate-300 rounded-lg px-3 pr-10 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                                  className="w-full bg-card border border-edge-strong rounded-lg px-3 pr-10 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                                 />
                                 <SpeechToTextButton isListening={editNameSpeech.isListening} onStart={editNameSpeech.startListening} onStop={editNameSpeech.stopListening} error={editNameSpeech.error} />
                               </div>
@@ -169,7 +169,7 @@ function FamilyPrayerSession() {
                                   placeholder="Prayer details (e.g. God bless my son)"
                                   value={editDetails}
                                   onChange={(e) => setEditDetails(e.target.value)}
-                                  className="w-full bg-white border border-slate-300 rounded-lg px-3 pr-10 py-2 text-sm text-slate-900 placeholder-slate-400 resize-none h-16 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                                  className="w-full bg-card border border-edge-strong rounded-lg px-3 pr-10 py-2 text-sm text-ink placeholder-ink-faint resize-none h-16 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                                 />
                                 <SpeechToTextButton isListening={editDetailsSpeech.isListening} onStart={editDetailsSpeech.startListening} onStop={editDetailsSpeech.stopListening} error={editDetailsSpeech.error} />
                               </div>
@@ -177,31 +177,31 @@ function FamilyPrayerSession() {
                                 <button onClick={() => saveEdit(cat.id, sub.id, entry.id)} className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-500 flex items-center justify-center gap-1.5">
                                   <Save className="w-4 h-4" /> Save
                                 </button>
-                                <button onClick={() => setEditingId(null)} className="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200">Cancel</button>
+                                <button onClick={() => setEditingId(null)} className="px-4 py-2.5 bg-card-3 text-ink-muted rounded-lg text-sm font-medium hover:bg-card-3">Cancel</button>
                               </div>
                             </div>
                           ) : (
                             <>
                               <div className="mb-2">
-                                <h4 className="text-slate-900 font-bold text-base">[{sub.name}] {entry.name || 'Unnamed'}</h4>
-                                <p className="text-emerald-700 text-xs">{cat.name}</p>
+                                <h4 className="text-ink font-bold text-base">[{sub.name}] {entry.name || 'Unnamed'}</h4>
+                                <p className="text-acc-strong text-xs">{cat.name}</p>
                               </div>
                               {entry.details && (
-                                <p className="text-slate-700 text-sm leading-relaxed border-l-2 border-emerald-300 pl-3 italic my-2">{entry.details}</p>
+                                <p className="text-ink-soft text-sm leading-relaxed border-l-2 border-acc-edge pl-3 italic my-2">{entry.details}</p>
                               )}
                               <div className="flex items-center justify-between gap-2 mt-3">
                                 <button
                                   onClick={() => toggleAnswered(cat.id, sub.id, entry.id)}
                                   className={cn(
                                     'flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
-                                    entry.isAnswered ? 'bg-emerald-100 text-emerald-700' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+                                    entry.isAnswered ? 'bg-acc-soft-2 text-acc-strong' : 'bg-acc-soft text-acc hover:bg-acc-soft-2'
                                   )}
                                 >
                                   <Check className="w-3 h-3" /> {entry.isAnswered ? 'Answered ✓' : 'Mark Answered'}
                                 </button>
                                 <div className="flex gap-1">
-                                  <button onClick={() => startEdit(entry)} className="text-emerald-600 text-xs font-semibold hover:text-emerald-500 p-1">Edit</button>
-                                  <button onClick={() => removeEntry(cat.id, sub.id, entry.id)} className="text-red-500 text-xs hover:text-red-600 p-1"><Trash2 className="w-3 h-3" /></button>
+                                  <button onClick={() => startEdit(entry)} className="text-acc text-xs font-semibold hover:text-emerald-500 p-1">Edit</button>
+                                  <button onClick={() => removeEntry(cat.id, sub.id, entry.id)} className="text-danger text-xs hover:text-danger p-1"><Trash2 className="w-3 h-3" /></button>
                                 </div>
                               </div>
                             </>
@@ -210,7 +210,7 @@ function FamilyPrayerSession() {
                       ))}
                       <button
                         onClick={() => addEntry(cat.id, sub.id)}
-                        className="w-full py-2 rounded-lg border border-dashed border-emerald-300 text-emerald-600 text-sm font-semibold hover:bg-emerald-50 flex items-center justify-center gap-1"
+                        className="w-full py-2 rounded-lg border border-dashed border-acc-edge text-acc text-sm font-semibold hover:bg-acc-soft flex items-center justify-center gap-1"
                       >
                         <Plus className="w-4 h-4" /> Add {sub.name}
                       </button>
@@ -259,7 +259,7 @@ function SpecialPrayerForm() {
             placeholder="What's on your heart?"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-white border border-slate-300 rounded-xl px-4 pr-10 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="w-full bg-card border border-edge-strong rounded-xl px-4 pr-10 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
           />
           <SpeechToTextButton isListening={titleSpeech.isListening} onStart={titleSpeech.startListening} onStop={titleSpeech.stopListening} error={titleSpeech.error} />
         </div>
@@ -271,15 +271,15 @@ function SpecialPrayerForm() {
               placeholder="Additional notes..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full bg-white border border-slate-300 rounded-xl px-4 pr-10 py-2 text-sm text-slate-900 placeholder-slate-400 resize-none h-20"
+              className="w-full bg-card border border-edge-strong rounded-xl px-4 pr-10 py-2 text-sm text-ink placeholder-ink-faint resize-none h-20"
             />
             <SpeechToTextButton isListening={notesSpeech.isListening} onStart={notesSpeech.startListening} onStop={notesSpeech.stopListening} error={notesSpeech.error} />
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <select value={category} onChange={(e) => setCategory(e.target.value)} className="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900">
+            <select value={category} onChange={(e) => setCategory(e.target.value)} className="bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink">
               <option>Special</option><option>Family</option><option>Health</option><option>Work</option><option>Spiritual</option>
             </select>
-            <select value={urgency} onChange={(e) => setUrgency(e.target.value as any)} className="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900">
+            <select value={urgency} onChange={(e) => setUrgency(e.target.value as any)} className="bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink">
               <option value="low">Low Urgency</option><option value="medium">Medium</option><option value="high">High Priority</option>
             </select>
           </div>
@@ -288,23 +288,23 @@ function SpecialPrayerForm() {
             placeholder="Scripture anchor (optional)"
             value={scripture}
             onChange={(e) => setScripture(e.target.value)}
-            className="w-full bg-white border border-slate-300 rounded-lg px-4 py-2 text-sm text-slate-900 placeholder-slate-400"
+            className="w-full bg-card border border-edge-strong rounded-lg px-4 py-2 text-sm text-ink placeholder-ink-faint"
           />
           <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 text-slate-600 text-sm cursor-pointer">
+            <label className="flex items-center gap-2 text-ink-muted text-sm cursor-pointer">
               <input type="checkbox" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} className="rounded accent-emerald-600" />
               Private Prayer
             </label>
             <button onClick={handleSubmit} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-500">Save Prayer</button>
           </div>
           {title.trim() && (
-            <div className="pt-3 border-t border-slate-200">
-              <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 mb-2"><Eye className="w-3 h-3" /> Preview:</p>
-              <div className={cn('rounded-xl p-4 border-l-4', urgency === 'high' ? 'bg-white border-l-red-500 border border-slate-200' : 'bg-white border-l-emerald-500 border border-slate-200')}>
-                <h4 className="text-slate-900 font-bold text-base">[{category}] {title}</h4>
-                <p className="text-slate-500 text-xs flex items-center gap-1">{urgency === 'high' && '🔥 High Priority · '}Special Prayer{isPrivate && <Lock className="w-3 h-3" />}</p>
-                {notes.trim() && <p className="text-slate-700 text-sm leading-relaxed border-l-2 border-emerald-300 pl-3 italic my-2">{notes}</p>}
-                {scripture.trim() && <p className="text-emerald-700 text-xs mt-2 italic">📖 {scripture}</p>}
+            <div className="pt-3 border-t border-edge">
+              <p className="text-ink-muted text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 mb-2"><Eye className="w-3 h-3" /> Preview:</p>
+              <div className={cn('rounded-xl p-4 border-l-4', urgency === 'high' ? 'bg-card border-l-red-500 border border-edge' : 'bg-card border-l-emerald-500 border border-edge')}>
+                <h4 className="text-ink font-bold text-base">[{category}] {title}</h4>
+                <p className="text-ink-muted text-xs flex items-center gap-1">{urgency === 'high' && '🔥 High Priority · '}Special Prayer{isPrivate && <Lock className="w-3 h-3" />}</p>
+                {notes.trim() && <p className="text-ink-soft text-sm leading-relaxed border-l-2 border-acc-edge pl-3 italic my-2">{notes}</p>}
+                {scripture.trim() && <p className="text-acc-strong text-xs mt-2 italic">📖 {scripture}</p>}
               </div>
             </div>
           )}
@@ -338,30 +338,30 @@ function IntercessoryForm() {
 
   return (
     <div className="space-y-3">
-      <div className="bg-red-50/50 rounded-xl p-3 border border-red-200">
-        <p className="text-red-700 text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+      <div className="bg-danger-soft/50 rounded-xl p-3 border border-danger-edge">
+        <p className="text-danger-strong text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
           <span className="w-4 h-4 rounded-full bg-red-600 text-white text-[9px] flex items-center justify-center">1</span> Who are you praying for?
         </p>
-        <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full bg-white rounded-lg px-3 py-2 text-sm text-slate-900 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-red-500/40">
+        <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full bg-card rounded-lg px-3 py-2 text-sm text-ink border border-edge-strong focus:outline-none focus:ring-2 focus:ring-red-500/40">
           {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
         </select>
       </div>
-      <div className="bg-red-50/50 rounded-xl p-3 border border-red-200">
-        <p className="text-red-700 text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+      <div className="bg-danger-soft/50 rounded-xl p-3 border border-danger-edge">
+        <p className="text-danger-strong text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
           <span className="w-4 h-4 rounded-full bg-red-600 text-white text-[9px] flex items-center justify-center">2</span> Name or Title
         </p>
-        <input type="text" placeholder="e.g. Sister Mary, Pastor John" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full bg-white rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-red-500/40" />
+        <input type="text" placeholder="e.g. Sister Mary, Pastor John" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full bg-card rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint border border-edge-strong focus:outline-none focus:ring-2 focus:ring-red-500/40" />
       </div>
-      <div className="bg-red-50/50 rounded-xl p-3 border border-red-200">
-        <p className="text-red-700 text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+      <div className="bg-danger-soft/50 rounded-xl p-3 border border-danger-edge">
+        <p className="text-danger-strong text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
           <span className="w-4 h-4 rounded-full bg-red-600 text-white text-[9px] flex items-center justify-center">3</span> What are you praying for?
         </p>
-        <textarea placeholder="e.g. healing, salvation, breakthrough..." value={details} onChange={(e) => setDetails(e.target.value)} rows={3} className="w-full bg-white rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400 border border-slate-300 resize-none focus:outline-none focus:ring-2 focus:ring-red-500/40" />
+        <textarea placeholder="e.g. healing, salvation, breakthrough..." value={details} onChange={(e) => setDetails(e.target.value)} rows={3} className="w-full bg-card rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint border border-edge-strong resize-none focus:outline-none focus:ring-2 focus:ring-red-500/40" />
       </div>
       <button onClick={handleSubmit} disabled={!title.trim()} className="w-full py-3 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
         <Heart className="w-4 h-4" /> Add to Intercessory Prayer List
       </button>
-      <p className="text-red-500/70 text-[10px] text-center italic">"Praying for others is standing in the gap for them"</p>
+      <p className="text-danger/70 text-[10px] text-center italic">"Praying for others is standing in the gap for them"</p>
     </div>
   );
 }
@@ -382,8 +382,8 @@ function PrayerList({ filter, search }: { filter: 'active' | 'answered'; search:
   if (filtered.length === 0) {
     return (
       <div className="text-center py-8">
-        <Heart className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-        <p className="text-slate-500 text-sm">No prayers found</p>
+        <Heart className="w-8 h-8 text-ink-ghost mx-auto mb-2" />
+        <p className="text-ink-muted text-sm">No prayers found</p>
       </div>
     );
   }
@@ -391,18 +391,18 @@ function PrayerList({ filter, search }: { filter: 'active' | 'answered'; search:
   return (
     <div className="space-y-3">
       {filtered.map((prayer) => (
-        <div key={prayer.id} className={cn('rounded-xl p-4 border-l-4 transition-all', prayer.isAnswered ? 'bg-emerald-50 border-l-emerald-500 border border-emerald-200' : prayer.urgency === 'high' ? 'bg-white border-l-red-500 border border-slate-200' : 'bg-white border-l-emerald-500 border border-slate-200')}>
+        <div key={prayer.id} className={cn('rounded-xl p-4 border-l-4 transition-all', prayer.isAnswered ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge' : prayer.urgency === 'high' ? 'bg-card border-l-red-500 border border-edge' : 'bg-card border-l-emerald-500 border border-edge')}>
           <div className="mb-2">
-            <h4 className="text-slate-900 font-bold text-base">[{prayer.category}] {prayer.title}</h4>
-            <p className="text-slate-500 text-xs flex items-center gap-1">{prayer.urgency === 'high' && '🔥 High Priority · '}Special Prayer{prayer.isPrivate && <Lock className="w-3 h-3" />}</p>
+            <h4 className="text-ink font-bold text-base">[{prayer.category}] {prayer.title}</h4>
+            <p className="text-ink-muted text-xs flex items-center gap-1">{prayer.urgency === 'high' && '🔥 High Priority · '}Special Prayer{prayer.isPrivate && <Lock className="w-3 h-3" />}</p>
           </div>
-          {prayer.notes && <p className="text-slate-700 text-sm leading-relaxed border-l-2 border-emerald-300 pl-3 italic my-2">{prayer.notes}</p>}
-          {prayer.scripture && <p className="text-emerald-700 text-xs mt-2 italic">📖 {prayer.scripture}</p>}
+          {prayer.notes && <p className="text-ink-soft text-sm leading-relaxed border-l-2 border-acc-edge pl-3 italic my-2">{prayer.notes}</p>}
+          {prayer.scripture && <p className="text-acc-strong text-xs mt-2 italic">📖 {prayer.scripture}</p>}
           <div className="flex items-center justify-between gap-2 mt-3">
-            <button onClick={() => toggleAnswered(prayer.id)} className={cn('flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', prayer.isAnswered ? 'bg-emerald-100 text-emerald-700' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100')}>
+            <button onClick={() => toggleAnswered(prayer.id)} className={cn('flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', prayer.isAnswered ? 'bg-acc-soft-2 text-acc-strong' : 'bg-acc-soft text-acc hover:bg-acc-soft-2')}>
               <Check className="w-3 h-3" /> {prayer.isAnswered ? 'Answered ✓' : 'Mark Answered'}
             </button>
-            <button onClick={() => deletePrayer(prayer.id)} className="text-red-500 text-xs font-semibold hover:text-red-600 flex items-center gap-1 px-2 py-1.5"><Trash2 className="w-3 h-3" /> Remove</button>
+            <button onClick={() => deletePrayer(prayer.id)} className="text-danger text-xs font-semibold hover:text-danger flex items-center gap-1 px-2 py-1.5"><Trash2 className="w-3 h-3" /> Remove</button>
           </div>
         </div>
       ))}
@@ -419,8 +419,8 @@ function IntercessoryPrayerList({ search }: { search: string }) {
   if (filtered.length === 0) {
     return (
       <div className="text-center py-8">
-        <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-        <p className="text-slate-500 text-sm">No intercessory prayers yet</p>
+        <Users className="w-8 h-8 text-ink-ghost mx-auto mb-2" />
+        <p className="text-ink-muted text-sm">No intercessory prayers yet</p>
       </div>
     );
   }
@@ -428,17 +428,17 @@ function IntercessoryPrayerList({ search }: { search: string }) {
   return (
     <div className="space-y-3">
       {filtered.map((prayer) => (
-        <div key={prayer.id} className={cn('rounded-xl p-4 border-l-4 transition-all', prayer.isAnswered ? 'bg-emerald-50 border-l-emerald-500 border border-emerald-200' : 'bg-red-50/50 border-l-red-500 border border-red-200')}>
+        <div key={prayer.id} className={cn('rounded-xl p-4 border-l-4 transition-all', prayer.isAnswered ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge' : 'bg-danger-soft/50 border-l-red-500 border border-danger-edge')}>
           <div className="mb-2">
-            <h4 className="text-slate-900 font-bold text-base">[{prayer.category}] {prayer.title}</h4>
-            <p className="text-red-600 text-xs">Intercessory Prayer</p>
+            <h4 className="text-ink font-bold text-base">[{prayer.category}] {prayer.title}</h4>
+            <p className="text-danger text-xs">Intercessory Prayer</p>
           </div>
-          {prayer.details && <p className="text-slate-700 text-sm leading-relaxed border-l-2 border-red-300 pl-3 italic my-2">{prayer.details}</p>}
+          {prayer.details && <p className="text-ink-soft text-sm leading-relaxed border-l-2 border-danger-edge pl-3 italic my-2">{prayer.details}</p>}
           <div className="flex items-center justify-between gap-2 mt-3">
-            <button onClick={() => toggleAnswered(prayer.id)} className={cn('flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', prayer.isAnswered ? 'bg-emerald-100 text-emerald-700' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100')}>
+            <button onClick={() => toggleAnswered(prayer.id)} className={cn('flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', prayer.isAnswered ? 'bg-acc-soft-2 text-acc-strong' : 'bg-acc-soft text-acc hover:bg-acc-soft-2')}>
               <Check className="w-3 h-3" /> {prayer.isAnswered ? 'Answered ✓' : 'Mark Answered'}
             </button>
-            <button onClick={() => deletePrayer(prayer.id)} className="text-red-500 text-xs font-semibold hover:text-red-600 flex items-center gap-1 px-2 py-1.5"><Trash2 className="w-3 h-3" /> Remove</button>
+            <button onClick={() => deletePrayer(prayer.id)} className="text-danger text-xs font-semibold hover:text-danger flex items-center gap-1 px-2 py-1.5"><Trash2 className="w-3 h-3" /> Remove</button>
           </div>
         </div>
       ))}
@@ -455,68 +455,68 @@ export default function PrayerWorkshop() {
 
   return (
     <div className="space-y-3">
-      <p className="text-slate-600 text-sm font-semibold text-center">
+      <p className="text-ink-muted text-sm font-semibold text-center">
         ✍️ Write your prayer point — tap a session below:
       </p>
 
       {/* Session 1: Family */}
-      <div className={cn('rounded-2xl border overflow-hidden', activeSession === 'family' ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200')}>
+      <div className={cn('rounded-2xl border overflow-hidden', activeSession === 'family' ? 'bg-acc-soft border-acc-edge' : 'bg-card border-edge')}>
         <button onClick={() => setActiveSession(activeSession === 'family' ? null : 'family')} className="w-full px-4 py-3 flex items-center gap-3 text-left">
-          <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0"><Heart className="w-4 h-4" /></div>
+          <div className="w-8 h-8 rounded-lg bg-acc-soft-2 text-acc-strong flex items-center justify-center flex-shrink-0"><Heart className="w-4 h-4" /></div>
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm text-emerald-800">Session 1: My Family Prayers</p>
-            <p className="text-[10px] text-slate-500">Cover your loved ones in prayer</p>
+            <p className="font-bold text-sm text-acc-strong">Session 1: My Family Prayers</p>
+            <p className="text-[10px] text-ink-muted">Cover your loved ones in prayer</p>
           </div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-emerald-100 text-emerald-700">MY FAMILY</span>
-          {activeSession === 'family' ? <ChevronUp className="w-4 h-4 text-slate-400 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />}
+          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-acc-soft-2 text-acc-strong">MY FAMILY</span>
+          {activeSession === 'family' ? <ChevronUp className="w-4 h-4 text-ink-faint flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-ink-faint flex-shrink-0" />}
         </button>
         {activeSession === 'family' && <div className="px-3 pb-3"><FamilyPrayerSession /></div>}
       </div>
 
       {/* Session 2: Special */}
-      <div className={cn('rounded-2xl border overflow-hidden', activeSession === 'special' ? 'bg-slate-50 border-slate-300' : 'bg-white border-slate-200')}>
+      <div className={cn('rounded-2xl border overflow-hidden', activeSession === 'special' ? 'bg-card-2 border-edge-strong' : 'bg-card border-edge')}>
         <button onClick={() => setActiveSession(activeSession === 'special' ? null : 'special')} className="w-full px-4 py-3 flex items-center gap-3 text-left">
-          <div className="w-8 h-8 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center flex-shrink-0"><StickyNote className="w-4 h-4" /></div>
+          <div className="w-8 h-8 rounded-lg bg-card-3 text-ink-muted flex items-center justify-center flex-shrink-0"><StickyNote className="w-4 h-4" /></div>
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm text-slate-800">Session 2: Special Prayer</p>
-            <p className="text-[10px] text-slate-500">Special prayer points for your own journey</p>
+            <p className="font-bold text-sm text-ink">Session 2: Special Prayer</p>
+            <p className="text-[10px] text-ink-muted">Special prayer points for your own journey</p>
           </div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-slate-200 text-slate-600">FOR YOU</span>
-          {activeSession === 'special' ? <ChevronUp className="w-4 h-4 text-slate-400 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />}
+          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-card-3 text-ink-muted">FOR YOU</span>
+          {activeSession === 'special' ? <ChevronUp className="w-4 h-4 text-ink-faint flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-ink-faint flex-shrink-0" />}
         </button>
         {activeSession === 'special' && <div className="px-3 pb-3"><SpecialPrayerForm /></div>}
       </div>
 
       {/* Session 3: Intercessory */}
-      <div className={cn('rounded-2xl border overflow-hidden', activeSession === 'intercessory' ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200')}>
+      <div className={cn('rounded-2xl border overflow-hidden', activeSession === 'intercessory' ? 'bg-danger-soft border-danger-edge' : 'bg-card border-edge')}>
         <button onClick={() => setActiveSession(activeSession === 'intercessory' ? null : 'intercessory')} className="w-full px-4 py-3 flex items-center gap-3 text-left">
-          <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0"><Users className="w-4 h-4" /></div>
+          <div className="w-8 h-8 rounded-lg bg-danger-soft-2 text-danger flex items-center justify-center flex-shrink-0"><Users className="w-4 h-4" /></div>
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm text-red-700">Session 3: Intercessory Prayer</p>
-            <p className="text-[10px] text-slate-500">Standing in the gap for others</p>
+            <p className="font-bold text-sm text-danger-strong">Session 3: Intercessory Prayer</p>
+            <p className="text-[10px] text-ink-muted">Standing in the gap for others</p>
           </div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-red-100 text-red-700">FOR OTHERS</span>
-          {activeSession === 'intercessory' ? <ChevronUp className="w-4 h-4 text-slate-400 flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />}
+          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-danger-soft-2 text-danger-strong">FOR OTHERS</span>
+          {activeSession === 'intercessory' ? <ChevronUp className="w-4 h-4 text-ink-faint flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-ink-faint flex-shrink-0" />}
         </button>
         {activeSession === 'intercessory' && <div className="px-3 pb-3"><IntercessoryForm /></div>}
       </div>
 
-      <div className="flex items-center justify-center gap-2 text-slate-400 text-xs bg-slate-50 rounded-lg p-2 border border-slate-200">
+      <div className="flex items-center justify-center gap-2 text-ink-faint text-xs bg-card-2 rounded-lg p-2 border border-edge">
         <Lock className="w-3 h-3" /> Private prayers are protected with your PIN
       </div>
 
       {/* Saved prayers */}
       <div className="pt-2">
         <div className="flex items-center gap-2 mb-3">
-          <div className="h-px flex-1 bg-slate-200" />
-          <h3 className="text-slate-500 text-xs uppercase tracking-wider font-semibold">My Saved Prayers</h3>
-          <div className="h-px flex-1 bg-slate-200" />
+          <div className="h-px flex-1 bg-card-3" />
+          <h3 className="text-ink-muted text-xs uppercase tracking-wider font-semibold">My Saved Prayers</h3>
+          <div className="h-px flex-1 bg-card-3" />
         </div>
         <div className="grid grid-cols-2 gap-2 mb-3">
-          <button onClick={() => setListTab('personal')} className={cn('py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2', listTab === 'personal' ? 'bg-emerald-50 text-emerald-700 border border-emerald-300' : 'bg-white text-slate-500 border border-slate-200')}>
+          <button onClick={() => setListTab('personal')} className={cn('py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2', listTab === 'personal' ? 'bg-acc-soft text-acc-strong border border-acc-edge' : 'bg-card text-ink-muted border border-edge')}>
             <Heart className="w-4 h-4" /> Personal ({prayers.length})
           </button>
-          <button onClick={() => setListTab('intercessory')} className={cn('py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2', listTab === 'intercessory' ? 'bg-red-50 text-red-700 border border-red-300' : 'bg-white text-slate-500 border border-slate-200')}>
+          <button onClick={() => setListTab('intercessory')} className={cn('py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2', listTab === 'intercessory' ? 'bg-danger-soft text-danger-strong border border-danger-edge' : 'bg-card text-ink-muted border border-edge')}>
             <Users className="w-4 h-4" /> Intercessory ({intercessoryPrayers.length})
           </button>
         </div>
@@ -524,20 +524,20 @@ export default function PrayerWorkshop() {
         {listTab === 'personal' ? (
           <>
             <div className="flex gap-2 mb-3">
-              <button onClick={() => setFilter('active')} className={cn('flex-1 py-2 rounded-lg text-sm font-semibold transition-all', filter === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-300' : 'bg-white text-slate-500 border border-slate-200')}>Active ({prayers.filter((p) => !p.isAnswered).length})</button>
-              <button onClick={() => setFilter('answered')} className={cn('flex-1 py-2 rounded-lg text-sm font-semibold transition-all', filter === 'answered' ? 'bg-emerald-50 text-emerald-700 border border-emerald-300' : 'bg-white text-slate-500 border border-slate-200')}>Answered ({prayers.filter((p) => p.isAnswered).length})</button>
+              <button onClick={() => setFilter('active')} className={cn('flex-1 py-2 rounded-lg text-sm font-semibold transition-all', filter === 'active' ? 'bg-acc-soft text-acc-strong border border-acc-edge' : 'bg-card text-ink-muted border border-edge')}>Active ({prayers.filter((p) => !p.isAnswered).length})</button>
+              <button onClick={() => setFilter('answered')} className={cn('flex-1 py-2 rounded-lg text-sm font-semibold transition-all', filter === 'answered' ? 'bg-acc-soft text-acc-strong border border-acc-edge' : 'bg-card text-ink-muted border border-edge')}>Answered ({prayers.filter((p) => p.isAnswered).length})</button>
             </div>
             <div className="relative mb-3">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input type="text" placeholder="Search special prayers..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
+              <input type="text" placeholder="Search special prayers..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
             </div>
             <PrayerList filter={filter} search={search} />
           </>
         ) : (
           <>
             <div className="relative mb-3">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input type="text" placeholder="Search intercessory prayers..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/40" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
+              <input type="text" placeholder="Search intercessory prayers..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-red-500/40" />
             </div>
             <IntercessoryPrayerList search={search} />
           </>

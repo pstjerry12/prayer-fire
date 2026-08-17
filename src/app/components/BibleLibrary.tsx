@@ -51,18 +51,18 @@ export default function BibleLibrary() {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600"><ScrollText className="w-5 h-5" /></div>
+    <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
+      <div className="px-5 py-4 border-b border-edge flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-acc-soft text-acc"><ScrollText className="w-5 h-5" /></div>
         <div>
-          <h2 className="font-bold text-slate-900">KJV Bible Library</h2>
-          <p className="text-xs text-slate-500">Search, favorite, and share verses</p>
+          <h2 className="font-bold text-ink">KJV Bible Library</h2>
+          <p className="text-xs text-ink-muted">Search, favorite, and share verses</p>
         </div>
       </div>
       <div className="p-4">
         <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input type="text" placeholder="Search verses..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
+          <input type="text" placeholder="Search verses..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500" />
         </div>
 
         {!selectedCategory && (
@@ -70,10 +70,10 @@ export default function BibleLibrary() {
             {KJV_BIBLE_CATEGORIES.map((cat) => {
               const catVerses = KJV_BIBLE_VERSES.filter((v) => v.category === cat.id);
               return (
-                <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className="bg-white rounded-xl p-3 text-left hover:bg-emerald-50/50 transition-all border border-slate-200 hover:border-emerald-300">
+                <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className="bg-card rounded-xl p-3 text-left hover:bg-acc-soft/50 transition-all border border-edge hover:border-acc-edge">
                   <span className="text-xl mb-1 block">{cat.icon}</span>
-                  <span className="text-slate-900 text-sm font-semibold">{cat.name}</span>
-                  <span className="text-slate-400 text-xs ml-1">({catVerses.length})</span>
+                  <span className="text-ink text-sm font-semibold">{cat.name}</span>
+                  <span className="text-ink-faint text-xs ml-1">({catVerses.length})</span>
                 </button>
               );
             })}
@@ -82,9 +82,9 @@ export default function BibleLibrary() {
 
         <div className="flex gap-2 mb-4">
           {selectedCategory && (
-            <button onClick={() => setSelectedCategory(null)} className="px-3 py-1.5 bg-slate-100 rounded-lg text-sm text-slate-600 hover:bg-slate-200">← Back</button>
+            <button onClick={() => setSelectedCategory(null)} className="px-3 py-1.5 bg-card-3 rounded-lg text-sm text-ink-muted hover:bg-card-3">← Back</button>
           )}
-          <button onClick={() => setShowFavorites(!showFavorites)} className={cn('px-3 py-1.5 rounded-lg text-sm font-semibold transition-all', showFavorites ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}>
+          <button onClick={() => setShowFavorites(!showFavorites)} className={cn('px-3 py-1.5 rounded-lg text-sm font-semibold transition-all', showFavorites ? 'bg-danger-soft text-danger border border-danger-edge' : 'bg-card-3 text-ink-muted hover:bg-card-3')}>
             <Heart className={cn('w-4 h-4 inline mr-1', favorites.length > 0 && 'fill-red-500')} /> Favorites ({favorites.length})
           </button>
         </div>
@@ -92,32 +92,32 @@ export default function BibleLibrary() {
         {selectedCategory || search || showFavorites ? (
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {filteredVerses.length === 0 ? (
-              <p className="text-center text-slate-500 py-8">No verses found</p>
+              <p className="text-center text-ink-muted py-8">No verses found</p>
             ) : (
               filteredVerses.map((verse) => (
-                <div key={verse.id} className="bg-white rounded-xl p-4 border border-slate-200">
+                <div key={verse.id} className="bg-card rounded-xl p-4 border border-edge">
                   <div className="flex items-start justify-between mb-2">
-                    <p className="text-emerald-700 text-xs font-semibold">{verse.reference}</p>
-                    <button onClick={() => toggleFavorite(verse.id)} className={cn('transition-all', favorites.includes(verse.id) ? 'text-red-500' : 'text-slate-300 hover:text-red-500')}>
+                    <p className="text-acc-strong text-xs font-semibold">{verse.reference}</p>
+                    <button onClick={() => toggleFavorite(verse.id)} className={cn('transition-all', favorites.includes(verse.id) ? 'text-danger' : 'text-ink-ghost hover:text-danger')}>
                       <Heart className={cn('w-4 h-4', favorites.includes(verse.id) && 'fill-red-500')} />
                     </button>
                   </div>
-                  <p className="text-slate-700 text-sm leading-relaxed">"{verse.text}"</p>
+                  <p className="text-ink-soft text-sm leading-relaxed">"{verse.text}"</p>
                   <div className="flex gap-3 mt-3">
-                    <button onClick={() => handleCopy(verse)} className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900">
-                      {copied === verse.id ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />} {copied === verse.id ? 'Copied' : 'Copy'}
+                    <button onClick={() => handleCopy(verse)} className="flex items-center gap-1 text-xs text-ink-muted hover:text-ink">
+                      {copied === verse.id ? <Check className="w-3 h-3 text-acc" /> : <Copy className="w-3 h-3" />} {copied === verse.id ? 'Copied' : 'Copy'}
                     </button>
-                    <button onClick={() => handleSpeak(verse.id, `${verse.reference}. ${verse.text}`)} className={cn('flex items-center gap-1 text-xs', speaking === verse.id ? 'text-emerald-600' : 'text-slate-500 hover:text-slate-900')}>
+                    <button onClick={() => handleSpeak(verse.id, `${verse.reference}. ${verse.text}`)} className={cn('flex items-center gap-1 text-xs', speaking === verse.id ? 'text-acc' : 'text-ink-muted hover:text-ink')}>
                       {speaking === verse.id ? <MicOff className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />} {speaking === verse.id ? 'Stop' : 'Listen'}
                     </button>
-                    <button onClick={() => navigator.share?.({ title: verse.reference, text: `"${verse.text}" — ${verse.reference}` })} className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900"><Share2 className="w-3 h-3" /> Share</button>
+                    <button onClick={() => navigator.share?.({ title: verse.reference, text: `"${verse.text}" — ${verse.reference}` })} className="flex items-center gap-1 text-xs text-ink-muted hover:text-ink"><Share2 className="w-3 h-3" /> Share</button>
                   </div>
                 </div>
               ))
             )}
           </div>
         ) : (
-          <p className="text-center text-slate-500 text-sm py-4">Select a category above or search for verses</p>
+          <p className="text-center text-ink-muted text-sm py-4">Select a category above or search for verses</p>
         )}
       </div>
     </div>

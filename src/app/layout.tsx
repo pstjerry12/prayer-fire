@@ -18,6 +18,8 @@ const nunitoSans = Nunito_Sans({
   style: ["normal", "italic"],
 });
 
+const themeScript = `try{var t=localStorage.getItem('pfm_theme');if(t==='dark'){document.documentElement.classList.add('dark');}}catch(e){}`;
+
 export const metadata: Metadata = {
   title: "Prayer Fire Movement — Pray 3x, A Cure for Prayerlessness",
   description:
@@ -40,8 +42,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${nunitoSans.variable}`}>
-      <body className="bg-white text-slate-900 antialiased">
+    <html lang="en" suppressHydrationWarning className={`${fraunces.variable} ${nunitoSans.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="bg-page text-ink antialiased">
         <AppShell>{children}</AppShell>
       </body>
     </html>

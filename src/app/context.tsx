@@ -55,6 +55,8 @@ interface AppContextValue {
   setShowDailyVerse: Dispatch<SetStateAction<boolean>>;
   showDailyWisdom: boolean;
   setShowDailyWisdom: Dispatch<SetStateAction<boolean>>;
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
   signOut: () => Promise<void>;
   deleteAccount: () => void;
   exportData: () => void;
@@ -110,6 +112,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [showSettings, setShowSettings] = useState(false);
   const [showDailyVerse, setShowDailyVerse] = useState(false);
   const [showDailyWisdom, setShowDailyWisdom] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window === 'undefined') return 'light';
+    return localStorage.getItem('pfm_theme') === 'dark' ? 'dark' : 'light';
+  });
+
+  // Apply + persist theme
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.setItem('pfm_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
 
   // Restore / verify session
   useEffect(() => {
@@ -248,6 +262,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setShowDailyVerse,
         showDailyWisdom,
         setShowDailyWisdom,
+        theme,
+        toggleTheme,
         signOut,
         deleteAccount,
         exportData,

@@ -1,104 +1,146 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { Flame, Sparkles, Globe, Plus, Heart, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  Flame, Sparkles, BookOpen, ScrollText, Utensils, Users,
+  Crown, Moon, Sun, Sunrise, ChevronRight,
+} from 'lucide-react';
 import Navbar from './components/Navbar';
+import DonationCard from './components/DonationCard';
+import { useApp } from './context';
+
+function formatTime(time: string): string {
+  const parts = time.split(':');
+  const h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1] ?? '0', 10);
+  if (Number.isNaN(h) || Number.isNaN(m)) return time;
+  const period = h >= 12 ? 'PM' : 'AM';
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}:${m.toString().padStart(2, '0')} ${period}`;
+}
+
+function watchIcon(id: string) {
+  if (id === 'morning') return <Sunrise className="w-4 h-4" />;
+  if (id === 'noon') return <Sun className="w-4 h-4" />;
+  if (id === 'midnight') return <Moon className="w-4 h-4" />;
+  return <Flame className="w-4 h-4" />;
+}
+
+const RANK: Record<string, number> = { midnight: 0, noon: 1, morning: 2 };
+
+const CONTENT_CARDS = [
+  { href: '/scripture', title: 'Scripture & Wisdom', desc: 'Vault · Learn to Pray', icon: BookOpen },
+  { href: '/bible', title: 'KJV Bible Library', desc: 'Search · Favorite · Share', icon: ScrollText },
+  { href: '/fasting', title: 'Fasting Tracker', desc: '3 · 7 · 21 · 40 days', icon: Utensils },
+  { href: '/network', title: 'Partner Network', desc: 'Pray for others worldwide', icon: Users },
+];
 
 export default function HomePage() {
-  const [expanded, setExpanded] = useState(false);
+  const { appointments } = useApp();
+  const sorted = [...appointments].sort((a, b) => (RANK[a.id] ?? 99) - (RANK[b.id] ?? 99)).slice(0, 3);
 
   return (
     <>
       <Navbar />
 
-      <main className="bg-white min-h-screen pb-28">
-        <div className="max-w-md mx-auto px-4 pt-5">
-          {/* Hero card (light gray) */}
-          <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 text-center shadow-sm">
-            <span className="inline-flex items-center gap-1.5 border border-emerald-300 text-emerald-700 text-xs font-semibold px-3 py-1 rounded-full mb-3">
-              <Flame className="w-3.5 h-3.5" /> A Cure For Prayerlessness
+      <main className="bg-page min-h-screen pb-28">
+        <div className="max-w-md mx-auto px-4 pt-6">
+          {/* ── Hero ─────────────────────────────── */}
+          <section className="text-center">
+            <span className="inline-flex items-center gap-1.5 bg-warn-soft text-warn-strong text-xs font-bold px-3 py-1 rounded-full border border-warn-edge">
+              <Flame className="w-3.5 h-3.5" /> Pray 3x a Day
             </span>
-            <h1 className="font-serif-heading text-2xl font-bold text-slate-900">Prayer Fire Movement</h1>
-            <p className="text-slate-500 text-sm mt-1">Write it. Speak it. Pray it. Trust God.</p>
-            <p className="text-slate-900 text-sm font-medium mt-3">Pray 3 times a day — beat prayerlessness for good.</p>
-            <div className={expanded ? 'max-h-40 opacity-100 mt-2 transition-all duration-300' : 'max-h-0 opacity-0 overflow-hidden transition-all duration-300'}>
-              <p className="text-slate-500 text-xs leading-relaxed">
-                Prayer Fire Movement helps you build a consistent 3-times-a-day prayer habit.
-                Write your prayer points, carry them with you, and get gentle reminders to stay on track.
-                Then join the Partner Network and stand in the gap with believers around the world.
-              </p>
-            </div>
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="mt-2 text-emerald-700 text-xs font-semibold hover:text-emerald-600 flex items-center justify-center gap-1 mx-auto"
-            >
-              {expanded ? 'Show less' : 'Read more'}
-              {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-          </div>
+            <h1 className="font-serif-heading text-3xl font-bold text-ink mt-3">Prayer Fire Movement</h1>
+            <p className="text-base bg-gradient-to-r from-[var(--acc-strong)] via-[var(--acc)] to-[var(--acc-strong)] bg-clip-text text-transparent font-serif-heading font-semibold mt-1">
+              Write it. Speak it. Pray it. Trust God.
+            </p>
+            <p className="text-danger font-semibold italic text-xs mt-1">Praying like Daniel — a cure for prayerlessness</p>
+          </section>
 
-          {/* Two side-by-side cards */}
-          <div className="grid grid-cols-2 gap-3 mt-4">
+          {/* ── Primary actions ──────────────────── */}
+          <section className="grid grid-cols-2 gap-3 mt-6">
             <Link
               href="/workshop"
-              className="bg-white border border-slate-200 rounded-2xl p-4 text-center shadow-sm hover:border-emerald-300 hover:-translate-y-0.5 transition-all"
+              className="bg-emerald-600 text-white rounded-2xl p-4 text-center shadow-sm hover:bg-emerald-500 hover:-translate-y-0.5 transition-all"
             >
-              <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-2">
+              <div className="w-12 h-12 rounded-full bg-card/15 flex items-center justify-center mx-auto mb-2">
                 <Flame className="w-6 h-6" />
               </div>
-              <h3 className="text-slate-900 font-bold text-sm leading-tight">Write Prayer Point</h3>
-              <p className="text-emerald-600 text-xs font-semibold mt-1">Prayer Workshop</p>
+              <h3 className="font-bold text-sm leading-tight">Write Prayer Point</h3>
+              <p className="text-emerald-50 text-[11px] font-semibold mt-1">Prayer Workshop</p>
             </Link>
 
             <Link
               href="/startup"
-              className="bg-white border border-slate-200 rounded-2xl p-4 text-center shadow-sm hover:border-emerald-300 hover:-translate-y-0.5 transition-all"
+              className="bg-card text-ink rounded-2xl p-4 text-center border border-acc-edge shadow-sm hover:border-acc hover:-translate-y-0.5 transition-all"
             >
-              <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-2">
+              <div className="w-12 h-12 rounded-full bg-acc-soft text-acc flex items-center justify-center mx-auto mb-2">
                 <Sparkles className="w-6 h-6" />
               </div>
-              <h3 className="text-slate-900 font-bold text-sm leading-tight">Start-Up Prayer</h3>
-              <p className="text-emerald-600 text-xs font-semibold mt-1">7-step guided</p>
+              <h3 className="font-bold text-sm leading-tight">Start-Up Prayer</h3>
+              <p className="text-acc text-[11px] font-semibold mt-1">7-step guided</p>
             </Link>
-          </div>
+          </section>
 
-          {/* Daily schedule banner */}
+          {/* ── Daily schedule ───────────────────── */}
           <Link
             href="/schedule"
-            className="block bg-white rounded-2xl mt-4 p-4 border border-slate-200 border-l-4 border-l-emerald-500 shadow-sm hover:border-emerald-300 hover:-translate-y-0.5 transition-all"
+            className="block bg-card rounded-2xl mt-4 p-4 border border-edge shadow-sm hover:border-acc-edge transition-all"
           >
-            <h3 className="text-slate-900 font-bold text-base">Daily Schedule</h3>
-            <p className="text-emerald-600 text-sm font-semibold mt-0.5">12am · 12pm · 4am</p>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-serif-heading font-bold text-ink">Daily Schedule</h3>
+              <ChevronRight className="w-4 h-4 text-ink-ghost" />
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {sorted.map((a) => (
+                <div key={a.id} className="bg-card-2 rounded-xl py-2.5 px-1 text-center border border-edge">
+                  <span className="flex justify-center text-acc mb-1">{watchIcon(a.id)}</span>
+                  <p className="text-ink font-bold text-sm leading-none">{formatTime(a.time)}</p>
+                  <p className="text-ink-muted text-[9px] mt-1 truncate">{a.label}</p>
+                </div>
+              ))}
+            </div>
           </Link>
 
-          {/* Global partner wall */}
-          <div className="bg-white border border-slate-200 rounded-2xl mt-4 p-5 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <Globe className="w-4 h-4 text-emerald-600" />
-              <span className="text-emerald-600 text-[10px] font-bold uppercase tracking-wider">
-                Global Partner Wall
-              </span>
-            </div>
-            <h2 className="text-slate-900 font-bold text-lg leading-tight">Prayer Fire Movement Network</h2>
-            <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-              4,892 active partners standing in agreement across 84 nations.
-            </p>
-            <div className="grid grid-cols-2 gap-2 mt-4">
-              <Link
-                href="/network"
-                className="flex items-center justify-center gap-1.5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-500 transition-all"
-              >
-                <Plus className="w-4 h-4" /> Post Partner Request
-              </Link>
-              <Link
-                href="/network"
-                className="flex items-center justify-center gap-1.5 py-2.5 border border-slate-300 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all"
-              >
-                <Heart className="w-4 h-4" /> Support Network
-              </Link>
-            </div>
+          {/* ── Content grid ─────────────────────── */}
+          <section className="grid grid-cols-2 gap-3 mt-4">
+            {CONTENT_CARDS.map((c) => {
+              const Icon = c.icon;
+              return (
+                <Link
+                  key={c.href}
+                  href={c.href}
+                  className="bg-card rounded-2xl p-4 border border-edge shadow-sm hover:border-acc-edge hover:-translate-y-0.5 transition-all"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-acc-soft text-acc flex items-center justify-center mb-2.5">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-ink font-bold text-sm leading-tight">{c.title}</h3>
+                  <p className="text-ink-muted text-[11px] mt-0.5">{c.desc}</p>
+                </Link>
+              );
+            })}
+          </section>
+
+          {/* ── Donation ────────────────────────── */}
+          <div className="mt-4">
+            <DonationCard />
           </div>
+
+          {/* ── Premium banner ───────────────────── */}
+          <Link
+            href="/partner"
+            className="flex items-center gap-3 mt-4 bg-gradient-to-r from-[var(--warn-soft)] to-[var(--card)] border border-warn-edge rounded-2xl p-4 shadow-sm hover:border-warn transition-all"
+          >
+            <div className="w-10 h-10 rounded-lg bg-warn-soft-2 text-warn flex items-center justify-center flex-shrink-0">
+              <Crown className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-ink font-bold text-sm">Become a Prayer Fire Partner</p>
+              <p className="text-ink-muted text-[11px]">Unlock the full intercessory community</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-warn" />
+          </Link>
         </div>
       </main>
     </>

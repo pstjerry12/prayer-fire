@@ -39,32 +39,32 @@ export default function ScriptureVault() {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600"><BookOpen className="w-5 h-5" /></div>
+    <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
+      <div className="px-5 py-4 border-b border-edge flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-acc-soft text-acc"><BookOpen className="w-5 h-5" /></div>
         <div>
-          <h2 className="font-bold text-slate-900">Scripture Vault</h2>
-          <p className="text-xs text-slate-500">Key verses in five languages</p>
+          <h2 className="font-bold text-ink">Scripture Vault</h2>
+          <p className="text-xs text-ink-muted">Key verses in five languages</p>
         </div>
       </div>
       <div className="p-4">
         <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
           {LANGS.map((l) => (
-            <button key={l.code} onClick={() => setLang(l.code)} className={cn('px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all', lang === l.code ? 'bg-emerald-600 text-white' : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50')}>
+            <button key={l.code} onClick={() => setLang(l.code)} className={cn('px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all', lang === l.code ? 'bg-emerald-600 text-white' : 'bg-card text-ink-muted border border-edge hover:bg-card-2')}>
               {l.flag} {l.label}
             </button>
           ))}
         </div>
         <div className="grid gap-3">
           {filtered.map((card) => (
-            <div key={card.id} className="bg-white rounded-xl p-4 border border-slate-200">
-              <p className="text-emerald-700 text-xs font-semibold mb-2">{card.reference}</p>
-              <p className="text-slate-700 text-sm leading-relaxed italic">"{card.text}"</p>
+            <div key={card.id} className="bg-card rounded-xl p-4 border border-edge">
+              <p className="text-acc-strong text-xs font-semibold mb-2">{card.reference}</p>
+              <p className="text-ink-soft text-sm leading-relaxed italic">"{card.text}"</p>
               <div className="flex gap-3 mt-3">
-                <button onClick={() => handleCopy(card.id, `"${card.text}" — ${card.reference}`)} className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 transition-colors">
-                  {copied === card.id ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />} {copied === card.id ? 'Copied' : 'Copy'}
+                <button onClick={() => handleCopy(card.id, `"${card.text}" — ${card.reference}`)} className="flex items-center gap-1 text-xs text-ink-muted hover:text-ink transition-colors">
+                  {copied === card.id ? <Check className="w-3 h-3 text-acc" /> : <Copy className="w-3 h-3" />} {copied === card.id ? 'Copied' : 'Copy'}
                 </button>
-                <button onClick={() => handleSpeak(card.id, card.text)} className={cn('flex items-center gap-1 text-xs transition-colors', speaking === card.id ? 'text-emerald-600' : 'text-slate-500 hover:text-slate-900')}>
+                <button onClick={() => handleSpeak(card.id, card.text)} className={cn('flex items-center gap-1 text-xs transition-colors', speaking === card.id ? 'text-acc' : 'text-ink-muted hover:text-ink')}>
                   {speaking === card.id ? <MicOff className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />} {speaking === card.id ? 'Stop' : 'Listen'}
                 </button>
               </div>

@@ -25,25 +25,25 @@ export default function DailyVerseModal({ isOpen, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl w-full max-w-md border border-slate-200 shadow-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+      <div className="bg-card rounded-3xl w-full max-w-md border border-edge shadow-2xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-edge flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-emerald-600" />
-            <h2 className="font-bold text-slate-900">Verse of the Day</h2>
+            <BookOpen className="w-5 h-5 text-acc" />
+            <h2 className="font-bold text-ink">Verse of the Day</h2>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-500">
+          <button onClick={onClose} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
             <X className="w-5 h-5" />
           </button>
         </div>
         <div className="p-6 text-center">
           <p className="text-4xl mb-4">🕊️</p>
-          <p className="text-emerald-600 text-xs font-semibold uppercase tracking-wider mb-3">
+          <p className="text-acc text-xs font-semibold uppercase tracking-wider mb-3">
             {verse.reference}
           </p>
-          <p className="text-slate-800 text-lg leading-relaxed italic font-serif-heading">
+          <p className="text-ink text-lg leading-relaxed italic font-serif-heading">
             &ldquo;{verse.text}&rdquo;
           </p>
-          <p className="text-slate-500 text-xs mt-5">Start your day with the Word of God.</p>
+          <p className="text-ink-muted text-xs mt-5">Start your day with the Word of God.</p>
           <button
             onClick={onClose}
             className="mt-5 w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 transition-all"

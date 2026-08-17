@@ -19,7 +19,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-bottom bg-white/95 backdrop-blur border-t border-slate-200">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-bottom bg-page/95 backdrop-blur border-t border-edge">
       <div className="max-w-4xl mx-auto grid grid-cols-7">
         {TABS.map((tab) => {
           const Icon = tab.icon;
@@ -30,7 +30,7 @@ export default function BottomNav() {
               href={tab.href}
               className={cn(
                 'flex flex-col items-center gap-1 py-2.5 transition-colors',
-                active ? 'text-emerald-600' : 'text-slate-400 hover:text-slate-700'
+                active ? 'text-acc' : 'text-ink-faint hover:text-ink-soft'
               )}
             >
               <Icon className="w-4 h-4" />

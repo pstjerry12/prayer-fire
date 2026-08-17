@@ -21,13 +21,13 @@ export default function DailyWisdomModal({ isOpen, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl w-full max-w-md border border-slate-200 shadow-2xl overflow-hidden">
-        <div className={`px-5 py-4 border-b border-slate-200 flex items-center justify-between`}>
+      <div className="bg-card rounded-3xl w-full max-w-md border border-edge shadow-2xl overflow-hidden">
+        <div className={`px-5 py-4 border-b border-edge flex items-center justify-between`}>
           <div className="flex items-center gap-2">
-            <BookHeart className="w-5 h-5 text-emerald-600" />
-            <h2 className="font-bold text-slate-900">Wisdom of the Day</h2>
+            <BookHeart className="w-5 h-5 text-acc" />
+            <h2 className="font-bold text-ink">Wisdom of the Day</h2>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-500">
+          <button onClick={onClose} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -40,15 +40,15 @@ export default function DailyWisdomModal({ isOpen, onClose }: Props) {
           </div>
           <div className={`bg-gradient-to-br ${colors.gradient} rounded-xl p-5 border ${colors.border}`}>
             <div className="flex items-start gap-3">
-              <div className={`w-9 h-9 rounded-full ${colors.badge} flex items-center justify-center flex-shrink-0 text-emerald-700`}>
+              <div className={`w-9 h-9 rounded-full ${colors.badge} flex items-center justify-center flex-shrink-0 text-acc-strong`}>
                 <Lightbulb className="w-4 h-4" />
               </div>
-              <p className="text-slate-800 text-sm leading-relaxed font-medium italic">
+              <p className="text-ink text-sm leading-relaxed font-medium italic">
                 &ldquo;{chapter.highlight}&rdquo;
               </p>
             </div>
           </div>
-          <p className="text-slate-500 text-xs text-center italic">{chapter.subtitle}</p>
+          <p className="text-ink-muted text-xs text-center italic">{chapter.subtitle}</p>
           <button
             onClick={onClose}
             className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 transition-all"

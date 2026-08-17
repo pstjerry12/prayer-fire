@@ -92,15 +92,15 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
   const notificationGranted = typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted';
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+    <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
+      <div className="px-5 py-4 border-b border-edge flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+          <div className="p-2 rounded-lg bg-acc-soft text-acc">
             <Bell className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="font-bold text-slate-900">My Prayer Daily Schedule</h2>
-            <p className="text-xs text-slate-500">Tap a session when you complete it</p>
+            <h2 className="font-bold text-ink">My Prayer Daily Schedule</h2>
+            <p className="text-xs text-ink-muted">Tap a session when you complete it</p>
           </div>
         </div>
         <button onClick={add} className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-500">
@@ -109,8 +109,8 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
       </div>
 
       <div className="p-5">
-        <div className="flex items-center gap-2 text-xs text-slate-500 mb-4">
-          <BellRing className="w-4 h-4 text-emerald-600" />
+        <div className="flex items-center gap-2 text-xs text-ink-muted mb-4">
+          <BellRing className="w-4 h-4 text-acc" />
           <span>
             {notificationGranted
               ? 'Alarms are ON — you will be notified at each prayer time.'
@@ -120,8 +120,8 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
 
         {sorted.length === 0 ? (
           <div className="text-center py-6">
-            <Clock className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-            <p className="text-slate-500 text-sm">No prayer times yet</p>
+            <Clock className="w-8 h-8 text-ink-ghost mx-auto mb-2" />
+            <p className="text-ink-muted text-sm">No prayer times yet</p>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -134,19 +134,19 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                   className={cn(
                     'rounded-xl border p-3 flex flex-col text-center transition-all',
                     isDone
-                      ? 'bg-emerald-50 border-emerald-300'
+                      ? 'bg-acc-soft border-acc-edge'
                       : appt.enabled
-                        ? 'bg-white border-slate-200'
-                        : 'bg-slate-50 border-slate-200 opacity-60'
+                        ? 'bg-card border-edge'
+                        : 'bg-card-2 border-edge opacity-60'
                   )}
                 >
                   {/* Icon */}
                   <div className="flex justify-center mb-1.5">
-                    <span className={cn(isDone ? 'text-emerald-600' : 'text-slate-500')}>{iconFor(appt.id)}</span>
+                    <span className={cn(isDone ? 'text-acc' : 'text-ink-muted')}>{iconFor(appt.id)}</span>
                   </div>
 
                   {/* Label */}
-                  <span className="text-slate-900 font-semibold text-[11px] leading-tight mb-1.5">{appt.label}</span>
+                  <span className="text-ink font-semibold text-[11px] leading-tight mb-1.5">{appt.label}</span>
 
                   {/* Time (editable) */}
                   {isEditing ? (
@@ -154,7 +154,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                       <select
                         value={appt.time}
                         onChange={(e) => update(appt.id, { time: e.target.value })}
-                        className="w-full bg-white border border-slate-300 rounded-md px-1 py-1 text-xs font-bold text-emerald-700 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                        className="w-full bg-card border border-edge-strong rounded-md px-1 py-1 text-xs font-bold text-acc-strong appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                       >
                         {TIME_OPTIONS.map((t) => <option key={t} value={t}>{formatTime(t)}</option>)}
                       </select>
@@ -163,7 +163,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                       </button>
                     </div>
                   ) : (
-                    <span className="text-emerald-700 font-bold text-base mb-1.5">{formatTime(appt.time)}</span>
+                    <span className="text-acc-strong font-bold text-base mb-1.5">{formatTime(appt.time)}</span>
                   )}
 
                   {/* Clickable completion box */}
@@ -174,7 +174,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                       'w-full py-2 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center gap-1',
                       isDone
                         ? 'bg-emerald-600 text-white'
-                        : 'bg-slate-100 text-slate-600 hover:bg-emerald-100 hover:text-emerald-700 border border-dashed border-slate-300'
+                        : 'bg-card-3 text-ink-muted hover:bg-acc-soft-2 hover:text-acc-strong border border-dashed border-edge-strong'
                     )}
                   >
                     {isDone ? (<><Check className="w-3.5 h-3.5" /> Done</>) : 'Mark done'}
@@ -183,18 +183,18 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                   {/* Edit / alarm / remove controls */}
                   <div className="flex items-center justify-center gap-2 mt-2">
                     {!isEditing && (
-                      <button onClick={() => setEditingId(appt.id)} className="p-1 text-slate-400 hover:text-emerald-600" title="Edit time">
+                      <button onClick={() => setEditingId(appt.id)} className="p-1 text-ink-faint hover:text-acc" title="Edit time">
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                     )}
                     <button
                       onClick={() => toggle(appt.id)}
-                      className={cn('p-1 transition-colors', appt.enabled ? 'text-emerald-600' : 'text-slate-300')}
+                      className={cn('p-1 transition-colors', appt.enabled ? 'text-acc' : 'text-ink-ghost')}
                       title={appt.enabled ? 'Alarm on' : 'Alarm off'}
                     >
                       <Bell className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={() => remove(appt.id)} className="p-1 text-slate-400 hover:text-red-600" title="Remove">
+                    <button onClick={() => remove(appt.id)} className="p-1 text-ink-faint hover:text-danger" title="Remove">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>

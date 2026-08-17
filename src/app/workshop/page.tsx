@@ -11,7 +11,7 @@ export default function WorkshopPage() {
     <>
       <Navbar />
       <main className="max-w-3xl mx-auto px-4 py-6 pb-24">
-        <Link href="/" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-emerald-600 mb-4">
+        <Link href="/" className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-acc mb-4">
           <ChevronLeft className="w-4 h-4" /> Home
         </Link>
         <div className="flex items-center gap-3 mb-5">
@@ -19,8 +19,8 @@ export default function WorkshopPage() {
             <Flame className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="font-serif-heading text-2xl font-bold text-slate-900">Write Your Prayer Point</h1>
-            <p className="text-xs text-slate-500">Prayer Workshop</p>
+            <h1 className="font-serif-heading text-2xl font-bold text-ink">Write Your Prayer Point</h1>
+            <p className="text-xs text-ink-muted">Prayer Workshop</p>
           </div>
         </div>
         <PrayerWorkshop />

@@ -12,7 +12,7 @@ export default function ScripturePage() {
     <>
       <Navbar />
       <main className="max-w-3xl mx-auto px-4 py-6 pb-24 space-y-5">
-        <Link href="/" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-emerald-600">
+        <Link href="/" className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-acc">
           <ChevronLeft className="w-4 h-4" /> Home
         </Link>
         <ScriptureVault />
