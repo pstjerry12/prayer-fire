@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { verifyToken, AUTH_COOKIE } from "@/lib/auth";
 import { toAuthUser } from "@/lib/user";
+import { promoteAdminIfMatches } from "@/lib/adminBootstrap";
 
 export async function GET(request: Request) {
   try {
@@ -37,7 +38,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ user: null });
     }
 
-    return NextResponse.json({ user: toAuthUser(rows[0]) });
+    // Self-heal: promote the owner on every /me check (catches accounts created earlier).
+    const role = await promoteAdminIfMatches(rows[0].id, rows[0].email);
+
+    return NextResponse.json({ user: { ...toAuthUser(rows[0]), role } });
   } catch (err) {
     console.error("me error", err);
     return NextResponse.json({ user: null });

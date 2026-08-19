@@ -46,10 +46,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Incorrect password. Please try again." }, { status: 401 });
     }
 
-    await promoteAdminIfMatches(account.id, account.email);
+    const role = await promoteAdminIfMatches(account.id, account.email);
 
     const token = await signToken({ sub: account.id });
-    const user = toAuthUser(account);
+    const user = { ...toAuthUser(account), role };
 
     const cookieStore = await cookies();
     cookieStore.set(AUTH_COOKIE, token, {

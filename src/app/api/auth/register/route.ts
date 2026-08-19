@@ -84,10 +84,10 @@ export async function POST(request: Request) {
       })
       .returning();
 
-    await promoteAdminIfMatches(id, normalizedEmail);
+    const role = await promoteAdminIfMatches(id, normalizedEmail);
 
     const token = await signToken({ sub: id });
-    const user = toAuthUser(created);
+    const user = { ...toAuthUser(created), role };
 
     const cookieStore = await cookies();
     cookieStore.set(AUTH_COOKIE, token, {
