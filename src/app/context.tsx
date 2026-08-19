@@ -15,11 +15,13 @@ import type {
   PartnerRequest,
   IntercessoryCategory,
   AuthUser,
+  WorshipSong,
 } from '@/app/types';
 import { DEFAULT_INTERCESSORY_CATEGORIES } from '@/app/data/bibleVerses';
 import { getDefaultCurrency, type Currency } from '@/app/data/pricingPlans';
 import type { PrayerAppointment } from '@/app/components/CustomizablePrayerSchedule';
 import { getStoredUser, fetchMe, apiLogout, apiDeleteAccount } from '@/lib/authClient';
+import { saveSongBlob, deleteSongBlob } from '@/lib/audioStore';
 
 const DEFAULT_APPOINTMENTS: PrayerAppointment[] = [
   { id: 'midnight', time: '00:00', label: 'Midnight Hour', enabled: true },
@@ -57,6 +59,10 @@ interface AppContextValue {
   setShowDailyWisdom: Dispatch<SetStateAction<boolean>>;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
+  songs: WorshipSong[];
+  addSongFiles: (files: File[]) => Promise<void>;
+  addSongUrl: (name: string, url: string) => Promise<void>;
+  removeSong: (id: string) => Promise<void>;
   signOut: () => Promise<void>;
   deleteAccount: () => void;
   exportData: () => void;
@@ -116,6 +122,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (typeof window === 'undefined') return 'light';
     return localStorage.getItem('pfm_theme') === 'dark' ? 'dark' : 'light';
   });
+  const [songs, setSongs] = useState<WorshipSong[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const stored = localStorage.getItem('upp_worship_songs');
+    return stored ? JSON.parse(stored) : [];
+  });
 
   // Apply + persist theme
   useEffect(() => {
@@ -124,6 +135,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+
+  // Persist worship-song metadata (audio blobs live in IndexedDB)
+  useEffect(() => {
+    localStorage.setItem('upp_worship_songs', JSON.stringify(songs));
+  }, [songs]);
+
+  const addSongFiles = async (files: File[]) => {
+    const incoming: WorshipSong[] = [];
+    for (const file of files) {
+      const id = `song-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      await saveSongBlob(id, file);
+      incoming.push({
+        id,
+        name: file.name.replace(/\.[^.]+$/, '') || 'Worship Song',
+        source: 'file',
+        addedAt: new Date().toISOString(),
+      });
+    }
+    setSongs((prev) => [...incoming, ...prev]);
+  };
+
+  const addSongUrl = async (name: string, url: string) => {
+    setSongs((prev) => [
+      { id: `song-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name: name.trim() || 'Worship Song', url, source: 'url', addedAt: new Date().toISOString() },
+      ...prev,
+    ]);
+  };
+
+  const removeSong = async (id: string) => {
+    setSongs((prev) => prev.filter((s) => s.id !== id));
+    await deleteSongBlob(id).catch(() => {});
+  };
 
   // Restore / verify session
   useEffect(() => {
@@ -264,6 +307,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setShowDailyWisdom,
         theme,
         toggleTheme,
+        songs,
+        addSongFiles,
+        addSongUrl,
+        removeSong,
         signOut,
         deleteAccount,
         exportData,

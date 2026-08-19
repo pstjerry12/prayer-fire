@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { AppProvider, useApp } from './context';
 import AuthModal from './components/AuthModal';
 import AccountSettings from './components/AccountSettings';
@@ -9,6 +9,8 @@ import DailyVerseModal from './components/DailyVerseModal';
 import DailyWisdomModal from './components/DailyWisdomModal';
 import BottomNav from './components/BottomNav';
 import PrayerAlarm from './components/PrayerAlarm';
+import SplashScreen from './components/SplashScreen';
+import NotificationPermission from './components/NotificationPermission';
 
 function Overlays() {
   const {
@@ -72,10 +74,26 @@ function Overlays() {
   );
 }
 
+function ServiceWorkerRegister() {
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!('serviceWorker' in navigator)) return;
+    try {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    } catch {
+      // ignore
+    }
+  }, []);
+  return null;
+}
+
 export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <AppProvider>
+      <SplashScreen />
+      <ServiceWorkerRegister />
       <PrayerAlarm />
+      <NotificationPermission />
       {children}
       <Overlays />
     </AppProvider>

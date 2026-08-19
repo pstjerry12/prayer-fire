@@ -2,11 +2,14 @@
 
 import { useEffect, useRef } from 'react';
 import { useApp } from '@/app/context';
-import { playChime } from '@/lib/clientUtils';
+import { startAlarmSound, stopAlarmSound } from '@/lib/alarmSound';
 
 /**
- * Watches the clock and fires a chime + browser notification whenever an
- * enabled prayer time matches the current time (checked once per minute).
+ * Watches the clock and fires a prayer-time alarm whenever an enabled prayer
+ * time matches the current time (checked every 20 seconds).
+ *
+ * Uses the phone's own system notification + tone, plus an audible
+ * two-tone ring while the app is open, plus vibration on supporting devices.
  */
 export default function PrayerAlarm() {
   const { appointments } = useApp();
@@ -16,23 +19,38 @@ export default function PrayerAlarm() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Ask permission for notifications (best-effort; ignored if unsupported).
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().catch(() => {});
-    }
-
-    const fireAlarm = (label: string) => {
-      playChime();
+    const notify = (label: string) => {
+      // System notification — uses the phone's default notification sound.
       if ('Notification' in window && Notification.permission === 'granted') {
         try {
-          new Notification('⏰ Prayer Time', {
+          const n = new Notification('⏰ Prayer Time', {
             body: `${label} — it's time to pray!`,
             icon: '/logo.png',
+            badge: '/logo.png',
+            tag: 'prayer-alarm',
+            requireInteraction: true,
           });
+          n.onclick = () => {
+            window.focus();
+            n.close();
+            stopAlarmSound();
+          };
         } catch {
           // ignore
         }
       }
+
+      // Vibration (if supported).
+      if ('vibrate' in navigator) {
+        try {
+          navigator.vibrate([200, 100, 200, 100, 200]);
+        } catch {
+          // ignore
+        }
+      }
+
+      // Audible two-tone ring while the app is open.
+      startAlarmSound();
     };
 
     const check = () => {
@@ -48,13 +66,16 @@ export default function PrayerAlarm() {
         const firedKey = `upp_alarm_fired_${a.id}`;
         if (localStorage.getItem(firedKey) === today) continue;
         localStorage.setItem(firedKey, today);
-        fireAlarm(a.label);
+        notify(a.label);
       }
     };
 
     check();
-    const interval = window.setInterval(check, 30000);
-    return () => clearInterval(interval);
+    const interval = window.setInterval(check, 20000);
+    return () => {
+      clearInterval(interval);
+      stopAlarmSound();
+    };
   }, []);
 
   return null;

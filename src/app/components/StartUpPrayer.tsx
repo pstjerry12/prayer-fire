@@ -1,14 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
-  Droplets, Award, Music, Heart, Users, Sparkles, Home, Plus, Check,
+  Droplets, Award, Music, Heart, Users, Sparkles, Home, Plus, Check, Clock, Pencil,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useApp } from '@/app/context';
-import { playChime } from '@/lib/clientUtils';
-import AllPrayersList from './AllPrayersList';
+import { playChime, playCelebration } from '@/lib/clientUtils';
+import PrayerReader, { type ReaderItem } from './PrayerReader';
+import WorshipPlayer from './WorshipPlayer';
 
 function Wind({ className }: { className?: string }) {
   return (
@@ -23,21 +24,46 @@ function Wind({ className }: { className?: string }) {
 export default function StartUpPrayer() {
   const { prayers, intercessoryPrayers, setIntercessoryPrayers, categories } = useApp();
   const [step, setStep] = useState(1);
-  const [timer, setTimer] = useState(120);
   const [isActive, setIsActive] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDetails, setNewDetails] = useState('');
   const [newCategory, setNewCategory] = useState('Individual by Name & Challenge');
 
+  // Overall prayer duration in seconds (default 5 minutes).
+  const [totalSeconds, setTotalSeconds] = useState(() => {
+    if (typeof window === 'undefined') return 300;
+    const stored = localStorage.getItem('pfm_prayer_total_seconds');
+    const n = stored ? parseInt(stored) : 300;
+    return Number.isFinite(n) && n >= 120 ? n : 300;
+  });
+  const [editingTotal, setEditingTotal] = useState(false);
+  const [totalMinutesInput, setTotalMinutesInput] = useState(() => {
+    if (typeof window === 'undefined') return '5';
+    const stored = localStorage.getItem('pfm_prayer_total_seconds');
+    const n = stored ? parseInt(stored) : 300;
+    return String(Math.round((Number.isFinite(n) && n >= 120 ? n : 300) / 60));
+  });
+  const [timer, setTimer] = useState(30);
+
+  // Fixed first three sessions: Mercy (30s), Thanksgiving (30s), Invite Holy Spirit (30s).
+  const FIXED = [30, 30, 30];
+
+  const stepDurations = useMemo(() => {
+    const fixedTotal = FIXED.reduce((a, b) => a + b, 0);
+    const rest = Math.max(0, totalSeconds - fixedTotal);
+    const per = Math.floor(rest / 4);
+    return [...FIXED, per, per, per, rest - per * 3];
+  }, [totalSeconds]);
+
   const steps = [
-    { id: 1, title: 'Mercy Prayer', subtitle: 'Cleansing & Confession', verse: '1 John 1:9', verseText: 'If we confess our sins, he is faithful and just to forgive us our sins, and to cleanse us from all unrighteousness.', icon: <Droplets className="w-6 h-6" />, duration: 120 },
-    { id: 2, title: 'Thanksgiving', subtitle: 'Appreciate God\'s Goodness', verse: 'Psalm 100:4', verseText: 'Enter into his gates with thanksgiving, and into his courts with praise.', icon: <Award className="w-6 h-6" />, duration: 120 },
-    { id: 3, title: 'Invite Holy Spirit', subtitle: 'Holy Spirit Assistance', verse: 'John 14:26', verseText: 'But the Comforter, which is the Holy Ghost, whom the Father will send in my name, he shall teach you all things.', icon: <Wind className="w-6 h-6" />, duration: 120 },
-    { id: 4, title: 'Praise & Worship', subtitle: 'Sing Unto the Lord', verse: 'Psalm 95:1-2', verseText: 'O come, let us sing unto the Lord: let us make a joyful noise to the rock of our salvation.', icon: <Music className="w-6 h-6" />, duration: 180 },
-    { id: 5, title: 'My Prayer List', subtitle: 'Personal Prayers', verse: '', verseText: '', icon: <Heart className="w-6 h-6" />, duration: 240, isPrayerList: true },
-    { id: 6, title: 'Special Prayer', subtitle: 'Praying like Daniel', verse: 'Daniel 6:10', verseText: 'Now when Daniel knew that the writing was signed, he went into his house; and his windows being open in his chamber toward Jerusalem, he kneeled upon his knees three times a day, and prayed, and gave thanks before his God, as he did aforetime.', icon: <Sparkles className="w-6 h-6" />, duration: 240, isSpecialPrayer: true },
-    { id: 7, title: 'Intercessory Prayer', subtitle: 'Pray for Others', verse: '', verseText: '', icon: <Users className="w-6 h-6" />, duration: 300, isIntercessory: true },
+    { id: 1, title: 'Mercy Prayer', subtitle: 'Cleansing & Confession', verse: '1 John 1:9', verseText: 'If we confess our sins, he is faithful and just to forgive us our sins, and to cleanse us from all unrighteousness.', icon: <Droplets className="w-6 h-6" />, duration: stepDurations[0] },
+    { id: 2, title: 'Thanksgiving', subtitle: 'Appreciate God\'s Goodness', verse: 'Psalm 100:4', verseText: 'Enter into his gates with thanksgiving, and into his courts with praise.', icon: <Award className="w-6 h-6" />, duration: stepDurations[1] },
+    { id: 3, title: 'Invite Holy Spirit', subtitle: 'Holy Spirit Assistance', verse: 'John 14:26', verseText: 'But the Comforter, which is the Holy Ghost, whom the Father will send in my name, he shall teach you all things.', icon: <Wind className="w-6 h-6" />, duration: stepDurations[2] },
+    { id: 4, title: 'Praise & Worship', subtitle: 'Sing Unto the Lord', verse: 'Psalm 95:1-2', verseText: 'O come, let us sing unto the Lord: let us make a joyful noise to the rock of our salvation.', icon: <Music className="w-6 h-6" />, duration: stepDurations[3] },
+    { id: 5, title: 'My Prayer List', subtitle: 'Family Prayers', verse: '', verseText: '', icon: <Heart className="w-6 h-6" />, duration: stepDurations[4], isPrayerList: true },
+    { id: 6, title: 'Special Prayer', subtitle: 'Praying like Daniel', verse: 'Daniel 6:10', verseText: 'Now when Daniel knew that the writing was signed, he went into his house; and his windows being open in his chamber toward Jerusalem, he kneeled upon his knees three times a day, and prayed, and gave thanks before his God, as he did aforetime.', icon: <Sparkles className="w-6 h-6" />, duration: stepDurations[5], isSpecialPrayer: true },
+    { id: 7, title: 'Intercessory Prayer', subtitle: 'Pray for Others', verse: '', verseText: '', icon: <Users className="w-6 h-6" />, duration: stepDurations[6], isIntercessory: true },
   ];
 
   useEffect(() => {
@@ -68,12 +94,27 @@ export default function StartUpPrayer() {
   };
 
   const handleNext = () => {
-    playChime();
     if (step < 7) {
+      playChime();
       goToStep(step + 1);
     } else {
       setShowCelebration(true);
+      playCelebration();
     }
+  };
+
+  const saveTotal = () => {
+    const minutes = Number(totalMinutesInput);
+    if (Number.isFinite(minutes) && minutes >= 2) {
+      const secs = Math.round(minutes * 60);
+      setTotalSeconds(secs);
+      localStorage.setItem('pfm_prayer_total_seconds', String(secs));
+      // Reset the current step's timer to its new duration.
+      const current = steps.find((s) => s.id === step);
+      if (current) setTimer(current.duration);
+      setIsActive(false);
+    }
+    setEditingTotal(false);
   };
 
   const resetAll = () => {
@@ -94,6 +135,52 @@ export default function StartUpPrayer() {
         <Link href="/" className="flex items-center gap-1.5 px-3 py-1.5 bg-card-3 hover:bg-card-3 rounded-full text-ink-muted text-xs font-semibold transition-colors">
           <Home className="w-4 h-4" /> Home
         </Link>
+      </div>
+
+      {/* Total prayer duration (editable) */}
+      <div className="mb-5 bg-card rounded-xl border border-edge p-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
+            <Clock className="w-4 h-4 text-acc flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-xs text-ink-muted font-semibold">Total Prayer Time</p>
+              <p className="text-sm font-bold text-ink">
+                {formatTime(totalSeconds)}
+                <span className="text-ink-faint font-normal text-[11px] ml-1">
+                  · 30s Mercy · 30s Thanks · 30s Holy Spirit · rest shared
+                </span>
+              </p>
+            </div>
+          </div>
+
+          {editingTotal ? (
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <input
+                type="number"
+                min={2}
+                step={1}
+                value={totalMinutesInput}
+                onChange={(e) => setTotalMinutesInput(e.target.value)}
+                className="w-16 bg-card border border-edge-strong rounded-lg px-2 py-1.5 text-sm font-bold text-ink text-center focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+              />
+              <span className="text-ink-muted text-xs">min</span>
+              <button
+                onClick={saveTotal}
+                className="p-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500"
+                title="Save duration"
+              >
+                <Check className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setEditingTotal(true)}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-acc text-xs font-bold rounded-lg hover:bg-acc-soft transition-colors flex-shrink-0"
+            >
+              <Pencil className="w-3.5 h-3.5" /> Edit
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Progress dots */}
@@ -143,10 +230,15 @@ export default function StartUpPrayer() {
         </div>
       )}
 
-      {currentStep?.isPrayerList && (
-        <div className="mb-5 space-y-2 max-h-80 overflow-y-auto">
-          <AllPrayersList prayers={prayers} intercessoryPrayers={intercessoryPrayers} categories={categories} />
+      {/* Step 4: Praise & Worship music player */}
+      {step === 4 && (
+        <div className="mb-5">
+          <WorshipPlayer compact />
         </div>
+      )}
+
+      {currentStep?.isPrayerList && (
+        <FamilyPrayersList />
       )}
 
       {currentStep?.isSpecialPrayer && (
@@ -245,5 +337,71 @@ export default function StartUpPrayer() {
         </div>
       )}
     </div>
+  );
+}
+
+// Step 5: only the FAMILY prayer list (from the Prayer Workshop → Session 1).
+function FamilyPrayersList() {
+  const { categories } = useApp();
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  const familyPrayers = categories.flatMap((cat) =>
+    cat.subCategories.flatMap((sub) =>
+      sub.entries.map((entry) => ({
+        id: `${cat.id}-${sub.id}-${entry.id}`,
+        category: cat.name,
+        subCategory: sub.name,
+        title: entry.name || 'Unnamed',
+        details: entry.details,
+        isAnswered: entry.isAnswered,
+      }))
+    )
+  );
+
+  if (familyPrayers.length === 0) {
+    return (
+      <div className="mb-5 bg-card-2 rounded-xl p-4 border border-edge text-center">
+        <Heart className="w-8 h-8 text-ink-ghost mx-auto mb-2" />
+        <p className="text-ink-muted text-sm">No family prayers yet.</p>
+        <p className="text-ink-faint text-xs mt-1">Add them in the Prayer Workshop → My Family Prayers.</p>
+      </div>
+    );
+  }
+
+  const readerItems: ReaderItem[] = familyPrayers.map((p) => ({
+    id: p.id,
+    title: p.title,
+    category: p.category,
+    subCategory: p.subCategory,
+    details: p.details,
+  }));
+
+  return (
+    <>
+      <div className="mb-5 space-y-2 max-h-80 overflow-y-auto">
+        {familyPrayers.map((prayer, idx) => (
+          <button
+            key={prayer.id}
+            onClick={() => setOpenIndex(idx)}
+            className={cn(
+              'w-full text-left rounded-xl p-3 border-l-4 transition-all hover:brightness-95 active:scale-[0.99]',
+              prayer.isAnswered
+                ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge'
+                : 'bg-card border-l-emerald-500 border border-edge'
+            )}
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-wider mb-1 text-acc-strong">
+              👨‍👩‍👧‍👦 {prayer.category} · {prayer.subCategory}
+            </p>
+            <h4 className="text-ink font-bold text-sm">{prayer.title}</h4>
+            {prayer.details && <p className="text-ink-muted text-xs mt-1 italic line-clamp-2">{prayer.details}</p>}
+          </button>
+        ))}
+      </div>
+
+      {openIndex !== null && (
+        <PrayerReader items={readerItems} initialIndex={openIndex} onClose={() => setOpenIndex(null)} />
+      )}
+    </>
   );
 }

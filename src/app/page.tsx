@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import {
-  Flame, Sparkles, BookOpen, ScrollText, Utensils, Users,
+  Flame, Sparkles, BookOpen, ScrollText, Utensils, Users, Music,
   Crown, Moon, Sun, Sunrise, ChevronRight,
 } from 'lucide-react';
 import Navbar from './components/Navbar';
@@ -29,6 +29,7 @@ function watchIcon(id: string) {
 const RANK: Record<string, number> = { midnight: 0, noon: 1, morning: 2 };
 
 const CONTENT_CARDS = [
+  { href: '/worship', title: 'Praise & Worship', desc: 'Upload & play songs', icon: Music },
   { href: '/scripture', title: 'Scripture & Wisdom', desc: 'Vault · Learn to Pray', icon: BookOpen },
   { href: '/bible', title: 'KJV Bible Library', desc: 'Search · Favorite · Share', icon: ScrollText },
   { href: '/fasting', title: 'Fasting Tracker', desc: '3 · 7 · 21 · 40 days', icon: Utensils },

@@ -9,6 +9,7 @@ import { cn } from '../utils/cn';
 import type { PrayerPoint, IntercessoryPrayer, IntercessoryCategory, PrayerEntry } from '@/app/types';
 import { useApp } from '@/app/context';
 import { playChime, useSpeechToText } from '@/lib/clientUtils';
+import PrayerReader, { type ReaderItem } from './PrayerReader';
 
 const CATEGORY_ICONS: Record<string, ReactElement> = {
   'Family': <Users className="w-4 h-4" />,
@@ -368,6 +369,7 @@ function IntercessoryForm() {
 
 function PrayerList({ filter, search }: { filter: 'active' | 'answered'; search: string }) {
   const { prayers, setPrayers } = useApp();
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
   const filtered = prayers.filter((p) => {
     const matchesFilter = filter === 'answered' ? p.isAnswered : !p.isAnswered;
     const matchesSearch = p.title.toLowerCase().includes(search.toLowerCase()) || p.notes.toLowerCase().includes(search.toLowerCase());
@@ -388,30 +390,46 @@ function PrayerList({ filter, search }: { filter: 'active' | 'answered'; search:
     );
   }
 
+  const readerItems: ReaderItem[] = filtered.map((p) => ({
+    id: p.id,
+    title: p.title,
+    category: p.category,
+    subCategory: 'Special Prayer',
+    details: p.notes,
+    scripture: p.scripture,
+  }));
+
   return (
-    <div className="space-y-3">
-      {filtered.map((prayer) => (
-        <div key={prayer.id} className={cn('rounded-xl p-4 border-l-4 transition-all', prayer.isAnswered ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge' : prayer.urgency === 'high' ? 'bg-card border-l-red-500 border border-edge' : 'bg-card border-l-emerald-500 border border-edge')}>
-          <div className="mb-2">
-            <h4 className="text-ink font-bold text-base">[{prayer.category}] {prayer.title}</h4>
-            <p className="text-ink-muted text-xs flex items-center gap-1">{prayer.urgency === 'high' && '🔥 High Priority · '}Special Prayer{prayer.isPrivate && <Lock className="w-3 h-3" />}</p>
-          </div>
-          {prayer.notes && <p className="text-ink-soft text-sm leading-relaxed border-l-2 border-acc-edge pl-3 italic my-2">{prayer.notes}</p>}
-          {prayer.scripture && <p className="text-acc-strong text-xs mt-2 italic">📖 {prayer.scripture}</p>}
-          <div className="flex items-center justify-between gap-2 mt-3">
-            <button onClick={() => toggleAnswered(prayer.id)} className={cn('flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', prayer.isAnswered ? 'bg-acc-soft-2 text-acc-strong' : 'bg-acc-soft text-acc hover:bg-acc-soft-2')}>
-              <Check className="w-3 h-3" /> {prayer.isAnswered ? 'Answered ✓' : 'Mark Answered'}
+    <>
+      <div className="space-y-3">
+        {filtered.map((prayer, idx) => (
+          <div key={prayer.id} className={cn('rounded-xl p-4 border-l-4 transition-all', prayer.isAnswered ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge' : prayer.urgency === 'high' ? 'bg-card border-l-red-500 border border-edge' : 'bg-card border-l-emerald-500 border border-edge')}>
+            <button onClick={() => setOpenIndex(idx)} className="w-full text-left mb-2 hover:opacity-80">
+              <h4 className="text-ink font-bold text-base">[{prayer.category}] {prayer.title}</h4>
+              <p className="text-ink-muted text-xs flex items-center gap-1">{prayer.urgency === 'high' && '🔥 High Priority · '}Special Prayer{prayer.isPrivate && <Lock className="w-3 h-3" />} <span className="text-acc">· Read</span></p>
             </button>
-            <button onClick={() => deletePrayer(prayer.id)} className="text-danger text-xs font-semibold hover:text-danger flex items-center gap-1 px-2 py-1.5"><Trash2 className="w-3 h-3" /> Remove</button>
+            {prayer.notes && <p className="text-ink-soft text-sm leading-relaxed border-l-2 border-acc-edge pl-3 italic my-2">{prayer.notes}</p>}
+            {prayer.scripture && <p className="text-acc-strong text-xs mt-2 italic">📖 {prayer.scripture}</p>}
+            <div className="flex items-center justify-between gap-2 mt-3">
+              <button onClick={() => toggleAnswered(prayer.id)} className={cn('flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', prayer.isAnswered ? 'bg-acc-soft-2 text-acc-strong' : 'bg-acc-soft text-acc hover:bg-acc-soft-2')}>
+                <Check className="w-3 h-3" /> {prayer.isAnswered ? 'Answered ✓' : 'Mark Answered'}
+              </button>
+              <button onClick={() => deletePrayer(prayer.id)} className="text-danger text-xs font-semibold hover:text-danger flex items-center gap-1 px-2 py-1.5"><Trash2 className="w-3 h-3" /> Remove</button>
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+
+      {openIndex !== null && (
+        <PrayerReader items={readerItems} initialIndex={openIndex} onClose={() => setOpenIndex(null)} />
+      )}
+    </>
   );
 }
 
 function IntercessoryPrayerList({ search }: { search: string }) {
   const { intercessoryPrayers, setIntercessoryPrayers } = useApp();
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
   const filtered = intercessoryPrayers.filter((p) => p.title.toLowerCase().includes(search.toLowerCase()) || p.details.toLowerCase().includes(search.toLowerCase()));
   const toggleAnswered = (id: string) => setIntercessoryPrayers(intercessoryPrayers.map((p) => (p.id === id ? { ...p, isAnswered: !p.isAnswered } : p)));
   const deletePrayer = (id: string) => setIntercessoryPrayers(intercessoryPrayers.filter((p) => p.id !== id));
@@ -425,24 +443,38 @@ function IntercessoryPrayerList({ search }: { search: string }) {
     );
   }
 
+  const readerItems: ReaderItem[] = filtered.map((p) => ({
+    id: p.id,
+    title: p.title,
+    category: p.category,
+    subCategory: 'Intercessory Prayer',
+    details: p.details,
+  }));
+
   return (
-    <div className="space-y-3">
-      {filtered.map((prayer) => (
-        <div key={prayer.id} className={cn('rounded-xl p-4 border-l-4 transition-all', prayer.isAnswered ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge' : 'bg-danger-soft/50 border-l-red-500 border border-danger-edge')}>
-          <div className="mb-2">
-            <h4 className="text-ink font-bold text-base">[{prayer.category}] {prayer.title}</h4>
-            <p className="text-danger text-xs">Intercessory Prayer</p>
-          </div>
-          {prayer.details && <p className="text-ink-soft text-sm leading-relaxed border-l-2 border-danger-edge pl-3 italic my-2">{prayer.details}</p>}
-          <div className="flex items-center justify-between gap-2 mt-3">
-            <button onClick={() => toggleAnswered(prayer.id)} className={cn('flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', prayer.isAnswered ? 'bg-acc-soft-2 text-acc-strong' : 'bg-acc-soft text-acc hover:bg-acc-soft-2')}>
-              <Check className="w-3 h-3" /> {prayer.isAnswered ? 'Answered ✓' : 'Mark Answered'}
+    <>
+      <div className="space-y-3">
+        {filtered.map((prayer, idx) => (
+          <div key={prayer.id} className={cn('rounded-xl p-4 border-l-4 transition-all', prayer.isAnswered ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge' : 'bg-danger-soft/50 border-l-red-500 border border-danger-edge')}>
+            <button onClick={() => setOpenIndex(idx)} className="w-full text-left mb-2 hover:opacity-80">
+              <h4 className="text-ink font-bold text-base">[{prayer.category}] {prayer.title}</h4>
+              <p className="text-danger text-xs">Intercessory Prayer <span className="text-acc">· Read</span></p>
             </button>
-            <button onClick={() => deletePrayer(prayer.id)} className="text-danger text-xs font-semibold hover:text-danger flex items-center gap-1 px-2 py-1.5"><Trash2 className="w-3 h-3" /> Remove</button>
+            {prayer.details && <p className="text-ink-soft text-sm leading-relaxed border-l-2 border-danger-edge pl-3 italic my-2">{prayer.details}</p>}
+            <div className="flex items-center justify-between gap-2 mt-3">
+              <button onClick={() => toggleAnswered(prayer.id)} className={cn('flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all', prayer.isAnswered ? 'bg-acc-soft-2 text-acc-strong' : 'bg-acc-soft text-acc hover:bg-acc-soft-2')}>
+                <Check className="w-3 h-3" /> {prayer.isAnswered ? 'Answered ✓' : 'Mark Answered'}
+              </button>
+              <button onClick={() => deletePrayer(prayer.id)} className="text-danger text-xs font-semibold hover:text-danger flex items-center gap-1 px-2 py-1.5"><Trash2 className="w-3 h-3" /> Remove</button>
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+
+      {openIndex !== null && (
+        <PrayerReader items={readerItems} initialIndex={openIndex} onClose={() => setOpenIndex(null)} />
+      )}
+    </>
   );
 }
 

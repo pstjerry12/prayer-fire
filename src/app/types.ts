@@ -7,6 +7,16 @@ export interface AuthUser {
   provider: string;
 }
 
+export interface WorshipSong {
+  id: string;
+  name: string;
+  artist?: string;
+  /** 'file' = uploaded audio stored in IndexedDB, 'url' = streamed from a link */
+  source: 'file' | 'url';
+  url?: string;
+  addedAt: string;
+}
+
 export type Urgency = 'low' | 'medium' | 'high';
 
 export interface PrayerPoint {

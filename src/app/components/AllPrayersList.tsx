@@ -1,6 +1,10 @@
-import { Heart } from 'lucide-react';
+'use client';
+
+import { useState } from 'react';
+import { Heart, ChevronRight } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { PrayerPoint, IntercessoryPrayer, IntercessoryCategory } from '@/app/types';
+import PrayerReader, { type ReaderItem } from './PrayerReader';
 
 export default function AllPrayersList({
   prayers,
@@ -11,6 +15,8 @@ export default function AllPrayersList({
   intercessoryPrayers: IntercessoryPrayer[];
   categories: IntercessoryCategory[];
 }) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
   const familyPrayers = categories.flatMap((cat) =>
     cat.subCategories.flatMap((sub) =>
       sub.entries.map((entry) => ({
@@ -19,6 +25,7 @@ export default function AllPrayersList({
         subCategory: sub.name,
         title: entry.name || 'Unnamed',
         details: entry.details,
+        scripture: undefined,
         isAnswered: entry.isAnswered,
         type: 'family' as const,
       }))
@@ -31,6 +38,7 @@ export default function AllPrayersList({
     subCategory: 'Special Prayer',
     title: p.title,
     details: p.notes,
+    scripture: p.scripture,
     isAnswered: p.isAnswered,
     type: 'personal' as const,
   }));
@@ -41,6 +49,7 @@ export default function AllPrayersList({
     subCategory: 'Intercessory Prayer',
     title: p.title,
     details: p.details,
+    scripture: undefined,
     isAnswered: p.isAnswered,
     type: 'intercessory' as const,
   }));
@@ -57,36 +66,58 @@ export default function AllPrayersList({
     );
   }
 
+  const readerItems: ReaderItem[] = allPrayers.map((p) => ({
+    id: p.id,
+    title: p.title,
+    category: p.category,
+    subCategory: p.subCategory,
+    details: p.details,
+    scripture: p.scripture,
+  }));
+
   return (
-    <div className="space-y-2">
-      {allPrayers.map((prayer) => (
-        <div
-          key={prayer.id}
-          className={cn(
-            'rounded-xl p-3 border-l-4 transition-all',
-            prayer.isAnswered
-              ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge'
-              : prayer.type === 'family'
-                ? 'bg-acc-soft/40 border-l-emerald-500 border border-acc-edge'
-                : prayer.type === 'personal'
-                  ? 'bg-card border-l-edge-strong border border-edge'
-                  : 'bg-danger-soft/40 border-l-red-500 border border-danger-edge'
-          )}
-        >
-          <p className={cn(
-            'text-[10px] font-semibold uppercase tracking-wider mb-1',
-            prayer.type === 'family' && 'text-acc-strong',
-            prayer.type === 'personal' && 'text-ink-muted',
-            prayer.type === 'intercessory' && 'text-danger'
-          )}>
-            {prayer.type === 'family' && `👨‍👩‍👧‍👦 ${prayer.category} · ${prayer.subCategory}`}
-            {prayer.type === 'personal' && `🙏 ${prayer.category} · ${prayer.subCategory}`}
-            {prayer.type === 'intercessory' && `🤝 ${prayer.category} · ${prayer.subCategory}`}
-          </p>
-          <h4 className="text-ink font-bold text-sm">{prayer.title}</h4>
-          {prayer.details && <p className="text-ink-muted text-xs mt-1 italic">{prayer.details}</p>}
-        </div>
-      ))}
-    </div>
+    <>
+      <div className="space-y-2">
+        {allPrayers.map((prayer, idx) => (
+          <button
+            key={prayer.id}
+            onClick={() => setOpenIndex(idx)}
+            className={cn(
+              'w-full text-left rounded-xl p-3 border-l-4 transition-all hover:brightness-95 active:scale-[0.99] flex items-center gap-2',
+              prayer.isAnswered
+                ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge'
+                : prayer.type === 'family'
+                  ? 'bg-acc-soft/40 border-l-emerald-500 border border-acc-edge'
+                  : prayer.type === 'personal'
+                    ? 'bg-card border-l-edge-strong border border-edge'
+                    : 'bg-danger-soft/40 border-l-red-500 border border-danger-edge'
+            )}
+          >
+            <div className="flex-1 min-w-0">
+              <p className={cn(
+                'text-[10px] font-semibold uppercase tracking-wider mb-1',
+                prayer.type === 'family' && 'text-acc-strong',
+                prayer.type === 'personal' && 'text-ink-muted',
+                prayer.type === 'intercessory' && 'text-danger'
+              )}>
+                {prayer.type === 'family' && `👨‍👩‍👧‍👦 ${prayer.category} · ${prayer.subCategory}`}
+                {prayer.type === 'personal' && `🙏 ${prayer.category} · ${prayer.subCategory}`}
+                {prayer.type === 'intercessory' && `🤝 ${prayer.category} · ${prayer.subCategory}`}
+              </p>
+              <h4 className="text-ink font-bold text-sm truncate">{prayer.title}</h4>
+            </div>
+            <ChevronRight className="w-4 h-4 text-ink-faint flex-shrink-0" />
+          </button>
+        ))}
+      </div>
+
+      {openIndex !== null && (
+        <PrayerReader
+          items={readerItems}
+          initialIndex={openIndex}
+          onClose={() => setOpenIndex(null)}
+        />
+      )}
+    </>
   );
 }
