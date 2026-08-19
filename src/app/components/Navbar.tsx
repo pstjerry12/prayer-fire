@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Flame, Crown, LogIn, ChevronRight, Moon, Sun, ShieldCheck } from 'lucide-react';
+import { Menu, X, Flame, Crown, LogIn, LogOut, ChevronRight, Moon, Sun, ShieldCheck, MoreVertical, UserCircle, Settings } from 'lucide-react';
 import { useApp } from '@/app/context';
 
 const NAV_LINKS = [
@@ -20,6 +20,7 @@ const NAV_LINKS = [
 export default function Navbar() {
   const { streak, user, setShowAuth, setShowSettings, signOut, theme, toggleTheme } = useApp();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   return (
     <nav className="sticky top-0 z-50 safe-top bg-page/95 backdrop-blur border-b border-edge">
@@ -63,18 +64,73 @@ export default function Navbar() {
           </button>
 
           {user ? (
-            <Link
-              href="/"
-              onClick={() => setShowSettings(true)}
-              className="hidden md:flex w-9 h-9 rounded-full bg-emerald-600 text-white text-sm font-bold items-center justify-center hover:bg-emerald-500 transition-colors"
-              title={user.name || 'Account'}
-            >
-              {(user.name || user.email || 'P').charAt(0).toUpperCase()}
-            </Link>
+            <div className="relative">
+              <div className="flex items-center gap-1">
+                {/* Profile avatar */}
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="w-9 h-9 rounded-full bg-emerald-600 text-white text-sm font-bold flex items-center justify-center hover:bg-emerald-500 transition-colors ring-2 ring-emerald-200"
+                  title={user.name || 'Account'}
+                >
+                  {(user.name || user.email || 'P').charAt(0).toUpperCase()}
+                </button>
+                {/* 3-dot menu */}
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="p-1.5 hover:bg-card-3 rounded-full text-ink-muted transition-colors"
+                  title="Account menu"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+              </div>
+
+              {profileOpen && (
+                <div className="absolute right-0 top-full mt-2 w-60 bg-card rounded-2xl border border-edge shadow-xl overflow-hidden z-50">
+                  {/* Profile header */}
+                  <div className="px-4 py-3 border-b border-edge bg-card-2">
+                    <p className="text-ink font-bold text-sm truncate">{user.name || 'Prayer Partner'}</p>
+                    <p className="text-ink-muted text-xs truncate">
+                      {user.email || (user.phone ? `${user.countryCode ?? ''} ${user.phone}` : 'Signed in')}
+                    </p>
+                    <span className="inline-block mt-1 bg-acc-soft-2 text-acc-strong text-[9px] font-bold px-1.5 py-0.5 rounded-full">SIGNED IN</span>
+                  </div>
+
+                  <div className="p-1.5 space-y-0.5">
+                    <button
+                      onClick={() => { setShowSettings(true); setProfileOpen(false); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-ink-soft hover:bg-card-2 rounded-lg transition-colors"
+                    >
+                      <UserCircle className="w-4 h-4 text-ink-muted" /> My Account
+                    </button>
+                    <button
+                      onClick={() => { setShowSettings(true); setProfileOpen(false); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-ink-soft hover:bg-card-2 rounded-lg transition-colors"
+                    >
+                      <Settings className="w-4 h-4 text-ink-muted" /> Settings
+                    </button>
+                    {user.role === 'admin' && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setProfileOpen(false)}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-warn-strong hover:bg-warn-soft rounded-lg transition-colors"
+                      >
+                        <ShieldCheck className="w-4 h-4" /> Admin Back Office
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => { signOut(); setProfileOpen(false); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-danger hover:bg-danger-soft rounded-lg transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" /> Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           ) : (
             <button
               onClick={() => setShowAuth(true)}
-              className="hidden md:block px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-500 transition-colors"
+              className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-500 transition-colors"
             >
               Sign In
             </button>
