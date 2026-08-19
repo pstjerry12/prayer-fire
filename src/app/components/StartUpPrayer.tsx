@@ -29,6 +29,8 @@ export default function StartUpPrayer() {
   const [newName, setNewName] = useState('');
   const [newDetails, setNewDetails] = useState('');
   const [newCategory, setNewCategory] = useState('Individual by Name & Challenge');
+  const [specialOpenIndex, setSpecialOpenIndex] = useState<number | null>(null);
+  const [intercessoryOpenIndex, setIntercessoryOpenIndex] = useState<number | null>(null);
 
   // Overall prayer duration in seconds (default 5 minutes).
   const [totalSeconds, setTotalSeconds] = useState(() => {
@@ -250,16 +252,28 @@ export default function StartUpPrayer() {
               <p className="text-ink-faint text-[10px] mt-0.5">Add them in the Prayer Workshop → Special Prayer.</p>
             </div>
           ) : (
-            prayers.map((prayer) => (
-              <div key={prayer.id} className={cn('rounded-xl p-3 border-l-4 transition-all', prayer.isAnswered ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge' : prayer.urgency === 'high' ? 'bg-card border-l-red-500 border border-edge' : 'bg-card border-l-edge-strong border border-edge')}>
+            prayers.map((prayer, idx) => (
+              <button
+                key={prayer.id}
+                onClick={() => setSpecialOpenIndex(idx)}
+                className={cn('w-full text-left rounded-xl p-3 border-l-4 transition-all hover:brightness-95 active:scale-[0.99]', prayer.isAnswered ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge' : prayer.urgency === 'high' ? 'bg-card border-l-red-500 border border-edge' : 'bg-card border-l-edge-strong border border-edge')}
+              >
                 <p className="text-[10px] font-semibold uppercase tracking-wider mb-1 text-ink-muted">🙏 {prayer.category} · Special Prayer</p>
                 <h4 className="text-ink font-bold text-sm">{prayer.title}</h4>
-                {prayer.notes && <p className="text-ink-muted text-xs mt-1 italic">{prayer.notes}</p>}
+                {prayer.notes && <p className="text-ink-muted text-xs mt-1 italic line-clamp-2">{prayer.notes}</p>}
                 {prayer.scripture && <p className="text-acc-strong text-xs mt-1 italic">📖 {prayer.scripture}</p>}
-              </div>
+              </button>
             ))
           )}
         </div>
+      )}
+
+      {specialOpenIndex !== null && (
+        <PrayerReader
+          items={prayers.map((p) => ({ id: p.id, title: p.title, category: p.category, subCategory: 'Special Prayer', details: p.notes, scripture: p.scripture }))}
+          initialIndex={specialOpenIndex}
+          onClose={() => setSpecialOpenIndex(null)}
+        />
       )}
 
       {currentStep?.isIntercessory && (
@@ -290,15 +304,27 @@ export default function StartUpPrayer() {
             {intercessoryPrayers.length === 0 ? (
               <div className="bg-card-2 rounded-xl p-3 border border-edge text-center"><p className="text-ink-muted text-xs">No prayers added yet.</p></div>
             ) : (
-              intercessoryPrayers.map((prayer) => (
-                <div key={prayer.id} className="bg-danger-soft/50 border border-danger-edge rounded-xl p-3 border-l-4 border-l-red-500">
+              intercessoryPrayers.map((prayer, idx) => (
+                <button
+                  key={prayer.id}
+                  onClick={() => setIntercessoryOpenIndex(idx)}
+                  className="w-full text-left bg-danger-soft/50 border border-danger-edge rounded-xl p-3 border-l-4 border-l-red-500 transition-all hover:brightness-95 active:scale-[0.99]"
+                >
                   <h4 className="text-ink font-bold text-sm">[{prayer.category}] {prayer.title}</h4>
-                  {prayer.details && <p className="text-ink-muted text-xs mt-1 italic">{prayer.details}</p>}
-                </div>
+                  {prayer.details && <p className="text-ink-muted text-xs mt-1 italic line-clamp-2">{prayer.details}</p>}
+                </button>
               ))
             )}
           </div>
         </div>
+      )}
+
+      {intercessoryOpenIndex !== null && (
+        <PrayerReader
+          items={intercessoryPrayers.map((p) => ({ id: p.id, title: p.title, category: p.category, subCategory: 'Intercessory Prayer', details: p.details }))}
+          initialIndex={intercessoryOpenIndex}
+          onClose={() => setIntercessoryOpenIndex(null)}
+        />
       )}
 
       {/* Controls */}
