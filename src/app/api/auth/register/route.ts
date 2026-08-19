@@ -30,8 +30,13 @@ export async function POST(request: Request) {
       typeof body.email === "string" && body.email.trim()
         ? body.email.trim().toLowerCase()
         : null;
+    // Treat empty phone as "not provided" (null), not an empty string.
+    // (An empty string would collide with the unique index and block the
+    // second email-only signup.)
     const normalizedPhone =
-      typeof body.phone === "string" ? body.phone.replace(/\D/g, "") : null;
+      typeof body.phone === "string" && body.phone.trim()
+        ? body.phone.replace(/\D/g, "")
+        : null;
 
     if (!normalizedEmail && !normalizedPhone) {
       return NextResponse.json(

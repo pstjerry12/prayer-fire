@@ -71,12 +71,6 @@ export async function apiLogin(identifier: string, password: string): Promise<Au
   return data;
 }
 
-export async function apiGoogle(): Promise<AuthResult> {
-  const data = await post<AuthResult>("/api/auth/google");
-  storeSession(data.token, data.user);
-  return data;
-}
-
 export async function apiLogout(): Promise<void> {
   try {
     await fetch("/api/auth/logout", { method: "POST" });
