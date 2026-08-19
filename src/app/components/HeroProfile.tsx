@@ -21,7 +21,7 @@ export default function HeroProfile() {
   };
 
   return (
-    <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-40">
+    <div className="flex justify-end mb-2">
       <div className="relative">
         {/* Profile pill + 3 dots */}
         <div className="flex items-center gap-1">

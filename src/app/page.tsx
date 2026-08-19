@@ -44,10 +44,12 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <HeroProfile />
 
       <main className="bg-page min-h-screen pb-28">
         <div className="max-w-md mx-auto px-4 pt-6">
+          {/* ── Profile menu (3 dots + sign out) ──── */}
+          <HeroProfile />
+
           {/* ── Hero ─────────────────────────────── */}
           <section className="text-center">
             <span className="inline-flex items-center gap-1.5 bg-warn-soft text-warn-strong text-xs font-bold px-3 py-1 rounded-full border border-warn-edge">
