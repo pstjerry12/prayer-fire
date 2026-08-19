@@ -20,6 +20,10 @@ const nunitoSans = Nunito_Sans({
 
 const themeScript = `try{var t=localStorage.getItem('pfm_theme');if(t==='dark'){document.documentElement.classList.add('dark');}}catch(e){}`;
 
+// Hide the boot splash instantly if it already showed earlier this session.
+// This runs before first paint, so repeat visits never flash the splash.
+const splashScript = `try{if(sessionStorage.getItem('pfm_splash_shown')==='1'){document.documentElement.classList.add('pfm-splash-done');}}catch(e){}`;
+
 export const metadata: Metadata = {
   title: "Prayer Fire Movement — Pray 3x, A Cure for Prayerlessness",
   description:
@@ -45,6 +49,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning className={`${fraunces.variable} ${nunitoSans.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: splashScript }} />
       </head>
       <body className="bg-page text-ink antialiased">
         <AppShell>{children}</AppShell>

@@ -110,6 +110,12 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Hide the boot splash instantly on repeat visits (same browser session).
+   The inline script in <head> adds this class before first paint. */
+html.pfm-splash-done [data-splash] {
+  display: none !important;
+}
+
 body {
   font-family: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
   background-color: var(--page);

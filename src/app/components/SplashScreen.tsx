@@ -20,18 +20,23 @@ const SPLASH_KEY = 'pfm_splash_shown';
 export default function SplashScreen() {
   const [progress, setProgress] = useState(0);
   const [fading, setFading] = useState(false);
-  // Hidden right away if already shown earlier this session.
-  const [hidden, setHidden] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return true;
-    try {
-      return sessionStorage.getItem(SPLASH_KEY) === '1';
-    } catch {
-      return true;
-    }
-  });
+  // Always render on first paint (both server + client) so there is NO flash
+  // of the home page. If the splash already showed this session, the inline
+  // script in <head> adds `.pfm-splash-done` to <html>, which CSS hides instantly.
+  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
-    if (hidden) return;
+    let alreadyShown = false;
+    try {
+      alreadyShown = sessionStorage.getItem(SPLASH_KEY) === '1';
+    } catch {
+      // ignore
+    }
+
+    if (alreadyShown) {
+      setHidden(true);
+      return;
+    }
 
     // Mark as shown immediately so it never replays while the user is in the app.
     try {
@@ -53,7 +58,7 @@ export default function SplashScreen() {
     }, STEP_MS);
 
     return () => clearInterval(interval);
-  }, [hidden]);
+  }, []);
 
   if (hidden) return null;
 
@@ -64,6 +69,7 @@ export default function SplashScreen() {
 
   return (
     <div
+      data-splash
       className={cn(
         'fixed inset-0 z-[100] flex flex-col items-center justify-center bg-page transition-opacity duration-500',
         fading ? 'opacity-0 pointer-events-none' : 'opacity-100'
