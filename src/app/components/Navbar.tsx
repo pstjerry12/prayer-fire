@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Flame, Crown, LogIn, ChevronRight, Moon, Sun } from 'lucide-react';
+import { Menu, X, Flame, Crown, LogIn, ChevronRight, Moon, Sun, ShieldCheck } from 'lucide-react';
 import { useApp } from '@/app/context';
 
 const NAV_LINKS = [
@@ -114,6 +114,17 @@ export default function Navbar() {
               <LogIn className="w-5 h-5" />
               <span className="font-bold text-sm">Sign In / Create Account</span>
             </button>
+          )}
+
+          {user?.role === 'admin' && (
+            <Link
+              href="/admin"
+              onClick={() => setMenuOpen(false)}
+              className="w-full flex items-center gap-3 p-3 bg-amber-50 rounded-xl text-amber-700 border border-amber-200 dark:bg-warn-soft dark:text-warn-strong dark:border-warn-edge"
+            >
+              <ShieldCheck className="w-5 h-5" />
+              <span className="font-bold text-sm">Admin Back Office</span>
+            </Link>
           )}
 
           <Link

@@ -58,6 +58,18 @@ export default function DonationCard() {
       name: name.trim() || 'Anonymous',
       onSuccess: (reference) => {
         console.log('Paystack reference:', reference);
+        // Record the donation in the back office.
+        fetch('/api/donations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name.trim() || 'Anonymous',
+            email: donorEmail,
+            amount: amountInSmallestUnit,
+            currency,
+            reference,
+          }),
+        }).catch(() => {});
         setDone(true);
         setPaying(false);
       },

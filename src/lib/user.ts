@@ -9,5 +9,6 @@ export function toAuthUser(user: User): AuthUser {
     phone: user.phone,
     countryCode: user.countryCode,
     provider: user.provider,
+    role: user.role ?? "user",
   };
 }

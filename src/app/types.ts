@@ -5,6 +5,7 @@ export interface AuthUser {
   phone: string | null;
   countryCode: string | null;
   provider: string;
+  role: string;
 }
 
 export interface WorshipSong {

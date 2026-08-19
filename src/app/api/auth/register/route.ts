@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { hashPassword, signToken, AUTH_COOKIE, TOKEN_MAX_AGE } from "@/lib/auth";
 import { toAuthUser } from "@/lib/user";
+import { promoteAdminIfMatches } from "@/lib/adminBootstrap";
 
 export async function POST(request: Request) {
   try {
@@ -82,6 +83,8 @@ export async function POST(request: Request) {
         provider: "email",
       })
       .returning();
+
+    await promoteAdminIfMatches(id, normalizedEmail);
 
     const token = await signToken({ sub: id });
     const user = toAuthUser(created);

@@ -16,6 +16,12 @@ export default function PartnerNetwork() {
   const submitRequest = () => {
     if (!name || !request) return;
     setPartnerRequests([{ id: Date.now().toString(), name, location, request, prayers: 0, createdAt: new Date().toISOString() }, ...partnerRequests]);
+    // Send to the back office for admin review.
+    fetch('/api/partner-requests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, location, request }),
+    }).catch(() => {});
     setName('');
     setLocation('');
     setRequest('');

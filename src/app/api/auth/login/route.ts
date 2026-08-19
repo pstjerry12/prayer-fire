@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { verifyPassword, signToken, AUTH_COOKIE, TOKEN_MAX_AGE } from "@/lib/auth";
 import { toAuthUser } from "@/lib/user";
+import { promoteAdminIfMatches } from "@/lib/adminBootstrap";
 
 export async function POST(request: Request) {
   try {
@@ -44,6 +45,8 @@ export async function POST(request: Request) {
     if (!valid) {
       return NextResponse.json({ error: "Incorrect password. Please try again." }, { status: 401 });
     }
+
+    await promoteAdminIfMatches(account.id, account.email);
 
     const token = await signToken({ sub: account.id });
     const user = toAuthUser(account);
