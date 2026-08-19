@@ -9,7 +9,6 @@ import {
   Lock,
   Eye,
   EyeOff,
-  Check,
   Loader2,
   User as UserIcon,
 } from 'lucide-react';
@@ -44,7 +43,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isHuman, setIsHuman] = useState(false);
 
   if (!isOpen) return null;
 
@@ -83,10 +81,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     }
     if (!email.trim() && !phone.trim()) {
       setError('Please provide an email address or phone number.');
-      return;
-    }
-    if (!isHuman) {
-      setError('Please confirm you are human.');
       return;
     }
     setLoading(true);
@@ -284,22 +278,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
                   />
                 </div>
-
-                <label className="flex items-start gap-2 cursor-pointer select-none">
-                  <button
-                    type="button"
-                    onClick={() => setIsHuman(!isHuman)}
-                    className={cn(
-                      'mt-0.5 w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 transition-all',
-                      isHuman ? 'bg-emerald-600 border-emerald-600' : 'border-edge-strong bg-card'
-                    )}
-                  >
-                    {isHuman && <Check className="w-3.5 h-3.5 text-white" />}
-                  </button>
-                  <span className="text-ink-muted text-xs leading-relaxed">
-                    I confirm I am human and agree to the Prayer Fire Movement terms.
-                  </span>
-                </label>
 
                 <button
                   type="submit"
