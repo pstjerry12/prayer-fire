@@ -9,12 +9,15 @@ import {
   Lock,
   Eye,
   EyeOff,
+  Check,
   Loader2,
   User as UserIcon,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { COUNTRY_CODES, DEFAULT_COUNTRY } from '@/lib/countryCodes';
 import { apiRegister, apiLogin, type AuthUser } from '@/lib/authClient';
+import { TERMS_SECTIONS, PRIVACY_SECTIONS } from '@/app/data/legal';
+import LegalModal from './LegalModal';
 
 interface Props {
   isOpen: boolean;
@@ -43,8 +46,39 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isHuman, setIsHuman] = useState(false);
+  const [agreedTerms, setAgreedTerms] = useState(false);
+  const [legalDoc, setLegalDoc] = useState<'terms' | 'privacy' | null>(null);
 
   if (!isOpen) return null;
+
+  // Password strength: 0 = empty, 1 = weak, 2 = fair, 3 = strong, 4 = very strong.
+  const strength = (() => {
+    if (!password) return 0;
+    let score = 0;
+    if (password.length >= 6) score++;
+    if (password.length >= 10) score++;
+    if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+    if (/\d/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    return Math.min(4, score);
+  })();
+
+  const strengthLabel = ['', 'Weak', 'Fair', 'Strong', 'Very Strong'][strength];
+  const strengthColor = [
+    '',
+    'bg-red-500',
+    'bg-amber-500',
+    'bg-emerald-500',
+    'bg-emerald-600',
+  ][strength];
+  const strengthTextColor = [
+    '',
+    'text-red-500',
+    'text-amber-600',
+    'text-emerald-600',
+    'text-emerald-700',
+  ][strength];
 
   const switchMode = (m: Mode) => {
     setMode(m);
@@ -81,6 +115,14 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     }
     if (!email.trim() && !phone.trim()) {
       setError('Please provide an email address or phone number.');
+      return;
+    }
+    if (!isHuman) {
+      setError('Please confirm you are human to continue.');
+      return;
+    }
+    if (!agreedTerms) {
+      setError('Please agree to the Terms of Service and Privacy Policy to continue.');
       return;
     }
     setLoading(true);
@@ -291,6 +333,27 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+
+                {/* Password strength meter */}
+                {password && (
+                  <div>
+                    <div className="flex gap-1 mb-1">
+                      {[1, 2, 3, 4].map((seg) => (
+                        <div
+                          key={seg}
+                          className={cn(
+                            'h-1.5 flex-1 rounded-full transition-colors',
+                            strength >= seg ? strengthColor : 'bg-card-3'
+                          )}
+                        />
+                      ))}
+                    </div>
+                    <p className={cn('text-[11px] font-semibold', strengthTextColor)}>
+                      Password strength: {strengthLabel}
+                    </p>
+                  </div>
+                )}
+
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
                   <input
@@ -301,6 +364,48 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
                   />
                 </div>
+
+                {/* Human confirmation */}
+                <label className="flex items-start gap-2 cursor-pointer select-none">
+                  <button
+                    type="button"
+                    onClick={() => setIsHuman(!isHuman)}
+                    className={cn(
+                      'mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 transition-all',
+                      isHuman ? 'bg-emerald-600 border-emerald-600' : 'border-edge-strong bg-card'
+                    )}
+                  >
+                    {isHuman && <Check className="w-3.5 h-3.5 text-white" />}
+                  </button>
+                  <span className="text-ink-muted text-xs leading-relaxed">
+                    I confirm I am human. My prayer points are private and protected.
+                  </span>
+                </label>
+
+                {/* Terms & Privacy */}
+                <label className="flex items-start gap-2 cursor-pointer select-none">
+                  <button
+                    type="button"
+                    onClick={() => setAgreedTerms(!agreedTerms)}
+                    className={cn(
+                      'mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 transition-all',
+                      agreedTerms ? 'bg-emerald-600 border-emerald-600' : 'border-edge-strong bg-card'
+                    )}
+                  >
+                    {agreedTerms && <Check className="w-3.5 h-3.5 text-white" />}
+                  </button>
+                  <span className="text-ink-muted text-xs leading-relaxed">
+                    I agree to the{' '}
+                    <button type="button" onClick={() => setLegalDoc('terms')} className="text-acc font-semibold hover:underline">
+                      Terms of Service
+                    </button>{' '}
+                    and{' '}
+                    <button type="button" onClick={() => setLegalDoc('privacy')} className="text-acc font-semibold hover:underline">
+                      Privacy Policy
+                    </button>
+                    .
+                  </span>
+                </label>
 
                 <button
                   type="submit"
@@ -323,6 +428,20 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
           </div>
         </div>
       </div>
+
+      {/* Terms / Privacy modals */}
+      <LegalModal
+        isOpen={legalDoc === 'terms'}
+        title="Terms of Service"
+        sections={TERMS_SECTIONS}
+        onClose={() => setLegalDoc(null)}
+      />
+      <LegalModal
+        isOpen={legalDoc === 'privacy'}
+        title="Privacy Policy"
+        sections={PRIVACY_SECTIONS}
+        onClose={() => setLegalDoc(null)}
+      />
     </div>
   );
 }
