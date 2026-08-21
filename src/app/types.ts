@@ -43,9 +43,13 @@ export interface PrayerGroup {
   prayerTime?: string;
   /** "I prayed today" tracker: member name -> date string (Date.toDateString()). */
   prayedToday?: Record<string, string>;
+  /** Display names awaiting approval (private groups only). */
+  pendingMembers?: string[];
   public: boolean;
   createdAt: string;
 }
+
+export type JoinResult = 'joined' | 'pending' | 'already' | 'notfound';
 
 export type Urgency = 'low' | 'medium' | 'high';
 

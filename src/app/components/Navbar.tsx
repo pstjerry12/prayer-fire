@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   Menu, X, Flame, Crown, LogIn, ChevronRight, Moon, Sun, ShieldCheck,
   MoreVertical, LogOut, User as UserIcon, Settings,
 } from 'lucide-react';
 import { useApp } from '@/app/context';
+import { cn } from '@/app/utils/cn';
 
 const NAV_LINKS = [
   { href: '/workshop', label: 'Write Prayer' },
@@ -23,9 +25,13 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const { streak, user, setShowAuth, setShowSettings, signOut, theme, toggleTheme } = useApp();
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false); // mobile nav links
   const [profileOpen, setProfileOpen] = useState(false); // 3-dots account menu
   const profileRef = useRef<HTMLDivElement | null>(null);
+
+  const isActive = (href: string) =>
+    href === '/' ? pathname === '/' : pathname.startsWith(href);
 
   // Close the profile dropdown when clicking outside.
   useEffect(() => {
@@ -45,7 +51,7 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 safe-top bg-page/95 backdrop-blur border-b border-edge">
-      <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo (left) */}
         <Link href="/" className="flex items-center gap-3 min-w-0">
           <div className="w-11 h-11 rounded-full bg-danger-soft ring-1 ring-red-200 flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -60,18 +66,6 @@ export default function Navbar() {
 
         {/* Right controls */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="hidden md:flex items-center gap-0.5 mr-1">
-            {NAV_LINKS.slice(0, 5).map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="px-2.5 py-1.5 text-sm font-medium text-ink-muted hover:text-acc-strong hover:bg-acc-soft rounded-lg transition-colors"
-              >
-                {l.label}
-              </Link>
-            ))}
-          </div>
-
           {/* Streak */}
           <div className="flex items-center gap-1 bg-warn-soft px-2 py-1 rounded-full border border-warn-edge">
             <Flame className="w-4 h-4 text-warn" />
@@ -164,6 +158,37 @@ export default function Navbar() {
           <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2 hover:bg-card-3 rounded-full transition-colors">
             {menuOpen ? <X className="w-5 h-5 text-ink-muted" /> : <Menu className="w-5 h-5 text-ink-muted" />}
           </button>
+        </div>
+      </div>
+
+      {/* Desktop nav links (second row) */}
+      <div className="hidden md:block border-t border-edge/60 bg-page/60">
+        <div className="max-w-6xl mx-auto px-4 flex items-center gap-1 overflow-x-auto py-2">
+          {NAV_LINKS.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={cn(
+                'whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors',
+                isActive(l.href)
+                  ? 'bg-acc-soft text-acc-strong'
+                  : 'text-ink-muted hover:text-acc-strong hover:bg-card-2'
+              )}
+            >
+              {l.label}
+            </Link>
+          ))}
+          <Link
+            href="/partner"
+            className={cn(
+              'ml-auto whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] font-bold transition-colors flex items-center gap-1',
+              isActive('/partner')
+                ? 'bg-warn-soft text-warn-strong'
+                : 'text-warn hover:bg-warn-soft'
+            )}
+          >
+            <Crown className="w-3.5 h-3.5" /> Become a Partner
+          </Link>
         </div>
       </div>
 

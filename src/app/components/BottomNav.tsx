@@ -19,7 +19,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-bottom bg-page/95 backdrop-blur border-t border-edge">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-bottom bg-page/95 backdrop-blur border-t border-edge md:hidden">
       <div className="max-w-4xl mx-auto grid grid-cols-7">
         {TABS.map((tab) => {
           const Icon = tab.icon;

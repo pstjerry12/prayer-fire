@@ -18,6 +18,7 @@ import type {
   WorshipSong,
   PrayerGroup,
   GroupMessage,
+  JoinResult,
 } from '@/app/types';
 import { DEFAULT_INTERCESSORY_CATEGORIES } from '@/app/data/bibleVerses';
 import { getDefaultCurrency, type Currency } from '@/app/data/pricingPlans';
@@ -30,6 +31,23 @@ const DEFAULT_APPOINTMENTS: PrayerAppointment[] = [
   { id: 'noon', time: '12:00', label: 'Noon Prayer', enabled: true },
   { id: 'morning', time: '04:00', label: 'Morning Watch', enabled: true },
 ];
+
+// The official team that always appears first in the group directory.
+export const SEED_GROUP_ID = 'group-prayer-fire-movement';
+
+function buildSeedGroup(): PrayerGroup {
+  return {
+    id: SEED_GROUP_ID,
+    name: 'Prayer Fire Movement',
+    description: 'The official global prayer team — praying like Daniel, 3× a day.',
+    inviteCode: 'PRAYER',
+    admins: ['prayerfiremovemnt@gmail.com'],
+    members: [],
+    prayerTime: '00:00',
+    public: true,
+    createdAt: new Date().toISOString(),
+  };
+}
 
 // 7-day free trial for the premium (Prayer Fire Partner) features.
 const TRIAL_KEY = 'upp_trial_start';
@@ -100,8 +118,12 @@ interface AppContextValue {
   removeSong: (id: string) => Promise<void>;
   groups: PrayerGroup[];
   messages: GroupMessage[];
-  createGroup: (name: string, description: string, prayerTime?: string) => PrayerGroup;
-  joinGroup: (inviteCode: string) => boolean;
+  createGroup: (name: string, description: string, prayerTime?: string, isPublic?: boolean) => PrayerGroup;
+  joinGroup: (inviteCode: string) => JoinResult;
+  requestJoin: (groupId: string) => JoinResult;
+  approveMember: (groupId: string, memberName: string) => void;
+  rejectMember: (groupId: string, memberName: string) => void;
+  setGroupPublic: (groupId: string, isPublic: boolean) => void;
   leaveGroup: (groupId: string) => void;
   deleteGroup: (groupId: string) => void;
   setGroupPrayerTime: (groupId: string, time: string) => void;
@@ -221,7 +243,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [groups, setGroups] = useState<PrayerGroup[]>(() => {
     if (typeof window === 'undefined') return [];
     const stored = localStorage.getItem('pfm_groups');
-    return stored ? JSON.parse(stored) : [];
+    if (stored) {
+      const parsed = JSON.parse(stored) as PrayerGroup[];
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    // First visit: seed the official movement team so the directory isn't empty.
+    return [buildSeedGroup()];
   });
   const [messages, setMessages] = useState<GroupMessage[]>(() => {
     if (typeof window === 'undefined') return [];
@@ -238,7 +265,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const myId = user?.id || 'guest';
 
-  const createGroup = (name: string, description: string, prayerTime?: string): PrayerGroup => {
+  const createGroup = (name: string, description: string, prayerTime?: string, isPublic = true): PrayerGroup => {
     const code = Math.random().toString(36).slice(2, 8).toUpperCase();
     const g: PrayerGroup = {
       id: `group-${Date.now()}`,
@@ -248,23 +275,73 @@ export function AppProvider({ children }: { children: ReactNode }) {
       admins: [myId],
       members: [user?.name || 'Me'],
       prayerTime,
-      public: true,
+      public: isPublic,
       createdAt: new Date().toISOString(),
     };
     setGroups((prev) => [g, ...prev]);
     return g;
   };
 
-  const joinGroup = (inviteCode: string): boolean => {
+  // Shared join logic. Public groups admit immediately; private groups go to
+  // a pending list that an admin must approve.
+  const applyJoin = (g: PrayerGroup): JoinResult => {
+    const memberName = user?.name || 'Guest';
+    if (g.members.includes(memberName)) return 'already';
+    if (g.pendingMembers?.includes(memberName)) return 'pending';
+    if (g.public) {
+      setGroups((prev) =>
+        prev.map((x) => (x.id === g.id ? { ...x, members: [...x.members, memberName] } : x))
+      );
+      return 'joined';
+    }
+    setGroups((prev) =>
+      prev.map((x) =>
+        x.id === g.id
+          ? { ...x, pendingMembers: [...(x.pendingMembers || []), memberName] }
+          : x
+      )
+    );
+    return 'pending';
+  };
+
+  const joinGroup = (inviteCode: string): JoinResult => {
     const code = inviteCode.trim().toUpperCase();
     const g = groups.find((x) => x.inviteCode.toUpperCase() === code);
-    if (!g) return false;
-    const memberName = user?.name || 'Member';
-    if (g.members.includes(memberName)) return true;
+    if (!g) return 'notfound';
+    return applyJoin(g);
+  };
+
+  // Join directly from the directory (by group id).
+  const requestJoin = (groupId: string): JoinResult => {
+    const g = groups.find((x) => x.id === groupId);
+    if (!g) return 'notfound';
+    return applyJoin(g);
+  };
+
+  // Admins approve / reject join requests on private groups.
+  const approveMember = (groupId: string, memberName: string) => {
     setGroups((prev) =>
-      prev.map((x) => (x.id === g.id ? { ...x, members: [...x.members, memberName] } : x))
+      prev.map((g) => {
+        if (g.id !== groupId) return g;
+        const pendingMembers = (g.pendingMembers || []).filter((m) => m !== memberName);
+        return { ...g, members: [...g.members, memberName], pendingMembers };
+      })
     );
-    return true;
+  };
+
+  const rejectMember = (groupId: string, memberName: string) => {
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.id === groupId
+          ? { ...g, pendingMembers: (g.pendingMembers || []).filter((m) => m !== memberName) }
+          : g
+      )
+    );
+  };
+
+  // Toggle a group between public and private.
+  const setGroupPublic = (groupId: string, isPublic: boolean) => {
+    setGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, public: isPublic } : g)));
   };
 
   const leaveGroup = (groupId: string) => {
@@ -528,6 +605,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         messages,
         createGroup,
         joinGroup,
+        requestJoin,
+        approveMember,
+        rejectMember,
+        setGroupPublic,
         leaveGroup,
         deleteGroup,
         setGroupPrayerTime,

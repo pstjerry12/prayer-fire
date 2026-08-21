@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   Users, Plus, ChevronRight, ChevronLeft, Send, Siren, Clock, BookOpen,
   LogOut, Trash2, ShieldCheck, UserPlus, Copy, Check, Pin, Flame,
+  Lock, Globe, X,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
-import { useApp } from '@/app/context';
+import { useApp, SEED_GROUP_ID } from '@/app/context';
 import { playChime } from '@/lib/clientUtils';
 import type { PrayerGroup } from '@/app/types';
 
@@ -24,18 +25,22 @@ function fmtTime(t?: string) {
 export default function PrayerGroups() {
   const {
     groups, messages, user, isPremium, setShowAuth, setShowPricing,
-    createGroup, joinGroup, leaveGroup, deleteGroup,
-    setGroupPrayerTime, setGroupVerse, togglePrayedToday, promoteMember, removeMember, sendMessage,
+    createGroup, joinGroup, requestJoin, approveMember, rejectMember, setGroupPublic,
+    leaveGroup, deleteGroup,
+    setGroupPrayerTime, setGroupVerse, togglePrayedToday, sendMessage,
   } = useApp();
 
   const [view, setView] = useState<'list' | 'detail' | 'create' | 'join'>('list');
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [notice, setNotice] = useState('');
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Create form
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newTime, setNewTime] = useState('05:00');
+  const [newPublic, setNewPublic] = useState(true);
 
   // Join form
   const [joinCode, setJoinCode] = useState('');
@@ -44,31 +49,61 @@ export default function PrayerGroups() {
   // Chat
   const [draft, setDraft] = useState('');
 
+  const flashNotice = (msg: string) => {
+    setNotice(msg);
+    if (noticeTimer.current) clearTimeout(noticeTimer.current);
+    noticeTimer.current = setTimeout(() => setNotice(''), 4500);
+  };
+
   const activeGroup = groups.find((g) => g.id === activeGroupId) || null;
   const groupMessages = activeGroupId
     ? messages.filter((m) => m.groupId === activeGroupId).sort((a, b) => a.createdAt.localeCompare(b.createdAt))
     : [];
 
+  const memberName = user?.name || 'Guest';
+
   const handleCreate = () => {
     if (!newName.trim()) return;
-    const g = createGroup(newName, newDesc, newTime);
+    const g = createGroup(newName, newDesc, newTime, newPublic);
     setActiveGroupId(g.id);
     setNewName('');
     setNewDesc('');
+    setNewPublic(true);
     setView('detail');
     playChime();
   };
 
   const handleJoin = () => {
-    const ok = joinGroup(joinCode);
-    if (!ok) {
+    const result = joinGroup(joinCode);
+    if (result === 'notfound') {
       setJoinError('No group found with that code.');
       return;
     }
     setJoinCode('');
     setJoinError('');
     setView('list');
+    flashNotice(
+      result === 'pending'
+        ? 'Request sent! The group admin will approve you shortly.'
+        : result === 'already'
+          ? 'You are already in this group.'
+          : 'You joined the group!'
+    );
     playChime();
+  };
+
+  const handleRequestJoin = (g: PrayerGroup) => {
+    const result = requestJoin(g.id);
+    flashNotice(
+      result === 'joined'
+        ? `You joined ${g.name}!`
+        : result === 'pending'
+          ? `Request sent to ${g.name}. The admin will approve you.`
+          : result === 'already'
+            ? 'You are already in this group.'
+            : 'Group not found.'
+    );
+    if (result === 'joined') playChime();
   };
 
   const copyCode = async (g: PrayerGroup) => {
@@ -81,12 +116,26 @@ export default function PrayerGroups() {
     }
   };
 
-  const isAdmin = activeGroup ? activeGroup.admins.includes(user?.id || user?.name || '') : false;
-  const isMember = activeGroup ? activeGroup.members.includes(user?.name || 'Me') : false;
+  const isGroupAdmin = (g: PrayerGroup) =>
+    g.admins.includes(user?.id || '') ||
+    g.admins.includes(user?.name || '') ||
+    g.admins.includes(user?.email || '');
+  const isInGroup = (g: PrayerGroup) => g.members.includes(memberName) || isGroupAdmin(g);
+  const isPending = (g: PrayerGroup) => (g.pendingMembers || []).includes(memberName);
+
+  const isAdmin = activeGroup ? isGroupAdmin(activeGroup) : false;
+  const isMember = activeGroup ? activeGroup.members.includes(memberName) : false;
 
   // "I prayed today" tracker
   const todayStr = new Date().toDateString();
-  const memberKey = user?.name || 'Me';
+  const memberKey = memberName;
+
+  // Official team first, then newest.
+  const sortedGroups = [...groups].sort((a, b) => {
+    if (a.id === SEED_GROUP_ID) return -1;
+    if (b.id === SEED_GROUP_ID) return 1;
+    return b.createdAt.localeCompare(a.createdAt);
+  });
   const prayedTodayCount = activeGroup
     ? Object.values(activeGroup.prayedToday || {}).filter((d) => d === todayStr).length
     : 0;
@@ -162,6 +211,20 @@ export default function PrayerGroups() {
           <select value={newTime} onChange={(e) => setNewTime(e.target.value)} className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink focus:outline-none">
             {TIME_OPTIONS.map((t) => <option key={t} value={t}>{fmtTime(t)}</option>)}
           </select>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-ink-muted mb-1.5">Who can join?</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => setNewPublic(true)} className={cn('py-2.5 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-all', newPublic ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
+              <Globe className="w-4 h-4" /> Public
+            </button>
+            <button type="button" onClick={() => setNewPublic(false)} className={cn('py-2.5 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-all', !newPublic ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
+              <Lock className="w-4 h-4" /> Private
+            </button>
+          </div>
+          <p className="text-[11px] text-ink-muted mt-1.5">
+            {newPublic ? 'Anyone can join instantly.' : 'Only people you approve can join.'}
+          </p>
         </div>
         <button onClick={handleCreate} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 flex items-center justify-center gap-2">
           <Plus className="w-4 h-4" /> Create Group
@@ -299,6 +362,43 @@ export default function PrayerGroups() {
                 {TIME_OPTIONS.map((t) => <option key={t} value={t}>{fmtTime(t)}</option>)}
               </select>
             </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1">
+                <Lock className="w-3 h-3" /> Who can join
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => setGroupPublic(activeGroup.id, true)} className={cn('py-2 rounded-lg border-2 text-xs font-bold flex items-center justify-center gap-1', activeGroup.public ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
+                  <Globe className="w-3.5 h-3.5" /> Public
+                </button>
+                <button onClick={() => setGroupPublic(activeGroup.id, false)} className={cn('py-2 rounded-lg border-2 text-xs font-bold flex items-center justify-center gap-1', !activeGroup.public ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
+                  <Lock className="w-3.5 h-3.5" /> Private
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Pending join requests (admin) */}
+        {isAdmin && (activeGroup.pendingMembers?.length ?? 0) > 0 && (
+          <div className="bg-card rounded-2xl border border-warn-edge p-3">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-warn-strong flex items-center gap-1 mb-2">
+              <UserPlus className="w-3 h-3" /> Pending requests
+            </label>
+            <div className="space-y-2">
+              {activeGroup.pendingMembers!.map((m) => (
+                <div key={m} className="flex items-center justify-between gap-2 bg-card-2 rounded-lg px-3 py-2">
+                  <span className="text-sm font-semibold text-ink truncate">{m}</span>
+                  <div className="flex gap-1.5 shrink-0">
+                    <button onClick={() => approveMember(activeGroup.id, m)} className="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-emerald-500">
+                      <Check className="w-3.5 h-3.5" /> Approve
+                    </button>
+                    <button onClick={() => rejectMember(activeGroup.id, m)} className="px-2.5 py-1.5 bg-card-3 text-ink-soft rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-card">
+                      <X className="w-3.5 h-3.5" /> Decline
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -355,7 +455,7 @@ export default function PrayerGroups() {
     );
   }
 
-  // ── List ──────────────────────────────────────────────────────
+  // ── List (team directory) ────────────────────────────────────
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
@@ -363,29 +463,44 @@ export default function PrayerGroups() {
           <Plus className="w-4 h-4" /> Create Group
         </button>
         <button onClick={() => setView('join')} className="flex-1 py-2.5 bg-card text-ink-soft border border-edge rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-card-2">
-          <UserPlus className="w-4 h-4" /> Join Group
+          <UserPlus className="w-4 h-4" /> Join by Code
         </button>
       </div>
 
-      {groups.length === 0 ? (
+      {notice && (
+        <div className="bg-acc-soft border border-acc-edge rounded-xl px-3 py-2 text-xs font-semibold text-acc-strong flex items-center gap-1.5 animate-pop">
+          <Check className="w-3.5 h-3.5 shrink-0" /> {notice}
+        </div>
+      )}
+
+      <div>
+        <h3 className="font-serif-heading font-bold text-ink">Browse Prayer Teams</h3>
+        <p className="text-ink-muted text-xs mt-0.5 mb-2">
+          Join any public team instantly, or request to join a private team.
+        </p>
+      </div>
+
+      {sortedGroups.length === 0 ? (
         <div className="bg-card rounded-2xl border border-edge p-8 text-center">
           <Users className="w-10 h-10 text-ink-ghost mx-auto mb-2" />
-          <p className="text-ink-muted text-sm">No groups yet</p>
+          <p className="text-ink-muted text-sm">No teams yet</p>
           <p className="text-ink-faint text-xs mt-1">Create your first prayer group for your church or prayer team.</p>
         </div>
       ) : (
-        groups.map((g) => (
-          <button
-            key={g.id}
-            onClick={() => { setActiveGroupId(g.id); setView('detail'); }}
-            className="w-full bg-card border border-edge rounded-2xl p-4 text-left hover:border-acc-edge transition-all"
-          >
+        sortedGroups.map((g) => (
+          <div key={g.id} className="bg-card border border-edge rounded-2xl p-4 transition-all hover:border-acc-edge">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold flex-shrink-0">
                 {g.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-ink font-bold text-sm truncate">{g.name}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-ink font-bold text-sm truncate">{g.name}</h3>
+                  <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0', g.public ? 'bg-acc-soft text-acc-strong' : 'bg-warn-soft text-warn-strong')}>
+                    {g.public ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
+                    {g.public ? 'Public' : 'Private'}
+                  </span>
+                </div>
                 <p className="text-ink-muted text-xs truncate">{g.description || 'No description'}</p>
                 <div className="flex gap-2 mt-1">
                   <span className="text-acc-strong text-[10px] font-semibold flex items-center gap-0.5"><Users className="w-3 h-3" /> {g.members.length}</span>
@@ -395,9 +510,23 @@ export default function PrayerGroups() {
                   )}
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-ink-faint" />
+
+              {isInGroup(g) ? (
+                <button onClick={() => { setActiveGroupId(g.id); setView('detail'); }} className="px-3 py-2 bg-acc-soft text-acc-strong rounded-lg text-xs font-bold flex items-center gap-1 flex-shrink-0 hover:bg-acc-soft/70">
+                  Open <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              ) : isPending(g) ? (
+                <span className="px-3 py-2 bg-card-2 text-ink-muted rounded-lg text-xs font-bold flex items-center gap-1 flex-shrink-0">
+                  <Clock className="w-3.5 h-3.5" /> Requested
+                </span>
+              ) : (
+                <button onClick={() => handleRequestJoin(g)} className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 flex-shrink-0 hover:bg-emerald-500">
+                  {g.public ? <UserPlus className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                  {g.public ? 'Join' : 'Request'}
+                </button>
+              )}
             </div>
-          </button>
+          </div>
         ))
       )}
     </div>
