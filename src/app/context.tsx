@@ -16,6 +16,8 @@ import type {
   IntercessoryCategory,
   AuthUser,
   WorshipSong,
+  PrayerGroup,
+  GroupMessage,
 } from '@/app/types';
 import { DEFAULT_INTERCESSORY_CATEGORIES } from '@/app/data/bibleVerses';
 import { getDefaultCurrency, type Currency } from '@/app/data/pricingPlans';
@@ -53,6 +55,8 @@ interface AppContextValue {
   setShowPrivacy: Dispatch<SetStateAction<boolean>>;
   showSettings: boolean;
   setShowSettings: Dispatch<SetStateAction<boolean>>;
+  showPricing: boolean;
+  setShowPricing: Dispatch<SetStateAction<boolean>>;
   showDailyVerse: boolean;
   setShowDailyVerse: Dispatch<SetStateAction<boolean>>;
   showDailyWisdom: boolean;
@@ -63,6 +67,17 @@ interface AppContextValue {
   addSongFiles: (files: File[]) => Promise<void>;
   addSongUrl: (name: string, url: string) => Promise<void>;
   removeSong: (id: string) => Promise<void>;
+  groups: PrayerGroup[];
+  messages: GroupMessage[];
+  createGroup: (name: string, description: string, prayerTime?: string) => PrayerGroup;
+  joinGroup: (inviteCode: string) => boolean;
+  leaveGroup: (groupId: string) => void;
+  deleteGroup: (groupId: string) => void;
+  setGroupPrayerTime: (groupId: string, time: string) => void;
+  setGroupVerse: (groupId: string, verse: string) => void;
+  promoteMember: (groupId: string, memberName: string) => void;
+  removeMember: (groupId: string, memberName: string) => void;
+  sendMessage: (groupId: string, text: string, kind?: 'message' | 'alert') => void;
   signOut: () => Promise<void>;
   deleteAccount: () => void;
   exportData: () => void;
@@ -116,6 +131,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [showAuth, setShowAuth] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
   const [showDailyVerse, setShowDailyVerse] = useState(false);
   const [showDailyWisdom, setShowDailyWisdom] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -166,6 +182,114 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const removeSong = async (id: string) => {
     setSongs((prev) => prev.filter((s) => s.id !== id));
     await deleteSongBlob(id).catch(() => {});
+  };
+
+  // ── Prayer Groups (WhatsApp-style, stored locally) ────────────────
+  const [groups, setGroups] = useState<PrayerGroup[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const stored = localStorage.getItem('pfm_groups');
+    return stored ? JSON.parse(stored) : [];
+  });
+  const [messages, setMessages] = useState<GroupMessage[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const stored = localStorage.getItem('pfm_group_messages');
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('pfm_groups', JSON.stringify(groups));
+  }, [groups]);
+  useEffect(() => {
+    localStorage.setItem('pfm_group_messages', JSON.stringify(messages));
+  }, [messages]);
+
+  const myId = user?.id || 'guest';
+
+  const createGroup = (name: string, description: string, prayerTime?: string): PrayerGroup => {
+    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+    const g: PrayerGroup = {
+      id: `group-${Date.now()}`,
+      name: name.trim(),
+      description: description.trim(),
+      inviteCode: code,
+      admins: [myId],
+      members: [user?.name || 'Me'],
+      prayerTime,
+      public: true,
+      createdAt: new Date().toISOString(),
+    };
+    setGroups((prev) => [g, ...prev]);
+    return g;
+  };
+
+  const joinGroup = (inviteCode: string): boolean => {
+    const code = inviteCode.trim().toUpperCase();
+    const g = groups.find((x) => x.inviteCode.toUpperCase() === code);
+    if (!g) return false;
+    const memberName = user?.name || 'Member';
+    if (g.members.includes(memberName)) return true;
+    setGroups((prev) =>
+      prev.map((x) => (x.id === g.id ? { ...x, members: [...x.members, memberName] } : x))
+    );
+    return true;
+  };
+
+  const leaveGroup = (groupId: string) => {
+    const memberName = user?.name || 'Member';
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.id === groupId
+          ? { ...g, members: g.members.filter((m) => m !== memberName), admins: g.admins.filter((a) => a !== myId) }
+          : g
+      )
+    );
+  };
+
+  const deleteGroup = (groupId: string) => {
+    setGroups((prev) => prev.filter((g) => g.id !== groupId));
+    setMessages((prev) => prev.filter((m) => m.groupId !== groupId));
+  };
+
+  const setGroupPrayerTime = (groupId: string, time: string) => {
+    setGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, prayerTime: time } : g)));
+  };
+
+  const setGroupVerse = (groupId: string, verse: string) => {
+    setGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, pinnedVerse: verse } : g)));
+  };
+
+  const promoteMember = (groupId: string, memberName: string) => {
+    setGroups((prev) =>
+      prev.map((g) => {
+        if (g.id !== groupId) return g;
+        if (g.admins.length >= 3) return g;
+        // find a member id by name (best-effort) — for local demo just use name as id
+        return { ...g, admins: [...g.admins, memberName] };
+      })
+    );
+  };
+
+  const removeMember = (groupId: string, memberName: string) => {
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.id === groupId
+          ? { ...g, members: g.members.filter((m) => m !== memberName), admins: g.admins.filter((a) => a !== memberName) }
+          : g
+      )
+    );
+  };
+
+  const sendMessage = (groupId: string, text: string, kind: 'message' | 'alert' = 'message') => {
+    const m: GroupMessage = {
+      id: `msg-${Date.now()}`,
+      groupId,
+      senderName: user?.name || 'Me',
+      senderId: myId,
+      text: text.trim(),
+      kind,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, m]);
   };
 
   // Restore / verify session
@@ -301,6 +425,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setShowPrivacy,
         showSettings,
         setShowSettings,
+        showPricing,
+        setShowPricing,
         showDailyVerse,
         setShowDailyVerse,
         showDailyWisdom,
@@ -311,6 +437,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
         addSongFiles,
         addSongUrl,
         removeSong,
+        groups,
+        messages,
+        createGroup,
+        joinGroup,
+        leaveGroup,
+        deleteGroup,
+        setGroupPrayerTime,
+        setGroupVerse,
+        promoteMember,
+        removeMember,
+        sendMessage,
         signOut,
         deleteAccount,
         exportData,

@@ -18,6 +18,33 @@ export interface WorshipSong {
   addedAt: string;
 }
 
+export interface GroupMessage {
+  id: string;
+  groupId: string;
+  senderName: string;
+  senderId?: string;
+  text: string;
+  kind: 'message' | 'alert';
+  createdAt: string;
+}
+
+export interface PrayerGroup {
+  id: string;
+  name: string;
+  description: string;
+  inviteCode: string;
+  /** User ids of the up-to-3 admins. */
+  admins: string[];
+  /** Member display names (fallback if not a signed-in user). */
+  members: string[];
+  /** Pinned scripture the group is praying together. */
+  pinnedVerse?: string;
+  /** Group prayer time (HH:mm). */
+  prayerTime?: string;
+  public: boolean;
+  createdAt: string;
+}
+
 export type Urgency = 'low' | 'medium' | 'high';
 
 export interface PrayerPoint {

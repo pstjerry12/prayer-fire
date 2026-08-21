@@ -11,6 +11,7 @@ import BottomNav from './components/BottomNav';
 import PrayerAlarm from './components/PrayerAlarm';
 import SplashScreen from './components/SplashScreen';
 import NotificationPermission from './components/NotificationPermission';
+import PricingPage from './components/PricingPage';
 
 function Overlays() {
   const {
@@ -30,10 +31,13 @@ function Overlays() {
     setShowPrivacy,
     showSettings,
     setShowSettings,
+    showPricing,
+    setShowPricing,
     showDailyVerse,
     setShowDailyVerse,
     showDailyWisdom,
     setShowDailyWisdom,
+    upgrade,
   } = useApp();
 
   const handleDailyVerseClose = () => {
@@ -46,12 +50,13 @@ function Overlays() {
     localStorage.setItem('upp_daily_devotion_shown', new Date().toDateString());
   };
 
-  const anyModalOpen = showAuth || showPrivacy || showSettings || showDailyVerse || showDailyWisdom;
+  const anyModalOpen = showAuth || showPrivacy || showSettings || showPricing || showDailyVerse || showDailyWisdom;
 
   return (
     <>
       <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} onSuccess={(u) => { setUser(u); setShowAuth(false); }} />
       <PrivacyPolicy isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} />
+      <PricingPage isOpen={showPricing} onClose={() => setShowPricing(false)} onSelectPlan={upgrade} />
       <AccountSettings
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}

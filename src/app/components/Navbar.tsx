@@ -11,6 +11,7 @@ import { useApp } from '@/app/context';
 const NAV_LINKS = [
   { href: '/workshop', label: 'Write Prayer' },
   { href: '/startup', label: 'Start-Up Prayer' },
+  { href: '/groups', label: 'Prayer Groups' },
   { href: '/worship', label: 'Worship' },
   { href: '/schedule', label: 'Schedule' },
   { href: '/partner', label: 'Partner' },
