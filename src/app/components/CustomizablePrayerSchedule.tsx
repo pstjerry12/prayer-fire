@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Bell, Pencil, Check, Clock, Moon, Sun, Sunrise, Plus, Trash2, X, BellRing } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { playChime } from '@/lib/clientUtils';
+import { useApp } from '@/app/context';
 
 export interface PrayerAppointment {
   id: string;
@@ -44,6 +45,7 @@ function iconFor(id: string) {
 const RANK: Record<string, number> = { midnight: 0, noon: 1, morning: 2 };
 
 export default function CustomizablePrayerSchedule({ appointments, onUpdate }: Props) {
+  const { markPrayedToday } = useApp();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [done, setDone] = useState<Record<string, boolean>>(() => {
     if (typeof window === 'undefined') return {};
@@ -72,6 +74,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
       localStorage.setItem(key, today);
       setDone((d) => ({ ...d, [appt.id]: true }));
       playChime();
+      markPrayedToday();
     }
   };
 

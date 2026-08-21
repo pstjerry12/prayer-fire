@@ -41,6 +41,8 @@ export interface PrayerGroup {
   pinnedVerse?: string;
   /** Group prayer time (HH:mm). */
   prayerTime?: string;
+  /** "I prayed today" tracker: member name -> date string (Date.toDateString()). */
+  prayedToday?: Record<string, string>;
   public: boolean;
   createdAt: string;
 }

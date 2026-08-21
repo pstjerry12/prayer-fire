@@ -113,7 +113,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     yearly: 23.99,
     icon: '👑',
     highlighted: true,
-    cta: 'Start 14-Day Free Trial',
+    cta: 'Start 7-Day Free Trial',
     features: [
       'Everything in Prayer Seeker',
       'Join approved global prayer groups',

@@ -30,6 +30,7 @@ export async function GET(request: Request) {
   cookieStore.set("pfm_oauth_state", state, {
     httpOnly: true,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 60 * 10, // 10 minutes
   });

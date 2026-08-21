@@ -31,6 +31,37 @@ const DEFAULT_APPOINTMENTS: PrayerAppointment[] = [
   { id: 'morning', time: '04:00', label: 'Morning Watch', enabled: true },
 ];
 
+// 7-day free trial for the premium (Prayer Fire Partner) features.
+const TRIAL_KEY = 'upp_trial_start';
+const TRIAL_DAYS = 7;
+
+// The "fire streak" counts consecutive days with at least one prayer check-in.
+const PRAYED_DATES_KEY = 'upp_prayed_dates';
+
+function computeStreak(dates: string[]): number {
+  if (!dates.length) return 0;
+  const set = new Set(dates);
+  let streak = 0;
+  const d = new Date();
+  // If today isn't marked yet, the streak continues from yesterday.
+  if (!set.has(d.toDateString())) d.setDate(d.getDate() - 1);
+  while (set.has(d.toDateString())) {
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
+}
+
+function readPrayedDates(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(PRAYED_DATES_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 interface AppContextValue {
   prayers: PrayerPoint[];
   setPrayers: Dispatch<SetStateAction<PrayerPoint[]>>;
@@ -75,9 +106,11 @@ interface AppContextValue {
   deleteGroup: (groupId: string) => void;
   setGroupPrayerTime: (groupId: string, time: string) => void;
   setGroupVerse: (groupId: string, verse: string) => void;
+  togglePrayedToday: (groupId: string) => void;
   promoteMember: (groupId: string, memberName: string) => void;
   removeMember: (groupId: string, memberName: string) => void;
   sendMessage: (groupId: string, text: string, kind?: 'message' | 'alert') => void;
+  markPrayedToday: () => void;
   signOut: () => Promise<void>;
   deleteAccount: () => void;
   exportData: () => void;
@@ -258,6 +291,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, pinnedVerse: verse } : g)));
   };
 
+  // "I prayed today" — each member can check in once per day.
+  const togglePrayedToday = (groupId: string) => {
+    const memberKey = user?.name || 'Me';
+    const today = new Date().toDateString();
+    const group = groups.find((g) => g.id === groupId);
+    const currentlyPrayed = group?.prayedToday?.[memberKey] === today;
+    setGroups((prev) =>
+      prev.map((g) => {
+        if (g.id !== groupId) return g;
+        const prayedToday = { ...(g.prayedToday || {}) };
+        if (prayedToday[memberKey] === today) delete prayedToday[memberKey];
+        else prayedToday[memberKey] = today;
+        return { ...g, prayedToday };
+      })
+    );
+    // Marking "prayed" also feeds the global fire streak.
+    if (!currentlyPrayed) markPrayedToday();
+  };
+
   const promoteMember = (groupId: string, memberName: string) => {
     setGroups((prev) =>
       prev.map((g) => {
@@ -342,18 +394,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('preferred_currency', currency);
   }, [currency]);
 
-  // Update streak
+  // Migrate from the old streak model (app-open based) to the prayer-based model,
+  // then recompute the streak from actual prayer check-ins.
   useEffect(() => {
-    const lastPrayer = localStorage.getItem('upp_last_prayer_date');
-    const today = new Date().toDateString();
-    if (lastPrayer !== today) {
-      const newStreak = lastPrayer === new Date(Date.now() - 86400000).toDateString() ? streak + 1 : 1;
-      setStreak(newStreak);
-      localStorage.setItem('upp_streak_count', String(newStreak));
-      localStorage.setItem('upp_last_prayer_date', today);
+    const dates = readPrayedDates();
+    if (dates.length === 0) {
+      const oldLast = localStorage.getItem('upp_last_prayer_date');
+      const oldCount = parseInt(localStorage.getItem('upp_streak_count') || '0', 10);
+      if (oldLast && oldCount > 0) {
+        const migrated: string[] = [];
+        const d = new Date(oldLast);
+        for (let i = 0; i < oldCount; i++) {
+          migrated.push(d.toDateString());
+          d.setDate(d.getDate() - 1);
+        }
+        localStorage.setItem(PRAYED_DATES_KEY, JSON.stringify(migrated));
+      }
     }
+    setStreak(computeStreak(readPrayedDates()));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Keep the display value in sync for the Navbar / AccountSettings.
+  useEffect(() => {
+    localStorage.setItem('upp_streak_count', String(streak));
+  }, [streak]);
+
+  // Mark "I prayed today" — used by the daily schedule check-ins and prayer groups.
+  const markPrayedToday = () => {
+    if (typeof window === 'undefined') return;
+    const dates = readPrayedDates();
+    const today = new Date().toDateString();
+    if (!dates.includes(today)) dates.push(today);
+    localStorage.setItem(PRAYED_DATES_KEY, JSON.stringify(dates));
+    setStreak(computeStreak(dates));
+  };
 
   const signOut = async () => {
     await apiLogout();
@@ -386,16 +461,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     URL.revokeObjectURL(url);
   };
 
+  // Expire the free trial after 7 days if the user hasn't subscribed yet.
+  useEffect(() => {
+    const started = localStorage.getItem(TRIAL_KEY);
+    if (!started) return;
+    const elapsedDays = (Date.now() - new Date(started).getTime()) / 86400000;
+    if (elapsedDays >= TRIAL_DAYS) {
+      setIsPremium(false);
+      localStorage.removeItem(TRIAL_KEY);
+    }
+  }, []);
+
   const upgrade = () => {
     const confirmUpgrade = confirm(
-      `Payment Integration Demo\n\n` +
-      `In production, this will redirect you to Paystack/Stripe checkout, ` +
-      `verify payment securely, and activate your Prayer Fire Partner subscription.\n\n` +
-      `For this demo, click OK to activate your subscription.`
+      `Start your 7-Day Free Trial\n\n` +
+      `Enjoy the full Prayer Fire Partner experience FREE for 7 days. ` +
+      `No charge today — you'll choose a plan after your trial ends.\n\n` +
+      `Click OK to start your free trial.`
     );
     if (confirmUpgrade) {
       setIsPremium(true);
-      alert('🎉 Welcome to Prayer Fire Partner! Your premium features are now active.');
+      localStorage.setItem(TRIAL_KEY, new Date().toISOString());
+      alert('🎉 Your 7-day free trial has started! Enjoy full access.');
     }
   };
 
@@ -445,9 +532,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         deleteGroup,
         setGroupPrayerTime,
         setGroupVerse,
+        togglePrayedToday,
         promoteMember,
         removeMember,
         sendMessage,
+        markPrayedToday,
         signOut,
         deleteAccount,
         exportData,

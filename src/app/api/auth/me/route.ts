@@ -39,7 +39,11 @@ export async function GET(request: Request) {
     }
 
     // Self-heal: promote the owner on every /me check (catches accounts created earlier).
-    const role = await promoteAdminIfMatches(rows[0].id, rows[0].email);
+    // Never downgrade an existing admin if ADMIN_EMAIL is temporarily missing.
+    const role =
+      rows[0].role === "admin"
+        ? "admin"
+        : await promoteAdminIfMatches(rows[0].id, rows[0].email);
 
     return NextResponse.json({ user: { ...toAuthUser(rows[0]), role } });
   } catch (err) {

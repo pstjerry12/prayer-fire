@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import {
   Users, Plus, ChevronRight, ChevronLeft, Send, Siren, Clock, BookOpen,
-  LogOut, Trash2, ShieldCheck, UserPlus, Copy, Check, Pin,
+  LogOut, Trash2, ShieldCheck, UserPlus, Copy, Check, Pin, Flame,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useApp } from '@/app/context';
@@ -25,7 +25,7 @@ export default function PrayerGroups() {
   const {
     groups, messages, user, isPremium, setShowAuth, setShowPricing,
     createGroup, joinGroup, leaveGroup, deleteGroup,
-    setGroupPrayerTime, setGroupVerse, promoteMember, removeMember, sendMessage,
+    setGroupPrayerTime, setGroupVerse, togglePrayedToday, promoteMember, removeMember, sendMessage,
   } = useApp();
 
   const [view, setView] = useState<'list' | 'detail' | 'create' | 'join'>('list');
@@ -84,6 +84,19 @@ export default function PrayerGroups() {
   const isAdmin = activeGroup ? activeGroup.admins.includes(user?.id || user?.name || '') : false;
   const isMember = activeGroup ? activeGroup.members.includes(user?.name || 'Me') : false;
 
+  // "I prayed today" tracker
+  const todayStr = new Date().toDateString();
+  const memberKey = user?.name || 'Me';
+  const prayedTodayCount = activeGroup
+    ? Object.values(activeGroup.prayedToday || {}).filter((d) => d === todayStr).length
+    : 0;
+  const iPrayedToday = activeGroup
+    ? (activeGroup.prayedToday || {})[memberKey] === todayStr
+    : false;
+
+  const prayedCount = (g: PrayerGroup) =>
+    Object.values(g.prayedToday || {}).filter((d) => d === todayStr).length;
+
   const handleSend = (kind: 'message' | 'alert') => {
     if (!activeGroupId || !draft.trim()) return;
     sendMessage(activeGroupId, draft, kind);
@@ -114,7 +127,7 @@ export default function PrayerGroups() {
           onClick={() => setShowPricing(true)}
           className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500"
         >
-          Upgrade — $2.99/mo
+          Start 7-Day Free Trial
         </button>
       </div>
     );
@@ -228,6 +241,9 @@ export default function PrayerGroups() {
             <span className="bg-acc-soft text-acc-strong px-2 py-1 rounded-full flex items-center gap-1">
               <ShieldCheck className="w-3 h-3" /> {activeGroup.admins.length} admins
             </span>
+            <span className={cn('px-2 py-1 rounded-full flex items-center gap-1', prayedTodayCount > 0 ? 'bg-warn-soft text-warn-strong' : 'bg-card-2 text-ink-muted')}>
+              <Flame className="w-3 h-3" /> {prayedTodayCount} prayed today
+            </span>
           </div>
 
           {/* Invite code (admins) */}
@@ -238,6 +254,27 @@ export default function PrayerGroups() {
             </button>
           )}
         </div>
+
+        {/* I prayed today */}
+        {isMember && (
+          <button
+            onClick={() => togglePrayedToday(activeGroup.id)}
+            className={cn(
+              'w-full rounded-2xl border p-3 flex items-center justify-center gap-2 font-bold text-sm transition-all',
+              iPrayedToday
+                ? 'bg-acc-soft border-acc-edge text-acc-strong'
+                : 'bg-card border-edge text-ink-muted hover:border-warn-edge'
+            )}
+          >
+            <Flame className={cn('w-4 h-4', iPrayedToday && 'animate-flicker')} />
+            {iPrayedToday ? 'I prayed today ✓' : 'Mark: I prayed today'}
+            {prayedTodayCount > 0 && (
+              <span className={cn('text-[10px] px-1.5 py-0.5 rounded-full', iPrayedToday ? 'bg-acc text-white' : 'bg-card-2 text-ink-muted')}>
+                {prayedTodayCount}
+              </span>
+            )}
+          </button>
+        )}
 
         {/* Pinned verse + prayer time (admin controls) */}
         {isAdmin && (
@@ -353,6 +390,9 @@ export default function PrayerGroups() {
                 <div className="flex gap-2 mt-1">
                   <span className="text-acc-strong text-[10px] font-semibold flex items-center gap-0.5"><Users className="w-3 h-3" /> {g.members.length}</span>
                   <span className="text-warn-strong text-[10px] font-semibold flex items-center gap-0.5"><Clock className="w-3 h-3" /> {fmtTime(g.prayerTime)}</span>
+                  {prayedCount(g) > 0 && (
+                    <span className="text-warn-strong text-[10px] font-semibold flex items-center gap-0.5"><Flame className="w-3 h-3" /> {prayedCount(g)}</span>
+                  )}
                 </div>
               </div>
               <ChevronRight className="w-4 h-4 text-ink-faint" />

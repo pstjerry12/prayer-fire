@@ -92,14 +92,18 @@ export async function GET(request: Request) {
       account = created;
     }
 
-    // 4. Promote if this is the site owner.
-    const role = await promoteAdminIfMatches(account.id, email);
+    // 4. Promote if this is the site owner (never downgrade an existing admin).
+    const role =
+      account.role === "admin"
+        ? "admin"
+        : await promoteAdminIfMatches(account.id, email);
 
     // 5. Sign in.
     const token = await signToken({ sub: account.id });
     cookieStore.set(AUTH_COOKIE, token, {
       httpOnly: true,
       sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
       path: "/",
       maxAge: TOKEN_MAX_AGE,
     });

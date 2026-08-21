@@ -46,7 +46,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Incorrect password. Please try again." }, { status: 401 });
     }
 
-    const role = await promoteAdminIfMatches(account.id, account.email);
+    // Never downgrade an existing admin: the DB is the source of truth for
+    // role, and ADMIN_EMAIL is only used to *promote* (not demote).
+    const role =
+      account.role === "admin"
+        ? "admin"
+        : await promoteAdminIfMatches(account.id, account.email);
 
     const token = await signToken({ sub: account.id });
     const user = { ...toAuthUser(account), role };
@@ -55,6 +60,7 @@ export async function POST(request: Request) {
     cookieStore.set(AUTH_COOKIE, token, {
       httpOnly: true,
       sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
       path: "/",
       maxAge: TOKEN_MAX_AGE,
     });

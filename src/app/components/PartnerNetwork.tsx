@@ -70,7 +70,7 @@ export default function PartnerNetwork() {
             <Link href="/partner" className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500 flex items-center justify-center gap-2">
               <Crown className="w-4 h-4" /> Upgrade to Prayer Fire Partner
             </Link>
-            <p className="text-ink-muted text-[10px]">Starting at ₦1,000/month • 14-day free trial</p>
+            <p className="text-ink-muted text-[10px]">7-day free trial • then choose a plan</p>
           </div>
         </div>
       )}

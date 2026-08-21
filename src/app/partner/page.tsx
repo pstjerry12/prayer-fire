@@ -65,8 +65,19 @@ export default function PartnerPage() {
                     <h3 className="text-ink font-bold">{plan.name}</h3>
                     <p className="text-ink-muted text-xs mt-1 mb-3">{plan.tagline}</p>
                     <div className="mb-4">
-                      <span className="text-3xl font-bold text-ink">{price === 0 ? 'Free' : formatPrice(price, currency)}</span>
-                      {price !== 0 && <span className="text-ink-muted text-xs ml-1">/{billing === 'monthly' ? 'mo' : 'yr'}</span>}
+                      {price === 0 ? (
+                        <span className="text-3xl font-bold text-ink">Free</span>
+                      ) : (
+                        <>
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-3xl font-bold text-emerald-600">$0.00</span>
+                            <span className="text-ink-muted text-xs">/ 7 days free</span>
+                          </div>
+                          <div className="text-ink-faint text-sm line-through mt-0.5">
+                            {formatPrice(price, currency)}/{billing === 'monthly' ? 'mo' : 'yr'} after
+                          </div>
+                        </>
+                      )}
                     </div>
                     <ul className="space-y-2 mb-5 flex-1">
                       {plan.features.map((f) => (
@@ -83,7 +94,7 @@ export default function PartnerPage() {
               })}
             </div>
 
-            <p className="text-center text-ink-muted text-xs mt-5">💳 Secure checkout via Paystack &amp; Stripe · 14-day free trial · Cancel anytime</p>
+            <p className="text-center text-ink-muted text-xs mt-5">🎁 7-day free trial · No charge today · Pay after your trial</p>
           </>
         )}
       </main>
