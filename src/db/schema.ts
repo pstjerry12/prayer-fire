@@ -41,7 +41,16 @@ export const donations = pgTable("donations", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Announcements broadcast by an admin to everyone on the home page.
+export const announcements = pgTable("announcements", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type PartnerRequestRow = typeof partnerRequests.$inferSelect;
 export type DonationRow = typeof donations.$inferSelect;
+export type AnnouncementRow = typeof announcements.$inferSelect;

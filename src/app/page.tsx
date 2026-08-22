@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import {
-  Flame, Sparkles, BookOpen, ScrollText, Utensils, Users, Music, Globe,
-  Crown, Moon, Sun, Sunrise, ChevronRight,
+  Flame, Sparkles, Users, Music, Globe, BookOpen, Crown, Moon, Sun, Sunrise, ChevronRight,
 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import DonationCard from './components/DonationCard';
+import AnnouncementBanner from './components/AnnouncementBanner';
 import { useApp } from './context';
 
 function formatTime(time: string): string {
@@ -29,17 +29,8 @@ function watchIcon(id: string) {
 
 const RANK: Record<string, number> = { midnight: 0, noon: 1, morning: 2 };
 
-const CONTENT_CARDS = [
-  { href: '/groups', title: 'Prayer Groups', desc: 'WhatsApp-style prayer teams', icon: Users },
-  { href: '/worship', title: 'Praise & Worship', desc: 'Upload & play songs', icon: Music },
-  { href: '/scripture', title: 'Scripture & Wisdom', desc: 'Vault · Learn to Pray', icon: BookOpen },
-  { href: '/bible', title: 'KJV Bible Library', desc: 'Search · Favorite · Share', icon: ScrollText },
-  { href: '/fasting', title: 'Fasting Tracker', desc: '3 · 7 · 21 · 40 days', icon: Utensils },
-  { href: '/network', title: 'Partner Network', desc: 'Pray for others worldwide', icon: Globe },
-];
-
 export default function HomePage() {
-  const { appointments } = useApp();
+  const { appointments, groups } = useApp();
   const sorted = [...appointments].sort((a, b) => (RANK[a.id] ?? 99) - (RANK[b.id] ?? 99)).slice(0, 3);
 
   return (
@@ -47,7 +38,8 @@ export default function HomePage() {
       <Navbar />
 
       <main className="bg-page min-h-screen pb-28 md:pb-16">
-        <div className="max-w-2xl md:max-w-6xl mx-auto px-4 pt-6 md:pt-10">
+        <AnnouncementBanner />
+        <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-6 md:pt-10">
           {/* ── Hero ─────────────────────────────── */}
           <section className="text-center">
             <span className="inline-flex items-center gap-1.5 bg-warn-soft text-warn-strong text-xs font-bold px-3 py-1 rounded-full border border-warn-edge">
@@ -65,7 +57,7 @@ export default function HomePage() {
           </section>
 
           {/* ── Primary actions ──────────────────── */}
-          <section className="grid grid-cols-2 gap-3 md:gap-4 mt-6 md:mt-8 md:max-w-3xl md:mx-auto">
+          <section className="grid grid-cols-2 gap-3 md:gap-4 mt-6 md:mt-8 md:max-w-2xl md:mx-auto">
             <Link
               href="/workshop"
               className="bg-emerald-600 text-white rounded-2xl p-4 md:p-7 text-center shadow-sm hover:bg-emerald-500 hover:-translate-y-0.5 transition-all"
@@ -89,7 +81,7 @@ export default function HomePage() {
             </Link>
           </section>
 
-          {/* ── Daily schedule ───────────────────── */}
+          {/* ── Daily Schedule (horizontal) ───────── */}
           <Link
             href="/schedule"
             className="block bg-card rounded-2xl mt-4 md:mt-6 p-4 md:p-6 border border-edge shadow-sm hover:border-acc-edge transition-all"
@@ -109,44 +101,78 @@ export default function HomePage() {
             </div>
           </Link>
 
-          {/* ── Content grid ─────────────────────── */}
-          <section className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mt-4 md:mt-6">
-            {CONTENT_CARDS.map((c) => {
-              const Icon = c.icon;
-              return (
-                <Link
-                  key={c.href}
-                  href={c.href}
-                  className="bg-card rounded-2xl p-4 md:p-6 border border-edge shadow-sm hover:border-acc-edge hover:-translate-y-0.5 transition-all"
-                >
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-acc-soft text-acc flex items-center justify-center mb-2.5">
-                    <Icon className="w-5 h-5 md:w-6 md:h-6" />
-                  </div>
-                  <h3 className="text-ink font-bold text-sm md:text-base leading-tight">{c.title}</h3>
-                  <p className="text-ink-muted text-[11px] md:text-sm mt-0.5">{c.desc}</p>
-                </Link>
-              );
-            })}
-          </section>
-
-          {/* ── Donation + Premium (side-by-side on desktop) ── */}
-          <div className="grid md:grid-cols-2 gap-4 mt-4 md:mt-6 items-start">
-            <DonationCard />
-
-            <Link
-              href="/partner"
-              className="flex items-center gap-3 bg-gradient-to-r from-[var(--warn-soft)] to-[var(--card)] border border-warn-edge rounded-2xl p-4 md:p-6 shadow-sm hover:border-warn transition-all"
-            >
-              <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg bg-warn-soft-2 text-warn flex items-center justify-center flex-shrink-0">
-                <Crown className="w-5 h-5 md:w-7 md:h-7" />
+          {/* ── Prayer Groups (horizontal) ────────── */}
+          <Link
+            href="/groups"
+            className="block bg-card rounded-2xl mt-4 p-4 md:p-5 border border-edge shadow-sm hover:border-acc-edge transition-all"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-acc-soft text-acc flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-ink font-bold text-sm md:text-base">Become a Prayer Fire Partner</p>
-                <p className="text-ink-muted text-[11px] md:text-sm">Unlock the full intercessory community</p>
+                <h3 className="text-ink font-bold text-sm md:text-base">Prayer Groups</h3>
+                <p className="text-ink-muted text-[11px] md:text-sm mt-0.5">
+                  Pray together in teams{groups.length > 0 ? ` · ${groups.length} teams` : ''}
+                </p>
               </div>
-              <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-warn" />
-            </Link>
+              <ChevronRight className="w-4 h-4 text-ink-ghost shrink-0" />
+            </div>
+          </Link>
+
+          {/* ── Prayer Network (horizontal) ───────── */}
+          <Link
+            href="/network"
+            className="block bg-card rounded-2xl mt-4 p-4 md:p-5 border border-edge shadow-sm hover:border-acc-edge transition-all"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-acc-soft text-acc flex items-center justify-center shrink-0">
+                <Globe className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-ink font-bold text-sm md:text-base">Prayer Network</h3>
+                <p className="text-ink-muted text-[11px] md:text-sm mt-0.5">Stand in the gap for others worldwide</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-ink-ghost shrink-0" />
+            </div>
+          </Link>
+
+          {/* ── KJV Bible (horizontal) ────────────── */}
+          <Link
+            href="/bible"
+            className="block bg-card rounded-2xl mt-4 p-4 md:p-5 border border-edge shadow-sm hover:border-acc-edge transition-all"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-acc-soft text-acc flex items-center justify-center shrink-0">
+                <BookOpen className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-ink font-bold text-sm md:text-base">KJV Bible</h3>
+                <p className="text-ink-muted text-[11px] md:text-sm mt-0.5">Read the full Bible by book &amp; chapter</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-ink-ghost shrink-0" />
+            </div>
+          </Link>
+
+          {/* ── Donation ────────────────────────── */}
+          <div className="mt-4 md:mt-6">
+            <DonationCard />
           </div>
+
+          {/* ── Premium banner ───────────────────── */}
+          <Link
+            href="/partner"
+            className="flex items-center gap-3 mt-4 bg-gradient-to-r from-[var(--warn-soft)] to-[var(--card)] border border-warn-edge rounded-2xl p-4 md:p-6 shadow-sm hover:border-warn transition-all"
+          >
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg bg-warn-soft-2 text-warn flex items-center justify-center flex-shrink-0">
+              <Crown className="w-5 h-5 md:w-7 md:h-7" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-ink font-bold text-sm md:text-base">Become a Prayer Fire Partner</p>
+              <p className="text-ink-muted text-[11px] md:text-sm">Unlock the full intercessory community</p>
+            </div>
+            <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-warn" />
+          </Link>
         </div>
       </main>
 

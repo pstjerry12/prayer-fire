@@ -4,11 +4,11 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
   LayoutDashboard, Users, Globe, HandHeart, ChevronLeft, ShieldCheck,
-  Trash2, Check, X, RefreshCw, Loader2, Search,
+  Trash2, Check, X, RefreshCw, Loader2, Search, Megaphone, Send, Crown, UserMinus,
 } from 'lucide-react';
 import { cn } from '@/app/utils/cn';
 
-type Tab = 'overview' | 'users' | 'requests' | 'donations';
+type Tab = 'overview' | 'users' | 'requests' | 'donations' | 'announcements';
 
 interface Stats {
   users: number;
@@ -50,6 +50,13 @@ interface DonationRow {
   createdAt: string | null;
 }
 
+interface AnnouncementRow {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: string | null;
+}
+
 export default function AdminPage() {
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -60,8 +67,13 @@ export default function AdminPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [requests, setRequests] = useState<RequestRow[]>([]);
   const [donations, setDonations] = useState<DonationRow[]>([]);
+  const [announcements, setAnnouncements] = useState<AnnouncementRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [userSearch, setUserSearch] = useState('');
+  const [annTitle, setAnnTitle] = useState('');
+  const [annBody, setAnnBody] = useState('');
+  const [annSending, setAnnSending] = useState(false);
+  const [annMsg, setAnnMsg] = useState('');
 
   const fetchStats = useCallback(async () => {
     const res = await fetch('/api/admin/stats');
@@ -89,6 +101,13 @@ export default function AdminPage() {
     setLoading(false);
   }, []);
 
+  const fetchAnnouncements = useCallback(async () => {
+    setLoading(true);
+    const res = await fetch('/api/admin/announcements');
+    if (res.ok) setAnnouncements((await res.json()).announcements);
+    setLoading(false);
+  }, []);
+
   // Check admin access on mount.
   useEffect(() => {
     (async () => {
@@ -109,7 +128,8 @@ export default function AdminPage() {
     if (tab === 'users') fetchUsers();
     if (tab === 'requests') fetchRequests();
     if (tab === 'donations') fetchDonations();
-  }, [tab, isAdmin, fetchStats, fetchUsers, fetchRequests, fetchDonations]);
+    if (tab === 'announcements') fetchAnnouncements();
+  }, [tab, isAdmin, fetchStats, fetchUsers, fetchRequests, fetchDonations, fetchAnnouncements]);
 
   const approveRequest = async (id: string, approved: boolean) => {
     await fetch('/api/admin/partner-requests', {
@@ -132,6 +152,46 @@ export default function AdminPage() {
     await fetch(`/api/admin/users?id=${id}`, { method: 'DELETE' });
     fetchUsers();
     fetchStats();
+  };
+
+  const setUserRole = async (id: string, role: 'admin' | 'user') => {
+    const action = role === 'admin' ? 'promote this user to admin?' : 'remove this user\'s admin role?';
+    if (!confirm(`Are you sure you want to ${action}`)) return;
+    await fetch('/api/admin/users', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, role }),
+    });
+    fetchUsers();
+  };
+
+  const sendAnnouncement = async () => {
+    if (!annTitle.trim() || !annBody.trim()) {
+      setAnnMsg('Please enter both a title and a message.');
+      return;
+    }
+    setAnnSending(true);
+    setAnnMsg('');
+    const res = await fetch('/api/admin/announcements', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: annTitle, body: annBody }),
+    });
+    setAnnSending(false);
+    if (res.ok) {
+      setAnnTitle('');
+      setAnnBody('');
+      setAnnMsg('✅ Announcement broadcast to everyone!');
+      fetchAnnouncements();
+    } else {
+      setAnnMsg('Failed to send announcement.');
+    }
+  };
+
+  const deleteAnnouncement = async (id: string) => {
+    if (!confirm('Delete this announcement?')) return;
+    await fetch(`/api/admin/announcements?id=${id}`, { method: 'DELETE' });
+    fetchAnnouncements();
   };
 
   const fmtMoney = (smallest: number, currency: string) => {
@@ -170,6 +230,7 @@ export default function AdminPage() {
     { id: 'users', label: 'Users', icon: Users },
     { id: 'requests', label: 'Prayer Requests', icon: Globe },
     { id: 'donations', label: 'Donations', icon: HandHeart },
+    { id: 'announcements', label: 'Broadcast', icon: Megaphone },
   ];
 
   const filteredUsers = users.filter((u) => {
@@ -274,6 +335,15 @@ export default function AdminPage() {
                   <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0', u.role === 'admin' ? 'bg-amber-100 text-amber-700 dark:bg-warn-soft dark:text-warn-strong' : 'bg-card-2 text-ink-muted')}>
                     {u.role === 'admin' ? 'ADMIN' : 'USER'}
                   </span>
+                  {u.role === 'admin' ? (
+                    <button onClick={() => setUserRole(u.id, 'user')} className="p-2 text-ink-faint hover:text-warn" title="Remove admin role">
+                      <UserMinus className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button onClick={() => setUserRole(u.id, 'admin')} className="p-2 text-ink-faint hover:text-acc" title="Promote to admin">
+                      <Crown className="w-4 h-4" />
+                    </button>
+                  )}
                   <button onClick={() => deleteUser(u.id)} className="p-2 text-ink-faint hover:text-danger" title="Delete user">
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -344,6 +414,71 @@ export default function AdminPage() {
               {donations.length === 0 && (
                 <p className="text-center text-ink-muted text-sm py-8">No donations recorded yet.</p>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Announcements / Broadcast */}
+        {tab === 'announcements' && (
+          <div className="space-y-4">
+            {/* Compose */}
+            <div className="bg-card border border-edge rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="grid h-9 w-9 place-items-center rounded-lg bg-warn-soft text-warn">
+                  <Megaphone className="w-4 h-4" />
+                </span>
+                <div>
+                  <h2 className="font-bold text-ink">Broadcast Announcement</h2>
+                  <p className="text-xs text-ink-muted">This shows on every user's home page</p>
+                </div>
+              </div>
+              <input
+                type="text"
+                placeholder="Title (e.g. Prayer conference this Friday)"
+                value={annTitle}
+                onChange={(e) => setAnnTitle(e.target.value)}
+                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 mb-2"
+              />
+              <textarea
+                placeholder="Message to the community…"
+                value={annBody}
+                onChange={(e) => setAnnBody(e.target.value)}
+                rows={3}
+                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 resize-none mb-3"
+              />
+              {annMsg && <p className="text-xs font-semibold text-acc-strong mb-2">{annMsg}</p>}
+              <button
+                onClick={sendAnnouncement}
+                disabled={annSending}
+                className="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
+              >
+                {annSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {annSending ? 'Sending…' : 'Broadcast to Everyone'}
+              </button>
+            </div>
+
+            {/* Past announcements */}
+            <div className="bg-card border border-edge rounded-2xl overflow-hidden">
+              <p className="p-4 border-b border-edge text-xs font-bold uppercase tracking-wider text-ink-muted">Past announcements</p>
+              <div className="divide-y divide-edge">
+                {announcements.map((a) => (
+                  <div key={a.id} className="flex items-start gap-3 p-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-ink font-semibold text-sm">{a.title}</p>
+                      <p className="text-ink-soft text-xs mt-0.5">{a.body}</p>
+                      <p className="text-ink-faint text-[10px] mt-1">
+                        {a.createdAt ? new Date(a.createdAt).toLocaleString() : ''}
+                      </p>
+                    </div>
+                    <button onClick={() => deleteAnnouncement(a.id)} className="p-2 text-ink-faint hover:text-danger shrink-0" title="Delete">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                {announcements.length === 0 && (
+                  <p className="text-center text-ink-muted text-sm py-8">No announcements yet.</p>
+                )}
+              </div>
             </div>
           </div>
         )}

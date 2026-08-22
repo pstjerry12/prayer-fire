@@ -41,7 +41,7 @@ export default function BiblePage() {
             onClick={() => setMode('verses')}
             className={cn('py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition-all', mode === 'verses' ? 'bg-card text-acc-strong shadow-sm' : 'text-ink-muted')}
           >
-            <ScrollText className="w-4 h-4" /> Verse Library
+            <ScrollText className="w-4 h-4" /> Prayer Verses
           </button>
         </div>
 

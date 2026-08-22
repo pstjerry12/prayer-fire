@@ -55,8 +55,8 @@ export default function BibleLibrary() {
       <div className="px-5 py-4 border-b border-edge flex items-center gap-3">
         <div className="p-2 rounded-lg bg-acc-soft text-acc"><ScrollText className="w-5 h-5" /></div>
         <div>
-          <h2 className="font-bold text-ink">KJV Bible Library</h2>
-          <p className="text-xs text-ink-muted">Search, favorite, and share verses</p>
+          <h2 className="font-bold text-ink">Prayer Verses</h2>
+          <p className="text-xs text-ink-muted">Themed verses for your prayer life</p>
         </div>
       </div>
       <div className="p-4">

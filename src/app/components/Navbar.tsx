@@ -4,41 +4,49 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Menu, X, Flame, Crown, LogIn, ChevronRight, Moon, Sun, ShieldCheck,
-  MoreVertical, LogOut, User as UserIcon, Settings,
+  Menu, X, Flame, Crown, LogIn, ChevronRight, ChevronDown, Moon, Sun, ShieldCheck,
+  MoreVertical, LogOut, User as UserIcon, Settings, BookOpen, Music,
 } from 'lucide-react';
 import { useApp } from '@/app/context';
 import { cn } from '@/app/utils/cn';
 
-const NAV_LINKS = [
-  { href: '/workshop', label: 'Write Prayer' },
-  { href: '/startup', label: 'Start-Up Prayer' },
-  { href: '/groups', label: 'Prayer Groups' },
-  { href: '/worship', label: 'Worship' },
-  { href: '/schedule', label: 'Schedule' },
-  { href: '/partner', label: 'Partner' },
-  { href: '/scripture', label: 'Scripture' },
-  { href: '/bible', label: 'Bible' },
-  { href: '/fasting', label: 'Fasting' },
-  { href: '/network', label: 'Network' },
+// The menu holds the sections that are NOT on the home page, grouped into
+// categories so the navigation stays tidy. Each category opens a dropdown.
+const MENU_CATEGORIES = [
+  {
+    id: 'discipleship',
+    label: 'Discipleship',
+    icon: BookOpen,
+    items: [
+      { href: '/scripture', label: 'Scripture & Wisdom' },
+      { href: '/fasting', label: 'Fasting Tracker' },
+    ],
+  },
+  {
+    id: 'worship',
+    label: 'Worship',
+    icon: Music,
+    items: [{ href: '/worship', label: 'Praise & Worship' }],
+  },
 ];
 
 export default function Navbar() {
   const { streak, user, setShowAuth, setShowSettings, signOut, theme, toggleTheme } = useApp();
   const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false); // mobile nav links
+  const [menuOpen, setMenuOpen] = useState(false); // mobile nav menu
   const [profileOpen, setProfileOpen] = useState(false); // 3-dots account menu
+  const [openCat, setOpenCat] = useState<string | null>(null); // desktop dropdown
   const profileRef = useRef<HTMLDivElement | null>(null);
+  const navRef = useRef<HTMLDivElement | null>(null);
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
 
-  // Close the profile dropdown when clicking outside.
+  // Close dropdowns when clicking outside.
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
-        setProfileOpen(false);
-      }
+      if (navRef.current && !navRef.current.contains(e.target as Node)) setOpenCat(null);
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false);
     };
     document.addEventListener('mousedown', onDocClick);
     return () => document.removeEventListener('mousedown', onDocClick);
@@ -81,7 +89,7 @@ export default function Navbar() {
             {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-ink-muted" />}
           </button>
 
-          {/* 3-dots profile button (always visible) */}
+          {/* 3-dots profile button */}
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setProfileOpen(!profileOpen)}
@@ -93,7 +101,6 @@ export default function Navbar() {
 
             {profileOpen && (
               <div className="absolute right-0 mt-2 w-64 bg-card border border-edge rounded-2xl shadow-xl overflow-hidden">
-                {/* Header */}
                 {user ? (
                   <div className="p-3 border-b border-edge">
                     <p className="text-ink font-bold text-sm truncate">{user.name || 'Prayer Partner'}</p>
@@ -108,7 +115,6 @@ export default function Navbar() {
                   </div>
                 )}
 
-                {/* Menu items */}
                 <div className="p-1.5">
                   {user ? (
                     <>
@@ -161,30 +167,48 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Desktop nav links (second row) */}
-      <div className="hidden md:block border-t border-edge/60 bg-page/60">
-        <div className="max-w-6xl mx-auto px-4 flex items-center gap-1 overflow-x-auto py-2">
-          {NAV_LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className={cn(
-                'whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors',
-                isActive(l.href)
-                  ? 'bg-acc-soft text-acc-strong'
-                  : 'text-ink-muted hover:text-acc-strong hover:bg-card-2'
+      {/* Desktop nav: category dropdowns */}
+      <div className="hidden md:block border-t border-edge/60 bg-page/60" ref={navRef}>
+        <div className="max-w-6xl mx-auto px-4 flex items-center gap-1 py-2">
+          {MENU_CATEGORIES.map((cat) => (
+            <div key={cat.id} className="relative">
+              <button
+                onClick={() => setOpenCat(openCat === cat.id ? null : cat.id)}
+                onMouseEnter={() => setOpenCat(cat.id)}
+                className={cn(
+                  'flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors',
+                  openCat === cat.id ? 'bg-acc-soft text-acc-strong' : 'text-ink-muted hover:text-acc-strong hover:bg-card-2'
+                )}
+              >
+                <cat.icon className="w-4 h-4" /> {cat.label}
+                <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', openCat === cat.id && 'rotate-180')} />
+              </button>
+
+              {openCat === cat.id && (
+                <div className="absolute left-0 top-full mt-1 w-56 bg-card border border-edge rounded-xl shadow-xl p-1.5 z-50">
+                  {cat.items.map((it) => (
+                    <Link
+                      key={it.href}
+                      href={it.href}
+                      onClick={() => setOpenCat(null)}
+                      className={cn(
+                        'block px-3 py-2 rounded-lg text-sm transition-colors',
+                        isActive(it.href) ? 'bg-acc-soft text-acc-strong font-semibold' : 'text-ink-soft hover:bg-card-2'
+                      )}
+                    >
+                      {it.label}
+                    </Link>
+                  ))}
+                </div>
               )}
-            >
-              {l.label}
-            </Link>
+            </div>
           ))}
+
           <Link
             href="/partner"
             className={cn(
               'ml-auto whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] font-bold transition-colors flex items-center gap-1',
-              isActive('/partner')
-                ? 'bg-warn-soft text-warn-strong'
-                : 'text-warn hover:bg-warn-soft'
+              isActive('/partner') ? 'bg-warn-soft text-warn-strong' : 'text-warn hover:bg-warn-soft'
             )}
           >
             <Crown className="w-3.5 h-3.5" /> Become a Partner
@@ -192,9 +216,9 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile nav links */}
+      {/* Mobile nav menu: categories */}
       {menuOpen && (
-        <div className="absolute top-full left-0 right-0 bg-card border-b border-edge p-4 space-y-2 shadow-lg">
+        <div className="absolute top-full left-0 right-0 bg-card border-b border-edge p-4 space-y-3 shadow-lg max-h-[80vh] overflow-y-auto">
           <Link
             href="/partner"
             onClick={() => setMenuOpen(false)}
@@ -203,16 +227,26 @@ export default function Navbar() {
             <Crown className="w-5 h-5" />
             <span className="font-bold text-sm">Prayer Fire Partner</span>
           </Link>
-          {NAV_LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center justify-between p-3 bg-card rounded-xl text-ink-soft hover:bg-card-2 border border-edge"
-            >
-              {l.label}
-              <ChevronRight className="w-4 h-4 text-ink-faint" />
-            </Link>
+
+          {MENU_CATEGORIES.map((cat) => (
+            <div key={cat.id}>
+              <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-1.5 px-1">
+                <cat.icon className="w-3.5 h-3.5" /> {cat.label}
+              </p>
+              <div className="space-y-1">
+                {cat.items.map((it) => (
+                  <Link
+                    key={it.href}
+                    href={it.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center justify-between p-3 bg-card rounded-xl text-ink-soft hover:bg-card-2 border border-edge"
+                  >
+                    {it.label}
+                    <ChevronRight className="w-4 h-4 text-ink-faint" />
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}

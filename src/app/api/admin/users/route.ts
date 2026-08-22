@@ -51,3 +51,28 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Failed to delete user" }, { status: 500 });
   }
 }
+
+// Admin: promote or demote a user's role (admin <-> user).
+export async function PATCH(request: Request) {
+  try {
+    const admin = await getAdminUser(request);
+    if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const body = (await request.json().catch(() => ({}))) as {
+      id?: string;
+      role?: string;
+    };
+    if (!body.id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+
+    if (body.id === admin.id) {
+      return NextResponse.json({ error: "You cannot change your own role" }, { status: 400 });
+    }
+
+    const role = body.role === "admin" ? "admin" : "user";
+    await db.update(users).set({ role }).where(eq(users.id, body.id));
+    return NextResponse.json({ ok: true, role });
+  } catch (err) {
+    console.error("admin update user role error", err);
+    return NextResponse.json({ error: "Failed to update user role" }, { status: 500 });
+  }
+}
