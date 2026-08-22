@@ -241,4 +241,100 @@ export const WISDOM_CHAPTERS: WisdomChapter[] = [
     ],
     highlight: 'The answer is already on the way. Hold on a little longer.',
   },
+  {
+    id: 11,
+    title: 'Nurturing Your Relationship with God',
+    subtitle: "Daniel's Prayer Power — devotion, not just discipline",
+    icon: '🤝',
+    color: 'rose',
+    verses: [
+      'James 4:8 — Draw nigh to God, and he will draw nigh to you. Cleanse your hands, ye sinners; and purify your hearts, ye double minded.',
+    ],
+    paragraphs: [
+      "Daniel's secret wasn't simply discipline; it was devotion. Before the decree was ever signed, Daniel had established a profound rhythm of intimacy with his Creator. He didn't start praying because he was in trouble; he survived trouble because he was already praying. True prayer power stems from a nurtured relationship, not an emergency hotline.",
+      "When we approach prayer as a relationship rather than a ritual, the burden of 'having to pray' transforms into the joy of 'getting to pray.' Like any relationship, consistency builds trust and deepens connection.",
+      'Make your prayer time a sacred appointment. Let the quiet moments you spend with God be the anchor for the rest of your day, providing the strength to stand firm when the lions roar.',
+    ],
+    highlight: 'Prayer is a relationship, not an emergency hotline.',
+  },
+  {
+    id: 12,
+    title: 'Short vs Long Prayers',
+    subtitle: 'Consistency over duration',
+    icon: '⏱️',
+    color: 'cyan',
+    verses: [
+      "Matthew 14:30 — But when he saw the wind boisterous, he was afraid; and beginning to sink, he cried, saying, Lord, save me.",
+    ],
+    paragraphs: [
+      "God measures prayers by their weight, not their length. A single, sincere 'Lord, help me' carries more spiritual authority than an hour of eloquent but empty words. In the Scriptures, some of the most powerful prayers were astonishingly brief — like Peter's cry on the water.",
+      'Long prayers have their place, especially when our hearts are heavy and we need time to unpack our burdens. Jesus Himself spent entire nights in prayer. But the length of a prayer should be dictated by the leading of the Spirit and the needs of the moment.',
+      'Do not feel guilty if your daily prayers are short. Consistency matters more than duration. Three focused, intentional moments with God each day will transform your spiritual life more effectively than one long, exhausting session a week.',
+    ],
+    highlight: 'God measures prayers by their weight, not their length.',
+  },
+  {
+    id: 13,
+    title: 'Written vs Spoken Prayers',
+    subtitle: 'Both are necessary',
+    icon: '✍️',
+    color: 'amber',
+    verses: [
+      'Habakkuk 2:2 — And the LORD answered me, and said, Write the vision, and make it plain upon tables, that he may run that readeth it.',
+    ],
+    paragraphs: [
+      'There is incredible power in writing down your prayers. The Psalms are essentially a collection of written prayers that have guided the church for millennia. Writing forces us to slow down, to be intentional with our thoughts, and to articulate exactly what is in our hearts.',
+      'Spoken prayers allow for spontaneity and the immediate expression of emotion. They let us cry out, praise, and intercede in real-time. Both methods are valid, and both are necessary for a well-rounded prayer life.',
+      "Consider using a prayer journal alongside your spoken prayers. Write down the major burdens of your heart, and record God's answers. Over time, your journal will become a tangible testimony of God's faithfulness.",
+    ],
+    highlight: "Write down your burdens; record God's answers.",
+  },
+  {
+    id: 14,
+    title: 'Faith vs Feeling',
+    subtitle: 'Trust His Word over your senses',
+    icon: '⚓',
+    color: 'blue',
+    verses: [
+      'Hebrews 11:6 — But without faith it is impossible to please him: for he that cometh to God must believe that he is, and that he is a rewarder of them that diligently seek him.',
+    ],
+    paragraphs: [
+      "True prayer operates on the currency of faith, not the fluctuating economy of feelings. There will be days when the heavens seem like brass and your prayers feel like they hit the ceiling. On those days, pray anyway. Daniel prayed even when it was illegal; we must pray even when it feels dry.",
+      'Faith is the conviction that God hears us because He promised He would, regardless of our emotional state. When we pray without feeling it, we are demonstrating a deeper level of trust — we are trusting His Word over our senses.',
+      'Do not let emotional exhaustion steal your prayer time. Stand on the promises of God. Let your faith dictate your actions, and often, the feelings will eventually follow.',
+    ],
+    highlight: 'Pray anyway — even when heaven seems silent.',
+  },
+  {
+    id: 15,
+    title: 'Loud vs Quiet Prayers',
+    subtitle: 'A dynamic range of worship',
+    icon: '🌊',
+    color: 'violet',
+    verses: [
+      'Psalm 46:10 — Be still, and know that I am God: I will be exalted among the heathen, I will be exalted in the earth.',
+    ],
+    paragraphs: [
+      'God is not deaf, nor is He intimidated by volume. The Bible speaks of crying out to God with a loud voice, praising Him with shouts of joy. There are times when spiritual warfare or desperate intercession demands a loud, vocal expression of faith.',
+      "Conversely, there is immense power in stillness. 'Be still, and know that I am God.' Quiet, contemplative prayer allows us to listen. It is in the whisper that God often speaks the clearest.",
+      'Your prayer life should have a dynamic range. Learn to shout your praise when victory comes, and learn to sit in absolute silence when your soul needs rest. Both are beautiful to the Father.',
+    ],
+    highlight: 'Shout your praise; sit in stillness. Both are beautiful to the Father.',
+  },
+  {
+    id: 16,
+    title: 'The Bliss of Organized Prayer',
+    subtitle: 'Intentionality that protects devotion',
+    icon: '🗂️',
+    color: 'emerald',
+    verses: [
+      '1 Corinthians 14:40 — Let all things be done decently and in order.',
+    ],
+    paragraphs: [
+      "Spontaneity is wonderful, but organization sustains. Daniel's prayer life was organized: three times a day, facing Jerusalem. This structure didn't limit his devotion; it protected it. When we organize our prayer life, we ensure that the important is not crowded out by the urgent.",
+      'Using categories, prayer lists, or guided steps (like Confession, Praise, Requests, Thanksgiving) gives us a track to run on. It prevents our minds from wandering and ensures we are covering the necessary ground in our spiritual walk.',
+      'Embrace the bliss of an organized prayer life. Let structure be the trellis upon which the vine of your relationship with God can grow and flourish. It is not legalism; it is intentionality.',
+    ],
+    highlight: 'Structure is not legalism; it is intentionality.',
+  },
 ];

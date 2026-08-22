@@ -1,16 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { Bell, Pencil, Check, Clock, Moon, Sun, Sunrise, Plus, Trash2, X, BellRing } from 'lucide-react';
+import { Bell, Pencil, Check, Clock, Moon, Sun, Sunrise, Plus, Trash2, X, BellRing, Volume2, Music } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { playChime } from '@/lib/clientUtils';
 import { useApp } from '@/app/context';
+import { ALARM_TONES, previewAlarmTone, playAlarmTone, stopAlarm, type AlarmToneId } from '@/lib/alarmSound';
 
 export interface PrayerAppointment {
   id: string;
   time: string;
   label: string;
   enabled: boolean;
+  /** Chosen alarm tune id (see alarmSound.ts). */
+  alarmTone?: string;
 }
 
 interface Props {
@@ -47,6 +50,7 @@ const RANK: Record<string, number> = { midnight: 0, noon: 1, morning: 2 };
 export default function CustomizablePrayerSchedule({ appointments, onUpdate }: Props) {
   const { markPrayedToday } = useApp();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [alarmFor, setAlarmFor] = useState<string | null>(null);
   const [done, setDone] = useState<Record<string, boolean>>(() => {
     if (typeof window === 'undefined') return {};
     const today = new Date().toDateString();
@@ -86,6 +90,9 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
     onUpdate(appointments.filter((a) => a.id !== id));
   };
 
+  // The appointment whose alarm settings sheet is currently open.
+  const alarmAppt = appointments.find((a) => a.id === alarmFor) || null;
+
   const add = () => {
     const now = new Date();
     const pad = (n: number) => n.toString().padStart(2, '0');
@@ -95,6 +102,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
   const notificationGranted = typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted';
 
   return (
+    <>
     <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
       <div className="px-5 py-4 border-b border-edge flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -191,9 +199,9 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                       </button>
                     )}
                     <button
-                      onClick={() => toggle(appt.id)}
+                      onClick={() => setAlarmFor(appt.id)}
                       className={cn('p-1 transition-colors', appt.enabled ? 'text-acc' : 'text-ink-ghost')}
-                      title={appt.enabled ? 'Alarm on' : 'Alarm off'}
+                      title="Alarm settings"
                     >
                       <Bell className="w-3.5 h-3.5" />
                     </button>
@@ -208,5 +216,111 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
         )}
       </div>
     </div>
+
+    {/* ── Alarm settings sheet ─────────────────────────────── */}
+    {alarmAppt && (
+      <div className="fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center">
+        <div className="w-full max-w-md bg-card rounded-t-2xl sm:rounded-2xl border border-edge shadow-2xl overflow-hidden animate-pop max-h-[90vh] overflow-y-auto">
+          <div className="p-4 border-b border-edge flex items-center justify-between sticky top-0 bg-card z-10">
+            <div className="flex items-center gap-2">
+              <span className="grid h-9 w-9 place-items-center rounded-lg bg-acc-soft text-acc">
+                <Bell className="w-4 h-4" />
+              </span>
+              <div>
+                <p className="font-bold text-ink text-sm">Alarm Settings</p>
+                <p className="text-ink-muted text-xs">{alarmAppt.label}</p>
+              </div>
+            </div>
+            <button onClick={() => { stopAlarm(); setAlarmFor(null); }} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="p-4 space-y-5">
+            {/* Time + on/off */}
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <label className="text-xs font-semibold text-ink-muted">Prayer time</label>
+                <select
+                  value={alarmAppt.time}
+                  onChange={(e) => update(alarmAppt.id, { time: e.target.value })}
+                  className="mt-1 bg-card border border-edge-strong rounded-lg px-3 py-2 text-base font-bold text-acc-strong"
+                >
+                  {TIME_OPTIONS.map((t) => <option key={t} value={t}>{formatTime(t)}</option>)}
+                </select>
+              </div>
+              <button
+                onClick={() => toggle(alarmAppt.id)}
+                className={cn('px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-1.5 transition-all', alarmAppt.enabled ? 'bg-emerald-600 text-white' : 'bg-card-3 text-ink-muted')}
+              >
+                {alarmAppt.enabled ? <BellRing className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
+                {alarmAppt.enabled ? 'Alarm ON' : 'Alarm OFF'}
+              </button>
+            </div>
+
+            {/* Tune picker */}
+            <div>
+              <label className="text-xs font-semibold text-ink-muted flex items-center gap-1 mb-2">
+                <Music className="w-3.5 h-3.5" /> Choose your alarm sound
+              </label>
+              <div className="space-y-1.5">
+                {ALARM_TONES.map((tone) => {
+                  const selected = (alarmAppt.alarmTone || 'classic') === tone.id;
+                  return (
+                    <div
+                      key={tone.id}
+                      className={cn(
+                        'flex items-center gap-3 rounded-xl border p-2.5 transition-all',
+                        selected ? 'border-emerald-500 bg-acc-soft/50' : 'border-edge bg-card-2 hover:border-edge-strong'
+                      )}
+                    >
+                      <span className="text-xl">{tone.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-ink">{tone.name}</p>
+                        <p className="text-[11px] text-ink-muted truncate">{tone.description}</p>
+                      </div>
+                      <button
+                        onClick={() => previewAlarmTone(tone.id)}
+                        className="p-2 rounded-lg text-ink-muted hover:text-acc hover:bg-card-3"
+                        title="Preview"
+                      >
+                        <Volume2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => { update(alarmAppt.id, { alarmTone: tone.id }); stopAlarm(); }}
+                        className={cn(
+                          'px-3 py-1.5 rounded-lg text-xs font-bold',
+                          selected ? 'bg-emerald-600 text-white' : 'bg-card-3 text-ink-muted hover:bg-card'
+                        )}
+                      >
+                        {selected ? 'Selected' : 'Select'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Test + save */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => playAlarmTone((alarmAppt.alarmTone as AlarmToneId) || 'classic', 6)}
+                className="flex-1 py-2.5 bg-warn text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:opacity-90"
+              >
+                <Volume2 className="w-4 h-4" /> Test Alarm
+              </button>
+              <button onClick={() => stopAlarm()} className="px-4 py-2.5 bg-card-3 text-ink-muted rounded-xl font-bold text-sm hover:bg-card">
+                Stop
+              </button>
+            </div>
+
+            <button onClick={() => { stopAlarm(); setAlarmFor(null); }} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500">
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

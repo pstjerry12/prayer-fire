@@ -354,10 +354,7 @@ export default function StartUpPrayer() {
                 <p className="text-acc-strong text-xs font-semibold uppercase tracking-wider mb-1">📖 James 5:16</p>
                 <p className="text-ink-soft text-sm italic">"The effectual fervent prayer of a righteous man availeth much."</p>
               </div>
-              <div className="flex gap-2">
-                <button onClick={resetAll} className="flex-1 py-3 bg-card border border-edge-strong text-ink-soft rounded-xl font-bold text-sm hover:bg-card-2 transition-all">Pray Again</button>
-                <Link href="/" onClick={resetAll} className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500 transition-all flex items-center justify-center">Amen 🙏</Link>
-              </div>
+              <Link href="/" onClick={resetAll} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500 transition-all flex items-center justify-center">Amen 🙏</Link>
             </div>
           </div>
         </div>

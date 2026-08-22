@@ -79,6 +79,7 @@ export default function WisdomSection() {
           <div className="flex-1">
             <h2 className="font-bold text-ink text-lg">Learn to Pray</h2>
             <p className="text-ink-muted text-xs italic">The Pray 3x guide — pray three times a day</p>
+            <p className="text-ink-muted text-[11px]">From Pastor Jerry Chijioke&apos;s book — to deepen your daily prayer life</p>
           </div>
         </div>
         <div className="flex items-center gap-2 mt-3">

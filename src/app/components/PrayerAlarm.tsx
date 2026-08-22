@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useApp } from '@/app/context';
-import { startAlarmSound, stopAlarmSound } from '@/lib/alarmSound';
+import { playAlarmTone, stopAlarm, DEFAULT_TONE, type AlarmToneId } from '@/lib/alarmSound';
 
 /**
  * Watches the clock and fires a prayer-time alarm whenever an enabled prayer
@@ -19,7 +19,7 @@ export default function PrayerAlarm() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const notify = (label: string) => {
+    const notify = (label: string, toneId?: string) => {
       // System notification — uses the phone's default notification sound.
       if ('Notification' in window && Notification.permission === 'granted') {
         try {
@@ -33,7 +33,7 @@ export default function PrayerAlarm() {
           n.onclick = () => {
             window.focus();
             n.close();
-            stopAlarmSound();
+            stopAlarm();
           };
         } catch {
           // ignore
@@ -49,8 +49,8 @@ export default function PrayerAlarm() {
         }
       }
 
-      // Audible two-tone ring while the app is open.
-      startAlarmSound();
+      // Audible alarm with the user's chosen tune (while the app is open).
+      playAlarmTone((toneId as AlarmToneId) || DEFAULT_TONE, 13);
     };
 
     const check = () => {
@@ -66,7 +66,7 @@ export default function PrayerAlarm() {
         const firedKey = `upp_alarm_fired_${a.id}`;
         if (localStorage.getItem(firedKey) === today) continue;
         localStorage.setItem(firedKey, today);
-        notify(a.label);
+        notify(a.label, a.alarmTone);
       }
     };
 
@@ -74,7 +74,7 @@ export default function PrayerAlarm() {
     const interval = window.setInterval(check, 20000);
     return () => {
       clearInterval(interval);
-      stopAlarmSound();
+      stopAlarm();
     };
   }, []);
 

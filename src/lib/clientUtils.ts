@@ -18,46 +18,65 @@ export const playChime = () => {
   osc.stop(ctx.currentTime + 0.5);
 };
 
-// A single "clap" — a quick burst of filtered noise.
-function makeClap(ctx: AudioContext, at: number, volume: number, pan = 0) {
-  const duration = 0.12;
-  const bufferSize = Math.floor(ctx.sampleRate * duration);
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    // Sharp attack, fast exponential decay.
-    const env = Math.pow(1 - i / bufferSize, 4);
-    data[i] = (Math.random() * 2 - 1) * env;
-  }
+// A single trumpet note — bright, brassy, with natural vibrato and a punchy
+// attack, like a real brass fanfare.
+function trumpetNote(
+  ctx: AudioContext,
+  freq: number,
+  at: number,
+  dur: number,
+  gainVal: number,
+  pan = 0
+) {
+  // Rich harmonic source (sawtooth) → gives the "brass" edge.
+  const osc = ctx.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.value = freq;
 
-  const source = ctx.createBufferSource();
-  source.buffer = buffer;
+  // Lowpass warms the harsh highs into a rounded trumpet body.
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 2400 + freq * 1.6;
+  filter.Q.value = 1;
 
-  const bandpass = ctx.createBiquadFilter();
-  bandpass.type = 'bandpass';
-  bandpass.frequency.value = 2000;
-  bandpass.Q.value = 0.8;
+  // Subtle vibrato — an LFO wobbles the pitch slightly, like a player's lip.
+  const lfo = ctx.createOscillator();
+  lfo.type = 'sine';
+  lfo.frequency.value = 5.2;
+  const lfoGain = ctx.createGain();
+  lfoGain.gain.value = freq * 0.008;
+  lfo.connect(lfoGain);
+  lfoGain.connect(osc.frequency);
 
+  // Brass envelope: crisp attack, held body, clean release.
   const gain = ctx.createGain();
-  gain.gain.value = volume;
+  gain.gain.setValueAtTime(0.0001, at);
+  gain.gain.exponentialRampToValueAtTime(gainVal, at + 0.025);
+  gain.gain.setValueAtTime(gainVal, at + dur * 0.65);
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + dur);
 
-  source.connect(bandpass);
-  bandpass.connect(gain);
-  gain.connect(ctx.destination);
-
+  let destination: AudioNode = ctx.destination;
   if (pan !== 0 && ctx.createStereoPanner) {
     const panner = ctx.createStereoPanner();
     panner.pan.value = pan;
-    gain.disconnect();
-    gain.connect(panner);
     panner.connect(ctx.destination);
+    destination = panner;
   }
 
-  source.start(at);
-  source.stop(at + duration + 0.02);
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(destination);
+
+  osc.start(at);
+  osc.stop(at + dur + 0.05);
+  lfo.start(at);
+  lfo.stop(at + dur + 0.05);
 }
 
-// A round of applause — many staggered claps, like a small crowd cheering.
+// A triumphant celebratory trumpet fanfare (~3.5 seconds):
+//   — a bold ascending fanfare (C → E → G → high C)
+//   — a quick reprise phrase
+//   — a final held C-major chord to crown the moment.
 export const playCelebration = () => {
   if (typeof window === 'undefined') return;
   const AC = window.AudioContext || (window as any).webkitAudioContext;
@@ -65,22 +84,33 @@ export const playCelebration = () => {
   const ctx = new AC();
   const now = ctx.currentTime;
 
-  // A big opening clap, then a rolling wave of applause (~3.5 seconds).
-  makeClap(ctx, now, 0.5);
-  makeClap(ctx, now + 0.04, 0.35);
+  const C5 = 523.25;
+  const E5 = 659.25;
+  const G5 = 783.99;
+  const C6 = 1046.5;
 
-  const clapCount = 34;
-  for (let i = 0; i < clapCount; i++) {
-    // Random timing for a natural, human sound.
-    const t = now + 0.2 + i * 0.09 + Math.random() * 0.05;
-    // Vary the volume and spread claps left/right for a "crowd" feel.
-    const volume = 0.12 + Math.random() * 0.3;
-    const pan = (Math.random() * 2 - 1) * 0.7;
-    makeClap(ctx, t, volume, pan);
-  }
+  // [freq, startOffset, duration, gain]
+  const fanfare: [number, number, number, number][] = [
+    // Opening "ta-da" fanfare
+    [C5, 0.0, 0.22, 0.34],
+    [C5, 0.22, 0.22, 0.34],
+    [E5, 0.44, 0.22, 0.34],
+    [G5, 0.66, 0.46, 0.36], // held
+    // Reprise, climbing higher
+    [E5, 1.16, 0.2, 0.32],
+    [G5, 1.36, 0.2, 0.34],
+    [C6, 1.56, 0.62, 0.4], // triumphant high C, held
+    // Resolution descent
+    [G5, 2.2, 0.2, 0.32],
+    [E5, 2.4, 0.2, 0.3],
+    [C5, 2.6, 0.55, 0.34], // land home
+  ];
 
-  // A final, stronger closing clap.
-  makeClap(ctx, now + 3.4, 0.45);
+  fanfare.forEach(([f, t, d, g]) => trumpetNote(ctx, f, now + t, d, g));
+
+  // Final celebratory C-major chord (C5, E5, G5, C6) held together.
+  const chord = [C5, E5, G5, C6];
+  chord.forEach((f, i) => trumpetNote(ctx, f, now + 3.15, 1.0, 0.26, i % 2 === 0 ? -0.2 : 0.2));
 };
 
 export const speakText = (text: string) => {
