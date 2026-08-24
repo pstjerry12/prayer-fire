@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="border-t border-edge mt-8 bg-card">
+    <footer className="border-t border-edge mt-8 bg-card pb-20 md:pb-6">
       <div className="max-w-6xl mx-auto px-4 py-6 text-center">
         <div className="flex items-center justify-center gap-2">
           <span className="grid h-7 w-7 place-items-center rounded-full bg-danger-soft ring-1 ring-red-200 overflow-hidden">

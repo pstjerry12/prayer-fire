@@ -37,7 +37,7 @@ export default function HomePage() {
     <>
       <Navbar />
 
-      <main className="bg-page min-h-screen pb-28 md:pb-16">
+      <main className="bg-page min-h-screen pb-32 md:pb-16">
         <AnnouncementBanner />
         <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-6 md:pt-10">
           {/* ── Hero ─────────────────────────────── */}

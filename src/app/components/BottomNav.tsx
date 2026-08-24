@@ -19,7 +19,8 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-bottom bg-page/95 backdrop-blur border-t border-edge md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-page/95 backdrop-blur border-t border-edge md:hidden">
+      {/* Navigation tabs */}
       <div className="max-w-4xl mx-auto grid grid-cols-7">
         {TABS.map((tab) => {
           const Icon = tab.icon;
@@ -38,6 +39,10 @@ export default function BottomNav() {
             </Link>
           );
         })}
+      </div>
+      {/* Jerry's name — always visible above phone's home bar */}
+      <div className="text-center py-1 border-t border-edge/50">
+        <span className="text-ink-faint text-[9px] font-medium">pst jerry chijioke</span>
       </div>
     </nav>
   );
