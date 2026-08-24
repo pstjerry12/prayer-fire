@@ -32,7 +32,7 @@ Prayer Fire Movement is not just another Christian app. It is a **spiritual alar
 **Speak it.** Voice-to-text prayer writing means you can pray out loud — walking, driving, cooking — and the app captures every word. Your spoken prayers become written records you can revisit and pray again.
 
 ### 📖 4. It Feeds You Scripture In 5 Languages
-**Pray it.** The Scripture Vault gives you God's Word in **English, Yoruba, Igbo, Hausa, and French**. The full KJV Bible is built in. Daily verses appear on your screen. **You cannot pray effectively without fuel**, and God's Word is that fuel.
+**Pray it.** The Scripture Vault gives you God's Word in **English, Spanish, French, Portuguese, and Swahili**. The full KJV Bible is built in. Daily verses appear on your screen. **You cannot pray effectively without fuel**, and God's Word is that fuel.
 
 > *""My word… shall not return to me empty." — **Isaiah 55:11**
 
