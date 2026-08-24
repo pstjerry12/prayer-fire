@@ -9,7 +9,7 @@ type GiveCurrency = 'NGN' | 'USD';
 
 export default function DonationCard() {
   const [expanded, setExpanded] = useState(false);
-  const [currency, setCurrency] = useState<GiveCurrency>('NGN');
+  const [currency, setCurrency] = useState<GiveCurrency>('NGN'); // Default NGN — USD may not work until Paystack approves your account
   const [amount, setAmount] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -182,9 +182,16 @@ export default function DonationCard() {
                     : 'border-edge bg-card-2 text-ink-muted hover:border-edge-strong'
                 )}
               >
-                $ Dollar
+                $ Dollar {isTestMode ? '⚠️' : ''}
               </button>
             </div>
+
+            {/* Currency warning for test mode */}
+            {isTestMode && currency === 'USD' && (
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2 text-[11px] mb-3 text-amber-700 dark:text-amber-400">
+                ⚠️ USD may not work in test mode until Paystack approves your account. Use <strong>₦ Naira</strong> for testing.
+              </div>
+            )}
 
             {/* Amount — use type="tel" so mobile keyboard works properly */}
             <label className="block text-xs font-semibold text-ink-muted mb-1.5">Amount ({currency === 'NGN' ? '₦' : '$'})</label>
