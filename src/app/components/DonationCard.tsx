@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { HandHeart, Heart, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { HandHeart, Heart, ChevronDown, ChevronUp, Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { openPaystack } from '@/lib/paystack';
 
@@ -28,6 +28,8 @@ export default function DonationCard() {
   };
 
   const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+  // Detect test mode (key starts with pk_test_)
+  const isTestMode = publicKey?.startsWith('pk_test_') ?? false;
 
   const handleDonate = async () => {
     const value = Number(amount);
@@ -97,14 +99,19 @@ export default function DonationCard() {
       <div className="bg-card rounded-2xl p-6 text-center border border-acc-edge shadow-sm">
         <div className="text-5xl mb-3">🎉</div>
         <h2 className="font-serif-heading text-xl font-bold text-ink mb-2">Thank You!</h2>
-        <p className="text-ink-muted text-sm leading-relaxed mb-5">
+        <p className="text-ink-muted text-sm leading-relaxed mb-2">
           Your generous gift keeps the fire burning. Together we are curing prayerlessness
           around the world — one prayer, three times a day.
         </p>
+        {isTestMode && (
+          <p className="text-amber-500 text-xs font-bold mb-4">
+            🧪 Test payment — no real money was charged.
+          </p>
+        )}
         <button
           onClick={reset}
           className="w-full py-3 bg-card-3 text-ink-soft rounded-xl font-bold text-sm hover:bg-card-2 transition-all"
-        >
+>
           Make Another Donation
         </button>
       </div>
@@ -113,6 +120,14 @@ export default function DonationCard() {
 
   return (
     <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
+      {/* Test Mode Banner */}
+      {isTestMode && (
+        <div className="bg-amber-500 text-white text-[10px] font-bold text-center py-1.5 px-3 flex items-center justify-center gap-1.5">
+          <AlertTriangle className="w-3 h-3" />
+          TEST MODE — No real money will be charged
+        </div>
+      )}
+
       {/* Collapsed header — always visible */}
       <div className="p-4">
         <div className="flex items-center gap-2 mb-1.5">
@@ -214,6 +229,16 @@ export default function DonationCard() {
             </div>
           )}
 
+          {/* Test card info */}
+          {isTestMode && (
+            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2.5 text-[11px] mb-3 text-amber-700 dark:text-amber-400">
+              🧪 <strong>Test Mode</strong> — Use this test card:<br />
+              Card: <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">4084 0840 8408 4081</code><br />
+              PIN: <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">408408</code> · OTP: <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">123456</code><br />
+              Expiry: any future date · CVV: any 3 digits
+            </div>
+          )}
+
           <button
             onClick={handleDonate}
             disabled={paying}
@@ -231,7 +256,7 @@ export default function DonationCard() {
           </button>
 
           <p className="text-center text-ink-faint text-[10px] mt-2">
-            Secure giving via Paystack · 100% supports the prayer movement
+            {isTestMode ? '🧪 Paystack Test Mode' : 'Secure giving via Paystack'} · 100% supports the prayer movement
           </p>
         </div>
       )}
