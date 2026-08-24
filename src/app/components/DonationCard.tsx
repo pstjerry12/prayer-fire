@@ -17,22 +17,11 @@ export default function DonationCard() {
   const [done, setDone] = useState(false);
   const [paying, setPaying] = useState(false);
 
-  const open = () => {
-    setExpanded(true);
-    setError('');
-  };
-
-  const close = () => {
-    setExpanded(false);
-    setError('');
-  };
-
   const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
-  // Detect test mode (key starts with pk_test_)
   const isTestMode = publicKey?.startsWith('pk_test_') ?? false;
 
   const handleDonate = async () => {
-    const value = Number(amount);
+    const value = parseFloat(amount);
     if (!amount.trim() || Number.isNaN(value) || value <= 0) {
       setError('Please enter a donation amount.');
       return;
@@ -40,7 +29,7 @@ export default function DonationCard() {
 
     if (!publicKey) {
       setError(
-        'Payment is not connected yet. Add your Paystack public key (NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY) to enable card payments.'
+        'Payment is not connected yet. Add your Paystack public key to enable card payments.'
       );
       return;
     }
@@ -48,41 +37,44 @@ export default function DonationCard() {
     setError('');
     setPaying(true);
 
-    // Amount in the smallest unit: kobo for NGN, cents for USD.
     const amountInSmallestUnit = Math.round(value * 100);
     const donorEmail = email.trim() || 'donor@prayerfiremovement.com';
 
-    const opened = await openPaystack({
-      key: publicKey,
-      email: donorEmail,
-      amount: amountInSmallestUnit,
-      currency,
-      name: name.trim() || 'Anonymous',
-      onSuccess: (reference) => {
-        console.log('Paystack reference:', reference);
-        // Record the donation in the back office.
-        fetch('/api/donations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: name.trim() || 'Anonymous',
-            email: donorEmail,
-            amount: amountInSmallestUnit,
-            currency,
-            reference,
-          }),
-        }).catch(() => {});
-        setDone(true);
-        setPaying(false);
-      },
-      onCancel: () => {
-        setError('Payment was not completed. You can try again.');
-        setPaying(false);
-      },
-    });
+    try {
+      const opened = await openPaystack({
+        key: publicKey,
+        email: donorEmail,
+        amount: amountInSmallestUnit,
+        currency,
+        name: name.trim() || 'Anonymous',
+        onSuccess: (reference) => {
+          fetch('/api/donations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: name.trim() || 'Anonymous',
+              email: donorEmail,
+              amount: amountInSmallestUnit,
+              currency,
+              reference,
+            }),
+          }).catch(() => {});
+          setDone(true);
+          setPaying(false);
+        },
+        onCancel: () => {
+          setError('Payment was not completed. You can try again.');
+          setPaying(false);
+        },
+      });
 
-    if (!opened) {
-      setError('Could not load the payment window. Please try again.');
+      if (!opened) {
+        setError('Could not load the payment window. Please try again.');
+        setPaying(false);
+      }
+    } catch (err) {
+      console.error('Donation error:', err);
+      setError('Something went wrong. Please try again.');
       setPaying(false);
     }
   };
@@ -111,7 +103,7 @@ export default function DonationCard() {
         <button
           onClick={reset}
           className="w-full py-3 bg-card-3 text-ink-soft rounded-xl font-bold text-sm hover:bg-card-2 transition-all"
->
+        >
           Make Another Donation
         </button>
       </div>
@@ -128,7 +120,7 @@ export default function DonationCard() {
         </div>
       )}
 
-      {/* Collapsed header — always visible */}
+      {/* Collapsed header */}
       <div className="p-4">
         <div className="flex items-center gap-2 mb-1.5">
           <HandHeart className="w-4 h-4 text-[#ff6a00]" />
@@ -140,7 +132,7 @@ export default function DonationCard() {
 
         {!expanded && (
           <button
-            onClick={open}
+            onClick={() => { setExpanded(true); setError(''); }}
             className="w-full py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#ff6a00] to-[#ff3d00] hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
           >
             <Heart className="w-4 h-4" /> Donate Now
@@ -149,10 +141,10 @@ export default function DonationCard() {
         )}
       </div>
 
-      {/* Expanded form — revealed on dropdown */}
+      {/* Expanded form */}
       {expanded && (
         <div className="border-t border-edge px-4 pb-4">
-          {/* Currency + amount */}
+          {/* Currency */}
           <div className="mt-4">
             <label className="block text-xs font-semibold text-ink-muted mb-1.5">Choose currency</label>
             <div className="grid grid-cols-2 gap-2 mb-3">
@@ -180,19 +172,25 @@ export default function DonationCard() {
               </button>
             </div>
 
+            {/* Amount — use type="tel" so mobile keyboard works properly */}
             <label className="block text-xs font-semibold text-ink-muted mb-1.5">Amount ({currency === 'NGN' ? '₦' : '$'})</label>
             <div className="relative mb-4">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-ink-muted">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-ink-muted pointer-events-none">
                 {currency === 'NGN' ? '₦' : '$'}
               </span>
               <input
-                type="number"
-                inputMode="decimal"
-                min="0"
+                type="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 placeholder={currency === 'NGN' ? 'e.g. 1000' : 'e.g. 10'}
                 value={amount}
-                onChange={(e) => { setAmount(e.target.value); setError(''); }}
-                className="w-full bg-card border border-edge-strong rounded-lg pl-9 pr-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-[#ff6a00]/40 focus:border-[#ff6a00]"
+                onChange={(e) => {
+                  // Only allow numbers and decimal point
+                  const val = e.target.value.replace(/[^0-9.]/g, '');
+                  setAmount(val);
+                  setError('');
+                }}
+                className="w-full bg-card border border-edge-strong rounded-lg pl-9 pr-3 py-3 text-base font-bold text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-[#ff6a00]/40 focus:border-[#ff6a00]"
               />
             </div>
           </div>
@@ -217,39 +215,48 @@ export default function DonationCard() {
             />
           </div>
 
+          {/* Error */}
           {error && (
             <div className="bg-danger-soft text-danger border border-danger-edge rounded-lg px-3 py-2.5 text-xs mb-3">
               {error}
             </div>
           )}
 
+          {/* No key warning */}
           {!publicKey && (
             <div className="bg-warn-soft text-warn-strong border border-warn-edge rounded-lg px-3 py-2.5 text-[11px] mb-3">
-              ⚠️ Payment gateway not connected. Add your Paystack public key to enable card payments.
+              ⚠️ Payment gateway not connected. Add NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY to Vercel env vars, then redeploy.
             </div>
           )}
 
           {/* Test card info */}
           {isTestMode && (
-            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2.5 text-[11px] mb-3 text-amber-700 dark:text-amber-400">
-              🧪 <strong>Test Mode</strong> — Use this test card:<br />
-              Card: <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">4084 0840 8408 4081</code><br />
-              PIN: <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">408408</code> · OTP: <code className="bg-amber-100 dark:bg-amber-900 px-1 rounded">123456</code><br />
-              Expiry: any future date · CVV: any 3 digits
+            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-3 text-[11px] mb-3 text-amber-700 dark:text-amber-400 leading-relaxed">
+              <p className="font-bold mb-1">🧪 Test Mode — Use this test card:</p>
+              <p>Card: <code className="bg-amber-100 dark:bg-amber-900 px-1.5 py-0.5 rounded font-mono">4084 0840 8408 4081</code></p>
+              <p>PIN: <code className="bg-amber-100 dark:bg-amber-900 px-1.5 py-0.5 rounded font-mono">408408</code></p>
+              <p>OTP: <code className="bg-amber-100 dark:bg-amber-900 px-1.5 py-0.5 rounded font-mono">123456</code></p>
+              <p>Expiry: any future date · CVV: any 3 digits</p>
             </div>
           )}
 
+          {/* Confirm Donation button */}
           <button
             onClick={handleDonate}
-            disabled={paying}
-            className="w-full py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#ff6a00] to-[#ff3d00] hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            disabled={paying || !publicKey}
+            className={cn(
+              "w-full py-3.5 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 transition-all",
+              publicKey
+                ? "bg-gradient-to-r from-[#ff6a00] to-[#ff3d00] hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+                : "bg-gray-400 cursor-not-allowed"
+            )}
           >
             {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className="w-4 h-4" />}
             {paying ? 'Opening payment…' : 'Confirm Donation'}
           </button>
 
           <button
-            onClick={close}
+            onClick={() => { setExpanded(false); setError(''); }}
             className="w-full mt-2 py-2.5 rounded-xl font-semibold text-sm text-ink-muted hover:text-ink flex items-center justify-center gap-1.5 transition-colors"
           >
             <ChevronUp className="w-4 h-4" /> Cancel
