@@ -19,9 +19,13 @@ export function loadPaystack(): Promise<boolean> {
   loading = new Promise((resolve) => {
     const script = document.createElement('script');
     script.src = 'https://js.paystack.co/v1/inline.js';
-    script.async = true;
-    script.onload = () => resolve(true);
+    script.async = false; // load synchronously to avoid timing issues
+    script.onload = () => {
+      console.log('[Paystack] Script loaded, PaystackPop available:', !!window.PaystackPop);
+      resolve(!!window.PaystackPop);
+    };
     script.onerror = () => {
+      console.error('[Paystack] Script failed to load');
       loading = null;
       resolve(false);
     };
@@ -40,41 +44,57 @@ export interface PaystackOptions {
   name?: string;
   onSuccess: (reference: string) => void;
   onCancel: () => void;
+  onError?: (error: any) => void;
 }
 
 /**
  * Open the Paystack payment popup. Returns `true` if the popup opened.
  */
 export async function openPaystack(opts: PaystackOptions): Promise<boolean> {
+  console.log('[Paystack] Opening popup with key:', opts.key?.substring(0, 10) + '...');
+  console.log('[Paystack] Amount:', opts.amount, opts.currency);
+
   const ok = await loadPaystack();
-  if (!ok || typeof window === 'undefined' || !window.PaystackPop) return false;
+  if (!ok || typeof window === 'undefined' || !window.PaystackPop) {
+    console.error('[Paystack] PaystackPop not available. Script loaded:', ok);
+    return false;
+  }
 
   const ref = `PFM-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-  const handler = window.PaystackPop.setup({
-    key: opts.key,
-    email: opts.email,
-    amount: opts.amount,
-    currency: opts.currency,
-    ref,
-    ...(opts.name ? { label: opts.name } : {}),
-    metadata: {
-      custom_fields: [
-        {
-          display_name: 'Donor Name',
-          variable_name: 'donor_name',
-          value: opts.name || 'Anonymous',
-        },
-      ],
-    },
-    callback: (response: any) => {
-      opts.onSuccess(response?.reference || ref);
-    },
-    onClose: () => {
-      opts.onCancel();
-    },
-  });
+  try {
+    const handler = window.PaystackPop.setup({
+      key: opts.key,
+      email: opts.email,
+      amount: opts.amount,
+      currency: opts.currency,
+      ref,
+      ...(opts.name ? { label: opts.name } : {}),
+      metadata: {
+        custom_fields: [
+          {
+            display_name: 'Donor Name',
+            variable_name: 'donor_name',
+            value: opts.name || 'Anonymous',
+          },
+        ],
+      },
+      callback: (response: any) => {
+        console.log('[Paystack] Payment success:', response);
+        opts.onSuccess(response?.reference || ref);
+      },
+      onClose: () => {
+        console.log('[Paystack] Popup closed by user');
+        opts.onCancel();
+      },
+    });
 
-  handler.openIframe();
-  return true;
+    handler.openIframe();
+    console.log('[Paystack] Popup opened successfully');
+    return true;
+  } catch (err) {
+    console.error('[Paystack] Error opening popup:', err);
+    if (opts.onError) opts.onError(err);
+    return false;
+  }
 }

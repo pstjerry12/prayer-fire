@@ -29,7 +29,7 @@ export default function DonationCard() {
 
     if (!publicKey) {
       setError(
-        'Payment is not connected yet. Add your Paystack public key to enable card payments.'
+        'Payment is not connected. NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY is missing. Add it to Vercel env vars and redeploy.'
       );
       return;
     }
@@ -39,6 +39,13 @@ export default function DonationCard() {
 
     const amountInSmallestUnit = Math.round(value * 100);
     const donorEmail = email.trim() || 'donor@prayerfiremovement.com';
+
+    console.log('[DonationCard] Opening Paystack with:', {
+      key: publicKey.substring(0, 10) + '...',
+      email: donorEmail,
+      amount: amountInSmallestUnit,
+      currency,
+    });
 
     try {
       const opened = await openPaystack({
@@ -66,15 +73,20 @@ export default function DonationCard() {
           setError('Payment was not completed. You can try again.');
           setPaying(false);
         },
+        onError: (err) => {
+          console.error('[DonationCard] Paystack error:', err);
+          setError('Paystack error: ' + (err?.message || 'Unknown error'));
+          setPaying(false);
+        },
       });
 
       if (!opened) {
-        setError('Could not load the payment window. Please try again.');
+        setError('Could not open Paystack payment window. Please check your internet connection and try again.');
         setPaying(false);
       }
-    } catch (err) {
-      console.error('Donation error:', err);
-      setError('Something went wrong. Please try again.');
+    } catch (err: any) {
+      console.error('[DonationCard] Donation error:', err);
+      setError('Error: ' + (err?.message || 'Something went wrong. Please try again.'));
       setPaying(false);
     }
   };
@@ -221,6 +233,13 @@ export default function DonationCard() {
               {error}
             </div>
           )}
+
+          {/* Key status debug — shows whether Paystack key is loaded */}
+          <div className="text-[9px] text-ink-faint mb-3 px-1">
+            {publicKey
+              ? `✅ Paystack key loaded (${isTestMode ? 'TEST' : 'LIVE'} mode)`
+              : '❌ Paystack key NOT found — add NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY to Vercel'}
+          </div>
 
           {/* No key warning */}
           {!publicKey && (
