@@ -22,12 +22,14 @@ interface Props {
   onUpdate: (appointments: PrayerAppointment[]) => void;
 }
 
-const TIME_OPTIONS = [
-  '00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00',
-  '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00',
-  '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00',
-  '21:00', '22:00', '23:00',
-];
+// All times in 5-minute intervals (00:00, 00:05, 00:10 ... 23:55)
+// This gives users flexibility to set prayer times like 4:20am, 12:15pm, etc.
+const TIME_OPTIONS: string[] = [];
+for (let h = 0; h < 24; h++) {
+  for (let m = 0; m < 60; m += 5) {
+    TIME_OPTIONS.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+  }
+}
 
 function formatTime(time: string): string {
   const parts = time.split(':');
@@ -205,13 +207,33 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                   {/* Time (editable) */}
                   {isEditing ? (
                     <div className="mb-1.5 flex flex-col gap-1">
-                      <select
-                        value={appt.time}
-                        onChange={(e) => update(appt.id, { time: e.target.value })}
-                        className="w-full bg-card border border-edge-strong rounded-md px-1 py-1 text-xs font-bold text-acc-strong appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
-                      >
-                        {TIME_OPTIONS.map((t) => <option key={t} value={t}>{formatTime(t)}</option>)}
-                      </select>
+                      <div className="flex gap-1 items-center">
+                        <select
+                          value={appt.time.split(':')[0]}
+                          onChange={(e) => {
+                            const mm = appt.time.split(':')[1] || '00';
+                            update(appt.id, { time: `${e.target.value}:${mm}` });
+                          }}
+                          className="flex-1 bg-card border border-edge-strong rounded-md px-1 py-1.5 text-xs font-bold text-acc-strong appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                        >
+                          {Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0')).map((h) => (
+                            <option key={h} value={h}>{formatTime(`${h}:00`)}</option>
+                          ))}
+                        </select>
+                        <span className="text-ink-muted text-xs">:</span>
+                        <select
+                          value={appt.time.split(':')[1] || '00'}
+                          onChange={(e) => {
+                            const hh = appt.time.split(':')[0] || '00';
+                            update(appt.id, { time: `${hh}:${e.target.value}` });
+                          }}
+                          className="flex-1 bg-card border border-edge-strong rounded-md px-1 py-1.5 text-xs font-bold text-acc-strong appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                        >
+                          {['00','05','10','15','20','25','30','35','40','45','50','55'].map((m) => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                        </select>
+                      </div>
                       <button onClick={() => setEditingId(null)} className="w-full py-1 bg-emerald-600 text-white rounded-md text-[10px] font-bold flex items-center justify-center gap-1">
                         <Check className="w-3 h-3" /> Done
                       </button>
@@ -283,14 +305,34 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
             {/* Time + on/off */}
             <div className="flex items-center justify-between gap-3">
               <div>
-                <label className="text-xs font-semibold text-ink-muted">Prayer time</label>
-                <select
-                  value={alarmAppt.time}
-                  onChange={(e) => update(alarmAppt.id, { time: e.target.value })}
-                  className="mt-1 bg-card border border-edge-strong rounded-lg px-3 py-2 text-base font-bold text-acc-strong"
-                >
-                  {TIME_OPTIONS.map((t) => <option key={t} value={t}>{formatTime(t)}</option>)}
-                </select>
+                <label className="text+xs font-semibold text-ink-muted">Prayer time</label>
+                <div className="mt-1 flex gap-1 items-center">
+                  <select
+                    value={alarmAppt.time.split(':')[0]}
+                    onChange={(e) => {
+                      const mm = alarmAppt.time.split(':')[1] || '00';
+                      update(alarmAppt.id, { time: `${e.target.value}:${mm}` });
+                    }}
+                    className="bg-card border border-edge-strong rounded-lg px-2 py-2 text-base font-bold text-acc-strong"
+                  >
+                    {Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0')).map((h) => (
+                      <option key={h} value={h}>{formatTime(`${h}:00`)}</option>
+                    ))}
+                  </select>
+                  <span className="text-ink-muted font-bold">:</span>
+                  <select
+                    value={alarmAppt.time.split(':')[1] || '00'}
+                    onChange={(e) => {
+                      const hh = alarmAppt.time.split(':')[0] || '00';
+                      update(alarmAppt.id, { time: `${hh}:${e.target.value}` });
+                    }}
+                    className="bg-card border border-edge-strong rounded-lg px-2 py-2 text-base font-bold text-acc-strong"
+                  >
+                    {['00','05','10','15','20','25','30','35','40','45','50','55'].map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <button
                 onClick={() => toggle(alarmAppt.id)}
