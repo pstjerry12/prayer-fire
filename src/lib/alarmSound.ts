@@ -19,15 +19,37 @@ export const ALARM_TONES: AlarmTone[] = [
 
 export const DEFAULT_TONE: AlarmToneId = 'classic';
 
-// ── Audio playback engine ────────────────────────────────────────
-// Uses real WAV audio files from /sounds/ — no more fake beeps!
-// Falls back to Web Audio synthesis only if files fail to load.
+// ── Preload audio cache ──────────────────────────────────────────
+// We preload all sounds on first user interaction so they play instantly.
+const audioCache: Record<string, HTMLAudioElement> = {};
+let preloaded = false;
 
+/** Preload all alarm sounds into memory. Call once after first user tap. */
+function preloadAll() {
+  if (preloaded || typeof window === 'undefined') return;
+  preloaded = true;
+  for (const tone of ALARM_TONES) {
+    try {
+      const audio = new Audio(`/sounds/${tone.id}.wav`);
+      audio.preload = 'auto';
+      audio.volume = 1.0;
+      // Kick off the download
+      audio.load();
+      audioCache[tone.id] = audio;
+    } catch {
+      // ignore
+    }
+  }
+}
+
+// ── Audio playback engine ────────────────────────────────────────
 let currentAudio: HTMLAudioElement | null = null;
 let loopTimer: ReturnType<typeof setTimeout> | null = null;
+let isPlaying = false;
 
 /** Stop any playing alarm. */
 export function stopAlarm() {
+  isPlaying = false;
   if (loopTimer) {
     clearTimeout(loopTimer);
     loopTimer = null;
@@ -37,6 +59,15 @@ export function stopAlarm() {
     currentAudio.currentTime = 0;
     currentAudio = null;
   }
+  // Also stop any cached audio that might be playing
+  for (const key of Object.keys(audioCache)) {
+    try {
+      audioCache[key].pause();
+      audioCache[key].currentTime = 0;
+    } catch {
+      // ignore
+    }
+  }
 }
 
 // Backwards-compatible aliases.
@@ -44,46 +75,78 @@ export const stopAlarmSound = stopAlarm;
 
 /**
  * Play a real alarm sound file, looping for a number of seconds.
- * The WAV files in /sounds/ are high-quality phone-style alarms.
+ *
+ * Strategy:
+ * 1. If the sound is already cached and ready → play immediately
+ * 2. If not cached → create new Audio, wait for 'canplay', then play
+ * 3. If Audio fails entirely → fallback to Web Audio synthesis
+ * 4. Preload all other sounds in the background for next time
  */
 export function playAlarmTone(toneId: AlarmToneId, seconds = 13) {
   stopAlarm();
+  isPlaying = true;
 
   if (typeof window === 'undefined') return;
 
-  const audio = new Audio(`/sounds/${toneId}.wav`);
-  audio.volume = 1.0;
-  currentAudio = audio;
+  // Preload all sounds on first use
+  preloadAll();
 
   const startTime = Date.now();
+  const maxMs = seconds * 1000;
 
-  const playLoop = () => {
-    // Check if time's up
-    if (Date.now() - startTime > seconds * 1000) {
-      stopAlarm();
-      return;
-    }
+  // Try to get cached audio, or create a new one
+  let audio: HTMLAudioElement;
 
-    audio.play().catch(() => {
-      // Autoplay blocked — fallback to Web Audio synthesis
-      fallbackSynth(toneId, seconds);
-    });
-  };
+  if (audioCache[toneId]) {
+    // Use preloaded audio — it's already in memory
+    audio = audioCache[toneId];
+    audio.currentTime = 0;
+    audio.volume = 1.0;
+  } else {
+    // Not cached yet — create and cache it
+    audio = new Audio(`/sounds/${toneId}.wav`);
+    audio.preload = 'auto';
+    audio.volume = 1.0;
+    audioCache[toneId] = audio;
+  }
 
-  // When audio ends, loop it
-  audio.addEventListener('ended', () => {
-    if (Date.now() - startTime > seconds * 1000) {
+  currentAudio = audio;
+
+  // Loop handler: when audio ends, restart it
+  const onEnded = () => {
+    if (!isPlaying) return;
+    if (Date.now() - startTime > maxMs) {
       stopAlarm();
       return;
     }
     audio.currentTime = 0;
     audio.play().catch(() => {});
-  });
+  };
 
-  playLoop();
+  audio.addEventListener('ended', onEnded);
+
+  // Try to play immediately
+  const playPromise = audio.play();
+
+  if (playPromise) {
+    playPromise.catch(() => {
+      // Autoplay was blocked — try resuming after a tiny delay
+      // (sometimes the browser just needs a microtask)
+      setTimeout(() => {
+        if (!isPlaying) return;
+        audio.play().catch(() => {
+          // Still blocked — fallback to Web Audio synthesis
+          if (isPlaying) fallbackSynth(toneId, seconds);
+        });
+      }, 50);
+    });
+  }
 
   // Safety: force stop after the requested time
-  loopTimer = setTimeout(() => stopAlarm(), seconds * 1000 + 1000);
+  loopTimer = setTimeout(() => {
+    audio.removeEventListener('ended', onEnded);
+    stopAlarm();
+  }, maxMs + 500);
 }
 
 /** Preview a tone for a couple of seconds (for the tune picker). */
