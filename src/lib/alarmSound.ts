@@ -86,7 +86,18 @@ export const stopAlarmSound = stopAlarm;
  * mobile browsers including iOS Safari and Android Chrome.
  * Falls back to Web Audio synthesis if the WAV file can't be loaded.
  */
-export async function playAlarmTone(toneId: AlarmToneId, seconds = 13) {
+/**
+ * Play an alarm tone continuously until the user calls stopAlarm().
+ *
+ * If seconds is provided (for preview), it auto-stops after that time.
+ * If seconds is 0 or undefined (real alarm), it rings FOREVER until
+ * the user taps Stop / Dismiss.
+ *
+ * Uses Web Audio API (AudioContext + decodeAudioData) which works on ALL
+ * mobile browsers including iOS Safari and Android Chrome.
+ * Falls back to Web Audio synthesis if the WAV file can't be loaded.
+ */
+export async function playAlarmTone(toneId: AlarmToneId, seconds = 0) {
   stopAlarm();
 
   const c = getCtx();
@@ -103,15 +114,23 @@ export async function playAlarmTone(toneId: AlarmToneId, seconds = 13) {
     synthTone(c, toneId, seconds);
   }
 
-  // Safety: force stop after requested time
-  stopTimer = setTimeout(() => stopAlarm(), seconds * 1000 + 500);
+  // Auto-stop after requested time (for previews only)
+  if (seconds > 0) {
+    stopTimer = setTimeout(() => stopAlarm(), seconds * 1000 + 500);
+  }
+  // If seconds === 0: alarm rings FOREVER until stopAlarm() is called
 }
 
-/** Play an AudioBuffer in a loop for N seconds. */
+/** Play an AudioBuffer in a loop. If seconds=0, loops forever until stopAlarm(). */
 function playBufferLoop(c: AudioContext, buffer: AudioBuffer, seconds: number) {
   const startTime = c.currentTime;
   const duration = buffer.duration;
-  const maxTime = startTime + seconds;
+  const isEndless = seconds <= 0;
+
+  // For endless: schedule 30 seconds of loops, then re-schedule more
+  // For timed: schedule exactly enough loops
+  const scheduleDuration = isEndless ? 30 : seconds;
+  const maxTime = startTime + scheduleDuration;
 
   let offset = 0;
   while (startTime + offset < maxTime) {
@@ -126,6 +145,34 @@ function playBufferLoop(c: AudioContext, buffer: AudioBuffer, seconds: number) {
     source.start(when, 0, clipDuration);
     activeSources.push(source);
     offset += duration;
+  }
+
+  // If endless, keep re-scheduling every 30 seconds
+  if (isEndless) {
+    const keepAlive = () => {
+      if (activeSources.length === 0) return; // stopped by user
+      const now = c.currentTime;
+      const nextEnd = now + 30;
+      // Find where the last scheduled source ends
+      let nextOffset = 0;
+      // Schedule more loops from now+30 to now+60
+      const startFrom = now + 29; // overlap slightly to avoid gap
+      const endAt = now + 60;
+      let pos = startFrom;
+      while (pos < endAt) {
+        const source = c.createBufferSource();
+        source.buffer = buffer;
+        source.connect(c.destination);
+        const remaining = endAt - pos;
+        const clipDur = Math.min(duration, remaining);
+        source.start(pos, 0, clipDur);
+        activeSources.push(source);
+        pos += duration;
+      }
+      // Schedule next re-schedule
+      stopTimer = setTimeout(keepAlive, 25000);
+    };
+    stopTimer = setTimeout(keepAlive, 25000);
   }
 }
 
@@ -147,8 +194,8 @@ export function previewAlarmTone(toneId: AlarmToneId) {
   playAlarmTone(toneId, 2.4);
 }
 
-// Backwards-compatible alias.
-export const startAlarmSound = () => playAlarmTone(DEFAULT_TONE, 13);
+// Backwards-compatible alias — rings endlessly.
+export const startAlarmSound = () => playAlarmTone(DEFAULT_TONE);
 
 export function getAlarmTone(id?: string | null): AlarmTone {
   if (id && ALARM_TONES.some((t) => t.id === id)) return ALARM_TONES.find((t) => t.id === id)!;
@@ -193,7 +240,9 @@ function sBell(c: AudioContext, freq: number, at: number, dur: number, gain: num
 
 function synthTone(c: AudioContext, toneId: AlarmToneId, seconds: number) {
   const now = c.currentTime;
-  const end = now + seconds;
+  // If seconds=0 (endless), schedule 5 minutes of synth, re-schedule later
+  const duration = seconds > 0 ? seconds : 300;
+  const end = now + duration;
 
   if (toneId === 'classic') {
     const cycle = 1.6;

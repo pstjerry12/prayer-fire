@@ -52,6 +52,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
   const { markPrayedToday } = useApp();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [alarmFor, setAlarmFor] = useState<string | null>(null);
+  const [testAlarmActive, setTestAlarmActive] = useState(false);
   const preloadedRef = useRef(false);
 
   // Preload all alarm sounds on first user interaction
@@ -141,7 +142,6 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
         {/* ── Test Alarm Button ────────────────────────────────── */}
         <button
           onClick={async () => {
-            // Make sure we have permission first
             if (!notificationGranted) {
               const result = await requestAlarmPermission();
               if (result !== 'granted') {
@@ -149,7 +149,6 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                 return;
               }
             }
-            // Fire a test notification + sound + vibration right now
             try {
               const n = new Notification('🔥 Prayer Time', {
                 body: 'Test alarm — your prayer alarm is working! ✅',
@@ -158,13 +157,14 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                 tag: 'prayer-alarm-test',
                 requireInteraction: true,
               });
-              n.onclick = () => { window.focus(); n.close(); stopAlarm(); };
+              n.onclick = () => { window.focus(); n.close(); };
             } catch {
               // Some browsers need service worker for notifications
             }
             nativeVibrate();
             ensurePreloaded();
-            playAlarmTone('classic', 5);
+            playAlarmTone('classic');
+            setTestAlarmActive(true);
           }}
           className="mb-4 flex items-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-bold hover:bg-amber-400 transition-colors shadow-md"
         >
@@ -347,7 +347,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
             {/* Test + save */}
             <div className="flex gap-2">
               <button
-                onClick={() => { ensurePreloaded(); playAlarmTone((alarmAppt.alarmTone as AlarmToneId) || 'classic', 6); }}
+                onClick={() => { ensurePreloaded(); playAlarmTone((alarmAppt.alarmTone as AlarmToneId) || 'classic'); }}
                 className="flex-1 py-2.5 bg-warn text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:opacity-90"
               >
                 <Volume2 className="w-4 h-4" /> Test Alarm
@@ -362,6 +362,28 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
             </button>
           </div>
         </div>
+      </div>
+    )}
+
+    {/* ── Test Alarm Dismiss Overlay ─────────────────────────────── */}
+    {testAlarmActive && (
+      <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-6">
+        <div className="animate-bounce mb-4">
+          <span className="text-7xl">🔥</span>
+        </div>
+        <h1 className="text-3xl font-black text-white mb-2 text-center">
+          Alarm Ringing!
+        </h1>
+        <p className="text-xl text-amber-400 font-bold mb-8 text-center">
+          Test Alarm
+        </p>
+        <button
+          onClick={() => { stopAlarm(); setTestAlarmActive(false); }}
+          className="px-12 py-5 bg-red-600 hover:bg-red-500 text-white rounded-2xl text-2xl font-black shadow-2xl transition-all active:scale-95"
+        >
+          DISMISS
+        </button>
+        <p className="text-white/50 text-sm mt-4">Tap to stop the alarm</p>
       </div>
     )}
     </>
