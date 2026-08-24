@@ -189,6 +189,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                   key={appt.id}
                   className={cn(
                     'rounded-xl border p-3 flex flex-col text-center transition-all',
+                    isEditing && 'col-span-3',
                     isDone
                       ? 'bg-acc-soft border-acc-edge'
                       : appt.enabled
@@ -204,38 +205,39 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                   {/* Label */}
                   <span className="text-ink font-semibold text-[11px] leading-tight mb-1.5">{appt.label}</span>
 
-                  {/* Time (editable) */}
+                  {/* Time (editable) — card expands full width so both pickers visible */}
                   {isEditing ? (
-                    <div className="mb-1.5 flex flex-col gap-1">
-                      <div className="flex gap-1 items-center">
+                    <div className="mb-2 flex flex-col gap-2">
+                      <label className="text-[10px] font-semibold text-ink-muted text-left">Set prayer time</label>
+                      <div className="flex gap-2 items-center justify-center">
                         <select
                           value={appt.time.split(':')[0]}
                           onChange={(e) => {
                             const mm = appt.time.split(':')[1] || '00';
                             update(appt.id, { time: `${e.target.value}:${mm}` });
                           }}
-                          className="flex-1 bg-card border border-edge-strong rounded-md px-1 py-1.5 text-xs font-bold text-acc-strong appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                          className="flex-1 max-w-[140px] bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm font-bold text-acc-strong cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                         >
                           {Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0')).map((h) => (
                             <option key={h} value={h}>{formatTime(`${h}:00`)}</option>
                           ))}
                         </select>
-                        <span className="text-ink-muted text-xs">:</span>
+                        <span className="text-ink-muted text-lg font-bold">:</span>
                         <select
                           value={appt.time.split(':')[1] || '00'}
                           onChange={(e) => {
                             const hh = appt.time.split(':')[0] || '00';
                             update(appt.id, { time: `${hh}:${e.target.value}` });
                           }}
-                          className="flex-1 bg-card border border-edge-strong rounded-md px-1 py-1.5 text-xs font-bold text-acc-strong appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                          className="flex-1 max-w-[140px] bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm font-bold text-acc-strong cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                         >
                           {['00','05','10','15','20','25','30','35','40','45','50','55'].map((m) => (
                             <option key={m} value={m}>{m}</option>
                           ))}
                         </select>
                       </div>
-                      <button onClick={() => setEditingId(null)} className="w-full py-1 bg-emerald-600 text-white rounded-md text-[10px] font-bold flex items-center justify-center gap-1">
-                        <Check className="w-3 h-3" /> Done
+                      <button onClick={() => setEditingId(null)} className="w-full py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1">
+                        <Check className="w-3.5 h-3.5" /> Save Time
                       </button>
                     </div>
                   ) : (
