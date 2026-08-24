@@ -147,6 +147,16 @@ export async function scheduleNativeAlarms(
       // Use a stable notification ID from the appointment id hash
       const notifId = hashCode(appt.id);
 
+      // Map the alarm tone to the WAV file for native notifications
+      const toneToSound: Record<string, string> = {
+        classic: 'classic.wav',
+        bells: 'bells.wav',
+        chime: 'chime.wav',
+        digital: 'digital.wav',
+        praise: 'praise.wav',
+      };
+      const soundFile = toneToSound[appt.alarmTone || 'classic'] || 'classic.wav';
+
       notifications.push({
         id: notifId,
         title: '🔥 Prayer Time',
@@ -156,7 +166,7 @@ export async function scheduleNativeAlarms(
           repeats: true,
           every: 'day' as const,
         },
-        sound: undefined,
+        sound: soundFile,
         ongoing: false,
         extra: { appointmentId: appt.id, label: appt.label },
       });
