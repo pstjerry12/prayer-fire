@@ -5,7 +5,7 @@ import { BellRing, X, Check } from 'lucide-react';
 import { cn } from '../utils/cn';
 import {
   isCapacitorNative,
-  checkAlarmPermission,
+  checkAlarmPermissionSync,
   requestAlarmPermission,
 } from '@/lib/capacitorAlarm';
 
@@ -27,32 +27,30 @@ export default function NotificationPermission() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    (async () => {
-      // Check permission via Capacitor bridge or web API
-      const perm = await checkAlarmPermission();
+    // Check permission synchronously (fast, no flash)
+    const perm = checkAlarmPermissionSync();
 
-      if (perm === 'granted') {
-        setState('granted');
-        return;
-      }
+    if (perm === 'granted') {
+      setState('granted');
+      return;
+    }
 
-      if (perm === 'denied') {
+    if (perm === 'denied') {
+      setState('hidden');
+      return;
+    }
+
+    // Only show the prompt once per session.
+    try {
+      if (sessionStorage.getItem('pfm_alarm_asked') === '1') {
         setState('hidden');
         return;
       }
+    } catch {
+      // ignore
+    }
 
-      // Only show the prompt once per session.
-      try {
-        if (sessionStorage.getItem('pfm_alarm_asked') === '1') {
-          setState('hidden');
-          return;
-        }
-      } catch {
-        // ignore
-      }
-
-      setState('asking');
-    })();
+    setState('asking');
   }, []);
 
   const allow = async () => {

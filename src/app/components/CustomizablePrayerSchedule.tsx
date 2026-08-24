@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Bell, Pencil, Check, Clock, Moon, Sun, Sunrise, Plus, Trash2, X, BellRing, Volume2, Music } from 'lucide-react';
+import { Bell, Pencil, Check, Clock, Moon, Sun, Sunrise, Plus, Trash2, X, BellRing, Volume2, Music, Zap } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { playChime } from '@/lib/clientUtils';
 import { useApp } from '@/app/context';
 import { ALARM_TONES, previewAlarmTone, playAlarmTone, stopAlarm, type AlarmToneId } from '@/lib/alarmSound';
+import { isCapacitorNative, nativeVibrate, requestAlarmPermission } from '@/lib/capacitorAlarm';
 
 export interface PrayerAppointment {
   id: string;
@@ -120,7 +121,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
       </div>
 
       <div className="p-5">
-        <div className="flex items-center gap-2 text-xs text-ink-muted mb-4">
+        <div className="flex items-center gap-2 text-xs text-ink-muted mb-2">
           <BellRing className="w-4 h-4 text-acc" />
           <span>
             {notificationGranted
@@ -128,6 +129,39 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
               : 'Enable notifications in your browser to get prayer-time alarms.'}
           </span>
         </div>
+
+        {/* ── Test Alarm Button ────────────────────────────────── */}
+        <button
+          onClick={async () => {
+            // Make sure we have permission first
+            if (!notificationGranted) {
+              const result = await requestAlarmPermission();
+              if (result !== 'granted') {
+                alert('Please allow notifications first, then try again.');
+                return;
+              }
+            }
+            // Fire a test notification + sound + vibration right now
+            try {
+              const n = new Notification('🔥 Prayer Time', {
+                body: 'Test alarm — your prayer alarm is working! ✅',
+                icon: '/logo.png',
+                badge: '/logo.png',
+                tag: 'prayer-alarm-test',
+                requireInteraction: true,
+              });
+              n.onclick = () => { window.focus(); n.close(); stopAlarm(); };
+            } catch {
+              // Some browsers need service worker for notifications
+            }
+            nativeVibrate();
+            playAlarmTone('classic', 5);
+          }}
+          className="mb-4 flex items-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-bold hover:bg-amber-400 transition-colors shadow-md"
+        >
+          <Zap className="w-4 h-4" />
+          Test Alarm Now
+        </button>
 
         {sorted.length === 0 ? (
           <div className="text-center py-6">

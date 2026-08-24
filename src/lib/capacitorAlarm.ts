@@ -60,7 +60,26 @@ export async function requestAlarmPermission(): Promise<'granted' | 'denied' | '
     }
   }
 
-  // Web fallback
+  // Web fallback — ACTUALLY request permission from the browser!
+  if (typeof window !== 'undefined' && 'Notification' in window) {
+    try {
+      const result = await Notification.requestPermission();
+      if (result === 'granted') return 'granted';
+      if (result === 'denied') return 'denied';
+      return 'prompt';
+    } catch {
+      return 'denied';
+    }
+  }
+
+  return 'denied';
+}
+
+// ── Check current permission ───────────────────────────────────────
+export function checkAlarmPermissionSync(): 'granted' | 'denied' | 'prompt' {
+  // Native Capacitor — can't check sync, assume prompt
+  if (isCapacitorNative()) return 'prompt';
+
   if (typeof window !== 'undefined' && 'Notification' in window) {
     if (Notification.permission === 'granted') return 'granted';
     if (Notification.permission === 'denied') return 'denied';
@@ -70,7 +89,6 @@ export async function requestAlarmPermission(): Promise<'granted' | 'denied' | '
   return 'denied';
 }
 
-// ── Check current permission ───────────────────────────────────────
 export async function checkAlarmPermission(): Promise<'granted' | 'denied' | 'prompt'> {
   const LocalNotifications = await getLocalNotifications();
   if (LocalNotifications) {
@@ -135,7 +153,7 @@ export async function scheduleNativeAlarms(
         body: `${appt.label} — it's time to pray!`,
         schedule: {
           at: fireAt,
-          repeats: true,       // Repeat daily at this time
+          repeats: true,
           every: 'day' as const,
         },
         sound: undefined,
@@ -169,26 +187,26 @@ export async function cancelAllNativeAlarms(): Promise<void> {
   }
 }
 
-// ── Vibrate using native haptics ───────────────────────────────────
-export async function nativeVibrate(): Promise<void> {
-  const Haptics = await getHaptics();
-  if (Haptics) {
-    try {
-      await Haptics.vibrate({ duration: 500 });
-    } catch {
-      // ignore
+// ── Vibrate — works both sync (web) and async (native) ────────────
+export function nativeVibrate(): void {
+  // Web fallback — synchronous
+  if (!isCapacitorNative()) {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate([200, 100, 200, 100, 200]);
+      } catch {
+        // ignore
+      }
     }
     return;
   }
 
-  // Web fallback
-  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-    try {
-      navigator.vibrate([200, 100, 200, 100, 200]);
-    } catch {
-      // ignore
+  // Native — fire and forget
+  getHaptics().then((Haptics) => {
+    if (Haptics) {
+      Haptics.vibrate({ duration: 500 }).catch(() => {});
     }
-  }
+  });
 }
 
 // ── Listen for when a native notification is tapped ────────────────
