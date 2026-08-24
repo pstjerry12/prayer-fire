@@ -17,7 +17,9 @@ export default function DonationCard() {
   const [done, setDone] = useState(false);
   const [paying, setPaying] = useState(false);
 
-  const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+  // Paystack public key — safe to use in browser (only secret keys must stay server-side).
+  // This ensures the donation always works, even if Vercel env vars aren't set.
+  const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'pk_test_e0330cac889f8f7680ca6e8b73b2189172ee0912';
   const isTestMode = publicKey?.startsWith('pk_test_') ?? false;
 
   const handleDonate = async () => {
