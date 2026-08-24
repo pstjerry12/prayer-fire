@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Bell, Pencil, Check, Clock, Moon, Sun, Sunrise, Plus, Trash2, X, BellRing, Volume2, Music, Zap } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { playChime } from '@/lib/clientUtils';
 import { useApp } from '@/app/context';
-import { ALARM_TONES, previewAlarmTone, playAlarmTone, stopAlarm, type AlarmToneId } from '@/lib/alarmSound';
+import { ALARM_TONES, previewAlarmTone, playAlarmTone, stopAlarm, preloadAlarmSounds, type AlarmToneId } from '@/lib/alarmSound';
 import { isCapacitorNative, nativeVibrate, requestAlarmPermission } from '@/lib/capacitorAlarm';
 
 export interface PrayerAppointment {
@@ -52,6 +52,14 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
   const { markPrayedToday } = useApp();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [alarmFor, setAlarmFor] = useState<string | null>(null);
+  const preloadedRef = useRef(false);
+
+  // Preload all alarm sounds on first user interaction
+  const ensurePreloaded = () => {
+    if (preloadedRef.current) return;
+    preloadedRef.current = true;
+    preloadAlarmSounds();
+  };
   const [done, setDone] = useState<Record<string, boolean>>(() => {
     if (typeof window === 'undefined') return {};
     const today = new Date().toDateString();
@@ -155,6 +163,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
               // Some browsers need service worker for notifications
             }
             nativeVibrate();
+            ensurePreloaded();
             playAlarmTone('classic', 5);
           }}
           className="mb-4 flex items-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-bold hover:bg-amber-400 transition-colors shadow-md"
@@ -314,7 +323,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                         <p className="text-[11px] text-ink-muted truncate">{tone.description}</p>
                       </div>
                       <button
-                        onClick={() => previewAlarmTone(tone.id)}
+                        onClick={() => { ensurePreloaded(); previewAlarmTone(tone.id); }}
                         className="p-2 rounded-lg text-ink-muted hover:text-acc hover:bg-card-3"
                         title="Preview"
                       >
@@ -338,7 +347,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
             {/* Test + save */}
             <div className="flex gap-2">
               <button
-                onClick={() => playAlarmTone((alarmAppt.alarmTone as AlarmToneId) || 'classic', 6)}
+                onClick={() => { ensurePreloaded(); playAlarmTone((alarmAppt.alarmTone as AlarmToneId) || 'classic', 6); }}
                 className="flex-1 py-2.5 bg-warn text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:opacity-90"
               >
                 <Volume2 className="w-4 h-4" /> Test Alarm
