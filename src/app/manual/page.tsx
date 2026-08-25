@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronLeft, Bell, Pencil, Mic, BookMarked, Footprints, Flame, Clock, Zap, Users, Globe, Megaphone, Mic2, Headphones, Shield, BarChart3, Star } from 'lucide-react';
+import { ChevronLeft, Bell, Pencil, Mic, BookMarked, Footprints, Flame, Clock, Zap, Users, Globe, Megaphone, Mic2, Headphones, Shield, BarChart3, Star, ChevronRight } from 'lucide-react';
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
 
@@ -44,6 +44,225 @@ export default function UserManualPage() {
           <p className="text-ink-soft leading-relaxed mt-4">
             Prayer Fire Movement is not just another Christian app. It is a <strong>spiritual alarm system</strong> for your soul. It is a <strong>cure for prayerlessness</strong>. It is the tool that transforms your desire to pray into a <strong>daily, unbreakable habit</strong> — just like Daniel did in Babylon.
           </p>
+        </div>
+
+        {/* ====== HOW TO USE THE APP ====== */}
+        <h2 className="font-serif-heading text-2xl font-black text-ink mb-6 text-center">
+          📖 How To Use The App
+        </h2>
+
+        {/* 1. Prayer Workshop */}
+        <div className="bg-card rounded-2xl border border-edge p-5 mb-4">
+          <h3 className="font-bold text-ink text-lg mb-3 flex items-center gap-2">
+            <span className="p-2 rounded-lg bg-emerald-100 text-emerald-600"><Pencil className="w-4 h-4" /></span>
+            How To Write Your Prayer Requests
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-ink-soft text-sm leading-relaxed">
+            <li>Go to <strong>Home</strong> page and tap <strong>&quot;Write&quot;</strong> in the bottom navigation</li>
+            <li>Choose your prayer type: <strong>Family</strong>, <strong>Special</strong>, or <strong>Intercessory</strong></li>
+            <li>Tap the <strong>&quot;+ Add Prayer&quot;</strong> button</li>
+            <li>Type your prayer point in the text box (e.g. &quot;Lord, heal my mother&quot;)</li>
+            <li>Tap <strong>Save</strong> — your prayer is saved and appears in the list</li>
+            <li>Tap any prayer to read it in the <strong>Prayer Reader</strong> (large print modal)</li>
+            <li>Use <strong>Next / Previous</strong> to move through your prayers, then tap <strong>Amen</strong> to close</li>
+          </ol>
+        </div>
+
+        {/* 2. Start-Up Prayer */}
+        <div className="bg-card rounded-2xl border border-edge p-5 mb-4">
+          <h3 className="font-bold text-ink text-lg mb-3 flex items-center gap-2">
+            <span className="p-2 rounded-lg bg-amber-100 text-amber-600"><Footprints className="w-4 h-4" /></span>
+            How To Use The Start-Up Prayer Session
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-ink-soft text-sm leading-relaxed">
+            <li>Tap <strong>&quot;Start-Up&quot;</strong> in the bottom navigation</li>
+            <li>Tap the big <strong>&quot;Start Prayer&quot;</strong> button</li>
+            <li>The app guides you through <strong>7 steps</strong>, one at a time:
+              <ul className="list-disc list-inside ml-4 mt-1 space-y-0.5 text-xs">
+                <li><strong>Mercy</strong> — ask for God&apos;s mercy</li>
+                <li><strong>Thanksgiving</strong> — thank God for His blessings</li>
+                <li><strong>Holy Spirit</strong> — invite the Holy Spirit</li>
+                <li><strong>Intercession</strong> — pray for others</li>
+                <li><strong>Petition</strong> — present your personal requests</li>
+                <li><strong>Warfare</strong> — spiritual warfare prayers</li>
+                <li><strong>Prophetic</strong> — prophetic declarations</li>
+              </ul>
+            </li>
+            <li>A <strong>timer</strong> counts down for each step (default 5 minutes total)</li>
+            <li>You can <strong>edit the total timer</strong> — tap the pencil icon to change it</li>
+            <li>When all steps are done, a <strong>celebration popup</strong> with applause sound plays! 🎉</li>
+            <li>Tap <strong>Finish</strong> to end the session</li>
+          </ol>
+        </div>
+
+        {/* 3. Prayer Schedule & Alarms */}
+        <div className="bg-card rounded-2xl border border-edge p-5 mb-4">
+          <h3 className="font-bold text-ink text-lg mb-3 flex items-center gap-2">
+            <span className="p-2 rounded-lg bg-amber-100 text-amber-600"><Bell className="w-4 h-4" /></span>
+            How To Set Prayer Alarms
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-ink-soft text-sm leading-relaxed">
+            <li>Tap <strong>&quot;Fasting&quot;</strong> in the bottom nav, then go to <strong>Schedule</strong> page, or go directly to <strong>/schedule</strong></li>
+            <li>You see 3 default prayer times: <strong>Midnight Hour (12:00 AM)</strong>, <strong>Noon Prayer (12:00 PM)</strong>, <strong>Morning Watch (4:00 AM)</strong></li>
+            <li>Tap the <strong>✏️ pencil</strong> icon on any prayer time to change it</li>
+            <li>Pick the <strong>Hour</strong> and <strong>Minutes</strong> (every 5 minutes — e.g. 4:20 AM)</li>
+            <li>Tap <strong>Save Time</strong></li>
+            <li>Tap the <strong>🔔 Bell</strong> icon to open Alarm Settings</li>
+            <li>Choose your <strong>alarm sound</strong>: Classic Phone, Church Bells, Soft Chime, Digital Beep, or Morning Praise</li>
+            <li>Tap the 🔊 speaker icon to preview each sound</li>
+            <li>Toggle <strong>Alarm ON/OFF</strong></li>
+            <li>Tap <strong>Test Alarm</strong> to hear it ring now (it rings until you tap Dismiss)</li>
+            <li>Use <strong>+ Add</strong> to create more prayer times (e.g. 5:30 PM after work)</li>
+            <li>When prayer time arrives, the alarm <strong>rings continuously</strong> with a full-screen DISMISS button</li>
+          </ol>
+        </div>
+
+        {/* 4. Scripture Vault */}
+        <div className="bg-card rounded-2xl border border-edge p-5 mb-4">
+          <h3 className="font-bold text-ink text-lg mb-3 flex items-center gap-2">
+            <span className="p-2 rounded-lg bg-purple-100 text-purple-600"><BookMarked className="w-4 h-4" /></span>
+            How To Use The Scripture Vault
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-ink-soft text-sm leading-relaxed">
+            <li>Go to <strong>/scripture</strong> or tap Scripture in the navigation</li>
+            <li>Choose a <strong>language</strong>: English, Spanish, French, Portuguese, or Swahili</li>
+            <li>Browse through categories: Salvation, Faith, Peace, Strength, Wisdom, Love, and more</li>
+            <li>Tap any scripture card to read it in a large modal</li>
+            <li>A <strong>daily verse</strong> appears automatically on the home screen each day</li>
+          </ol>
+        </div>
+
+        {/* 5. KJV Bible */}
+        <div className="bg-card rounded-2xl border border-edge p-5 mb-4">
+          <h3 className="font-bold text-ink text-lg mb-3 flex items-center gap-2">
+            <span className="p-2 rounded-lg bg-blue-100 text-blue-600"><BookMarked className="w-4 h-4" /></span>
+            How To Read The KJV Bible
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-ink-soft text-sm leading-relaxed">
+            <li>Tap <strong>&quot;KJV Bible&quot;</strong> in the bottom navigation</li>
+            <li>All <strong>66 books</strong> are listed — Old Testament and New Testament</li>
+            <li>Tap any book (e.g. <strong>Psalms</strong>)</li>
+            <li>Tap a chapter number</li>
+            <li>Read the full chapter with all verses</li>
+            <li>The Bible works <strong>offline</strong> after the first read (verses are cached)</li>
+          </ol>
+        </div>
+
+        {/* 6. Fasting Tracker */}
+        <div className="bg-card rounded-2xl border border-edge p-5 mb-4">
+          <h3 className="font-bold text-ink text-lg mb-3 flex items-center gap-2">
+            <span className="p-2 rounded-lg bg-orange-100 text-orange-600"><Flame className="w-4 h-4" /></span>
+            How To Track Your Fasting
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-ink-soft text-sm leading-relaxed">
+            <li>Tap <strong>&quot;Fasting&quot;</strong> in the bottom navigation</li>
+            <li>Tap <strong>&quot;Start Fast&quot;</strong></li>
+            <li>Choose duration: <strong>3 days, 7 days, 21 days, or 40 days</strong></li>
+            <li>The tracker counts each day and shows your progress</li>
+            <li>Tap <strong>&quot;Break Fast&quot;</strong> if you need to end early</li>
+            <li>Your fasting history is saved so you can look back</li>
+          </ol>
+        </div>
+
+        {/* 7. Worship Player */}
+        <div className="bg-card rounded-2xl border border-edge p-5 mb-4">
+          <h3 className="font-bold text-ink text-lg mb-3 flex items-center gap-2">
+            <span className="p-2 rounded-lg bg-rose-100 text-rose-600"><Mic className="w-4 h-4" /></span>
+            How To Use The Worship Player
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-ink-soft text-sm leading-relaxed">
+            <li>Go to <strong>/worship</strong> page</li>
+            <li>Tap <strong>&quot;Upload Song&quot;</strong> to add a worship song from your phone</li>
+            <li>You can upload by <strong>file</strong> (MP3, audio files) or by <strong>URL</strong> (link to a song)</li>
+            <li>Uploaded songs are stored on your device (IndexedDB)</li>
+            <li>Tap any song to <strong>play</strong> it</li>
+            <li>Use play/pause, and volume controls</li>
+          </ol>
+        </div>
+
+        {/* 8. Prayer Groups */}
+        <div className="bg-card rounded-2xl border border-edge p-5 mb-4">
+          <h3 className="font-bold text-ink text-lg mb-3 flex items-center gap-2">
+            <span className="p-2 rounded-lg bg-teal-100 text-teal-600"><Users className="w-4 h-4" /></span>
+            How To Join &amp; Use Prayer Groups
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-ink-soft text-sm leading-relaxed">
+            <li>Go to <strong>/groups</strong> page</li>
+            <li>Browse existing groups or tap <strong>&quot;Join Group&quot;</strong></li>
+            <li>Enter the <strong>invite code</strong> (e.g. &quot;PRAYER&quot; for the official group)</li>
+            <li>Once joined, you can:
+              <ul className="list-disc list-inside ml-4 mt-1 space-y-0.5 text-xs">
+                <li><strong>Chat</strong> with other members</li>
+                <li>Send <strong>emergency alerts</strong></li>
+                <li>See the <strong>group prayer time</strong></li>
+                <li>Read the <strong>pinned verse</strong></li>
+                <li><strong>Mark prayed today</strong> for accountability</li>
+              </ul>
+            </li>
+            <li>To <strong>create your own group</strong>, you need the <strong>Fire Partner Leader</strong> plan</li>
+          </ol>
+        </div>
+
+        {/* 9. Partner Request Wall */}
+        <div className="bg-card rounded-2xl border border-edge p-5 mb-4">
+          <h3 className="font-bold text-ink text-lg mb-3 flex items-center gap-2">
+            <span className="p-2 rounded-lg bg-emerald-100 text-emerald-600"><Globe className="w-4 h-4" /></span>
+            How To Submit &amp; Pray For Partner Requests
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-ink-soft text-sm leading-relaxed">
+            <li>Go to <strong>/network</strong> page (Partners)</li>
+            <li>Tap <strong>&quot;Submit Request&quot;</strong></li>
+            <li>Enter your <strong>name</strong>, <strong>location</strong>, and <strong>prayer request</strong></li>
+            <li>Tap Submit — your request appears on the wall for others to see and pray for</li>
+            <li>Scroll through other people&apos;s requests and <strong>tap &quot;Prayed&quot;</strong> to let them know you prayed for them</li>
+            <li>The <strong>prayer count</strong> increases each time someone prays for a request</li>
+          </ol>
+        </div>
+
+        {/* 10. Donations */}
+        <div className="bg-card rounded-2xl border border-edge p-5 mb-4">
+          <h3 className="font-bold text-ink text-lg mb-3 flex items-center gap-2">
+            <span className="p-2 rounded-lg bg-red-100 text-red-600"><Flame className="w-4 h-4" /></span>
+            How To Donate
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-ink-soft text-sm leading-relaxed">
+            <li>Scroll down on the <strong>Home</strong> page to find the <strong>Donation Card</strong></li>
+            <li>Tap <strong>&quot;Donate Now&quot;</strong></li>
+            <li>Choose currency: <strong>₦ Naira</strong> or <strong>$ Dollar</strong></li>
+            <li>Enter the <strong>amount</strong></li>
+            <li>Optionally enter your <strong>name</strong> and <strong>email</strong></li>
+            <li>Tap <strong>&quot;Confirm Donation&quot;</strong></li>
+            <li>A Paystack payment popup opens — enter your card details</li>
+            <li>In <strong>Test Mode</strong>, use test card: <code className="bg-card-2 px-1 rounded">4084 0840 8408 4081</code>, PIN: <code className="bg-card-2 px-1 rounded">408408</code>, OTP: <code className="bg-card-2 px-1 rounded">123456</code></li>
+          </ol>
+        </div>
+
+        {/* 11. Dark Mode */}
+        <div className="bg-card rounded-2xl border border-edge p-5 mb-4">
+          <h3 className="font-bold text-ink text-lg mb-3 flex items-center gap-2">
+            <span className="p-2 rounded-lg bg-indigo-100 text-indigo-600"><Bell className="w-4 h-4" /></span>
+            How To Switch Dark Mode (Night Mode)
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-ink-soft text-sm leading-relaxed">
+            <li>Tap the <strong>🌙 Moon / ☀️ Sun</strong> icon in the top navigation bar</li>
+            <li>The app switches between <strong>Light</strong> (warm ivory) and <strong>Night</strong> (deep navy)</li>
+            <li>Your choice is saved — it remembers next time you open the app</li>
+          </ol>
+        </div>
+
+        {/* 12. Account & Sign Out */}
+        <div className="bg-card rounded-2xl border border-edge p-5 mb-8">
+          <h3 className="font-bold text-ink text-lg mb-3 flex items-center gap-2">
+            <span className="p-2 rounded-lg bg-gray-100 text-gray-600"><Users className="w-4 h-4" /></span>
+            How To Manage Your Account &amp; Sign Out
+          </h3>
+          <ol className="list-decimal list-inside space-y-2 text-ink-soft text-sm leading-relaxed">
+            <li>Tap the <strong>⋮ (3 dots)</strong> button in the top right of the Navbar</li>
+            <li>Tap <strong>&quot;My Account&quot;</strong> to view your profile</li>
+            <li>Tap <strong>&quot;Settings&quot;</strong> to change name, email, or password</li>
+            <li>Tap <strong>&quot;Sign Out&quot;</strong> to log out</li>
+            <li>To <strong>delete your account</strong>, go to Settings → scroll down → tap &quot;Delete Account&quot;</li>
+          </ol>
         </div>
 
         {/* ====== BENEFITS SECTION ====== */}
