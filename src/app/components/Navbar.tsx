@@ -139,6 +139,13 @@ export default function Navbar() {
                       >
                         <Settings className="w-4 h-4" /> Settings
                       </button>
+                      <Link
+                        href="/manual"
+                        onClick={() => setProfileOpen(false)}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-ink-soft hover:bg-card-2"
+                      >
+                        <BookOpen className="w-4 h-4" /> User Manual
+                      </Link>
                       <div className="h-px bg-edge my-1.5" />
                       <button
                         onClick={handleSignOut}
@@ -219,14 +226,23 @@ export default function Navbar() {
       {/* Mobile nav menu: categories */}
       {menuOpen && (
         <div className="absolute top-full left-0 right-0 bg-card border-b border-edge p-4 space-y-3 shadow-lg max-h-[80vh] overflow-y-auto">
-          <Link
-            href="/partner"
-            onClick={() => setMenuOpen(false)}
-            className="w-full flex items-center gap-3 p-3 bg-acc-soft rounded-xl text-acc-strong border border-acc-edge"
-          >
-            <Crown className="w-5 h-5" />
-            <span className="font-bold text-sm">Prayer Fire Partner</span>
-          </Link>
+           <Link
+             href="/partner"
+             onClick={() => setMenuOpen(false)}
+             className="w-full flex items-center gap-3 p-3 bg-acc-soft rounded-xl text-acc-strong border border-acc-edge"
+           >
+             <Crown className="w-5 h-5" />
+             <span className="font-bold text-sm">Prayer Fire Partner</span>
+           </Link>
+
+           <Link
+             href="/manual"
+             onClick={() => setMenuOpen(false)}
+             className="w-full flex items-center gap-3 p-3 bg-warn-soft rounded-xl text-warn-strong border border-warn-edge"
+           >
+             <BookOpen className="w-5 h-5" />
+             <span className="font-bold text-sm">📖 User Manual &amp; Benefits</span>
+           </Link>
 
           {MENU_CATEGORIES.map((cat) => (
             <div key={cat.id}>

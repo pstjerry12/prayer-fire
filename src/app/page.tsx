@@ -159,6 +159,21 @@ export default function HomePage() {
             <DonationCard />
           </div>
 
+          {/* ── User Manual ───────────────────────── */}
+          <Link
+            href="/manual"
+            className="flex items-center gap-3 mt-4 bg-card border border-edge rounded-2xl p-4 md:p-6 shadow-sm hover:border-acc transition-all"
+          >
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg bg-acc-soft text-acc flex items-center justify-center flex-shrink-0">
+              <span className="text-xl md:text-2xl">📖</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-ink font-bold text-sm md:text-base">User Manual &amp; Benefits</h3>
+              <p className="text-ink-muted text-[11px] md:text-sm mt-0.5">Discover how this app transforms your prayer life — and the spiritual power of each feature</p>
+            </div>
+            <span className="text-ink-faint text-lg md:text-xl">›</span>
+          </Link>
+
           {/* ── Premium banner ───────────────────── */}
           <Link
             href="/partner"
