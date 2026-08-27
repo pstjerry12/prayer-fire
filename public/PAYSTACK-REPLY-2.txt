@@ -1,0 +1,41 @@
+Subject: Re: Activation Request for Prayer Fire Action (1969698) - Clarification on Registration Type
+
+Dear Samuel,
+
+Thank you for the clear requirements. I understand what is needed and I want to comply fully.
+
+However, I have a situation that I need your guidance on:
+
+MY CURRENT STATUS:
+
+PRAYER FIRE ACTION is currently registered with CAC as a Business Name, NOT as Incorporated Trustees or Company Limited by Guarantee. This means:
+
+- I do NOT have Form CAC IT/1 or a CAC/IT certificate (because I am not registered as Incorporated Trustees)
+- I do NOT have a Certificate of Incorporation with RC number or MEMART (because I am not registered as Company Limited by Guarantee)
+- I cannot obtain a SCUML certificate because the SCUML portal requires either Incorporated Trustees or Company Limited by Guarantee registration, which I do not currently have
+
+WHAT I CAN PROVIDE NOW:
+
+- CAC Business Name Certificate for PRAYER FIRE ACTION
+- Valid government-issued ID
+- Proof of business address
+- Bank account statement matching the business name
+
+MY QUESTIONS:
+
+1. Will Paystack accept a CAC Business Name registration for a church/religious organization, or must I re-register as Incorporated Trustees before my account can be activated?
+
+2. If I must re-register as Incorporated Trustees, this process typically takes 4-8 weeks with CAC. Can my account be temporarily activated in the meantime so that my users can make donations while I complete the IT registration? I have a live application with active users at https://prayer-fire.vercel.app
+
+3. Is there any alternative document or interim arrangement Paystack can accept while I pursue the Incorporated Trustees registration?
+
+I am fully committed to meeting all regulatory requirements. I just need to understand the correct path forward so I can take the right steps without unnecessary delays.
+
+Thank you for your time and guidance.
+
+Warm regards,
+
+Pst. Jerry Chijioke
+Founder, Prayer Fire Movement
+Email: prayerfiremovemnt@gmail.com
+Website: https://prayer-fire.vercel.app

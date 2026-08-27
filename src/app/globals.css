@@ -1,0 +1,149 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-nunito), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-serif-heading: var(--font-fraunces), Georgia, "Times New Roman",
+    ui-serif, Georgia, Cambria, "Book Antiqua", serif;
+}
+
+/* Semantic color tokens — swap between light and dark via the `.dark` class. */
+@theme inline {
+  --color-page: var(--page);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-card-3: var(--card-3);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-ink-ghost: var(--ink-ghost);
+  --color-edge: var(--edge);
+  --color-edge-strong: var(--edge-strong);
+  --color-acc: var(--acc);
+  --color-acc-strong: var(--acc-strong);
+  --color-acc-soft: var(--acc-soft);
+  --color-acc-soft-2: var(--acc-soft-2);
+  --color-acc-edge: var(--acc-edge);
+  --color-danger: var(--danger);
+  --color-danger-strong: var(--danger-strong);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-soft-2: var(--danger-soft-2);
+  --color-danger-edge: var(--danger-edge);
+  --color-warn: var(--warn);
+  --color-warn-strong: var(--warn-strong);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-soft-2: var(--warn-soft-2);
+  --color-warn-edge: var(--warn-edge);
+}
+
+:root {
+  /* Light — warm ivory */
+  --page: #faf7f2;
+  --card: #ffffff;
+  --card-2: #f5f5f4;
+  --card-3: #e7e5e4;
+  --ink: #1f2937;
+  --ink-soft: #334155;
+  --ink-muted: #64748b;
+  --ink-faint: #94a3b8;
+  --ink-ghost: #cbd5e1;
+  --edge: #e7e5e4;
+  --edge-strong: #d6d3d1;
+  --acc: #059669;
+  --acc-strong: #047857;
+  --acc-soft: #ecfdf5;
+  --acc-soft-2: #d1fae5;
+  --acc-edge: #a7f3d0;
+  --danger: #dc2626;
+  --danger-strong: #b91c1c;
+  --danger-soft: #fef2f2;
+  --danger-soft-2: #fee2e2;
+  --danger-edge: #fecaca;
+  --warn: #d97706;
+  --warn-strong: #b45309;
+  --warn-soft: #fffbeb;
+  --warn-soft-2: #fef3c7;
+  --warn-edge: #fde68a;
+}
+
+.dark {
+  /* Dark — deep "midnight watch" navy */
+  --page: #0a1628;
+  --card: #0f1f3a;
+  --card-2: #14243f;
+  --card-3: #1b2c49;
+  --ink: #f1f5f9;
+  --ink-soft: #e2e8f0;
+  --ink-muted: #b6c2d4;
+  --ink-faint: #8b9bb4;
+  --ink-ghost: #64748b;
+  --edge: #1e2b45;
+  --edge-strong: #2c3d5c;
+  --acc: #34d399;
+  --acc-strong: #6ee7b7;
+  --acc-soft: rgba(16, 185, 129, 0.12);
+  --acc-soft-2: rgba(16, 185, 129, 0.2);
+  --acc-edge: rgba(52, 211, 153, 0.35);
+  --danger: #f87171;
+  --danger-strong: #fca5a5;
+  --danger-soft: rgba(239, 68, 68, 0.12);
+  --danger-soft-2: rgba(239, 68, 68, 0.2);
+  --danger-edge: rgba(248, 113, 113, 0.35);
+  --warn: #fbbf24;
+  --warn-strong: #fcd34d;
+  --warn-soft: rgba(245, 158, 11, 0.12);
+  --warn-soft-2: rgba(245, 158, 11, 0.2);
+  --warn-edge: rgba(251, 191, 36, 0.35);
+}
+
+/* Respect device notches / safe areas. */
+@utility safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+@utility safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide the boot splash instantly on repeat visits (same browser session).
+   The inline script in <head> adds this class before first paint. */
+html.pfm-splash-done [data-splash] {
+  display: none !important;
+}
+
+body {
+  font-family: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
+  background-color: var(--page);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1,
+h2,
+h3,
+.font-serif-heading {
+  font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
+}
+
+/* Thin, subtle scrollbars. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 113, 108, 0.35) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(120, 113, 108, 0.35);
+  border-radius: 9999px;
+}

@@ -1,0 +1,55 @@
+Subject: Business Verification Review - PRAYER FIRE ACTION (CAC Business Name) - Clarification on SCUML Requirement
+
+Dear Paystack Compliance Team,
+
+Thank you for reviewing my business verification. I appreciate the thorough process and I am committed to providing everything required to complete my account activation.
+
+I am writing to seek clarification on the SCUML certificate requirement as it relates to my specific business type.
+
+MY CURRENT REGISTRATION:
+
+- Business Name: PRAYER FIRE ACTION
+- CAC Registration Type: Business Name (not Incorporated Trustees)
+- Nature of Business: Churches / Religious Organization
+- What the app does: Prayer Fire Movement is a Christian prayer application. It is a faith-based, non-profit ministry tool. It does NOT involve currency exchange, bureau de change services, real estate or vehicle sales, dealership of any kind, or any activity typically flagged under SCUML's Designated Non-Financial Institutions (DNFI) list.
+
+THE ISSUE I AM FACING:
+
+The SCUML portal appears to classify Religious/Faith-Based Organizations under CAC/Incorporated Trustees, not under Business Name registrations. When I attempt to proceed with SCUML registration using my Business Name details, the system does not accommodate my registration type.
+
+This creates a situation where:
+
+1. My CAC Business Name registration is legitimate and verifiable
+2. But SCUML's portal seems to require Incorporated Trustees registration for faith-based organizations
+3. This means I may need to re-register with CAC as Incorporated Trustees before I can even apply for the SCUML certificate
+
+MY QUESTIONS TO PAYSTACK:
+
+1. Given that my business is a Church/Religious Organization, does Paystack require a SCUML certificate for this category? I note that SCUML primarily targets Designated Non-Financial Institutions (DNFIs) such as real estate agents, dealers in precious stones/metals, vehicle sellers, and other high-risk categories. A church/prayer app that receives voluntary donations may not fall within these categories.
+
+2. If a SCUML certificate IS required, will Paystack accept my current CAC Business Name registration, or must I first re-register as Incorporated Trustees before you can proceed with my verification?
+
+3. If Incorporated Trustees is required, can my account be activated temporarily while I complete the IT registration process? Re-registering with CAC as Incorporated Trustees is a process that can take weeks, and I have a live application (https://prayer-fire.vercel.app) with users who are already attempting to make donations.
+
+4. Are there alternative documents I can provide in place of SCUML, such as a letter from my church leadership, a religious organization certification, or any other compliance document that Paystack would accept for faith-based entities?
+
+WHAT I CAN PROVIDE RIGHT NOW:
+
+- CAC Business Name Certificate (PRAYER FIRE ACTION)
+- Valid government-issued ID
+- Proof of business address
+- Bank account details matching the business name
+- Any additional documentation you recommend
+
+I want to comply fully with all regulatory requirements. I am simply asking for guidance on the correct path forward given the gap between CAC's Business Name registration and SCUML's apparent requirement for Incorporated Trustees.
+
+I would be grateful for a prompt response, as my users are actively trying to support the ministry through donations and the payment integration is currently non-functional.
+
+Thank you for your time and assistance.
+
+Warm regards,
+
+Pst. Jerry Chijioke
+Founder, Prayer Fire Movement
+Email: prayerfiremovemnt@gmail.com
+Website: https://prayer-fire.vercel.app
