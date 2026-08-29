@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Prayer Fire Movement brand palette (mirrors the web app's fire theme).
+         styles.xml references these; without this file AAPT2 cannot resolve them. -->
+    <color name="colorPrimary">#E05050</color>
+    <color name="colorPrimaryDark">#2A0A0A</color>
+    <color name="colorAccent">#FF9800</color>
+</resources>

@@ -1,0 +1,16 @@
+{
+	"appId": "com.prayerfire.app",
+	"appName": "Prayer Fire Movement",
+	"webDir": "out",
+	"server": {
+		"url": "https://prayer-fire.vercel.app",
+		"cleartext": false
+	},
+	"plugins": {
+		"LocalNotifications": {
+			"smallIcon": "ic_stat_icon_config_sample",
+			"iconColor": "#E05050",
+			"sound": "beep.wav"
+		}
+	}
+}
