@@ -46,7 +46,9 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npx next typegen
       - run: npx tsc --noEmit
-      - run: npm run build         env:           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: npm run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
   android:
     name: Signed AAB + APK
