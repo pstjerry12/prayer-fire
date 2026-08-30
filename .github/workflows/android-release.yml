@@ -43,7 +43,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install
+      - run: npm ci --no-audit --no-fund
       - run: npx next typegen
       - run: npx tsc --noEmit
       - run: npm run build
@@ -71,7 +71,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci --no-audit --no-fund
 
       - name: Prepare Capacitor webDir
         run: bash scripts/prepare-android-webdir.sh
