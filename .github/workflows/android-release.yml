@@ -83,7 +83,7 @@ jobs:
         run: |
           mkdir -p android/keystore
           if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PROPERTIES" ]; then
-            printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/keystore/prayer-fire-upload.keystore
+            printf '%s' "$KEYSTORE_BASE64" | tr -d '\n\r ' | base64 --decode > android/keystore/prayer-fire-upload.keystore
             printf '%s\n' "$KEYSTORE_PROPERTIES" > android/keystore.properties
             chmod 600 android/keystore.properties android/keystore/prayer-fire-upload.keystore
             echo "Signing key restored — the bundle will be signed."
