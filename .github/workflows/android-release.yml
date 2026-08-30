@@ -67,8 +67,16 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - uses: android-actions/setup-android@v3
+            - uses: android-actions/setup-android@v3
 
+      # Windows commits lose the Unix execute bit on gradlew; restore it so
+      # the Gradle wrapper can actually run on the Linux runner.
+      - name: Make Gradle wrapper executable
+        run: chmod +x android/gradlew
+
+      # Caches the Gradle wrapper distribution + Maven dependencies in
+      # ~/.gradle across runs. The first run is always the slow one (it
+      # downloads ~1 GB); every run after this reuses the cache.
       - name: Gradle cache
         uses: gradle/actions/setup-gradle@v4
 
