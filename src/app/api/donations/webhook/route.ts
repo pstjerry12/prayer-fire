@@ -1,48 +1,44 @@
 import { NextResponse } from "next/server";
-import { createHmac } from "crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { donations } from "@/db/schema";
 
 /**
- * Paystack webhook. When a payment succeeds, Paystack sends a `charge.success`
- * event here (even if the donor closed their browser before our popup callback
- * ran). We verify the request signature with PAYSTACK_SECRET_KEY, then mark the
- * matching donation as successful.
+ * Flutterwave webhook. When a payment succeeds, Flutterwave sends a
+ * `charge.completed` event here (even if the donor closed their browser
+ * before our popup callback ran). We verify the request using the
+ * `verif-hash` header against FLW_SECRET_HASH, then mark the matching
+ * donation as successful.
  *
- * Point Paystack at:  https://prayer-fire.vercel.app/api/donations/webhook
- * (Paystack Dashboard → Settings → API Keys & Webhooks → Webhook URL)
+ * Point Flutterwave at:  https://prayer-fire.vercel.app/api/donations/webhook
+ * (Flutterwave Dashboard → Settings → Webhooks — set the same secret hash
+ * there as FLW_SECRET_HASH in your env vars; Flutterwave does not sign the
+ * payload, it just echoes back this shared secret in the verif-hash header)
  */
 export async function POST(request: Request) {
-  const secret = process.env.PAYSTACK_SECRET_KEY;
+  const secretHash = process.env.FLW_SECRET_HASH;
 
-  if (!secret) {
+  if (!secretHash) {
     return NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
   }
 
-  const raw = await request.text();
-  const signature = request.headers.get("x-paystack-signature");
-  if (!signature) {
-    return NextResponse.json({ error: "Missing signature" }, { status: 401 });
-  }
-
-  const expected = createHmac("sha512", secret).update(raw).digest("hex");
-  if (expected !== signature) {
+  const signature = request.headers.get("verif-hash");
+  if (!signature || signature !== secretHash) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
   let body: {
     event?: string;
-    data?: { reference?: string; status?: string };
+    data?: { tx_ref?: string; status?: string };
   };
   try {
-    body = JSON.parse(raw) as typeof body;
+    body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  if (body.event === "charge.success") {
-    const reference = body.data?.reference;
+  if (body.event === "charge.completed" && body.data?.status === "successful") {
+    const reference = body.data?.tx_ref;
     if (reference) {
       await db
         .update(donations)
