@@ -50,7 +50,6 @@ interface EventRow {
 }
 
 interface SettingsData {
-  paystack: { mode: string; publicKey: string; secretKey: string; isLive: boolean };
   adminEmail: string; jwtConfigured: boolean; googleConfigured: boolean;
 }
 
@@ -87,8 +86,8 @@ export default function AdminPage() {
   const [testSending, setTestSending] = useState(false);
   // Settings from DB
   const [dbSettings, setDbSettings] = useState<Record<string, string>>({});
-  const [paystackPublicInput, setPaystackPublicInput] = useState('');
-  const [paystackSecretInput, setPaystackSecretInput] = useState('');
+  const [flutterwavePublicInput, setFlutterwavePublicInput] = useState('');
+  const [flutterwaveSecretInput, setFlutterwaveSecretInput] = useState('');
   const [pricePartnerMonthly, setPricePartnerMonthly] = useState('2.99');
   const [pricePartnerYearly, setPricePartnerYearly] = useState('23.99');
   const [priceLeaderMonthly, setPriceLeaderMonthly] = useState('9.99');
@@ -110,8 +109,8 @@ export default function AdminPage() {
       setSettings(data);
       if (data.settings) {
         setDbSettings(data.settings);
-        if (data.settings.paystack_public_key) setPaystackPublicInput(data.settings.paystack_public_key);
-        if (data.settings.paystack_secret_key) setPaystackSecretInput('••••••••'); // masked
+        if (data.settings.flutterwave_public_key) setFlutterwavePublicInput(data.settings.flutterwave_public_key);
+        if (data.settings.flutterwave_secret_key) setFlutterwaveSecretInput('••••••••'); // masked
         if (data.settings.price_partner_monthly) setPricePartnerMonthly(data.settings.price_partner_monthly);
         if (data.settings.price_partner_yearly) setPricePartnerYearly(data.settings.price_partner_yearly);
         if (data.settings.price_leader_monthly) setPriceLeaderMonthly(data.settings.price_leader_monthly);
@@ -266,7 +265,7 @@ export default function AdminPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <StatCard label="Testimonials" value={String(testimonials.length)} icon={<MessageSquareHeart className="w-5 h-5" />} color="amber" />
               <StatCard label="Events" value={String(events.length)} icon={<CalendarDays className="w-5 h-5" />} color="blue" />
-              <StatCard label="Paystack" value={settings?.paystack.isLive ? 'LIVE' : 'TEST'} icon={<Key className="w-5 h-5" />} color={settings?.paystack.isLive ? 'emerald' : 'amber'} />
+              <StatCard label="Flutterwave" value={dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? 'LIVE' : 'TEST'} icon={<Key className="w-5 h-5" />} color={dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? 'emerald' : 'amber'} />
             </div>
             {/* Quick actions */}
             <div className="card p-5">
@@ -517,66 +516,70 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* Paystack — PASTE YOUR KEY HERE */}
-            <div className="bg-card border-2 rounded-2xl p-5" style={{ borderColor: dbSettings.paystack_public_key?.startsWith('pk_live_') ? '#059669' : '#d97706' }}>
+            {/* Flutterwave — PASTE YOUR KEY HERE */}
+            <div className="bg-card border-2 rounded-2xl p-5" style={{ borderColor: dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? '#059669' : '#d97706' }}>
               <div className="flex items-center gap-2 mb-3">
                 <Key className="w-5 h-5 text-text-fire" />
-                <h2 className="font-bold text-ink text-lg">💳 Paystack Live Key</h2>
+                <h2 className="font-bold text-ink text-lg">💳 Flutterwave Key</h2>
                 <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto',
-                  dbSettings.paystack_public_key?.startsWith('pk_live_') ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')}>
-                  {dbSettings.paystack_public_key?.startsWith('pk_live_') ? 'LIVE' : 'TEST'}
+                  dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')}>
+                  {dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? 'LIVE' : dbSettings.flutterwave_public_key ? 'TEST' : 'NOT SET'}
                 </span>
               </div>
 
-              {dbSettings.paystack_public_key?.startsWith('pk_live_') ? (
+              {dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? (
                 <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-4 mb-3">
-                  <p className="text-emerald-700 dark:text-emerald-300 font-semibold text-sm">✅ Paystack is LIVE — donations are working!</p>
-                  <p className="text-emerald-600 dark:text-emerald-400 text-xs mt-1">Public key: <code className="bg-emerald-100 dark:bg-emerald-900 px-1 rounded">{dbSettings.paystack_public_key}</code></p>
+                  <p className="text-emerald-700 dark:text-emerald-300 font-semibold text-sm">✅ Flutterwave is LIVE — donations are working!</p>
+                  <p className="text-emerald-600 dark:text-emerald-400 text-xs mt-1">Public key: <code className="bg-emerald-100 dark:bg-emerald-900 px-1 rounded">{dbSettings.flutterwave_public_key}</code></p>
+                </div>
+              ) : dbSettings.flutterwave_public_key ? (
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-3">
+                  <p className="text-amber-700 dark:text-amber-300 font-semibold text-sm">🧪 TEST mode — donations work but no real money moves. Paste your live key (starts with <code>FLWPUBK-</code>) below when you&apos;re done testing.</p>
                 </div>
               ) : (
                 <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-3">
-                  <p className="text-amber-700 dark:text-amber-300 font-semibold text-sm">⏳ Donations show "Coming Soon" — paste your live key below when Paystack approves you</p>
+                  <p className="text-amber-700 dark:text-amber-300 font-semibold text-sm">⏳ Donations show "Coming Soon" — paste a test key below to try it, then swap in your live key when ready</p>
                 </div>
               )}
 
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-semibold text-ink-muted block mb-1">Public Key (pk_live_...)</label>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">Public Key (FLWPUBK_TEST-... or FLWPUBK-...)</label>
                   <input
                     type="text"
-                    placeholder="pk_live_...paste your public key here..."
-                    value={paystackPublicInput}
-                    onChange={(e) => setPaystackPublicInput(e.target.value)}
+                    placeholder="FLWPUBK_TEST-...or FLWPUBK-...paste your public key here..."
+                    value={flutterwavePublicInput}
+                    onChange={(e) => setFlutterwavePublicInput(e.target.value)}
                     className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink font-mono placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-ink-muted block mb-1">Secret Key (sk_live_...) — stored securely in DB</label>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">Secret Key (FLWSECK_TEST-... or FLWSECK-...) — stored securely in DB</label>
                   <input
                     type="password"
-                    placeholder="sk_live_...paste your secret key here..."
-                    value={paystackSecretInput}
-                    onChange={(e) => setPaystackSecretInput(e.target.value)}
+                    placeholder="FLWSECK_TEST-...or FLWSECK-...paste your secret key here..."
+                    value={flutterwaveSecretInput}
+                    onChange={(e) => setFlutterwaveSecretInput(e.target.value)}
                     className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink font-mono placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                   />
                 </div>
                 <button
                   onClick={() => {
                     const updates: Record<string, string> = {};
-                    if (paystackPublicInput && paystackPublicInput !== '••••••••') updates.paystack_public_key = paystackPublicInput;
-                    if (paystackSecretInput && paystackSecretInput !== '••••••••') updates.paystack_secret_key = paystackSecretInput;
+                    if (flutterwavePublicInput && flutterwavePublicInput !== '••••••••') updates.flutterwave_public_key = flutterwavePublicInput;
+                    if (flutterwaveSecretInput && flutterwaveSecretInput !== '••••••••') updates.flutterwave_secret_key = flutterwaveSecretInput;
                     if (Object.keys(updates).length > 0) saveSettings(updates);
                   }}
                   disabled={settingsSaving}
                   className="w-full py-2.5 bg-gradient-to-r from-[#ff6a00] to-[#ff3d00] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 disabled:opacity-50"
                 >
-                  <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save Paystack Keys'}
+                  <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save Flutterwave Keys'}
                 </button>
               </div>
 
               <div className="mt-3 bg-card-2 rounded-xl p-3">
                 <p className="text-xs text-ink-muted leading-relaxed">
-                  💡 <strong>How it works:</strong> Paste your keys here and click Save. The app reads from the database first, so donations switch from "Coming Soon" to the real payment form <strong>instantly</strong> — no Vercel redeploy needed. You can also add these same keys to Vercel env vars as a backup.
+                  💡 <strong>How it works:</strong> Paste your <strong>test</strong> keys here first and click Save — the donation form switches to Flutterwave test mode <strong>instantly</strong>, no redeploy needed. Once you&apos;ve confirmed a test payment works end-to-end, come back and paste your <strong>live</strong> keys over them and click Save again to go live.
                 </p>
               </div>
             </div>
@@ -648,7 +651,7 @@ export default function AdminPage() {
                   { label: 'JWT Auth', ok: settings.jwtConfigured, detail: settings.jwtConfigured ? 'Configured' : 'Missing JWT_SECRET' },
                   { label: 'Google OAuth', ok: settings.googleConfigured, detail: settings.googleConfigured ? 'Configured' : 'Missing GOOGLE_CLIENT_ID' },
                   { label: 'Admin Email', ok: !!settings.adminEmail, detail: settings.adminEmail || 'Not set' },
-                  { label: 'Paystack Live', ok: dbSettings.paystack_public_key?.startsWith('pk_live_'), detail: dbSettings.paystack_public_key?.startsWith('pk_live_') ? 'LIVE — donations working' : 'TEST — donations show "Coming Soon"' },
+                  { label: 'Flutterwave Live', ok: dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-'), detail: dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? 'LIVE — donations working' : dbSettings.flutterwave_public_key ? 'TEST — practice mode' : 'NOT SET — donations show "Coming Soon"' },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center justify-between bg-card-2 rounded-lg px-4 py-3">
                     <span className="text-sm text-ink-soft">{item.label}</span>

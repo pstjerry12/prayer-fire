@@ -1,30 +1,40 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { donations } from "@/db/schema";
+import { donations, appSettings } from "@/db/schema";
 
-const FLUTTERWAVE_SECRET = process.env.FLUTTERWAVE_SECRET_KEY;
+/**
+ * Resolve the Flutterwave secret key: DB setting (pasted in admin) takes
+ * priority so switching test/live keys takes effect instantly, falling back
+ * to the FLUTTERWAVE_SECRET_KEY env var.
+ */
+async function getFlutterwaveSecret(): Promise<string | undefined> {
+  const rows = await db.select().from(appSettings).where(eq(appSettings.key, "flutterwave_secret_key")).limit(1);
+  return rows[0]?.value || process.env.FLUTTERWAVE_SECRET_KEY;
+}
 
 /**
  * Verify a Flutterwave transaction by tx_ref on the server.
  * This is what makes donations real: the client can never be trusted to say
  * "payment succeeded" — only Flutterwave's API can confirm it.
  *
- * Returns true if the payment is confirmed. If FLUTTERWAVE_SECRET_KEY is not
- * configured yet (the current demo state), we keep the old behaviour so the
- * site still works without a key.
+ * Returns true if the payment is confirmed. If no secret key is configured
+ * yet (the current demo state), we keep the old behaviour so the site still
+ * works without a key.
  */
 async function verifyFlutterwaveReference(
   reference: string,
   expectedAmount: number,
-  expectedCurrency: string
+  expectedCurrency: string,
+  secret: string | undefined
 ): Promise<boolean> {
-  if (!FLUTTERWAVE_SECRET) return true;
+  if (!secret) return true;
 
   try {
     const res = await fetch(
       `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(reference)}`,
-      { headers: { Authorization: `Bearer ${FLUTTERWAVE_SECRET}` } }
+      { headers: { Authorization: `Bearer ${secret}` } }
     );
     if (!res.ok) return false;
     const data = (await res.json()) as {
@@ -58,12 +68,13 @@ export async function POST(request: Request) {
     }
 
     const currency = body.currency || "NGN";
+    const secret = await getFlutterwaveSecret();
 
     // Confirm with Flutterwave before trusting the reference. Only when
     // verified do we mark the donation as a real success.
     const verified = body.reference
-      ? await verifyFlutterwaveReference(String(body.reference), Math.round(amount), currency)
-      : !FLUTTERWAVE_SECRET; // demo fallback when no key is configured
+      ? await verifyFlutterwaveReference(String(body.reference), Math.round(amount), currency, secret)
+      : !secret; // demo fallback when no key is configured
 
     const [row] = await db
       .insert(donations)

@@ -19,13 +19,14 @@ export default function DonationCard() {
   const [publicKey, setPublicKey] = useState('');
   const [isLiveMode, setIsLiveMode] = useState(false);
 
-  // Read the Flutterwave public key directly from the build-time env var.
+  // Fetch active Flutterwave key from API (DB setting overrides env var)
   useEffect(() => {
-    const key = process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY || '';
-    if (key) {
-      setPublicKey(key);
-      setIsLiveMode(key.startsWith('FLWPUBK-'));
-    }
+    fetch('/api/flutterwave-config').then(r => r.json()).then(data => {
+      if (data.publicKey) {
+        setPublicKey(data.publicKey);
+        setIsLiveMode(data.isLive);
+      }
+    }).catch(() => {});
   }, []);
 
   // ── If no live key is configured, show Coming Soon state ──
@@ -62,7 +63,7 @@ export default function DonationCard() {
 
     if (!publicKey) {
       setError(
-        'Payment is not connected. NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY is missing. Add it to Vercel env vars and redeploy.'
+        'Payment is not connected. Add your Flutterwave public key in the admin Settings tab, or set NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY in Vercel env vars.'
       );
       return;
     }

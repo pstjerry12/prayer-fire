@@ -30,7 +30,7 @@ export const TERMS_SECTIONS: LegalSection[] = [
   },
   {
     title: '7. Donations & Purchases',
-    body: 'Donations made through the Service are voluntary gifts. Payment processing is handled by third-party providers (such as Paystack or Stripe). Donations are generally non-refundable, except where required by law. Subscription fees are billed as described at the time of purchase and may be cancelled at any time.',
+    body: 'Donations made through the Service are voluntary gifts. Payment processing is handled by third-party providers (such as Flutterwave or Stripe). Donations are generally non-refundable, except where required by law. Subscription fees are billed as described at the time of purchase and may be cancelled at any time.',
   },
   {
     title: '8. Disclaimer of Warranties',
@@ -73,7 +73,7 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
   },
   {
     title: '6. Third-Party Services',
-    body: 'We use third-party services for authentication (Google), payments (Paystack/Stripe), and hosting (Vercel/Supabase). These providers have their own privacy policies governing the data they process.',
+    body: 'We use third-party services for authentication (Google), payments (Flutterwave/Stripe), and hosting (Vercel/Supabase). These providers have their own privacy policies governing the data they process.',
   },
   {
     title: '7. Your Rights',
