@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { HandHeart, Heart, ChevronDown, ChevronUp, Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '../utils/cn';
-import { openPaystack } from '@/lib/paystack';
+import { openFlutterwave } from '@/lib/flutterwave';
 
 type GiveCurrency = 'NGN' | 'USD';
 
@@ -19,14 +19,13 @@ export default function DonationCard() {
   const [publicKey, setPublicKey] = useState('');
   const [isLiveMode, setIsLiveMode] = useState(false);
 
-  // Fetch active Paystack key from API (DB setting overrides env var)
+  // Read the Flutterwave public key directly from the build-time env var.
   useEffect(() => {
-    fetch('/api/paystack-config').then(r => r.json()).then(data => {
-      if (data.publicKey) {
-        setPublicKey(data.publicKey);
-        setIsLiveMode(data.isLive);
-      }
-    }).catch(() => {});
+    const key = process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY || '';
+    if (key) {
+      setPublicKey(key);
+      setIsLiveMode(key.startsWith('FLWPUBK-'));
+    }
   }, []);
 
   // ── If no live key is configured, show Coming Soon state ──
@@ -43,7 +42,7 @@ export default function DonationCard() {
             Donations Coming Soon
           </h3>
           <p className="text-ink-muted text-sm leading-relaxed mb-3">
-            We are setting up secure payments through Paystack. Once approved, you will be able to give and support the global prayer movement.
+            We are setting up secure payments through Flutterwave. Once approved, you will be able to give and support the global prayer movement.
           </p>
           <p className="text-ink-faint text-xs leading-relaxed">
             In the meantime, you can still <strong className="text-ink-soft">write prayers, set alarms, track fasting, and use every feature</strong> of the app. The fire doesn&apos;t wait! 🔥
@@ -53,7 +52,7 @@ export default function DonationCard() {
     );
   }
 
-  // ── Live Paystack is active — full donation form ──
+  // ── Live Flutterwave is active — full donation form ──
   const handleDonate = async () => {
     const value = parseFloat(amount);
     if (!amount.trim() || Number.isNaN(value) || value <= 0) {
@@ -63,7 +62,7 @@ export default function DonationCard() {
 
     if (!publicKey) {
       setError(
-        'Payment is not connected. NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY is missing. Add it to Vercel env vars and redeploy.'
+        'Payment is not connected. NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY is missing. Add it to Vercel env vars and redeploy.'
       );
       return;
     }
@@ -71,14 +70,17 @@ export default function DonationCard() {
     setError('');
     setPaying(true);
 
+    // Flutterwave expects the actual amount (e.g. 1000 for ₦1000).
+    // The DB/donations API stores amounts multiplied by 100 for consistency
+    // with the previous Paystack (kobo) records.
     const amountInSmallestUnit = Math.round(value * 100);
     const donorEmail = email.trim() || 'donor@prayerfiremovement.com';
 
     try {
-      const opened = await openPaystack({
+      const opened = await openFlutterwave({
         key: publicKey,
         email: donorEmail,
-        amount: amountInSmallestUnit,
+        amount: value,
         currency,
         name: name.trim() || 'Anonymous',
         onSuccess: (reference) => {
@@ -101,14 +103,14 @@ export default function DonationCard() {
           setPaying(false);
         },
         onError: (err) => {
-          console.error('[DonationCard] Paystack error:', err);
-          setError('Paystack error: ' + (err?.message || 'Unknown error'));
+          console.error('[DonationCard] Flutterwave error:', err);
+          setError('Flutterwave error: ' + (err?.message || 'Unknown error'));
           setPaying(false);
         },
       });
 
       if (!opened) {
-        setError('Could not open Paystack payment window. Please check your internet connection and try again.');
+        setError('Could not open Flutterwave payment window. Please check your internet connection and try again.');
         setPaying(false);
       }
     } catch (err: any) {
@@ -148,7 +150,7 @@ export default function DonationCard() {
     <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
       {/* Live mode indicator */}
       <div className="bg-emerald-600 text-white text-[10px] font-bold text-center py-1.5 px-3 flex items-center justify-center gap-1.5">
-        🔒 Secure giving via Paystack (Live)
+        🔒 Secure giving via Flutterwave (Live)
       </div>
 
       {/* Collapsed header */}
@@ -270,7 +272,7 @@ export default function DonationCard() {
           </button>
 
           <p className="text-center text-ink-faint text-[10px] mt-2">
-            Secure giving via Paystack · 100% supports the prayer movement
+            Secure giving via Flutterwave · 100% supports the prayer movement
           </p>
         </div>
       )}
