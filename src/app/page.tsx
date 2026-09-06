@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-// DonationCard removed — public donations paused until Paystack approves
+import DonationCard from './components/DonationCard';
 import AnnouncementBanner from './components/AnnouncementBanner';
 import { useApp } from './context';
 
@@ -185,6 +185,10 @@ export default function HomePage() {
             </div>
             <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-warn" />
           </Link>
+
+          <div className="mt-4">
+            <DonationCard />
+          </div>
         </div>
       </main>
 

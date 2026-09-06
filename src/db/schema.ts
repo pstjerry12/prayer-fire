@@ -70,10 +70,10 @@ export const events = pgTable("events", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-// App settings controlled by admin (Paystack keys, pricing, feature flags, etc.)
+// App settings controlled by admin (Flutterwave keys, pricing, feature flags, etc.)
 // Key-value store so admin can change anything from the dashboard.
 export const appSettings = pgTable("app_settings", {
-  key: text("key").primaryKey(),    // e.g. "paystack_public_key", "price_partner_monthly"
+  key: text("key").primaryKey(),    // e.g. "flutterwave_public_key", "price_partner_monthly"
   value: text("value").notNull(),   // the actual value
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
