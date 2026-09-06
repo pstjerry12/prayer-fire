@@ -52,9 +52,10 @@ export const announcements = pgTable("announcements", {
 // Testimonials — admin reviews and approves before showing publicly.
 export const testimonials = pgTable("testimonials", {
   id: text("id").primaryKey(),
-  name: text("name").notNull(),
+  name: text("name"), // null when isAnonymous
   location: text("location"),
   testimony: text("testimony").notNull(),
+  isAnonymous: boolean("is_anonymous").notNull().default(false),
   approved: boolean("approved").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
