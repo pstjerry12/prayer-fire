@@ -29,8 +29,8 @@ export default function DonationCard() {
     }).catch(() => {});
   }, []);
 
-  // ── If no live key is configured, show Coming Soon state ──
-  if (!isLiveMode) {
+  // ── If no key (test or live) is configured, show Coming Soon state ──
+  if (!publicKey) {
     return (
       <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
         <div className="p-5 text-center">
@@ -149,9 +149,12 @@ export default function DonationCard() {
 
   return (
     <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
-      {/* Live mode indicator */}
-      <div className="bg-emerald-600 text-white text-[10px] font-bold text-center py-1.5 px-3 flex items-center justify-center gap-1.5">
-        🔒 Secure giving via Flutterwave (Live)
+      {/* Live/test mode indicator */}
+      <div className={cn(
+        'text-white text-[10px] font-bold text-center py-1.5 px-3 flex items-center justify-center gap-1.5',
+        isLiveMode ? 'bg-emerald-600' : 'bg-amber-600'
+      )}>
+        {isLiveMode ? '🔒 Secure giving via Flutterwave (Live)' : '🧪 Test mode — no real money moves'}
       </div>
 
       {/* Collapsed header */}
