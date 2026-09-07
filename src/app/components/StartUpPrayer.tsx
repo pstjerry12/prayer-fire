@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
-  Droplets, Award, Music, Heart, Users, Sparkles, Home, Check, Clock, Pencil, Loader2, PenLine,
+  Droplets, Award, Music, Heart, Users, Sparkles, Home, Check, Clock, Pencil, Loader2,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useApp } from '@/app/context';
@@ -297,13 +297,6 @@ export default function StartUpPrayer() {
 
       {currentStep?.isIntercessory && (
         <div className="mb-5 space-y-3">
-          <Link
-            href="/workshop?session=intercessory&returnTo=/startup"
-            className="w-full flex items-center justify-center gap-2 py-3 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-500 transition-all"
-          >
-            <PenLine className="w-4 h-4" /> Write a New Intercessory Prayer
-          </Link>
-
           {!user && (
             <p className="text-ink-faint text-[10px] text-center">
               Sign in to have your prayer points saved and available here every time you pray.
