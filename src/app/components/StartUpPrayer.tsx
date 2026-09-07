@@ -325,7 +325,8 @@ export default function StartUpPrayer() {
                   onClick={() => setIntercessoryOpenIndex(idx)}
                   className="w-full text-left bg-danger-soft/50 border border-danger-edge rounded-xl p-3 border-l-4 border-l-red-500 transition-all hover:brightness-95 active:scale-[0.99]"
                 >
-                  <h4 className="text-ink font-bold text-sm">[{prayer.category}] {prayer.title}</h4>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider mb-1 text-danger">🙏 {prayer.category} · Intercessory Prayer</p>
+                  <h4 className="text-ink font-bold text-sm">{prayer.title}</h4>
                   {prayer.details && <p className="text-ink-muted text-xs mt-1 italic line-clamp-2">{prayer.details}</p>}
                 </button>
               ))
