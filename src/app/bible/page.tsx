@@ -25,8 +25,8 @@ export default function BiblePage() {
             <BookOpen className="w-6 h-6 text-acc" />
           </div>
           <div>
-            <h1 className="font-serif-heading text-2xl font-bold text-ink">King James Bible</h1>
-            <p className="text-xs text-ink-muted">The complete KJV — read by book &amp; chapter</p>
+            <h1 className="font-serif-heading text-2xl font-bold text-ink">Holy Bible</h1>
+            <p className="text-xs text-ink-muted">Read by book &amp; chapter, in your chosen translation — fully offline</p>
           </div>
         </div>
 
