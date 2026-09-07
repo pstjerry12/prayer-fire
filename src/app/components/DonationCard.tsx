@@ -1,18 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { HandHeart, Heart, ChevronDown, ChevronUp, Loader2, AlertTriangle } from 'lucide-react';
+import { HandHeart, Heart, ChevronDown, Loader2 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { openFlutterwave } from '@/lib/flutterwave';
 
-type GiveCurrency = 'NGN' | 'USD';
+type GiveCurrency = 'NGN' | 'USD' | 'GBP' | 'EUR';
+
+const ANONYMOUS_DONOR_EMAIL = 'donor@prayerfiremovement.com';
 
 export default function DonationCard() {
   const [expanded, setExpanded] = useState(false);
   const [currency, setCurrency] = useState<GiveCurrency>('NGN');
   const [amount, setAmount] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
   const [paying, setPaying] = useState(false);
@@ -75,22 +75,21 @@ export default function DonationCard() {
     // The DB/donations API stores amounts multiplied by 100 for consistency
     // with the previous Paystack (kobo) records.
     const amountInSmallestUnit = Math.round(value * 100);
-    const donorEmail = email.trim() || 'donor@prayerfiremovement.com';
 
     try {
       const opened = await openFlutterwave({
         key: publicKey,
-        email: donorEmail,
+        email: ANONYMOUS_DONOR_EMAIL,
         amount: value,
         currency,
-        name: name.trim() || 'Anonymous',
+        name: 'Anonymous',
         onSuccess: (reference) => {
           fetch('/api/donations', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              name: name.trim() || 'Anonymous',
-              email: donorEmail,
+              name: 'Anonymous',
+              email: ANONYMOUS_DONOR_EMAIL,
               amount: amountInSmallestUnit,
               currency,
               reference,
@@ -157,99 +156,58 @@ export default function DonationCard() {
         {isLiveMode ? '🔒 Secure giving via Flutterwave (Live)' : '🧪 Test mode — no real money moves'}
       </div>
 
-      {/* Collapsed header */}
+      {/* Header */}
       <div className="p-4">
-        <div className="flex items-center gap-2 mb-1.5">
-          <HandHeart className="w-4 h-4 text-[#ff6a00]" />
-          <span className="text-[#ff6a00] text-[10px] font-bold uppercase tracking-wider">Support the Movement</span>
-        </div>
-        <p className="text-ink-muted text-xs leading-relaxed mb-4">
-          Your gift fuels the global prayer movement — reaching nations and standing in the gap.
-        </p>
+        <h3 className="font-serif-heading text-base font-bold text-ink">Partner With Us</h3>
+        <p className="text-ink-muted text-xs mt-0.5 mb-4">Kept free by people like you</p>
 
-        {!expanded && (
-          <button
-            onClick={() => { setExpanded(true); setError(''); }}
-            className="w-full py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#ff6a00] to-[#ff3d00] hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-          >
-            <Heart className="w-4 h-4" /> Donate Now
-            <ChevronDown className="w-4 h-4" />
-          </button>
-        )}
+        <button
+          onClick={() => { setExpanded((v) => !v); setError(''); }}
+          aria-expanded={expanded}
+          className="w-full py-2.5 rounded-xl font-bold text-sm text-[#ff6a00] bg-transparent border border-[#ff6a00]/40 hover:bg-[#ff6a00]/5 transition-colors flex items-center justify-center gap-2"
+        >
+          Give
+          <ChevronDown className={cn('w-4 h-4 transition-transform duration-300', expanded && 'rotate-180')} />
+        </button>
       </div>
 
-      {/* Expanded form */}
-      {expanded && (
-        <div className="border-t border-edge px-4 pb-4">
+      {/* Expanding give panel */}
+      <div
+        className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
+        style={{ maxHeight: expanded ? '480px' : '0px' }}
+      >
+        <div className="border-t border-edge px-4 pt-4 pb-4">
+          <p className="text-ink-muted text-xs leading-relaxed mb-4">
+            Your voluntary gifts help revive prayer among Christians worldwide.
+          </p>
+
           {/* Currency */}
-          <div className="mt-4">
-            <label className="block text-xs font-semibold text-ink-muted mb-1.5">Choose currency</label>
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              <button
-                onClick={() => setCurrency('NGN')}
-                className={cn(
-                  'py-2 rounded-lg border-2 text-sm font-bold transition-all',
-                  currency === 'NGN'
-                    ? 'border-[#ff6a00] bg-[#fff4ec] text-[#ff6a00] dark:bg-warn-soft dark:text-warn-strong'
-                    : 'border-edge bg-card-2 text-ink-muted hover:border-edge-strong'
-                )}
-              >
-                ₦ Naira
-              </button>
-              <button
-                onClick={() => setCurrency('USD')}
-                className={cn(
-                  'py-2 rounded-lg border-2 text-sm font-bold transition-all',
-                  currency === 'USD'
-                    ? 'border-[#ff6a00] bg-[#fff4ec] text-[#ff6a00] dark:bg-warn-soft dark:text-warn-strong'
-                    : 'border-edge bg-card-2 text-ink-muted hover:border-edge-strong'
-                )}
-              >
-                $ Dollar
-              </button>
-            </div>
+          <label className="block text-xs font-semibold text-ink-muted mb-1.5">Currency</label>
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as GiveCurrency)}
+            className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink mb-3 focus:outline-none focus:ring-2 focus:ring-[#ff6a00]/40 focus:border-[#ff6a00]"
+          >
+            <option value="NGN">NGN — Naira</option>
+            <option value="USD">USD — Dollar</option>
+            <option value="GBP">GBP — Pound</option>
+            <option value="EUR">EUR — Euro</option>
+          </select>
 
-            {/* Amount */}
-            <label className="block text-xs font-semibold text-ink-muted mb-1.5">Amount ({currency === 'NGN' ? '₦' : '$'})</label>
-            <div className="relative mb-4">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-ink-muted pointer-events-none">
-                {currency === 'NGN' ? '₦' : '$'}
-              </span>
-              <input
-                type="tel"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder={currency === 'NGN' ? 'e.g. 1000' : 'e.g. 10'}
-                value={amount}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/[^0-9.]/g, '');
-                  setAmount(val);
-                  setError('');
-                }}
-                className="w-full bg-card border border-edge-strong rounded-lg pl-9 pr-3 py-3 text-base font-bold text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-[#ff6a00]/40 focus:border-[#ff6a00]"
-              />
-            </div>
-          </div>
-
-          {/* Donor fields */}
-          <div className="mb-4">
-            <label className="block text-xs font-semibold text-ink-muted mb-1.5">Name (optional)</label>
-            <input
-              type="text"
-              placeholder="Your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-[#ff6a00]/40 focus:border-[#ff6a00]"
-            />
-            <label className="block text-xs font-semibold text-ink-muted mb-1.5 mt-2.5">Email (optional)</label>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-[#ff6a00]/40 focus:border-[#ff6a00]"
-            />
-          </div>
+          {/* Amount */}
+          <label className="block text-xs font-semibold text-ink-muted mb-1.5">Amount</label>
+          <input
+            type="tel"
+            inputMode="decimal"
+            placeholder="Enter any amount"
+            value={amount}
+            onChange={(e) => {
+              const val = e.target.value.replace(/[^0-9.]/g, '');
+              setAmount(val);
+              setError('');
+            }}
+            className="w-full bg-card border border-edge-strong rounded-lg px-3 py-3 text-base font-bold text-ink placeholder-ink-faint mb-4 focus:outline-none focus:ring-2 focus:ring-[#ff6a00]/40 focus:border-[#ff6a00]"
+          />
 
           {/* Error */}
           {error && (
@@ -258,28 +216,21 @@ export default function DonationCard() {
             </div>
           )}
 
-          {/* Confirm Donation button */}
+          {/* Continue button */}
           <button
             onClick={handleDonate}
             disabled={paying}
             className="w-full py-3.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#ff6a00] to-[#ff3d00] hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
           >
             {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className="w-4 h-4" />}
-            {paying ? 'Opening payment…' : 'Confirm Donation'}
-          </button>
-
-          <button
-            onClick={() => { setExpanded(false); setError(''); }}
-            className="w-full mt-2 py-2.5 rounded-xl font-semibold text-sm text-ink-muted hover:text-ink flex items-center justify-center gap-1.5 transition-colors"
-          >
-            <ChevronUp className="w-4 h-4" /> Cancel
+            {paying ? 'Opening payment…' : 'Continue'}
           </button>
 
           <p className="text-center text-ink-faint text-[10px] mt-2">
             Secure giving via Flutterwave · 100% supports the prayer movement
           </p>
         </div>
-      )}
+      </div>
     </div>
   );
 }

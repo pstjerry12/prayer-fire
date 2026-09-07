@@ -40,8 +40,8 @@ interface AnnouncementRow {
 }
 
 interface TestimonialRow {
-  id: string; name: string; location: string | null; testimony: string;
-  approved: boolean; createdAt: string | null;
+  id: string; name: string | null; location: string | null; testimony: string;
+  isAnonymous: boolean; approved: boolean; createdAt: string | null;
 }
 
 interface EventRow {
@@ -375,7 +375,7 @@ export default function AdminPage() {
                   <div key={t.id} className="flex items-start gap-3 p-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="text-ink font-semibold text-sm">{t.name}</p>
+                        <p className="text-ink font-semibold text-sm">{t.isAnonymous || !t.name ? 'Anonymous' : t.name}</p>
                         <span className="text-ink-muted text-xs">{t.location}</span>
                         <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full', t.approved ? 'bg-acc-soft-2 text-acc-strong' : 'bg-amber-100 text-amber-700')}>
                           {t.approved ? 'VISIBLE' : 'HIDDEN'}

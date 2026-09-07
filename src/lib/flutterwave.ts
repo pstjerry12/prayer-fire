@@ -35,7 +35,7 @@ export interface FlutterwaveOptions {
   key: string;
   email: string;
   amount: number;
-  currency: 'NGN' | 'USD';
+  currency: 'NGN' | 'USD' | 'GBP' | 'EUR';
   name?: string;
   onSuccess: (reference: string) => void;
   onCancel: () => void;

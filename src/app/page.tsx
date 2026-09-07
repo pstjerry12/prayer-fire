@@ -7,6 +7,7 @@ import {
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import DonationCard from './components/DonationCard';
+import TestimonyCard from './components/TestimonyCard';
 import AnnouncementBanner from './components/AnnouncementBanner';
 import { useApp } from './context';
 
@@ -188,6 +189,10 @@ export default function HomePage() {
 
           <div className="mt-4">
             <DonationCard />
+          </div>
+
+          <div className="mt-4">
+            <TestimonyCard />
           </div>
         </div>
       </main>

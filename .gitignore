@@ -18,3 +18,5 @@ tsconfig.tsbuildinfo
 
 # Download zip
 prayer-fire.zip
+.vercel
+.env*
