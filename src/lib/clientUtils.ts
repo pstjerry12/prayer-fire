@@ -18,60 +18,119 @@ export const playChime = () => {
   osc.stop(ctx.currentTime + 0.5);
 };
 
-// A single hand-clap impulse: a short burst of filtered noise. Real claps
-// are broadband transients (not a tone), so this is noise shaped by a
-// bandpass filter — the filter's center frequency and the clap's length are
-// randomized per-call so hundreds of them layered together don't sound like
-// one clap on a loop.
-function clap(ctx: AudioContext, at: number, gainVal: number, pan: number) {
-  const dur = 0.02 + Math.random() * 0.035; // 20-55ms — a real clap is short
-  const bufferSize = Math.max(1, Math.floor(ctx.sampleRate * dur));
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
+// A short, synthetic room impulse response (exponentially-decaying noise)
+// for a ConvolverNode. This is the single biggest lever for making
+// synthesized transients — like claps — stop sounding like isolated
+// "clicks" and start sounding like they're happening in a real room: real
+// applause is drenched in overlapping reflections that blend hundreds of
+// claps into one wash of sound.
+function createRoomImpulse(ctx: AudioContext, duration = 0.7, decay = 2.6): AudioBuffer {
+  const length = Math.max(1, Math.floor(ctx.sampleRate * duration));
+  const impulse = ctx.createBuffer(2, length, ctx.sampleRate);
+  for (let channel = 0; channel < 2; channel++) {
+    const data = impulse.getChannelData(channel);
+    for (let i = 0; i < length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+    }
   }
+  return impulse;
+}
 
-  const source = ctx.createBufferSource();
-  source.buffer = buffer;
+// A single hand-clap impulse, built from two layers rather than one flat
+// noise burst — real claps aren't a pure tone-less "click", they're a sharp
+// broadband snap plus a softer, lower resonance from the cupped-hand
+// cavity right underneath it:
+//   • snap — very short, bright, wide bandpass (the "crack")
+//   • body — slightly longer, low bandpass at low gain (the "thud")
+// Both layers, and their exact frequencies/durations, are randomized per
+// clap so hundreds of them layered together don't sound like one clap
+// copy-pasted on a loop. A shared `reverbBus` gives every clap the same
+// room tail so they blend together instead of sounding pasted-in dry.
+function clap(ctx: AudioContext, at: number, gainVal: number, pan: number, reverbBus: AudioNode) {
+  const dur = 0.018 + Math.random() * 0.03; // 18-48ms — a real clap is short
+  const noiseBuffer = (() => {
+    const bufferSize = Math.max(1, Math.floor(ctx.sampleRate * dur));
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    return buffer;
+  })();
 
-  // Bandpass centered somewhere in the 1.2-4kHz "clap" range, with a bit of
-  // per-clap variation so the crowd doesn't sound uniform.
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'bandpass';
-  filter.frequency.value = 1200 + Math.random() * 2800;
-  filter.Q.value = 0.7 + Math.random() * 0.6;
+  const mix = ctx.createGain(); // sums snap + body before panning/reverb send
 
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.0001, at);
-  gain.gain.exponentialRampToValueAtTime(gainVal, at + 0.003); // near-instant attack, like a real clap
-  gain.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+  // Snap — the bright crack of palm meeting palm.
+  const snapSource = ctx.createBufferSource();
+  snapSource.buffer = noiseBuffer;
+  const snapFilter = ctx.createBiquadFilter();
+  snapFilter.type = 'bandpass';
+  snapFilter.frequency.value = 1800 + Math.random() * 2600;
+  snapFilter.Q.value = 0.6 + Math.random() * 0.5;
+  const snapGain = ctx.createGain();
+  snapGain.gain.setValueAtTime(0.0001, at);
+  snapGain.gain.exponentialRampToValueAtTime(gainVal, at + 0.0015);
+  snapGain.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+  snapSource.connect(snapFilter);
+  snapFilter.connect(snapGain);
+  snapGain.connect(mix);
+  snapSource.start(at);
+  snapSource.stop(at + dur + 0.02);
 
-  let destination: AudioNode = ctx.destination;
+  // Body — the softer low thud of the cupped-hand cavity, arriving with
+  // the snap but lingering a touch longer underneath it.
+  const bodyDur = dur * (1.6 + Math.random() * 0.6);
+  const bodySource = ctx.createBufferSource();
+  bodySource.buffer = noiseBuffer;
+  const bodyFilter = ctx.createBiquadFilter();
+  bodyFilter.type = 'bandpass';
+  bodyFilter.frequency.value = 220 + Math.random() * 380;
+  bodyFilter.Q.value = 1.1 + Math.random() * 0.5;
+  const bodyGain = ctx.createGain();
+  bodyGain.gain.setValueAtTime(0.0001, at);
+  bodyGain.gain.exponentialRampToValueAtTime(gainVal * 0.32, at + 0.004);
+  bodyGain.gain.exponentialRampToValueAtTime(0.0001, at + bodyDur);
+  bodySource.connect(bodyFilter);
+  bodyFilter.connect(bodyGain);
+  bodyGain.connect(mix);
+  bodySource.start(at);
+  bodySource.stop(at + bodyDur + 0.02);
+
   if (ctx.createStereoPanner) {
     const panner = ctx.createStereoPanner();
     panner.pan.value = pan;
+    mix.connect(panner);
     panner.connect(ctx.destination);
-    destination = panner;
+  } else {
+    mix.connect(ctx.destination);
   }
-
-  source.connect(filter);
-  filter.connect(gain);
-  gain.connect(destination);
-  source.start(at);
-  source.stop(at + dur + 0.02);
+  // Send the same signal into the shared room reverb so every clap blends
+  // into a common ambience instead of sounding pasted in dry.
+  mix.connect(reverbBus);
 }
 
 // A natural-sounding round of applause (~3 seconds): many individually
-// randomized claps layered together, following a crowd-clapping density
-// curve — a quick build as people start clapping, a busy sustained wash,
-// then a gradual taper as it dies down. No two plays sound identical.
+// randomized two-layer claps, all sharing one room reverb tail, layered
+// together following a crowd-clapping density curve — a quick build as
+// people start clapping, a busy sustained wash, then a gradual taper as it
+// dies down. No two plays sound identical.
 export const playCelebration = () => {
   if (typeof window === 'undefined') return;
   const AC = window.AudioContext || (window as any).webkitAudioContext;
   if (!AC) return;
   const ctx = new AC();
   const now = ctx.currentTime;
+
+  // Shared room bus: every clap feeds into this one convolver, so the
+  // reflections of hundreds of claps overlap and blend like a real room
+  // instead of each clap carrying its own isolated dry click.
+  const reverbBus = ctx.createGain();
+  reverbBus.gain.value = 0.9;
+  const convolver = ctx.createConvolver();
+  convolver.buffer = createRoomImpulse(ctx);
+  const reverbWet = ctx.createGain();
+  reverbWet.gain.value = 0.5;
+  reverbBus.connect(convolver);
+  convolver.connect(reverbWet);
+  reverbWet.connect(ctx.destination);
 
   const DURATION = 3.0;
   const PEAK_CLAPS_PER_SEC = 26;
@@ -94,7 +153,7 @@ export const playCelebration = () => {
     const envelopeGain = 0.16 + (densityAt(t) / PEAK_CLAPS_PER_SEC) * 0.14;
     const gainVal = envelopeGain * (0.6 + Math.random() * 0.6);
     const pan = Math.random() * 1.6 - 0.8;
-    clap(ctx, now + t, gainVal, pan);
+    clap(ctx, now + t, gainVal, pan, reverbBus);
   }
 };
 
