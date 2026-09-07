@@ -1,7 +1,3 @@
--- Testimonials: schema migration + 5 approved seed testimonies.
--- Safe to re-run: the ALTERs are idempotent and the INSERT uses fixed
--- ids with ON CONFLICT DO NOTHING so it won't duplicate rows.
-
 ALTER TABLE testimonials ALTER COLUMN name DROP NOT NULL;
 ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS is_anonymous boolean NOT NULL DEFAULT false;
 
