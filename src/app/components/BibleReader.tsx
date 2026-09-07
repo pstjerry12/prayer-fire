@@ -2,35 +2,20 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  BookOpen, ChevronLeft, Volume2, Loader2, WifiOff, BookMarked, ListOrdered,
+  BookOpen, ChevronLeft, Volume2, Loader2, BookMarked, ListOrdered, AlertTriangle, ChevronDown,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { BIBLE_BOOKS } from '@/app/data/bibleBooks';
 import { speakText } from '@/lib/clientUtils';
-
-interface BibleVerseText {
-  verse: number;
-  text: string;
-}
-
-const CACHE_KEY = (slug: string, chapter: number) => `upp_bible_kjv_${slug}_${chapter}`;
-
-function cacheGet(slug: string, chapter: number): BibleVerseText[] | null {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY(slug, chapter));
-    return raw ? (JSON.parse(raw) as BibleVerseText[]) : null;
-  } catch {
-    return null;
-  }
-}
-
-function cacheSet(slug: string, chapter: number, verses: BibleVerseText[]) {
-  try {
-    localStorage.setItem(CACHE_KEY(slug, chapter), JSON.stringify(verses));
-  } catch {
-    // ignore quota errors
-  }
-}
+import { loadTranslation, getChapter, type BibleVerse } from '@/lib/bible/loadTranslation';
+import {
+  BIBLE_TRANSLATIONS,
+  DEFAULT_TRANSLATION,
+  getSelectedTranslation,
+  setSelectedTranslation,
+  getTranslationMeta,
+  type TranslationId,
+} from '@/lib/bible/translations';
 
 function range(n: number): number[] {
   return Array.from({ length: n }, (_, i) => i + 1);
@@ -50,56 +35,48 @@ export default function BibleReader() {
   const [book, setBook] = useState('Genesis');
   const [chapter, setChapter] = useState(1);
   const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
-  const [verses, setVerses] = useState<BibleVerseText[] | null>(null);
+  const [verses, setVerses] = useState<BibleVerse[] | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [offline, setOffline] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
+  // Default to KJV on first load; getSelectedTranslation() only reads
+  // localStorage client-side, so this stays DEFAULT_TRANSLATION during SSR.
+  const [translationId, setTranslationId] = useState<TranslationId>(DEFAULT_TRANSLATION);
 
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  useEffect(() => {
+    setTranslationId(getSelectedTranslation());
+  }, []);
 
   const currentBook = BIBLE_BOOKS.find((b) => b.name === book) ?? BIBLE_BOOKS[0];
   const otBooks = BIBLE_BOOKS.filter((b) => b.testament === 'OT');
   const ntBooks = BIBLE_BOOKS.filter((b) => b.testament === 'NT');
+  const translationMeta = getTranslationMeta(translationId);
 
-  const loadChapter = useCallback(async (slug: string, ch: number) => {
+  const loadChapter = useCallback(async (osis: string, ch: number, translation: TranslationId) => {
     setLoading(true);
-    setError('');
-    setOffline(false);
+    setUnavailable(false);
     setVerses(null);
     setSelectedVerse(null);
 
-    const cached = cacheGet(slug, ch);
-    if (cached) {
-      setVerses(cached);
-      setLoading(false);
-      return;
-    }
-
     try {
-      const res = await fetch(
-        `https://bible-api.com/${encodeURIComponent(slug)}+${ch}?translation=kjv`
-      );
-      if (!res.ok) throw new Error('not found');
-      const data = (await res.json()) as { verses?: { verse: number; text: string }[] };
-      const list: BibleVerseText[] = (data.verses ?? []).map((v) => ({
-        verse: v.verse,
-        text: (v.text || '').replace(/\s+/g, ' ').trim(),
-      }));
-      if (list.length === 0) throw new Error('empty');
-      setVerses(list);
-      cacheSet(slug, ch, list);
+      const data = await loadTranslation(translation);
+      const chapterData = getChapter(data, osis, ch);
+      if (!chapterData) throw new Error('chapter not found');
+      setVerses(chapterData.verses);
     } catch {
-      setError("Couldn't load this chapter. Check your internet connection and try again.");
-      setOffline(true);
+      // Bundled local JSON failed to load/parse — a packaging problem, not a
+      // network one, since there's no external API involved anymore.
+      setUnavailable(true);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (step === 3) loadChapter(currentBook.slug, chapter);
+    if (step === 3) loadChapter(currentBook.osis, chapter, translationId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, book, chapter]);
+  }, [step, book, chapter, translationId]);
 
   function selectBook(name: string) {
     const b = BIBLE_BOOKS.find((x) => x.name === name);
@@ -114,6 +91,11 @@ export default function BibleReader() {
     setStep(3); // go to the verses page
   }
 
+  function changeTranslation(id: TranslationId) {
+    setTranslationId(id);
+    setSelectedTranslation(id);
+  }
+
   function jumpToVerse(n: number) {
     setSelectedVerse(n);
     const el = verseRefs.current[n];
@@ -122,12 +104,29 @@ export default function BibleReader() {
 
   function readChapter() {
     if (!verses) return;
-    const text = verses.map((v) => `${v.verse}. ${v.text}`).join(' ');
+    const text = verses.map((v) => `${v.number}. ${v.text}`).join(' ');
     speakText(`${book} chapter ${chapter}. ${text}`);
   }
 
   return (
     <div className="space-y-4">
+      {/* ── Translation picker ───────────────────────────────────── */}
+      <div className="flex items-center justify-between gap-3 bg-card rounded-2xl border border-edge px-4 py-3">
+        <span className="text-xs font-semibold text-ink-muted">Translation</span>
+        <div className="relative">
+          <select
+            value={translationId}
+            onChange={(e) => changeTranslation(e.target.value as TranslationId)}
+            className="appearance-none bg-card-2 border border-edge-strong rounded-lg pl-3 pr-8 py-2 text-sm font-bold text-acc-strong cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+          >
+            {BIBLE_TRANSLATIONS.map((t) => (
+              <option key={t.id} value={t.id}>{t.shortName} — {t.name}</option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-faint" />
+        </div>
+      </div>
+
       {/* ── Step indicator ───────────────────────────────────────── */}
       <div className="flex items-center gap-1.5">
         {STEPS.map((s, i) => (
@@ -231,14 +230,14 @@ export default function BibleReader() {
               <div className="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 gap-1.5">
                 {verses.map((v) => (
                   <button
-                    key={v.verse}
-                    onClick={() => jumpToVerse(v.verse)}
+                    key={v.number}
+                    onClick={() => jumpToVerse(v.number)}
                     className={cn(
                       'grid h-9 place-items-center rounded-lg text-xs font-bold transition-all',
-                      selectedVerse === v.verse ? 'bg-warn text-white' : 'bg-card-2 text-ink-muted hover:text-ink hover:bg-card-3'
+                      selectedVerse === v.number ? 'bg-warn text-white' : 'bg-card-2 text-ink-muted hover:text-ink hover:bg-card-3'
                     )}
                   >
-                    {v.verse}
+                    {v.number}
                   </button>
                 ))}
               </div>
@@ -258,7 +257,7 @@ export default function BibleReader() {
                   <h2 className="font-serif-heading text-lg font-bold text-ink truncate">
                     {book} {chapter}
                   </h2>
-                  <p className="text-[11px] text-ink-muted">King James Version</p>
+                  <p className="text-[11px] text-ink-muted">{translationMeta.name}</p>
                 </div>
               </div>
               {verses && !loading && (
@@ -273,11 +272,11 @@ export default function BibleReader() {
                 <Loader2 className="w-6 h-6 animate-spin mb-2" />
                 <p className="text-sm">Loading {book} {chapter}…</p>
               </div>
-            ) : error ? (
+            ) : unavailable ? (
               <div className="text-center py-12">
-                <WifiOff className="w-8 h-8 text-ink-ghost mx-auto mb-2" />
-                <p className="text-ink-muted text-sm">{error}</p>
-                <button onClick={() => loadChapter(currentBook.slug, chapter)} className="mt-3 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold">
+                <AlertTriangle className="w-8 h-8 text-warn mx-auto mb-2" />
+                <p className="text-ink-muted text-sm">This translation is unavailable, please reinstall the app.</p>
+                <button onClick={() => loadChapter(currentBook.osis, chapter, translationId)} className="mt-3 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold">
                   Retry
                 </button>
               </div>
@@ -285,26 +284,21 @@ export default function BibleReader() {
               <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
                 {verses.map((v) => (
                   <div
-                    key={v.verse}
+                    key={v.number}
                     ref={(el) => {
-                      verseRefs.current[v.verse] = el;
+                      verseRefs.current[v.number] = el;
                     }}
                     className={cn(
                       'rounded-xl px-3 py-2 -mx-1 transition-colors',
-                      selectedVerse === v.verse ? 'bg-warn-soft ring-1 ring-warn-edge' : 'hover:bg-card-2'
+                      selectedVerse === v.number ? 'bg-warn-soft ring-1 ring-warn-edge' : 'hover:bg-card-2'
                     )}
                   >
                     <p className="text-[15px] leading-relaxed text-ink-soft">
-                      <sup className="mr-1.5 font-serif-heading font-bold text-acc-strong">{v.verse}</sup>
+                      <sup className="mr-1.5 font-serif-heading font-bold text-acc-strong">{v.number}</sup>
                       {v.text}
                     </p>
                   </div>
                 ))}
-                {offline && (
-                  <p className="flex items-center gap-1.5 text-[11px] text-warn-strong">
-                    <WifiOff className="w-3.5 h-3.5" /> Showing saved copy (offline)
-                  </p>
-                )}
               </div>
             ) : null}
           </div>
