@@ -1,14 +1,17 @@
 'use client';
 
-import { useState, type ReactElement } from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Sparkles, Heart, Users, Shield, Cross, Globe, ChevronDown, ChevronUp,
-  Search, Lock, Plus, Trash2, MicOff, Mic, StickyNote, Save, Check, Eye,
+  Search, Lock, Plus, Trash2, MicOff, Mic, StickyNote, Save, Check, Eye, ArrowLeft,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { PrayerPoint, IntercessoryPrayer, IntercessoryCategory, PrayerEntry } from '@/app/types';
 import { useApp } from '@/app/context';
 import { playChime, useSpeechToText } from '@/lib/clientUtils';
+import { createIntercessoryPrayer } from '@/lib/intercessoryPrayersClient';
 import PrayerReader, { type ReaderItem } from './PrayerReader';
 
 const CATEGORY_ICONS: Record<string, ReactElement> = {
@@ -316,10 +319,12 @@ function SpecialPrayerForm() {
 }
 
 function IntercessoryForm() {
-  const { intercessoryPrayers, setIntercessoryPrayers } = useApp();
+  const { user, intercessoryPrayers, setIntercessoryPrayers } = useApp();
   const [title, setTitle] = useState('');
   const [details, setDetails] = useState('');
   const [category, setCategory] = useState('Individual by Name & Challenge');
+  const [saving, setSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
 
   const categories = [
     'Individual by Name & Challenge', 'Family Member — By Name', 'Church Family / Fellow Believer',
@@ -327,14 +332,28 @@ function IntercessoryForm() {
     'The Sick & Suffering', 'The Lost & Searching', 'Persecuted Church',
   ];
 
-  const handleSubmit = () => {
-    if (!title.trim()) return;
-    setIntercessoryPrayers([...intercessoryPrayers, {
+  const handleSubmit = async () => {
+    if (!title.trim() || saving) return;
+
+    // Local state stays the source of truth for guests (and for the rest of
+    // this screen's own "My Saved Prayers" list) — signed-in users
+    // additionally get it saved to Supabase, which is what the Start-Up
+    // Prayer session reads from.
+    const local: IntercessoryPrayer = {
       id: Date.now().toString(), createdAt: new Date().toISOString(),
       title, details, category, isAnswered: false,
-    }]);
+    };
+    setIntercessoryPrayers([...intercessoryPrayers, local]);
     setTitle('');
     setDetails('');
+
+    if (user) {
+      setSaving(true);
+      await createIntercessoryPrayer({ category, title: local.title, details: local.details });
+      setSaving(false);
+    }
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 2500);
   };
 
   return (
@@ -360,8 +379,18 @@ function IntercessoryForm() {
         <textarea placeholder="e.g. healing, salvation, breakthrough..." value={details} onChange={(e) => setDetails(e.target.value)} rows={3} className="w-full bg-card rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint border border-edge-strong resize-none focus:outline-none focus:ring-2 focus:ring-red-500/40" />
       </div>
       <button onClick={handleSubmit} disabled={!title.trim()} className="w-full py-3 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-        <Heart className="w-4 h-4" /> Add to Intercessory Prayer List
+        <Heart className="w-4 h-4" /> {saving ? 'Saving…' : 'Add to Intercessory Prayer List'}
       </button>
+      {justSaved && (
+        <p className="text-emerald-600 text-xs font-semibold text-center flex items-center justify-center gap-1">
+          <Check className="w-3.5 h-3.5" /> Added to your Intercessory Prayer list
+        </p>
+      )}
+      {!user && (
+        <p className="text-ink-faint text-[10px] text-center">
+          Sign in to also see this in your Start-Up Prayer session — for now it&apos;s saved on this device only.
+        </p>
+      )}
       <p className="text-danger/70 text-[10px] text-center italic">"Praying for others is standing in the gap for them"</p>
     </div>
   );
@@ -480,13 +509,31 @@ function IntercessoryPrayerList({ search }: { search: string }) {
 
 export default function PrayerWorkshop() {
   const { prayers, intercessoryPrayers } = useApp();
-  const [activeSession, setActiveSession] = useState<'family' | 'special' | 'intercessory' | null>('family');
+  const searchParams = useSearchParams();
+  // Deep-linked from Start-Up Prayer's Intercessory step (?session=intercessory)
+  // so "write a new prayer point" opens straight to the right session, with
+  // ?returnTo= carrying where to send the user back to when they're done.
+  const requestedSession = searchParams.get('session');
+  const returnTo = searchParams.get('returnTo');
+  const [activeSession, setActiveSession] = useState<'family' | 'special' | 'intercessory' | null>(
+    requestedSession === 'intercessory' || requestedSession === 'special' || requestedSession === 'family'
+      ? requestedSession
+      : 'family'
+  );
   const [filter, setFilter] = useState<'active' | 'answered'>('active');
   const [search, setSearch] = useState('');
   const [listTab, setListTab] = useState<'personal' | 'intercessory'>('personal');
 
   return (
     <div className="space-y-3">
+      {returnTo && (
+        <Link
+          href={returnTo}
+          className="flex items-center gap-1.5 text-xs font-semibold text-acc hover:text-acc-strong w-fit"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to your prayer session
+        </Link>
+      )}
       <p className="text-ink-muted text-sm font-semibold text-center">
         ✍️ Write your prayer point — tap a session below:
       </p>

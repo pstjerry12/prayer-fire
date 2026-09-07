@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
-  Droplets, Award, Music, Heart, Users, Sparkles, Home, Plus, Check, Clock, Pencil,
+  Droplets, Award, Music, Heart, Users, Sparkles, Home, Check, Clock, Pencil, Loader2, PenLine,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useApp } from '@/app/context';
 import { playChime, playCelebration } from '@/lib/clientUtils';
+import { fetchIntercessoryPrayers } from '@/lib/intercessoryPrayersClient';
+import type { IntercessoryPrayer } from '@/app/types';
 import PrayerReader, { type ReaderItem } from './PrayerReader';
 import WorshipPlayer from './WorshipPlayer';
 
@@ -22,15 +24,16 @@ function Wind({ className }: { className?: string }) {
 }
 
 export default function StartUpPrayer() {
-  const { prayers, intercessoryPrayers, setIntercessoryPrayers, categories } = useApp();
+  const { user, prayers, intercessoryPrayers, categories } = useApp();
   const [step, setStep] = useState(1);
   const [isActive, setIsActive] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newDetails, setNewDetails] = useState('');
-  const [newCategory, setNewCategory] = useState('Individual by Name & Challenge');
   const [specialOpenIndex, setSpecialOpenIndex] = useState<number | null>(null);
   const [intercessoryOpenIndex, setIntercessoryOpenIndex] = useState<number | null>(null);
+  // Signed-in users' prayer points live in Supabase (written from the Prayer
+  // Workshop) — null means "not fetched yet"; guests fall back to the local
+  // intercessoryPrayers array below so they don't lose the feature.
+  const [remoteIntercessory, setRemoteIntercessory] = useState<IntercessoryPrayer[] | null>(null);
 
   // Overall prayer duration in seconds (default 5 minutes).
   const [totalSeconds, setTotalSeconds] = useState(() => {
@@ -80,6 +83,22 @@ export default function StartUpPrayer() {
   }, [isActive, timer]);
 
   const currentStep = steps.find((s) => s.id === step);
+
+  useEffect(() => {
+    // remoteIntercessory !== null means it's already been fetched this
+    // mount — no need to re-fetch every time the step is revisited.
+    if (!currentStep?.isIntercessory || !user || remoteIntercessory !== null) return;
+    let cancelled = false;
+    fetchIntercessoryPrayers().then((rows) => {
+      if (!cancelled) setRemoteIntercessory(rows);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [currentStep?.isIntercessory, user, remoteIntercessory]);
+
+  const loadingIntercessory = !!user && !!currentStep?.isIntercessory && remoteIntercessory === null;
+  const displayedIntercessory = user ? (remoteIntercessory ?? []) : intercessoryPrayers;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -278,33 +297,29 @@ export default function StartUpPrayer() {
 
       {currentStep?.isIntercessory && (
         <div className="mb-5 space-y-3">
-          <div className="bg-danger-soft border border-danger-edge rounded-xl p-3 space-y-2">
-            <p className="text-danger-strong text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1"><Plus className="w-3 h-3" /> Add Intercessory Prayer</p>
-            <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full bg-card rounded-lg px-2 py-1.5 text-xs text-ink border border-edge-strong">
-              {['Individual by Name & Challenge', 'Family Member — By Name', 'Church Family / Fellow Believer', 'Business / Career', 'Government Officials', 'Missionaries / Evangelists', 'Youth & Children', 'The Sick & Suffering', 'The Lost & Searching', 'Persecuted Church'].map((cat) => <option key={cat} value={cat}>{cat}</option>)}
-            </select>
-            <input type="text" placeholder="Name or title (e.g. Sister Mary)" value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full bg-card rounded-lg px-2 py-1.5 text-xs text-ink placeholder-ink-faint border border-edge-strong" />
-            <textarea placeholder="Prayer details (e.g. healing, salvation...)" value={newDetails} onChange={(e) => setNewDetails(e.target.value)} rows={2} className="w-full bg-card rounded-lg px-2 py-1.5 text-xs text-ink placeholder-ink-faint border border-edge-strong resize-none" />
-            <button
-              onClick={() => {
-                if (!newName.trim()) return;
-                setIntercessoryPrayers([...intercessoryPrayers, { id: Date.now().toString(), category: newCategory, title: newName, details: newDetails, isAnswered: false, createdAt: new Date().toISOString() }]);
-                setNewName('');
-                setNewDetails('');
-                playChime();
-              }}
-              disabled={!newName.trim()}
-              className="w-full py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
-            >
-              <Heart className="w-3 h-3" /> Add Prayer
-            </button>
-          </div>
+          <Link
+            href="/workshop?session=intercessory&returnTo=/startup"
+            className="w-full flex items-center justify-center gap-2 py-3 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-500 transition-all"
+          >
+            <PenLine className="w-4 h-4" /> Write a New Intercessory Prayer
+          </Link>
+
+          {!user && (
+            <p className="text-ink-faint text-[10px] text-center">
+              Sign in to have your prayer points saved and available here every time you pray.
+            </p>
+          )}
 
           <div className="max-h-48 overflow-y-auto space-y-2">
-            {intercessoryPrayers.length === 0 ? (
+            {loadingIntercessory ? (
+              <div className="bg-card-2 rounded-xl p-3 border border-edge text-center flex items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 text-ink-faint animate-spin" />
+                <p className="text-ink-muted text-xs">Loading your prayers…</p>
+              </div>
+            ) : displayedIntercessory.length === 0 ? (
               <div className="bg-card-2 rounded-xl p-3 border border-edge text-center"><p className="text-ink-muted text-xs">No prayers added yet.</p></div>
             ) : (
-              intercessoryPrayers.map((prayer, idx) => (
+              displayedIntercessory.map((prayer, idx) => (
                 <button
                   key={prayer.id}
                   onClick={() => setIntercessoryOpenIndex(idx)}
@@ -321,7 +336,7 @@ export default function StartUpPrayer() {
 
       {intercessoryOpenIndex !== null && (
         <PrayerReader
-          items={intercessoryPrayers.map((p) => ({ id: p.id, title: p.title, category: p.category, subCategory: 'Intercessory Prayer', details: p.details }))}
+          items={displayedIntercessory.map((p) => ({ id: p.id, title: p.title, category: p.category, subCategory: 'Intercessory Prayer', details: p.details }))}
           initialIndex={intercessoryOpenIndex}
           onClose={() => setIntercessoryOpenIndex(null)}
         />

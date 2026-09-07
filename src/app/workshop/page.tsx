@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, Flame } from 'lucide-react';
 import Navbar from '@/app/components/Navbar';
@@ -23,7 +24,9 @@ export default function WorkshopPage() {
             <p className="text-xs text-ink-muted">Prayer Workshop</p>
           </div>
         </div>
-        <PrayerWorkshop />
+        <Suspense fallback={null}>
+          <PrayerWorkshop />
+        </Suspense>
       </main>
       <Footer />
     </>

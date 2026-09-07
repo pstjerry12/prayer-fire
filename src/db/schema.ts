@@ -60,6 +60,19 @@ export const testimonials = pgTable("testimonials", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Intercessory prayer points — written once in the Prayer Workshop, then
+// displayed/prayed through in the Start-Up Prayer session. Private to the
+// user who wrote them (unlike testimonials, which are public once approved).
+export const intercessoryPrayers = pgTable("intercessory_prayers", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  category: text("category").notNull(),
+  title: text("title").notNull(),
+  details: text("details").notNull().default(""),
+  isAnswered: boolean("is_answered").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Upcoming global prayer events/programs announced by admin.
 export const events = pgTable("events", {
   id: text("id").primaryKey(),
@@ -87,3 +100,4 @@ export type AnnouncementRow = typeof announcements.$inferSelect;
 export type TestimonialRow = typeof testimonials.$inferSelect;
 export type EventRow = typeof events.$inferSelect;
 export type AppSettingRow = typeof appSettings.$inferSelect;
+export type IntercessoryPrayerRow = typeof intercessoryPrayers.$inferSelect;
