@@ -97,8 +97,19 @@ export default function StartUpPrayer() {
     };
   }, [currentStep?.isIntercessory, user, remoteIntercessory]);
 
-  const loadingIntercessory = !!user && !!currentStep?.isIntercessory && remoteIntercessory === null;
-  const displayedIntercessory = user ? (remoteIntercessory ?? []) : intercessoryPrayers;
+  // Local state is the reliable, always-instant source — it's the exact
+  // same array the Prayer Workshop's form just wrote to, so whatever you
+  // add there shows up here immediately regardless of network/login state.
+  // Supabase only adds entries written from a *different* device/session
+  // that aren't already in the local list — it never hides what's local.
+  const loadingIntercessory =
+    !!user && !!currentStep?.isIntercessory && remoteIntercessory === null && intercessoryPrayers.length === 0;
+  const displayedIntercessory = useMemo(() => {
+    if (!remoteIntercessory) return intercessoryPrayers;
+    const localIds = new Set(intercessoryPrayers.map((p) => p.id));
+    const remoteOnly = remoteIntercessory.filter((p) => !localIds.has(p.id));
+    return [...intercessoryPrayers, ...remoteOnly];
+  }, [intercessoryPrayers, remoteIntercessory]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
