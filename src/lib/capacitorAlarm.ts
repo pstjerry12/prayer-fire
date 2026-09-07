@@ -24,6 +24,20 @@ export function isCapacitorNative(): boolean {
   );
 }
 
+/**
+ * Sync platform read (no dynamic import needed) — used to gate the
+ * Android-only "Ring like an alarm" UI. iOS has no equivalent native engine
+ * (see the AlarmEnginePluginApi comment below), so that control simply
+ * doesn't render there.
+ */
+export function getNativePlatform(): 'android' | 'ios' | 'web' {
+  if (typeof window === 'undefined') return 'web';
+  const platform = (
+    window as unknown as { Capacitor?: { getPlatform?: () => string } }
+  ).Capacitor?.getPlatform?.();
+  return platform === 'android' || platform === 'ios' ? platform : 'web';
+}
+
 // ── Lazy-load Capacitor plugins (only when native) ─────────────────
 async function getLocalNotifications() {
   if (!isCapacitorNative()) return null;
@@ -45,6 +59,49 @@ async function getHaptics() {
   } catch {
     return null;
   }
+}
+
+// ── Native "Ring like an alarm" engine (Android only) ───────────────
+// This is a custom Kotlin Capacitor plugin (android/app/src/main/kotlin/
+// com/prayerfire/app/alarmengine) — there's no separate npm package for it,
+// so it's registered directly by name the way Capacitor supports for local
+// native-only plugins. iOS keeps using @capacitor/local-notifications only
+// (see scheduleNativeAlarms below) — Apple doesn't allow third-party apps
+// to bypass silent mode / ring full-screen without a Critical Alerts
+// entitlement, so there is no iOS equivalent of this plugin.
+interface AlarmEnginePluginApi {
+  scheduleAlarm(options: {
+    id: string;
+    hour: number;
+    minute: number;
+    label: string;
+    tone: string;
+  }): Promise<void>;
+  cancelAlarm(options: { id: string }): Promise<void>;
+  cancelAllAlarms(): Promise<void>;
+  dismissRinging(): Promise<void>;
+  checkExactAlarmPermission(): Promise<{ granted: boolean }>;
+  requestExactAlarmPermission(): Promise<{ opened: boolean }>;
+  checkFullScreenIntentPermission(): Promise<{ granted: boolean }>;
+  requestFullScreenIntentPermission(): Promise<{ opened: boolean }>;
+  checkBatteryOptimizationExemption(): Promise<{ granted: boolean }>;
+  requestBatteryOptimizationExemption(): Promise<{ opened: boolean }>;
+}
+
+async function getAlarmEngine(): Promise<AlarmEnginePluginApi | null> {
+  if (!isCapacitorNative()) return null;
+  try {
+    const { registerPlugin, Capacitor } = await import('@capacitor/core');
+    if (Capacitor.getPlatform() !== 'android') return null;
+    return registerPlugin<AlarmEnginePluginApi>('AlarmEngine');
+  } catch {
+    return null;
+  }
+}
+
+/** True only inside the native Android wrapper — gates the AlarmEngine UI/flow. */
+export async function isAndroidNative(): Promise<boolean> {
+  return (await getAlarmEngine()) !== null;
 }
 
 // ── Request notification permission ─────────────────────────────────
@@ -169,6 +226,13 @@ export async function scheduleNativeAlarms(
         sound: soundFile,
         ongoing: false,
         extra: { appointmentId: appt.id, label: appt.label },
+        // iOS-only field (harmless no-op on Android): this is the best
+        // available iOS equivalent of the Android alarm engine. Apple gives
+        // third-party apps no way to bypass silent mode or ring for a fixed
+        // duration without a Critical Alerts entitlement, so this is the
+        // ceiling of what's possible here — an immediate, screen-lighting
+        // notification with a custom loud sound, not a 3-minute ring.
+        interruptionLevel: 'timeSensitive' as const,
       });
     }
 
@@ -194,6 +258,130 @@ export async function cancelAllNativeAlarms(): Promise<void> {
     console.log('[CapacitorAlarm] Cancelled all native alarms');
   } catch (err) {
     console.error('[CapacitorAlarm] Failed to cancel alarms:', err);
+  }
+}
+
+// ── AlarmEngine: schedule/cancel the loud, 3-minute Android alarms ──
+// Only appointments with useNativeAlarm=true go through here — everything
+// else keeps using the plain LocalNotifications path above.
+export async function scheduleAlarmEngineAlarms(
+  appointments: PrayerAppointment[]
+): Promise<void> {
+  const engine = await getAlarmEngine();
+  if (!engine) return; // web or iOS — nothing to do
+
+  try {
+    await engine.cancelAllAlarms();
+    for (const appt of appointments) {
+      if (!appt.enabled || !appt.useNativeAlarm) continue;
+      const [hh, mm] = appt.time.split(':').map(Number);
+      if (Number.isNaN(hh) || Number.isNaN(mm)) continue;
+
+      await engine.scheduleAlarm({
+        id: appt.id,
+        hour: hh,
+        minute: mm,
+        label: appt.label,
+        tone: appt.alarmTone || 'classic',
+      });
+    }
+    console.log('[CapacitorAlarm] Scheduled AlarmEngine alarms');
+  } catch (err) {
+    console.error('[CapacitorAlarm] Failed to schedule AlarmEngine alarms:', err);
+  }
+}
+
+export async function cancelAllAlarmEngineAlarms(): Promise<void> {
+  const engine = await getAlarmEngine();
+  if (!engine) return;
+  try {
+    await engine.cancelAllAlarms();
+  } catch {
+    // ignore
+  }
+}
+
+/** Stops a currently-ringing native alarm (e.g. from an in-app "Dismiss" control). */
+export async function dismissNativeRinging(): Promise<void> {
+  const engine = await getAlarmEngine();
+  if (!engine) return;
+  try {
+    await engine.dismissRinging();
+  } catch {
+    // ignore
+  }
+}
+
+// ── Sequenced Android permission flow for the alarm engine ──────────
+// Each of these pairs a "check" (silent, for UI state) with a "request"
+// (opens the actual system prompt or Settings screen). The explanation
+// dialogs shown before each one live in the UI layer (AlarmPermissionFlow
+// component) — these are just the native primitives it calls in order:
+// POST_NOTIFICATIONS -> SCHEDULE_EXACT_ALARM -> USE_FULL_SCREEN_INTENT
+// -> battery optimization exemption.
+
+export async function checkExactAlarmPermission(): Promise<boolean> {
+  const engine = await getAlarmEngine();
+  if (!engine) return true; // not Android native — nothing to gate on
+  try {
+    const { granted } = await engine.checkExactAlarmPermission();
+    return granted;
+  } catch {
+    return false;
+  }
+}
+
+/** Android has no in-app grant dialog for this — it always opens Settings. */
+export async function requestExactAlarmPermission(): Promise<void> {
+  const engine = await getAlarmEngine();
+  if (!engine) return;
+  try {
+    await engine.requestExactAlarmPermission();
+  } catch {
+    // ignore
+  }
+}
+
+export async function checkFullScreenIntentPermission(): Promise<boolean> {
+  const engine = await getAlarmEngine();
+  if (!engine) return true;
+  try {
+    const { granted } = await engine.checkFullScreenIntentPermission();
+    return granted;
+  } catch {
+    return false;
+  }
+}
+
+/** Also always opens Settings — Android 14 has no in-app grant dialog for this one either. */
+export async function requestFullScreenIntentPermission(): Promise<void> {
+  const engine = await getAlarmEngine();
+  if (!engine) return;
+  try {
+    await engine.requestFullScreenIntentPermission();
+  } catch {
+    // ignore
+  }
+}
+
+export async function checkBatteryOptimizationExemption(): Promise<boolean> {
+  const engine = await getAlarmEngine();
+  if (!engine) return true;
+  try {
+    const { granted } = await engine.checkBatteryOptimizationExemption();
+    return granted;
+  } catch {
+    return false;
+  }
+}
+
+export async function requestBatteryOptimizationExemption(): Promise<void> {
+  const engine = await getAlarmEngine();
+  if (!engine) return;
+  try {
+    await engine.requestBatteryOptimizationExemption();
+  } catch {
+    // ignore
   }
 }
 

@@ -1,12 +1,20 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Bell, Pencil, Check, Clock, Moon, Sun, Sunrise, Plus, Trash2, X, BellRing, Volume2, Music, Zap } from 'lucide-react';
+import { Bell, Pencil, Check, Clock, Moon, Sun, Sunrise, Plus, Trash2, X, BellRing, Volume2, Music, Zap, AlarmClock } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { playChime } from '@/lib/clientUtils';
 import { useApp } from '@/app/context';
 import { ALARM_TONES, previewAlarmTone, playAlarmTone, stopAlarm, preloadAlarmSounds, type AlarmToneId } from '@/lib/alarmSound';
-import { isCapacitorNative, nativeVibrate, requestAlarmPermission } from '@/lib/capacitorAlarm';
+import {
+  nativeVibrate,
+  requestAlarmPermission,
+  getNativePlatform,
+  checkExactAlarmPermission,
+  checkFullScreenIntentPermission,
+  checkBatteryOptimizationExemption,
+} from '@/lib/capacitorAlarm';
+import AlarmPermissionFlow from './AlarmPermissionFlow';
 
 export interface PrayerAppointment {
   id: string;
@@ -15,6 +23,12 @@ export interface PrayerAppointment {
   enabled: boolean;
   /** Chosen alarm tune id (see alarmSound.ts). */
   alarmTone?: string;
+  /**
+   * Android only: ring like a real alarm (AlarmManager exact trigger, loud
+   * looping sound for 3 minutes, full-screen wake screen) instead of a plain
+   * scheduled notification. No iOS equivalent exists — see capacitorAlarm.ts.
+   */
+  useNativeAlarm?: boolean;
 }
 
 interface Props {
@@ -55,7 +69,9 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
   const [editingId, setEditingId] = useState<string | null>(null);
   const [alarmFor, setAlarmFor] = useState<string | null>(null);
   const [testAlarmActive, setTestAlarmActive] = useState(false);
+  const [permissionFlowFor, setPermissionFlowFor] = useState<string | null>(null);
   const preloadedRef = useRef(false);
+  const isAndroid = getNativePlatform() === 'android';
 
   // Preload all alarm sounds on first user interaction
   const ensurePreloaded = () => {
@@ -96,6 +112,26 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
 
   const toggle = (id: string) => {
     update(id, { enabled: !appointments.find((a) => a.id === id)?.enabled });
+  };
+
+  const toggleNativeAlarm = async (appt: PrayerAppointment) => {
+    if (appt.useNativeAlarm) {
+      update(appt.id, { useNativeAlarm: false });
+      return;
+    }
+    // Turning it on for the first time: make sure every permission it needs
+    // is granted before actually flipping it on. If they're all already
+    // granted (e.g. a second prayer time), skip straight past the dialogs.
+    const [exact, fullScreen, battery] = await Promise.all([
+      checkExactAlarmPermission(),
+      checkFullScreenIntentPermission(),
+      checkBatteryOptimizationExemption(),
+    ]);
+    if (exact && fullScreen && battery) {
+      update(appt.id, { useNativeAlarm: true });
+    } else {
+      setPermissionFlowFor(appt.id);
+    }
   };
 
   const remove = (id: string) => {
@@ -345,6 +381,38 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
               </button>
             </div>
 
+            {/* Ring like an alarm — Android only, no iOS equivalent exists */}
+            {isAndroid && (
+              <div className="flex items-start justify-between gap-3 bg-card-2 rounded-xl border border-edge p-3">
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-warn-soft text-warn">
+                    <AlarmClock className="w-4 h-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-ink">Ring like an alarm</p>
+                    <p className="text-[11px] text-ink-muted leading-relaxed">
+                      Rings loudly for 3 minutes and wakes the screen, like a real alarm clock — not just a notification.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => toggleNativeAlarm(alarmAppt)}
+                  className={cn(
+                    'shrink-0 relative w-11 h-6 rounded-full transition-colors',
+                    alarmAppt.useNativeAlarm ? 'bg-emerald-600' : 'bg-card-3'
+                  )}
+                  title="Ring like an alarm"
+                >
+                  <span
+                    className={cn(
+                      'absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform',
+                      alarmAppt.useNativeAlarm ? 'translate-x-[22px]' : 'translate-x-0.5'
+                    )}
+                  />
+                </button>
+              </div>
+            )}
+
             {/* Tune picker */}
             <div>
               <label className="text-xs font-semibold text-ink-muted flex items-center gap-1 mb-2">
@@ -407,6 +475,17 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
           </div>
         </div>
       </div>
+    )}
+
+    {/* ── "Ring like an alarm" permission flow ─────────────────────── */}
+    {permissionFlowFor && (
+      <AlarmPermissionFlow
+        onComplete={() => {
+          update(permissionFlowFor, { useNativeAlarm: true });
+          setPermissionFlowFor(null);
+        }}
+        onCancel={() => setPermissionFlowFor(null)}
+      />
     )}
 
     {/* ── Test Alarm Dismiss Overlay ─────────────────────────────── */}

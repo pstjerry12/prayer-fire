@@ -6,6 +6,7 @@ import { playAlarmTone, stopAlarm, DEFAULT_TONE, type AlarmToneId } from '@/lib/
 import {
   isCapacitorNative,
   scheduleNativeAlarms,
+  scheduleAlarmEngineAlarms,
   nativeVibrate,
   listenNotificationTap,
 } from '@/lib/capacitorAlarm';
@@ -36,7 +37,12 @@ export default function PrayerAlarm() {
 
     // ── Native Capacitor path ────────────────────────────────
     if (isCapacitorNative()) {
+      // Plain scheduled notifications for every enabled appointment, PLUS
+      // (Android only) the loud AlarmManager-driven ring for whichever
+      // appointments have "Ring like an alarm" turned on. The two run side
+      // by side — scheduleAlarmEngineAlarms() is a no-op on iOS/web.
       scheduleNativeAlarms(appointmentsRef.current);
+      scheduleAlarmEngineAlarms(appointmentsRef.current);
 
       let cleanup: (() => void) | undefined;
       listenNotificationTap((data) => {
@@ -45,6 +51,11 @@ export default function PrayerAlarm() {
         if (typeof window !== 'undefined') window.focus();
       }).then((fn) => { cleanup = fn; });
 
+      // Only the plain-notification path needs a periodic re-arm here — the
+      // AlarmEngine alarms are self-perpetuating (AlarmReceiver re-arms
+      // tomorrow's exact alarm the moment today's fires, and BootReceiver
+      // re-arms everything after a reboot), so rescheduling them every
+      // minute would just be unnecessary AlarmManager churn.
       const reschedule = () => scheduleNativeAlarms(appointmentsRef.current);
       const interval = setInterval(reschedule, 60000);
 

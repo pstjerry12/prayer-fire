@@ -21,6 +21,21 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- ── "Ring like an alarm" native alarm engine ──────────────────── -->
+    <!-- Android 14+ runtime-grantable permission for the full-screen ringing UI. -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <!-- The foreground service that plays the alarm tone for 3 minutes. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <!--
+      Lets us ask the user to exempt the app from battery optimization.
+      Justified here (per Play policy's "core functionality" carve-out): the
+      whole feature is time-critical alarms, and Samsung/Xiaomi-style OEM
+      battery managers are known to kill background alarms even when
+      AlarmManager + a foreground service are both used correctly.
+    -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
     <application
         android:allowBackup="false"
         android:hardwareAccelerated="true"
@@ -56,6 +71,31 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+
+        <!-- ── Native "Ring like an alarm" engine ─────────────────────── -->
+        <receiver
+            android:name=".alarmengine.AlarmReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".alarmengine.BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".alarmengine.AlarmRingService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+        <activity
+            android:name=".alarmengine.AlarmRingActivity"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:excludeFromRecents="true"
+            android:theme="@style/AppTheme.NoActionBarLaunch" />
     </application>
 
 </manifest>
