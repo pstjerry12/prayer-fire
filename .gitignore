@@ -20,3 +20,9 @@ tsconfig.tsbuildinfo
 prayer-fire.zip
 .vercel
 .env*
+
+# Secrets — never commit these
+drizzle.config.json
+android/keystore.properties
+android/keystore/*.keystore
+android/keystore/*.jks
