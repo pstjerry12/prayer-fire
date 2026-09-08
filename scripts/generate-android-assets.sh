@@ -84,6 +84,18 @@ gen_foreground () { # $1 = density dir, $2 = px
     -gravity center -composite "$dir/ic_launcher_foreground.png"
 }
 
+# Android 13+ themed-icon monochrome layer: same safe-zone sizing as the
+# foreground, but a plain white silhouette (colour swapped, alpha kept) — the
+# system applies its own Material You tint on top, so colour here is discarded.
+gen_monochrome () { # $1 = density dir, $2 = px
+  local dir="$RES/mipmap-$1" s="$2"
+  mkdir -p "$dir"
+  convert -size "${s}x${s}" xc:none \
+    \( "$TMP/flame.png" -resize "$((s * 55 / 100))x$((s * 55 / 100))" \
+       -fill white -colorize 100 \) \
+    -gravity center -composite "$dir/ic_launcher_monochrome.png"
+}
+
 echo "   launcher icons…"
 gen_launcher   mdpi     48
 gen_launcher   hdpi     72
@@ -95,6 +107,11 @@ gen_foreground hdpi    162
 gen_foreground xhdpi   216
 gen_foreground xxhdpi  324
 gen_foreground xxxhdpi 432
+gen_monochrome mdpi    108
+gen_monochrome hdpi    162
+gen_monochrome xhdpi   216
+gen_monochrome xxhdpi  324
+gen_monochrome xxxhdpi 432
 
 # ── 3. Status-bar / notification glyph (alpha-only white) ───────────────────
 # capacitor.config.ts → LocalNotifications.smallIcon: 'ic_stat_icon_config_sample'
