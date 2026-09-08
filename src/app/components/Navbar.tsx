@@ -66,8 +66,8 @@ export default function Navbar() {
             <img src="/logo.png" alt="Prayer Fire Movement" className="w-full h-full object-cover" />
           </div>
           <div className="min-w-0">
-            <h1 className="font-serif-heading text-base font-bold text-ink leading-tight truncate">Prayer Fire</h1>
-            <p className="text-[10px] text-ink-muted hidden sm:block">A Movement to Cure Prayerlessness</p>
+            <h1 className="font-serif-heading text-base font-bold text-ink leading-tight truncate">Prayer Fire Movement</h1>
+            <p className="text-[10px] text-ink-muted hidden sm:block">A Cure For Prayerlessness</p>
             <p className="text-[10px] text-danger font-semibold italic leading-tight hidden sm:block">Praying like Daniel</p>
           </div>
         </Link>
