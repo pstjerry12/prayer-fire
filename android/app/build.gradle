@@ -35,7 +35,7 @@ android {
     compileSdk = rootProject.ext.compileSdkVersion
 
     defaultConfig {
-        applicationId "com.prayerfire.app"
+        applicationId "com.prayerfireaction.prayerfire"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode rootProject.ext.appVersionCode
