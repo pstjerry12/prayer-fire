@@ -1,0 +1,20 @@
+# Force these as binary (no line-ending conversion, no diffing as text).
+# Without this, a contributor with core.autocrlf enabled can silently
+# corrupt a committed binary — which is exactly what happened to
+# android/gradle/wrapper/gradle-wrapper.jar (CI failed with
+# "Invalid or corrupt jarfile" until it was replaced).
+*.jar binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.wav binary
+*.mp3 binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+*.keystore binary
+*.jks binary
+*.zip binary
+*.aab binary
+*.apk binary
