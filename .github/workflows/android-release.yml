@@ -4,11 +4,16 @@ name: Android Release Build
 #
 # One-time setup (repo → Settings → Secrets and variables → Actions):
 #   1. ANDROID_KEYSTORE_BASE64
-#        base64 -w0 android/keystore/prayer-fire-upload.keystore | pbcopy
-#      (use `| clip` on Windows, `| xclip -selection clipboard` on Linux)
+#        base64 -w0 android/keystore/prayer-fire-upload.keystore > keystore-b64.txt
+#      Open that file, select all, copy — paste the WHOLE contents as the secret
+#      value. Piping straight to a clipboard tool (pbcopy/clip/xclip) works too,
+#      but going through a file first avoids partial/garbled copies.
 #   2. ANDROID_KEYSTORE_PROPERTIES
-#        cat android/keystore.properties | pbcopy
-#      (the whole file, including the passwords)
+#        cp android/keystore.properties keystore-props.txt
+#      Same deal — open, select all, copy the whole file (including the
+#      passwords) as the secret value.
+#   Delete both .txt files once the secrets are saved; don't leave plaintext
+#   copies of the signing key lying around.
 
 on:
   workflow_dispatch:
@@ -83,10 +88,34 @@ jobs:
         run: |
           mkdir -p android/keystore
           if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PROPERTIES" ]; then
-            printf '%s' "$KEYSTORE_BASE64" | tr -d '\n\r ' | base64 --decode > android/keystore/prayer-fire-upload.keystore
+            echo "Secret lengths — base64: ${#KEYSTORE_BASE64} chars, properties: ${#KEYSTORE_PROPERTIES} chars"
+
+            # -i/--ignore-garbage skips stray characters (BOM, tabs, a pasted
+            # blank line) instead of hard-failing the whole job on them — the
+            # actual keytool validation below is what proves the file is good.
+            printf '%s' "$KEYSTORE_BASE64" | tr -d '\n\r ' | base64 --decode -i > android/keystore/prayer-fire-upload.keystore
             printf '%s\n' "$KEYSTORE_PROPERTIES" > android/keystore.properties
             chmod 600 android/keystore.properties android/keystore/prayer-fire-upload.keystore
-            echo "Signing key restored — the bundle will be signed."
+
+            KEYSTORE_SIZE=$(stat -c%s android/keystore/prayer-fire-upload.keystore 2>/dev/null || stat -f%z android/keystore/prayer-fire-upload.keystore)
+            echo "Decoded keystore: ${KEYSTORE_SIZE} bytes"
+            if [ "$KEYSTORE_SIZE" -lt 100 ]; then
+              echo "::error::Decoded keystore is only ${KEYSTORE_SIZE} bytes — ANDROID_KEYSTORE_BASE64 was not pasted correctly (truncated, or the wrong file). Re-copy the FULL contents of the base64 file and re-save the secret."
+              exit 1
+            fi
+
+            STORE_PASSWORD=$(grep -m1 '^storePassword=' android/keystore.properties | cut -d= -f2- | tr -d '\r')
+            if [ -z "$STORE_PASSWORD" ]; then
+              echo "::error::ANDROID_KEYSTORE_PROPERTIES has no storePassword= line — the wrong file was pasted, or it got corrupted. Re-copy the FULL contents of keystore.properties and re-save the secret."
+              exit 1
+            fi
+
+            if keytool -list -keystore android/keystore/prayer-fire-upload.keystore -storetype pkcs12 -storepass "$STORE_PASSWORD" > /dev/null 2>&1; then
+              echo "✅ Keystore decoded and validated — the bundle will be signed."
+            else
+              echo "::error::The decoded keystore doesn't open with the password from ANDROID_KEYSTORE_PROPERTIES. Either the base64 secret and the properties secret are from two different keystores, or one of them got corrupted during copy/paste. Re-generate both from the SAME keystore file and re-save both secrets."
+              exit 1
+            fi
           else
             echo "::warning::ANDROID_KEYSTORE_BASE64 / ANDROID_KEYSTORE_PROPERTIES are not set, so the AAB will be UNSIGNED and Play Console will reject it. See the header of this file."
           fi
