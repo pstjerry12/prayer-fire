@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Bell, Pencil, Check, Clock, Moon, Sun, Sunrise, Plus, Trash2, X, BellRing, Volume2, Music, Zap, AlarmClock } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { playChime } from '@/lib/clientUtils';
@@ -9,6 +9,7 @@ import { ALARM_TONES, previewAlarmTone, playAlarmTone, stopAlarm, preloadAlarmSo
 import {
   nativeVibrate,
   requestAlarmPermission,
+  checkAlarmPermission,
   getNativePlatform,
   checkExactAlarmPermission,
   checkFullScreenIntentPermission,
@@ -72,6 +73,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
   const [permissionFlowFor, setPermissionFlowFor] = useState<string | null>(null);
   const preloadedRef = useRef(false);
   const isAndroid = getNativePlatform() === 'android';
+  const [notificationGranted, setNotificationGranted] = useState(false);
 
   // Preload all alarm sounds on first user interaction
   const ensurePreloaded = () => {
@@ -79,6 +81,14 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
     preloadedRef.current = true;
     preloadAlarmSounds();
   };
+
+  // checkAlarmPermission() checks the real native Android permission on
+  // Capacitor (via @capacitor/local-notifications) instead of the browser's
+  // Notification API, which is a separate, non-functional thing inside the
+  // native WebView and would otherwise always read as "not granted".
+  useEffect(() => {
+    checkAlarmPermission().then((result) => setNotificationGranted(result === 'granted'));
+  }, []);
   const [done, setDone] = useState<Record<string, boolean>>(() => {
     if (typeof window === 'undefined') return {};
     const today = new Date().toDateString();
@@ -147,8 +157,6 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
     onUpdate([...appointments, { id: Date.now().toString(), time: `${pad(now.getHours())}:${pad(now.getMinutes())}`, label: 'New Prayer Watch', enabled: true }]);
   };
 
-  const notificationGranted = typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted';
-
   return (
     <>
     <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
@@ -183,9 +191,14 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
             if (!notificationGranted) {
               const result = await requestAlarmPermission();
               if (result !== 'granted') {
-                alert('Please allow notifications first, then try again.');
+                alert(
+                  isAndroid
+                    ? 'Notifications are off for this app. Open your phone Settings → Apps → Prayer Fire Movement → Notifications, turn them on, then try again.'
+                    : 'Please allow notifications first, then try again.'
+                );
                 return;
               }
+              setNotificationGranted(true);
             }
             try {
               const n = new Notification('🔥 Prayer Time', {
