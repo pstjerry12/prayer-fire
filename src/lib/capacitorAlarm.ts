@@ -430,6 +430,27 @@ export async function listenNotificationTap(
   }
 }
 
+// ── Listen for the app being reopened via a custom-scheme deep link ─
+// Used to catch com.prayerfireaction.prayerfire://auth-callback?token=...,
+// which is how Google sign-in hands the session back to the native app
+// (its embedded WebView can't see the cookie Google's consent screen sets
+// in the system browser, so the callback route redirects here instead —
+// see /api/auth/google/callback).
+export async function listenAuthDeepLink(
+  callback: (url: string) => void
+): Promise<() => void> {
+  if (!isCapacitorNative()) return () => {};
+  try {
+    const { App } = await import('@capacitor/app');
+    const listener = await App.addListener('appUrlOpen', (event) => {
+      callback(event.url);
+    });
+    return () => listener.remove();
+  } catch {
+    return () => {};
+  }
+}
+
 // ── Helper: stable numeric hash from string ────────────────────────
 function hashCode(str: string): number {
   let hash = 0;

@@ -60,6 +60,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Deep link Google sign-in hands the session back through,
+                 since the app's WebView has no access to the cookie set
+                 in the system browser during OAuth (see
+                 api/auth/google/callback and capacitorAlarm.ts's
+                 listenAuthDeepLink). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="@string/custom_url_scheme" />
+            </intent-filter>
+
         </activity>
 
         <provider

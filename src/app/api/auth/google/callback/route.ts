@@ -34,8 +34,28 @@ export async function GET(request: Request) {
 
   const cookieStore = await cookies();
   const savedState = cookieStore.get("pfm_oauth_state")?.value ?? null;
+  const isNative = cookieStore.get("pfm_oauth_native")?.value === "1";
+  cookieStore.set("pfm_oauth_native", "", { httpOnly: true, path: "/", maxAge: 0 });
 
-  const fail = () => NextResponse.redirect(new URL("/?auth=google-failed", origin));
+  // The native Android app has no access to cookies set here (Google's
+  // consent screen runs in the system browser, a separate cookie jar from
+  // the app's WebView), so instead of the usual cookie + redirect, hand the
+  // session back to the app via its custom URL scheme deep link, carrying
+  // the same signed token the app already knows how to use for Bearer auth
+  // (see lib/authClient.ts / lib/auth.ts).
+  const finish = (token?: string) => {
+    if (!isNative) {
+      return NextResponse.redirect(
+        new URL(token ? "/?auth=google-success" : "/?auth=google-failed", origin)
+      );
+    }
+    const deepLink = token
+      ? `com.prayerfireaction.prayerfire://auth-callback?token=${encodeURIComponent(token)}`
+      : "com.prayerfireaction.prayerfire://auth-callback?error=1";
+    return NextResponse.redirect(deepLink);
+  };
+
+  const fail = () => finish();
 
   if (!code || !state || !savedState || state !== savedState) {
     return fail();
@@ -108,7 +128,7 @@ export async function GET(request: Request) {
       maxAge: TOKEN_MAX_AGE,
     });
 
-    return NextResponse.redirect(new URL("/?auth=google-success", origin));
+    return finish(token);
   } catch (err) {
     console.error("google callback error", err);
     return fail();
