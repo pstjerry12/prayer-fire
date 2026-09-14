@@ -67,7 +67,14 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - uses: android-actions/setup-android@v3
+      # No setup-android action here: GitHub's ubuntu-latest runners already
+      # ship a preinstalled Android SDK with ANDROID_HOME set and licenses
+      # accepted. android-actions/setup-android@v3 used to run here too, but
+      # it unconditionally runs `sdkmanager tools` — a legacy SDK package
+      # Google has since fully removed from its repository — which now fails
+      # outright (exit code 1, "Failed to find package 'tools'") regardless
+      # of this project. Gradle's own Android Gradle Plugin handles pulling
+      # whatever platform/build-tools versions this project needs on its own.
 
       - name: Make Gradle wrapper executable
         run: chmod +x android/gradlew
