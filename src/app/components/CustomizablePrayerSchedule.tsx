@@ -154,7 +154,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
   const add = () => {
     const now = new Date();
     const pad = (n: number) => n.toString().padStart(2, '0');
-    onUpdate([...appointments, { id: Date.now().toString(), time: `${pad(now.getHours())}:${pad(now.getMinutes())}`, label: 'New Prayer Watch', enabled: true }]);
+    onUpdate([...appointments, { id: Date.now().toString(), time: `${pad(now.getHours())}:${pad(now.getMinutes())}`, label: 'New Prayer Watch', enabled: true, useNativeAlarm: true }]);
   };
 
   return (
