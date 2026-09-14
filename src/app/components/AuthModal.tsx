@@ -16,6 +16,7 @@ import {
 import { cn } from '../utils/cn';
 import { COUNTRY_CODES, DEFAULT_COUNTRY } from '@/lib/countryCodes';
 import { apiRegister, apiLogin, type AuthUser } from '@/lib/authClient';
+import { isCapacitorNative } from '@/lib/capacitorAlarm';
 import { TERMS_SECTIONS, PRIVACY_SECTIONS } from '@/app/data/legal';
 import LegalModal from './LegalModal';
 
@@ -198,7 +199,14 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
             <button
               type="button"
               onClick={() => {
-                window.location.href = '/api/auth/google/start';
+                // Flags the flow as native so the callback can hand the
+                // session back to the app via a deep link instead of
+                // leaving it stranded inside the system browser (Google
+                // requires OAuth to run outside the app's embedded WebView,
+                // so it always opens Chrome — this just makes sure it comes
+                // back).
+                const native = isCapacitorNative() ? '?native=1' : '';
+                window.location.href = `/api/auth/google/start${native}`;
               }}
               className="w-full flex items-center justify-center gap-2 py-2.5 bg-card border border-edge-strong text-ink rounded-xl text-sm font-bold hover:bg-card-2 transition-colors"
             >

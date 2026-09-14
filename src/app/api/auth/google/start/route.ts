@@ -25,6 +25,7 @@ export async function GET(request: Request) {
 
   const redirectUri = `${getOrigin(request)}/api/auth/google/callback`;
   const state = randomUUID();
+  const isNative = new URL(request.url).searchParams.get("native") === "1";
 
   const cookieStore = await cookies();
   cookieStore.set("pfm_oauth_state", state, {
@@ -34,6 +35,19 @@ export async function GET(request: Request) {
     path: "/",
     maxAge: 60 * 10, // 10 minutes
   });
+  // Remembers that this sign-in started from the native Android app (whose
+  // WebView has no access to the website's cookies once Google's OAuth
+  // consent screen hands off to the system browser), so the callback can
+  // redirect back into the app via a deep link instead of the website.
+  if (isNative) {
+    cookieStore.set("pfm_oauth_native", "1", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 10,
+    });
+  }
 
   const params = new URLSearchParams({
     client_id: clientId,

@@ -23,8 +23,9 @@ import type {
 import { DEFAULT_INTERCESSORY_CATEGORIES } from '@/app/data/bibleVerses';
 import { getDefaultCurrency, type Currency } from '@/app/data/pricingPlans';
 import type { PrayerAppointment } from '@/app/components/CustomizablePrayerSchedule';
-import { getStoredUser, fetchMe, apiLogout, apiDeleteAccount } from '@/lib/authClient';
+import { getStoredUser, fetchMe, apiLogout, apiDeleteAccount, storeSession } from '@/lib/authClient';
 import { saveSongBlob, deleteSongBlob } from '@/lib/audioStore';
+import { listenAuthDeepLink } from '@/lib/capacitorAlarm';
 
 // useNativeAlarm defaults to true so every user gets the loud, full-screen
 // "ring like an alarm" experience out of the box (Android only — a no-op
@@ -444,6 +445,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (me) setUser(me);
       setAuthChecked(true);
     })();
+  }, []);
+
+  // Pick up the session Google sign-in hands back via a deep link on
+  // Android (see listenAuthDeepLink / api/auth/google/callback) — the
+  // native app's WebView never sees the cookie Google's consent screen
+  // sets in the system browser, so the token comes back this way instead.
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    listenAuthDeepLink(async (url) => {
+      let token: string | null = null;
+      try {
+        token = new URL(url).searchParams.get('token');
+      } catch {
+        return;
+      }
+      if (!token) return;
+      try {
+        const res = await fetch('/api/auth/me', {
+          cache: 'no-store',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = (await res.json()) as { user: AuthUser | null };
+        if (data.user) {
+          storeSession(token, data.user);
+          setUser(data.user);
+        }
+      } catch {
+        // ignore
+      }
+    }).then((fn) => { cleanup = fn; });
+    return () => cleanup?.();
   }, []);
 
   // Prompt to sign in once per device (after daily devotionals)
