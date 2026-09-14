@@ -231,7 +231,7 @@ export async function scheduleNativeAlarms(
         // third-party apps no way to bypass silent mode or ring for a fixed
         // duration without a Critical Alerts entitlement, so this is the
         // ceiling of what's possible here — an immediate, screen-lighting
-        // notification with a custom loud sound, not a 3-minute ring.
+        // notification with a custom loud sound, not a 5-minute ring.
         interruptionLevel: 'timeSensitive' as const,
       });
     }
@@ -261,7 +261,7 @@ export async function cancelAllNativeAlarms(): Promise<void> {
   }
 }
 
-// ── AlarmEngine: schedule/cancel the loud, 3-minute Android alarms ──
+// ── AlarmEngine: schedule/cancel the loud, 5-minute Android alarms ──
 // Only appointments with useNativeAlarm=true go through here — everything
 // else keeps using the plain LocalNotifications path above.
 export async function scheduleAlarmEngineAlarms(
