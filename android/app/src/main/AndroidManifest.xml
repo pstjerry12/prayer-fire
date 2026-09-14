@@ -24,7 +24,7 @@
     <!-- ── "Ring like an alarm" native alarm engine ──────────────────── -->
     <!-- Android 14+ runtime-grantable permission for the full-screen ringing UI. -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
-    <!-- The foreground service that plays the alarm tone for 3 minutes. -->
+    <!-- The foreground service that plays the alarm tone for 5 minutes. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <!--

@@ -19,7 +19,7 @@ import androidx.core.app.ServiceCompat
 
 /**
  * Foreground service that does the actual ringing: loops the chosen tone on
- * the ALARM stream at max volume for exactly 3 minutes, then stops itself.
+ * the ALARM stream at max volume for exactly 5 minutes, then stops itself.
  * Also posts the full-screen-intent notification that launches
  * AlarmRingActivity over the lock screen.
  */
@@ -28,7 +28,7 @@ class AlarmRingService : Service() {
     companion object {
         const val CHANNEL_ID = "prayer_alarm_ring"
         const val NOTIFICATION_ID = 7719
-        const val RING_DURATION_MS = 3 * 60 * 1000L
+        const val RING_DURATION_MS = 5 * 60 * 1000L
     }
 
     private var mediaPlayer: MediaPlayer? = null

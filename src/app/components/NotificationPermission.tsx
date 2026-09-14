@@ -5,9 +5,16 @@ import { BellRing, X, Check } from 'lucide-react';
 import { cn } from '../utils/cn';
 import {
   isCapacitorNative,
+  getNativePlatform,
   checkAlarmPermissionSync,
   requestAlarmPermission,
 } from '@/lib/capacitorAlarm';
+import AlarmPermissionFlow from './AlarmPermissionFlow';
+
+// Set once the full Android permission sequence (notifications, exact
+// alarms, full-screen intent, battery exemption) has run on first open —
+// so it doesn't repeat on later launches.
+const NATIVE_ALARM_ONBOARD_KEY = 'pfm_native_alarm_onboarded';
 
 /**
  * Asks the user to enable prayer-time alarms the first time they open the app.
@@ -22,10 +29,29 @@ import {
  * └──────────────────────────────────────────────────────────┘
  */
 export default function NotificationPermission() {
-  const [state, setState] = useState<'hidden' | 'asking' | 'granted'>('hidden');
+  const [state, setState] = useState<'hidden' | 'asking' | 'granted' | 'full_flow'>('hidden');
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    // On Android native, run the FULL permission sequence (notifications +
+    // exact alarms + full-screen intent + battery exemption) once on first
+    // open, instead of only asking for bare notification permission and
+    // leaving the other three to be discovered later via the per-prayer
+    // "Ring like an alarm" toggle — most people never find that toggle, so
+    // alarms were silently running without exact-alarm scheduling or a
+    // battery-optimization exemption, which is why they'd ring briefly then
+    // get killed early by the OS/OEM instead of running reliably.
+    if (getNativePlatform() === 'android') {
+      let onboarded = false;
+      try {
+        onboarded = localStorage.getItem(NATIVE_ALARM_ONBOARD_KEY) === '1';
+      } catch {
+        // ignore
+      }
+      if (!onboarded) setState('full_flow');
+      return;
+    }
 
     // Check permission synchronously (fast, no flash)
     const perm = checkAlarmPermissionSync();
@@ -53,6 +79,15 @@ export default function NotificationPermission() {
     setState('asking');
   }, []);
 
+  const finishFullFlow = () => {
+    try {
+      localStorage.setItem(NATIVE_ALARM_ONBOARD_KEY, '1');
+    } catch {
+      // ignore
+    }
+    setState('hidden');
+  };
+
   const allow = async () => {
     try {
       const result = await requestAlarmPermission();
@@ -75,6 +110,10 @@ export default function NotificationPermission() {
       // ignore
     }
   };
+
+  if (state === 'full_flow') {
+    return <AlarmPermissionFlow onComplete={finishFullFlow} onCancel={finishFullFlow} />;
+  }
 
   if (state !== 'asking') return null;
 

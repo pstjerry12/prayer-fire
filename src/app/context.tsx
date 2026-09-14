@@ -26,10 +26,13 @@ import type { PrayerAppointment } from '@/app/components/CustomizablePrayerSched
 import { getStoredUser, fetchMe, apiLogout, apiDeleteAccount } from '@/lib/authClient';
 import { saveSongBlob, deleteSongBlob } from '@/lib/audioStore';
 
+// useNativeAlarm defaults to true so every user gets the loud, full-screen
+// "ring like an alarm" experience out of the box (Android only — a no-op
+// elsewhere) instead of requiring them to discover a per-prayer toggle.
 const DEFAULT_APPOINTMENTS: PrayerAppointment[] = [
-  { id: 'midnight', time: '00:00', label: 'Midnight Hour', enabled: true },
-  { id: 'noon', time: '12:00', label: 'Noon Prayer', enabled: true },
-  { id: 'morning', time: '04:00', label: 'Morning Watch', enabled: true },
+  { id: 'midnight', time: '00:00', label: 'Midnight Hour', enabled: true, useNativeAlarm: true },
+  { id: 'noon', time: '12:00', label: 'Noon Prayer', enabled: true, useNativeAlarm: true },
+  { id: 'morning', time: '04:00', label: 'Morning Watch', enabled: true, useNativeAlarm: true },
 ];
 
 // The official team that always appears first in the group directory.
@@ -165,7 +168,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [appointments, setAppointments] = useState<PrayerAppointment[]>(() => {
     if (typeof window === 'undefined') return DEFAULT_APPOINTMENTS;
     const stored = localStorage.getItem('upp_prayer_appointments');
-    return stored ? JSON.parse(stored) : DEFAULT_APPOINTMENTS;
+    if (!stored) return DEFAULT_APPOINTMENTS;
+    const parsed: PrayerAppointment[] = JSON.parse(stored);
+    // One-time migration for testers who installed before useNativeAlarm
+    // defaulted to true: turn it on for the three built-in prayer times if
+    // they never explicitly set it (undefined, not false — an explicit
+    // false means the user deliberately turned it off, which stays as-is).
+    const DEFAULT_IDS = new Set(DEFAULT_APPOINTMENTS.map((a) => a.id));
+    return parsed.map((a) =>
+      DEFAULT_IDS.has(a.id) && a.useNativeAlarm === undefined
+        ? { ...a, useNativeAlarm: true }
+        : a
+    );
   });
   const [streak, setStreak] = useState(() => {
     if (typeof window === 'undefined') return 0;
