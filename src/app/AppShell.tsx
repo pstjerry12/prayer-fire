@@ -13,6 +13,7 @@ import SplashScreen from './components/SplashScreen';
 import NotificationPermission from './components/NotificationPermission';
 import PricingPage from './components/PricingPage';
 import BackButtonExit from './components/BackButtonExit';
+import PullToRefresh from './components/PullToRefresh';
 
 function Overlays() {
   const {
@@ -101,7 +102,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <PrayerAlarm />
       <NotificationPermission />
       <BackButtonExit />
-      {children}
+      <PullToRefresh>{children}</PullToRefresh>
       <Overlays />
     </AppProvider>
   );
