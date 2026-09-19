@@ -5,6 +5,7 @@ import {
   BookOpen, ChevronLeft, Volume2, Loader2, BookMarked, ListOrdered, AlertTriangle, ChevronDown,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { pushBackHandler } from '@/lib/backHandlerStack';
 import { BIBLE_BOOKS } from '@/app/data/bibleBooks';
 import { speakText } from '@/lib/clientUtils';
 import { loadTranslation, getChapter, type BibleVerse } from '@/lib/bible/loadTranslation';
@@ -77,6 +78,19 @@ export default function BibleReader() {
     if (step === 3) loadChapter(currentBook.osis, chapter, translationId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, book, chapter, translationId]);
+
+  // Let the hardware/gesture back button step back through Verses → Chapters
+  // → Book one level at a time instead of falling straight through to the
+  // app-wide exit prompt — this stays registered only while there's
+  // somewhere to go (step > 1); at the Book screen it releases the press so
+  // it acts on the rest of the app normally.
+  useEffect(() => {
+    if (step === 1) return;
+    return pushBackHandler(() => {
+      setStep((s) => (s - 1) as Step);
+      return true;
+    });
+  }, [step]);
 
   function selectBook(name: string) {
     const b = BIBLE_BOOKS.find((x) => x.name === name);
