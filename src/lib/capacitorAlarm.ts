@@ -543,6 +543,25 @@ export async function openAppNotificationSettings(): Promise<boolean> {
   }
 }
 
+// ── In-app browser (Chrome Custom Tabs) for OAuth ────────────────────
+// Google requires sign-in to run outside a plain embedded WebView (it
+// actively refuses to load in one), which is why Google sign-in has to
+// leave the app's own WebView at all. Custom Tabs is the standard way
+// around a full app-switch to Chrome: same underlying browser engine
+// (so Google accepts it), but it opens as an overlay sliding up over the
+// app instead of fully leaving it, and closes itself automatically the
+// moment the OAuth flow redirects to this app's own deep link. Returns
+// false (caller should fall back to a plain navigation) on iOS/web.
+export async function openInAppBrowser(url: string): Promise<boolean> {
+  try {
+    const { Browser } = await import('@capacitor/browser');
+    await Browser.open({ url, toolbarColor: '#059669' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // ── Helper: stable numeric hash from string ────────────────────────
 function hashCode(str: string): number {
   let hash = 0;
