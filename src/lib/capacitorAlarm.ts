@@ -485,6 +485,25 @@ export async function exitNativeApp(): Promise<void> {
 // just telling the user where to go in Settings, this takes them there
 // directly. Returns false (caller should fall back to text instructions)
 // on iOS/web, where there's no equivalent deep link.
+// ── App version, for the Settings page ───────────────────────────────
+// Reads the *installed native build's* version — not anything from this
+// JS bundle — so it stays truthful even when Play Store review/rollout
+// lags behind the web deploy the user is actually looking at (versionName
+// is what's shown to the user; versionCode is Play Console's internal
+// build number, shown alongside it for support/debugging purposes).
+export async function getAppVersionInfo(): Promise<{ version: string; build: string } | null> {
+  try {
+    const { App } = await import('@capacitor/app');
+    const info = await App.getInfo();
+    return { version: info.version, build: info.build };
+  } catch {
+    return null;
+  }
+}
+
+export const PLAY_STORE_URL =
+  'https://play.google.com/store/apps/details?id=com.prayerfireaction.prayerfire';
+
 export async function openAppNotificationSettings(): Promise<boolean> {
   try {
     const { NativeSettings, AndroidSettings } = await import(

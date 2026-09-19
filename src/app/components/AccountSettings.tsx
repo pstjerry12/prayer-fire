@@ -14,11 +14,13 @@ import {
   ShieldCheck,
   UserCircle,
   Loader2,
+  RefreshCw,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '../utils/cn';
 import { CURRENCIES, type Currency } from '../data/pricingPlans';
 import type { AuthUser } from '@/app/types';
+import { getAppVersionInfo, PLAY_STORE_URL } from '@/lib/capacitorAlarm';
 
 interface Props {
   isOpen: boolean;
@@ -52,6 +54,18 @@ export default function AccountSettings({
   onOpenPrivacy,
 }: Props) {
   const [signingOut, setSigningOut] = useState(false);
+  const [appVersion, setAppVersion] = useState<{ version: string; build: string } | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    getAppVersionInfo().then((info) => {
+      if (!cancelled) setAppVersion(info);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -202,6 +216,19 @@ export default function AccountSettings({
                 <br />
                 <span className="text-ink-faint">Write it. Speak it. Pray it. Trust God.</span>
               </p>
+              {appVersion && (
+                <p className="text-ink-faint text-[10px] mt-2">
+                  Version {appVersion.version} (build {appVersion.build})
+                </p>
+              )}
+              <a
+                href={PLAY_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-card border border-edge-strong rounded-full text-ink-soft text-xs font-semibold hover:bg-card-3 transition-colors"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> Check for updates
+              </a>
             </div>
           </div>
         </div>
