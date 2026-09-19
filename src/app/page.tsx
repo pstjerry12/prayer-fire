@@ -9,6 +9,7 @@ import Footer from './components/Footer';
 import DonationCard from './components/DonationCard';
 import TestimonyCard from './components/TestimonyCard';
 import AnnouncementBanner from './components/AnnouncementBanner';
+import DailyExaltation from './components/DailyExaltation';
 import { useApp } from './context';
 
 function formatTime(time: string): string {
@@ -81,6 +82,9 @@ export default function HomePage() {
               <p className="text-acc text-[11px] md:text-xs font-semibold mt-1">7-step guided</p>
             </Link>
           </section>
+
+          {/* ── Daily Morning Exaltation (YouTube) ── */}
+          <DailyExaltation />
 
           {/* ── Daily Schedule (horizontal) ───────── */}
           <Link
