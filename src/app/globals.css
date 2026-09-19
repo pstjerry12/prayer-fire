@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Start-Up Prayer step transition — a right-to-left "flip" used both when
+   the Next button is tapped and when the step content is swiped. */
+@keyframes step-flip {
+  0% {
+    transform: perspective(800px) rotateY(-14deg) translateX(28px);
+    opacity: 0;
+  }
+  100% {
+    transform: perspective(800px) rotateY(0deg) translateX(0);
+    opacity: 1;
+  }
+}
+
 @theme {
   --font-sans: var(--font-nunito), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;

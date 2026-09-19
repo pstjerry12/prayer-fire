@@ -451,6 +451,35 @@ export async function listenAuthDeepLink(
   }
 }
 
+// ── Listen for the Android hardware/gesture back button ─────────────
+// Registering our own listener replaces Capacitor's default back
+// behavior entirely, so the caller is responsible for deciding what
+// "back" should do (navigate within the app vs. exit it).
+export async function listenBackButton(
+  callback: () => void
+): Promise<() => void> {
+  if (!isCapacitorNative()) return () => {};
+  try {
+    const { App } = await import('@capacitor/app');
+    const listener = await App.addListener('backButton', () => {
+      callback();
+    });
+    return () => listener.remove();
+  } catch {
+    return () => {};
+  }
+}
+
+export async function exitNativeApp(): Promise<void> {
+  if (!isCapacitorNative()) return;
+  try {
+    const { App } = await import('@capacitor/app');
+    App.exitApp();
+  } catch {
+    // ignore
+  }
+}
+
 // ── Helper: stable numeric hash from string ────────────────────────
 function hashCode(str: string): number {
   let hash = 0;
