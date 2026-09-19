@@ -1,3 +1,5 @@
+import SocialLinks from './SocialLinks';
+
 export default function Footer() {
   return (
     <footer className="border-t border-edge mt-8 bg-card pb-20 md:pb-6">
@@ -13,6 +15,8 @@ export default function Footer() {
           Write it. Speak it. Pray it. Trust God — Praying like Daniel.
         </p>
         <p className="text-ink-faint text-[10px] mt-1">pst jerry chijioke</p>
+
+        <SocialLinks />
       </div>
     </footer>
   );

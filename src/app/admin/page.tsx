@@ -92,6 +92,10 @@ export default function AdminPage() {
   const [pricePartnerYearly, setPricePartnerYearly] = useState('23.99');
   const [priceLeaderMonthly, setPriceLeaderMonthly] = useState('9.99');
   const [priceLeaderYearly, setPriceLeaderYearly] = useState('89.99');
+  const [socialYoutube, setSocialYoutube] = useState('');
+  const [socialFacebook, setSocialFacebook] = useState('');
+  const [socialInstagram, setSocialInstagram] = useState('');
+  const [socialWhatsapp, setSocialWhatsapp] = useState('');
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState('');
 
@@ -115,6 +119,10 @@ export default function AdminPage() {
         if (data.settings.price_partner_yearly) setPricePartnerYearly(data.settings.price_partner_yearly);
         if (data.settings.price_leader_monthly) setPriceLeaderMonthly(data.settings.price_leader_monthly);
         if (data.settings.price_leader_yearly) setPriceLeaderYearly(data.settings.price_leader_yearly);
+        setSocialYoutube(data.settings.social_youtube || '');
+        setSocialFacebook(data.settings.social_facebook || '');
+        setSocialInstagram(data.settings.social_instagram || '');
+        setSocialWhatsapp(data.settings.social_whatsapp || '');
       }
     }
   }, []);
@@ -640,6 +648,56 @@ export default function AdminPage() {
                 className="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save Prices'}
+              </button>
+            </div>
+
+            {/* Social Links — Follow Us */}
+            <div className="bg-card border border-edge rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <LinkIcon className="w-5 h-5 text-acc" />
+                <h2 className="font-bold text-ink text-lg">🔗 Follow Us — Social Links</h2>
+              </div>
+
+              <div className="bg-card-2 rounded-xl p-3 mb-3">
+                <p className="text-xs text-ink-muted">
+                  💡 Paste your channel/page/profile links below. They appear as a &quot;Follow Us&quot; row in the app footer on every page — leave any field blank to hide that icon. Changes are live immediately, no redeploy needed.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">YouTube channel URL</label>
+                  <input type="url" placeholder="https://youtube.com/@yourchannel" value={socialYoutube} onChange={(e) => setSocialYoutube(e.target.value)}
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">Facebook page URL</label>
+                  <input type="url" placeholder="https://facebook.com/yourpage" value={socialFacebook} onChange={(e) => setSocialFacebook(e.target.value)}
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">Instagram profile URL</label>
+                  <input type="url" placeholder="https://instagram.com/yourprofile" value={socialInstagram} onChange={(e) => setSocialInstagram(e.target.value)}
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">WhatsApp chat link (for counseling / prayer requests)</label>
+                  <input type="url" placeholder="https://wa.me/2348012345678" value={socialWhatsapp} onChange={(e) => setSocialWhatsapp(e.target.value)}
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                </div>
+              </div>
+
+              <button
+                onClick={() => saveSettings({
+                  social_youtube: socialYoutube,
+                  social_facebook: socialFacebook,
+                  social_instagram: socialInstagram,
+                  social_whatsapp: socialWhatsapp,
+                })}
+                disabled={settingsSaving}
+                className="w-full mt-3 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save Social Links'}
               </button>
             </div>
 
