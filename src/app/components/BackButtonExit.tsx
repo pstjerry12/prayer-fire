@@ -1,40 +1,31 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
 import { listenBackButton, exitNativeApp } from '@/lib/capacitorAlarm';
 
 const EXIT_WINDOW_MS = 2000;
 
 /**
- * Android hardware/gesture back button: navigate back within the app when
- * there's somewhere to go, otherwise require a second press within
- * EXIT_WINDOW_MS (with a "tap again to exit" toast) before actually
- * closing the app — the standard Android "double back to exit" pattern.
+ * Android hardware/gesture back button: the first press (from anywhere in
+ * the app) shows a "tap again to exit" toast; a second press within
+ * EXIT_WINDOW_MS actually closes the app — the standard Android
+ * "double back to exit" pattern. Deliberately doesn't try to navigate back
+ * within the app first — the bottom nav already covers moving between
+ * sections, and mixing "sometimes goes back, sometimes exits" behavior
+ * made the exit prompt feel like it wasn't showing up at all.
  */
 export default function BackButtonExit() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const pathnameRef = useRef(pathname);
   const lastPressRef = useRef(0);
   const [showToast, setShowToast] = useState(false);
-
-  useEffect(() => {
-    pathnameRef.current = pathname;
-  }, [pathname]);
 
   useEffect(() => {
     let removeListener = () => {};
     let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
     listenBackButton(() => {
-      if (pathnameRef.current !== '/') {
-        router.back();
-        return;
-      }
-
       const now = Date.now();
       if (now - lastPressRef.current < EXIT_WINDOW_MS) {
+        setShowToast(false);
         exitNativeApp();
         return;
       }
@@ -50,7 +41,7 @@ export default function BackButtonExit() {
       removeListener();
       if (toastTimer) clearTimeout(toastTimer);
     };
-  }, [router]);
+  }, []);
 
   if (!showToast) return null;
 
