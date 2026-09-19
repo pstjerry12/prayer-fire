@@ -480,6 +480,23 @@ export async function exitNativeApp(): Promise<void> {
   }
 }
 
+// ── Jump straight to this app's notification settings screen ────────
+// Used when the "Test Alarm" flow finds notifications denied — instead of
+// just telling the user where to go in Settings, this takes them there
+// directly. Returns false (caller should fall back to text instructions)
+// on iOS/web, where there's no equivalent deep link.
+export async function openAppNotificationSettings(): Promise<boolean> {
+  try {
+    const { NativeSettings, AndroidSettings } = await import(
+      'capacitor-native-settings'
+    );
+    await NativeSettings.openAndroid({ option: AndroidSettings.AppNotification });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // ── Helper: stable numeric hash from string ────────────────────────
 function hashCode(str: string): number {
   let hash = 0;
