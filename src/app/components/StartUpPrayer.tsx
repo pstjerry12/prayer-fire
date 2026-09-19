@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   Droplets, Award, Music, Heart, Users, Sparkles, Home, Check, Clock, Pencil, Loader2,
@@ -135,6 +135,31 @@ export default function StartUpPrayer() {
     }
   };
 
+  // Swipe right-to-left on the step content = the same action as tapping
+  // "Next" — on small screens the button sits below the fold, so this is
+  // often the faster way to move to the next prayer. Only touchend decides
+  // whether it was a swipe (no touchmove preventDefault), so the vertical
+  // scroll on the special/intercessory lists inside this area is untouched.
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const SWIPE_THRESHOLD = 50;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const deltaX = t.clientX - start.x;
+    const deltaY = t.clientY - start.y;
+    if (deltaX < -SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+      handleNext();
+    }
+  };
+
   const saveTotal = () => {
     const minutes = Number(totalMinutesInput);
     if (Number.isFinite(minutes) && minutes >= 2) {
@@ -246,13 +271,15 @@ export default function StartUpPrayer() {
         </div>
       </div>
 
-      {/* Step content */}
+      {/* Step content — swipe right-to-left to advance, same as Next */}
+      <div key={step} className="animate-[step-flip_0.35s_ease-out]" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <div className="text-center mb-5">
         <div className={cn('inline-flex items-center justify-center w-14 h-14 rounded-full mb-3', step <= 4 ? 'bg-acc-soft text-acc' : step <= 6 ? 'bg-card-3 text-ink-muted' : 'bg-danger-soft text-danger')}>
           {currentStep?.icon}
         </div>
         <h3 className="text-xl font-bold text-ink mb-1">{currentStep?.title}</h3>
         <p className="text-ink-muted text-sm">{currentStep?.subtitle}</p>
+        <p className="text-ink-faint text-[11px] mt-1">‹ Swipe left for next</p>
       </div>
 
       {currentStep?.verse && (
@@ -346,6 +373,7 @@ export default function StartUpPrayer() {
           onClose={() => setIntercessoryOpenIndex(null)}
         />
       )}
+      </div>
 
       {/* Controls */}
       <div className="flex gap-3">

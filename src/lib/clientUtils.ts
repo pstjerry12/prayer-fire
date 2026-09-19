@@ -19,12 +19,9 @@ export const playChime = () => {
 };
 
 // A short, synthetic room impulse response (exponentially-decaying noise)
-// for a ConvolverNode. This is the single biggest lever for making
-// synthesized transients — like claps — stop sounding like isolated
-// "clicks" and start sounding like they're happening in a real room: real
-// applause is drenched in overlapping reflections that blend hundreds of
-// claps into one wash of sound.
-function createRoomImpulse(ctx: AudioContext, duration = 0.7, decay = 2.6): AudioBuffer {
+// for a ConvolverNode — gives every tone a shared, soft reflection tail so
+// they blend into one warm ambience instead of sounding pasted-in dry.
+function createRoomImpulse(ctx: AudioContext, duration = 1.6, decay = 3.2): AudioBuffer {
   const length = Math.max(1, Math.floor(ctx.sampleRate * duration));
   const impulse = ctx.createBuffer(2, length, ctx.sampleRate);
   for (let channel = 0; channel < 2; channel++) {
@@ -36,82 +33,70 @@ function createRoomImpulse(ctx: AudioContext, duration = 0.7, decay = 2.6): Audi
   return impulse;
 }
 
-// A single hand-clap impulse, built from two layers rather than one flat
-// noise burst — real claps aren't a pure tone-less "click", they're a sharp
-// broadband snap plus a softer, lower resonance from the cupped-hand
-// cavity right underneath it:
-//   • snap — very short, bright, wide bandpass (the "crack")
-//   • body — slightly longer, low bandpass at low gain (the "thud")
-// Both layers, and their exact frequencies/durations, are randomized per
-// clap so hundreds of them layered together don't sound like one clap
-// copy-pasted on a loop. A shared `reverbBus` gives every clap the same
-// room tail so they blend together instead of sounding pasted-in dry.
-function clap(ctx: AudioContext, at: number, gainVal: number, pan: number, reverbBus: AudioNode) {
-  const dur = 0.018 + Math.random() * 0.03; // 18-48ms — a real clap is short
-  const noiseBuffer = (() => {
-    const bufferSize = Math.max(1, Math.floor(ctx.sampleRate * dur));
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-    return buffer;
-  })();
+// A single bell tone using FM (frequency-modulation) synthesis — the
+// classic Chowning bell algorithm: a sine carrier whose pitch is modulated
+// by a second sine at a non-integer ratio of the carrier, with the
+// modulation index decaying faster than the overall volume. That mismatch
+// is what makes it sound like real struck metal rather than an electronic
+// "beep" — the timbre starts bright and clangy and mellows into a pure
+// tone as it rings out, exactly like a real bell's decay.
+function bellTone(
+  ctx: AudioContext,
+  at: number,
+  freq: number,
+  gainVal: number,
+  pan: number,
+  reverbBus: AudioNode,
+  duration = 2.4
+) {
+  const modRatio = 1.4; // inharmonic — this is what makes it "bell" not "flute"
+  const indexDecay = duration * 0.4;
 
-  const mix = ctx.createGain(); // sums snap + body before panning/reverb send
+  const carrier = ctx.createOscillator();
+  carrier.type = 'sine';
+  carrier.frequency.value = freq;
 
-  // Snap — the bright crack of palm meeting palm.
-  const snapSource = ctx.createBufferSource();
-  snapSource.buffer = noiseBuffer;
-  const snapFilter = ctx.createBiquadFilter();
-  snapFilter.type = 'bandpass';
-  snapFilter.frequency.value = 1800 + Math.random() * 2600;
-  snapFilter.Q.value = 0.6 + Math.random() * 0.5;
-  const snapGain = ctx.createGain();
-  snapGain.gain.setValueAtTime(0.0001, at);
-  snapGain.gain.exponentialRampToValueAtTime(gainVal, at + 0.0015);
-  snapGain.gain.exponentialRampToValueAtTime(0.0001, at + dur);
-  snapSource.connect(snapFilter);
-  snapFilter.connect(snapGain);
-  snapGain.connect(mix);
-  snapSource.start(at);
-  snapSource.stop(at + dur + 0.02);
+  const modulator = ctx.createOscillator();
+  modulator.type = 'sine';
+  modulator.frequency.value = freq * modRatio;
 
-  // Body — the softer low thud of the cupped-hand cavity, arriving with
-  // the snap but lingering a touch longer underneath it.
-  const bodyDur = dur * (1.6 + Math.random() * 0.6);
-  const bodySource = ctx.createBufferSource();
-  bodySource.buffer = noiseBuffer;
-  const bodyFilter = ctx.createBiquadFilter();
-  bodyFilter.type = 'bandpass';
-  bodyFilter.frequency.value = 220 + Math.random() * 380;
-  bodyFilter.Q.value = 1.1 + Math.random() * 0.5;
-  const bodyGain = ctx.createGain();
-  bodyGain.gain.setValueAtTime(0.0001, at);
-  bodyGain.gain.exponentialRampToValueAtTime(gainVal * 0.32, at + 0.004);
-  bodyGain.gain.exponentialRampToValueAtTime(0.0001, at + bodyDur);
-  bodySource.connect(bodyFilter);
-  bodyFilter.connect(bodyGain);
-  bodyGain.connect(mix);
-  bodySource.start(at);
-  bodySource.stop(at + bodyDur + 0.02);
+  const modGain = ctx.createGain(); // modulation index, expressed in Hz of deviation
+  const peakIndex = freq * 2.6;
+  modGain.gain.setValueAtTime(peakIndex, at);
+  modGain.gain.exponentialRampToValueAtTime(Math.max(2, freq * 0.015), at + indexDecay);
+  modulator.connect(modGain);
+  modGain.connect(carrier.frequency);
+
+  const ampEnv = ctx.createGain();
+  ampEnv.gain.setValueAtTime(0.0001, at);
+  ampEnv.gain.exponentialRampToValueAtTime(gainVal, at + 0.012);
+  ampEnv.gain.exponentialRampToValueAtTime(0.0001, at + duration);
+  carrier.connect(ampEnv);
 
   if (ctx.createStereoPanner) {
     const panner = ctx.createStereoPanner();
     panner.pan.value = pan;
-    mix.connect(panner);
+    ampEnv.connect(panner);
     panner.connect(ctx.destination);
+    panner.connect(reverbBus);
   } else {
-    mix.connect(ctx.destination);
+    ampEnv.connect(ctx.destination);
+    ampEnv.connect(reverbBus);
   }
-  // Send the same signal into the shared room reverb so every clap blends
-  // into a common ambience instead of sounding pasted in dry.
-  mix.connect(reverbBus);
+
+  carrier.start(at);
+  carrier.stop(at + duration + 0.1);
+  modulator.start(at);
+  modulator.stop(at + duration + 0.1);
 }
 
-// A natural-sounding round of applause (~3 seconds): many individually
-// randomized two-layer claps, all sharing one room reverb tail, layered
-// together following a crowd-clapping density curve — a quick build as
-// people start clapping, a busy sustained wash, then a gradual taper as it
-// dies down. No two plays sound identical.
+// A warm, natural-sounding celebration peal: four ascending bell tones
+// (a joyful major chord — C, E, G, high C) rung in quick succession and
+// left to ring out together over a shared soft reverb tail. FM-synthesized
+// bells read as genuinely "real" far more reliably than trying to
+// synthesize something as texturally complex as a crowd of clapping
+// hands — this is deliberately a different, simpler kind of celebratory
+// sound rather than a third pass at tuning fake applause.
 export const playCelebration = () => {
   if (typeof window === 'undefined') return;
   const AC = window.AudioContext || (window as any).webkitAudioContext;
@@ -119,42 +104,29 @@ export const playCelebration = () => {
   const ctx = new AC();
   const now = ctx.currentTime;
 
-  // Shared room bus: every clap feeds into this one convolver, so the
-  // reflections of hundreds of claps overlap and blend like a real room
-  // instead of each clap carrying its own isolated dry click.
   const reverbBus = ctx.createGain();
-  reverbBus.gain.value = 0.9;
+  reverbBus.gain.value = 0.55;
   const convolver = ctx.createConvolver();
   convolver.buffer = createRoomImpulse(ctx);
   const reverbWet = ctx.createGain();
-  reverbWet.gain.value = 0.5;
+  reverbWet.gain.value = 0.4;
   reverbBus.connect(convolver);
   convolver.connect(reverbWet);
   reverbWet.connect(ctx.destination);
 
-  const DURATION = 3.0;
-  const PEAK_CLAPS_PER_SEC = 26;
+  const notes = [
+    { freq: 523.25, pan: -0.5 }, // C5
+    { freq: 659.25, pan: -0.15 }, // E5
+    { freq: 783.99, pan: 0.15 }, // G5
+    { freq: 1046.5, pan: 0.5 }, // C6
+  ];
 
-  // Density envelope: ramps up over the first 0.35s, holds a busy plateau
-  // until ~2.1s, then eases off to nothing by the end.
-  const densityAt = (t: number): number => {
-    if (t < 0.35) return (t / 0.35) * PEAK_CLAPS_PER_SEC;
-    if (t < 2.1) return PEAK_CLAPS_PER_SEC;
-    return PEAK_CLAPS_PER_SEC * Math.max(0, 1 - (t - 2.1) / (DURATION - 2.1));
-  };
-
-  // Sample clap start times via a simple thinned Poisson process against
-  // the density curve above.
-  let t = 0;
-  while (t < DURATION) {
-    const rate = Math.max(1, densityAt(t));
-    t += -Math.log(1 - Math.random()) / rate;
-    if (t >= DURATION) break;
-    const envelopeGain = 0.16 + (densityAt(t) / PEAK_CLAPS_PER_SEC) * 0.14;
-    const gainVal = envelopeGain * (0.6 + Math.random() * 0.6);
-    const pan = Math.random() * 1.6 - 0.8;
-    clap(ctx, now + t, gainVal, pan, reverbBus);
-  }
+  notes.forEach((note, i) => {
+    const at = now + i * 0.2;
+    bellTone(ctx, at, note.freq, 0.26, note.pan, reverbBus, 2.6);
+    // A soft octave-up shimmer layer makes each bell feel fuller/less thin.
+    bellTone(ctx, at, note.freq * 2, 0.09, note.pan, reverbBus, 1.6);
+  });
 };
 
 export const speakText = (text: string) => {

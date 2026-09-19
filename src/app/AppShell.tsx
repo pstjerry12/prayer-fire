@@ -12,6 +12,7 @@ import PrayerAlarm from './components/PrayerAlarm';
 import SplashScreen from './components/SplashScreen';
 import NotificationPermission from './components/NotificationPermission';
 import PricingPage from './components/PricingPage';
+import BackButtonExit from './components/BackButtonExit';
 
 function Overlays() {
   const {
@@ -99,6 +100,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <ServiceWorkerRegister />
       <PrayerAlarm />
       <NotificationPermission />
+      <BackButtonExit />
       {children}
       <Overlays />
     </AppProvider>
