@@ -14,6 +14,7 @@ import {
   checkExactAlarmPermission,
   checkFullScreenIntentPermission,
   checkBatteryOptimizationExemption,
+  openAppNotificationSettings,
 } from '@/lib/capacitorAlarm';
 import AlarmPermissionFlow from './AlarmPermissionFlow';
 
@@ -71,6 +72,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
   const [alarmFor, setAlarmFor] = useState<string | null>(null);
   const [testAlarmActive, setTestAlarmActive] = useState(false);
   const [permissionFlowFor, setPermissionFlowFor] = useState<string | null>(null);
+  const [showNotificationsOffPrompt, setShowNotificationsOffPrompt] = useState(false);
   const preloadedRef = useRef(false);
   const isAndroid = getNativePlatform() === 'android';
   const [notificationGranted, setNotificationGranted] = useState(false);
@@ -191,11 +193,11 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
             if (!notificationGranted) {
               const result = await requestAlarmPermission();
               if (result !== 'granted') {
-                alert(
-                  isAndroid
-                    ? 'Notifications are off for this app. Open your phone Settings → Apps → Prayer Fire Movement → Notifications, turn them on, then try again.'
-                    : 'Please allow notifications first, then try again.'
-                );
+                if (isAndroid) {
+                  setShowNotificationsOffPrompt(true);
+                } else {
+                  alert('Please allow notifications first, then try again.');
+                }
                 return;
               }
               setNotificationGranted(true);
@@ -499,6 +501,41 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
         }}
         onCancel={() => setPermissionFlowFor(null)}
       />
+    )}
+
+    {/* ── Notifications-off prompt: jump straight to Settings ──────── */}
+    {showNotificationsOffPrompt && (
+      <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="bg-card rounded-2xl w-full max-w-sm border border-edge shadow-2xl p-6 text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-danger-soft text-danger mb-3">
+            <BellRing className="w-6 h-6" />
+          </div>
+          <h3 className="text-lg font-bold text-ink mb-1">Notifications are off</h3>
+          <p className="text-ink-muted text-sm mb-5">
+            Turn on notifications for Prayer Fire Movement so your prayer alarms can ring, then come back and try again.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowNotificationsOffPrompt(false)}
+              className="flex-1 py-2.5 bg-card-3 text-ink-muted rounded-xl font-bold text-sm hover:bg-card"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                const opened = await openAppNotificationSettings();
+                if (!opened) {
+                  alert('Open your phone Settings → Apps → Prayer Fire Movement → Notifications, turn them on, then try again.');
+                }
+                setShowNotificationsOffPrompt(false);
+              }}
+              className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500"
+            >
+              Open Settings
+            </button>
+          </div>
+        </div>
+      </div>
     )}
 
     {/* ── Test Alarm Dismiss Overlay ─────────────────────────────── */}
