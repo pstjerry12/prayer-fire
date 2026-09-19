@@ -14,6 +14,7 @@ import NotificationPermission from './components/NotificationPermission';
 import PricingPage from './components/PricingPage';
 import BackButtonExit from './components/BackButtonExit';
 import PullToRefresh from './components/PullToRefresh';
+import RouteMemory from './components/RouteMemory';
 
 function Overlays() {
   const {
@@ -99,6 +100,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <AppProvider>
       <SplashScreen />
       <ServiceWorkerRegister />
+      <RouteMemory />
       <PrayerAlarm />
       <NotificationPermission />
       <BackButtonExit />
