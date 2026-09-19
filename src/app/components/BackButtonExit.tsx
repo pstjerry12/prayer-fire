@@ -1,14 +1,20 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { LogOut } from 'lucide-react';
+import { consumeBackPress } from '@/lib/backHandlerStack';
 
 const EXIT_WINDOW_MS = 2000;
 
 /**
- * Android hardware/gesture back button: the first press (from anywhere in
- * the app) shows a "tap again to exit" toast; a second press within
- * EXIT_WINDOW_MS actually closes the app — the standard Android
- * "double back to exit" pattern.
+ * Android hardware/gesture back button.
+ *
+ * 1. First offered to any in-page drill-down that registered itself on the
+ *    back handler stack (e.g. the Bible reader's Book → Chapters → Verses
+ *    steps) — if one claims it, that's the entire press: no toast, no exit.
+ * 2. Otherwise: the first press (from anywhere) shows a "tap again to
+ *    exit" toast; a second press within EXIT_WINDOW_MS actually closes
+ *    the app — the standard Android "double back to exit" pattern.
  *
  * Deliberately doesn't gate on isCapacitorNative() first: that flag reads
  * as false at this component's very early mount time even inside the
@@ -30,6 +36,8 @@ export default function BackButtonExit() {
     import('@capacitor/app')
       .then(({ App }) =>
         App.addListener('backButton', () => {
+          if (consumeBackPress()) return;
+
           const now = Date.now();
           if (now - lastPressRef.current < EXIT_WINDOW_MS) {
             setShowToast(false);
@@ -63,8 +71,11 @@ export default function BackButtonExit() {
   if (!showToast) return null;
 
   return (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2.5 rounded-full bg-black/85 text-white text-sm font-medium shadow-lg pointer-events-none safe-bottom">
-      Tap back again to exit
+    <div className="fixed inset-x-0 bottom-24 z-[9999] flex justify-center px-4 pointer-events-none safe-bottom">
+      <div className="flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-ink text-page shadow-2xl border border-white/10 animate-[toast-in_0.22s_ease-out]">
+        <LogOut className="w-4 h-4 text-amber-400 shrink-0" />
+        <span className="text-sm font-semibold">Tap back again to exit</span>
+      </div>
     </div>
   );
 }
