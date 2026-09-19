@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 import { consumeBackPress } from '@/lib/backHandlerStack';
 
@@ -11,8 +12,12 @@ const EXIT_WINDOW_MS = 2000;
  *
  * 1. First offered to any in-page drill-down that registered itself on the
  *    back handler stack (e.g. the Bible reader's Book → Chapters → Verses
- *    steps) — if one claims it, that's the entire press: no toast, no exit.
- * 2. Otherwise: the first press (from anywhere) shows a "tap again to
+ *    steps) — if one claims it, that's the entire press: no toast, no exit,
+ *    no navigation.
+ * 2. On any other screen: navigates back one step (router.back()) — the
+ *    exit prompt is Home-only, so leaving a section always just returns
+ *    you toward Home instead of risking exiting the app mid-navigation.
+ * 3. Only once already on Home: the first press shows a "tap again to
  *    exit" toast; a second press within EXIT_WINDOW_MS actually closes
  *    the app — the standard Android "double back to exit" pattern.
  *
@@ -25,8 +30,15 @@ const EXIT_WINDOW_MS = 2000;
  * registration unconditionally is safe in a plain browser too.
  */
 export default function BackButtonExit() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const pathnameRef = useRef(pathname);
   const lastPressRef = useRef(0);
   const [showToast, setShowToast] = useState(false);
+
+  useEffect(() => {
+    pathnameRef.current = pathname;
+  }, [pathname]);
 
   useEffect(() => {
     let removed = false;
@@ -37,6 +49,11 @@ export default function BackButtonExit() {
       .then(({ App }) =>
         App.addListener('backButton', () => {
           if (consumeBackPress()) return;
+
+          if (pathnameRef.current !== '/') {
+            router.back();
+            return;
+          }
 
           const now = Date.now();
           if (now - lastPressRef.current < EXIT_WINDOW_MS) {
@@ -66,7 +83,7 @@ export default function BackButtonExit() {
       removeListener();
       if (toastTimer) clearTimeout(toastTimer);
     };
-  }, []);
+  }, [router]);
 
   if (!showToast) return null;
 
