@@ -1,15 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { isCapacitorNative } from '@/lib/capacitorAlarm';
 
 const EXIT_WINDOW_MS = 2000;
 
 // TEMP diagnostic badge — shows exactly where back-button registration
-// stands on-device (native detection / plugin import / listener
-// registration / event delivery), so a report of "exit doesn't work" can
-// be pinned to a specific stage instead of guessed at blind. Remove once
-// confirmed working.
+// stands on-device (plugin import / listener registration / event
+// delivery), so a report of "exit doesn't work" can be pinned to a
+// specific stage instead of guessed at blind. Remove once confirmed
+// working.
 const SHOW_DEBUG_BADGE = true;
 
 /**
@@ -17,6 +16,14 @@ const SHOW_DEBUG_BADGE = true;
  * the app) shows a "tap again to exit" toast; a second press within
  * EXIT_WINDOW_MS actually closes the app — the standard Android
  * "double back to exit" pattern.
+ *
+ * Deliberately doesn't gate on isCapacitorNative() first: that flag read
+ * as false at this component's very early mount time even inside the
+ * real native app (a timing race against the bridge injection specific to
+ * this app's server.url/remote-reload setup), which meant the listener
+ * never even attempted to register. @capacitor/app's web fallback is a
+ * documented no-op/rejects-gracefully for these calls, so attempting
+ * registration unconditionally is safe in a plain browser too.
  */
 export default function BackButtonExit() {
   const lastPressRef = useRef(0);
@@ -24,11 +31,6 @@ export default function BackButtonExit() {
   const [debugStatus, setDebugStatus] = useState('init');
 
   useEffect(() => {
-    if (!isCapacitorNative()) {
-      setDebugStatus('not native (web)');
-      return;
-    }
-
     let removed = false;
     let removeListener = () => {};
     let toastTimer: ReturnType<typeof setTimeout> | null = null;
