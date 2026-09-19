@@ -9,6 +9,7 @@ import {
   AlertTriangle, Flame, Eye, EyeOff, Plus, Edit3, Save, Link as LinkIcon,
 } from 'lucide-react';
 import { cn } from '@/app/utils/cn';
+import { extractYouTubeVideoId } from '@/app/utils/youtube';
 
 type Tab = 'overview' | 'users' | 'requests' | 'testimonials' | 'donations' | 'announcements' | 'events' | 'settings';
 
@@ -96,6 +97,9 @@ export default function AdminPage() {
   const [socialFacebook, setSocialFacebook] = useState('');
   const [socialInstagram, setSocialInstagram] = useState('');
   const [socialWhatsapp, setSocialWhatsapp] = useState('');
+  const [dailyYoutubeUrl, setDailyYoutubeUrl] = useState('');
+  const [dailyYoutubeTitle, setDailyYoutubeTitle] = useState('');
+  const [dailyYoutubeSubtitle, setDailyYoutubeSubtitle] = useState('');
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState('');
 
@@ -123,6 +127,9 @@ export default function AdminPage() {
         setSocialFacebook(data.settings.social_facebook || '');
         setSocialInstagram(data.settings.social_instagram || '');
         setSocialWhatsapp(data.settings.social_whatsapp || '');
+        setDailyYoutubeUrl(data.settings.daily_youtube_url || '');
+        setDailyYoutubeTitle(data.settings.daily_youtube_title || '');
+        setDailyYoutubeSubtitle(data.settings.daily_youtube_subtitle || '');
       }
     }
   }, []);
@@ -698,6 +705,63 @@ export default function AdminPage() {
                 className="w-full mt-3 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save Social Links'}
+              </button>
+            </div>
+
+            {/* Daily Morning Exaltation — YouTube */}
+            <div className="bg-card border border-edge rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">📺</span>
+                <h2 className="font-bold text-ink text-lg">Daily Morning Exaltation</h2>
+              </div>
+
+              <div className="bg-card-2 rounded-xl p-3 mb-3">
+                <p className="text-xs text-ink-muted">
+                  💡 Paste today&apos;s YouTube video or livestream link, add a topic, and it appears as a thumbnail card on the home page — tapping it opens your video. Update this daily; changes are live immediately, no redeploy needed.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">YouTube video / livestream URL</label>
+                  <input type="url" placeholder="https://youtube.com/watch?v=..." value={dailyYoutubeUrl} onChange={(e) => setDailyYoutubeUrl(e.target.value)}
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">Topic / title</label>
+                  <input type="text" placeholder="Breaking Every Chain — Morning Exaltation" value={dailyYoutubeTitle} onChange={(e) => setDailyYoutubeTitle(e.target.value)}
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">Subtitle (optional)</label>
+                  <input type="text" placeholder="Special Prayer Session" value={dailyYoutubeSubtitle} onChange={(e) => setDailyYoutubeSubtitle(e.target.value)}
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                </div>
+              </div>
+
+              {(() => {
+                const previewId = extractYouTubeVideoId(dailyYoutubeUrl);
+                if (!previewId) return null;
+                return (
+                  // eslint-disable-next-line @next/next/no-img-element -- external YouTube thumbnail preview
+                  <img
+                    src={`https://img.youtube.com/vi/${previewId}/hqdefault.jpg`}
+                    alt="Thumbnail preview"
+                    className="w-full mt-3 rounded-lg border border-edge aspect-video object-cover"
+                  />
+                );
+              })()}
+
+              <button
+                onClick={() => saveSettings({
+                  daily_youtube_url: dailyYoutubeUrl,
+                  daily_youtube_title: dailyYoutubeTitle,
+                  daily_youtube_subtitle: dailyYoutubeSubtitle,
+                })}
+                disabled={settingsSaving}
+                className="w-full mt-3 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save Daily Video'}
               </button>
             </div>
 
