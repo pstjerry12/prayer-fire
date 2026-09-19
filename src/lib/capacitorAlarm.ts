@@ -38,9 +38,36 @@ export function getNativePlatform(): 'android' | 'ios' | 'web' {
   return platform === 'android' || platform === 'ios' ? platform : 'web';
 }
 
-// ── Lazy-load Capacitor plugins (only when native) ─────────────────
+/**
+ * Async-safe native-platform check for decisions that matter (e.g. "should
+ * this run the native alarm-scheduling path or the web fallback") made
+ * inside a mount-time effect. Prefer this over isCapacitorNative()/
+ * getNativePlatform() there — this app loads its page from a remote
+ * server.url rather than a bundled local asset, so the native bridge's own
+ * injection of window.Capacitor can still be mid-flight on the very first
+ * synchronous render tick, reading as "web" for a real native install. The
+ * dynamic import below reliably outlasts that race in practice.
+ */
+export async function isNativePlatformAsync(): Promise<boolean> {
+  try {
+    const { Capacitor } = await import('@capacitor/core');
+    return Capacitor.isNativePlatform();
+  } catch {
+    return false;
+  }
+}
+
+// ── Lazy-load Capacitor plugins ──────────────────────────────────────
+// Deliberately NOT gated on isCapacitorNative() first: that flag is a
+// synchronous read of window.Capacitor at whatever instant this runs,
+// which reads false for a real native app if called too early relative
+// to the bridge's own injection — a race specific to this app's
+// server.url/remote-reload setup (the same bug already found and fixed
+// for the back button and notification-settings deep link). The dynamic
+// import itself takes at least one tick, which is enough in practice for
+// the bridge to be ready; each plugin's own web fallback implementation
+// (bundled regardless of platform) makes it safe to just always try.
 async function getLocalNotifications() {
-  if (!isCapacitorNative()) return null;
   try {
     const { LocalNotifications } = await import(
       '@capacitor/local-notifications'
@@ -52,7 +79,6 @@ async function getLocalNotifications() {
 }
 
 async function getHaptics() {
-  if (!isCapacitorNative()) return null;
   try {
     const { Haptics } = await import('@capacitor/haptics');
     return Haptics;
@@ -89,7 +115,6 @@ interface AlarmEnginePluginApi {
 }
 
 async function getAlarmEngine(): Promise<AlarmEnginePluginApi | null> {
-  if (!isCapacitorNative()) return null;
   try {
     const { registerPlugin, Capacitor } = await import('@capacitor/core');
     if (Capacitor.getPlatform() !== 'android') return null;
@@ -385,25 +410,27 @@ export async function requestBatteryOptimizationExemption(): Promise<void> {
   }
 }
 
-// ── Vibrate — works both sync (web) and async (native) ────────────
-export function nativeVibrate(): void {
-  // Web fallback — synchronous
-  if (!isCapacitorNative()) {
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      try {
-        navigator.vibrate([200, 100, 200, 100, 200]);
-      } catch {
-        // ignore
-      }
+function webVibrateFallback(): void {
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    try {
+      navigator.vibrate([200, 100, 200, 100, 200]);
+    } catch {
+      // ignore
     }
-    return;
   }
+}
 
-  // Native — fire and forget
+// ── Vibrate — always tries native Haptics first, fire and forget ────
+// Doesn't pre-branch on isCapacitorNative(): same early-mount timing risk
+// as the other gates above. Falls back to the web Vibration API only if
+// the native plugin genuinely isn't there.
+export function nativeVibrate(): void {
   getHaptics().then((Haptics) => {
-    if (Haptics) {
-      Haptics.vibrate({ duration: 500 }).catch(() => {});
+    if (!Haptics) {
+      webVibrateFallback();
+      return;
     }
+    Haptics.vibrate({ duration: 500 }).catch(() => webVibrateFallback());
   });
 }
 

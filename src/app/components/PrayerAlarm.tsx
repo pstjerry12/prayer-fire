@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useApp } from '@/app/context';
 import { playAlarmTone, stopAlarm, DEFAULT_TONE, type AlarmToneId } from '@/lib/alarmSound';
 import {
-  isCapacitorNative,
+  isNativePlatformAsync,
   scheduleNativeAlarms,
   scheduleAlarmEngineAlarms,
   nativeVibrate,
@@ -24,7 +24,9 @@ import {
 export default function PrayerAlarm() {
   const { appointments } = useApp();
   const appointmentsRef = useRef(appointments);
-  appointmentsRef.current = appointments;
+  useEffect(() => {
+    appointmentsRef.current = appointments;
+  }, [appointments]);
   const [alarmLabel, setAlarmLabel] = useState<string | null>(null);
 
   const dismiss = () => {
@@ -35,90 +37,108 @@ export default function PrayerAlarm() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // ── Native Capacitor path ────────────────────────────────
-    if (isCapacitorNative()) {
-      // Plain scheduled notifications for every enabled appointment, PLUS
-      // (Android only) the loud AlarmManager-driven ring for whichever
-      // appointments have "Ring like an alarm" turned on. The two run side
-      // by side — scheduleAlarmEngineAlarms() is a no-op on iOS/web.
-      scheduleNativeAlarms(appointmentsRef.current);
-      scheduleAlarmEngineAlarms(appointmentsRef.current);
+    let cancelled = false;
+    let cleanupFns: (() => void)[] = [];
 
-      let cleanup: (() => void) | undefined;
-      listenNotificationTap((data) => {
-        playAlarmTone(DEFAULT_TONE);
-        setAlarmLabel(data.label || 'Prayer Time');
-        if (typeof window !== 'undefined') window.focus();
-      }).then((fn) => { cleanup = fn; });
+    // Deciding native-vs-web here gates the ENTIRE alarm mechanism — get
+    // this wrong and prayer alarms silently run on the much weaker web
+    // fallback (a setInterval that dies the moment the app is backgrounded
+    // or killed) instead of real AlarmManager-driven native alarms, with
+    // nothing visibly broken to point at. isNativePlatformAsync() resolves
+    // after a dynamic import instead of reading window.Capacitor
+    // synchronously on the very first render tick, which is what actually
+    // matters here — see its own comment in capacitorAlarm.ts.
+    isNativePlatformAsync().then((native) => {
+      if (cancelled) return;
 
-      // Only the plain-notification path needs a periodic re-arm here — the
-      // AlarmEngine alarms are self-perpetuating (AlarmReceiver re-arms
-      // tomorrow's exact alarm the moment today's fires, and BootReceiver
-      // re-arms everything after a reboot), so rescheduling them every
-      // minute would just be unnecessary AlarmManager churn.
-      const reschedule = () => scheduleNativeAlarms(appointmentsRef.current);
-      const interval = setInterval(reschedule, 60000);
+      // ── Native Capacitor path ────────────────────────────────
+      if (native) {
+        // Plain scheduled notifications for every enabled appointment, PLUS
+        // (Android only) the loud AlarmManager-driven ring for whichever
+        // appointments have "Ring like an alarm" turned on. The two run
+        // side by side — scheduleAlarmEngineAlarms() is a no-op on iOS/web.
+        scheduleNativeAlarms(appointmentsRef.current);
+        scheduleAlarmEngineAlarms(appointmentsRef.current);
 
-      return () => {
-        clearInterval(interval);
-        cleanup?.();
-        stopAlarm();
-      };
-    }
+        listenNotificationTap((data) => {
+          playAlarmTone(DEFAULT_TONE);
+          setAlarmLabel(data.label || 'Prayer Time');
+          if (typeof window !== 'undefined') window.focus();
+        }).then((fn) => {
+          if (cancelled) fn();
+          else cleanupFns.push(fn);
+        });
 
-    // ── Web fallback path ────────────────────────────────────
-    const notify = (label: string, toneId?: string) => {
-      // System notification
-      if ('Notification' in window && Notification.permission === 'granted') {
-        try {
-          const n = new Notification('🔥 Prayer Time', {
-            body: `${label} — it's time to pray!`,
-            icon: '/logo.png',
-            badge: '/logo.png',
-            tag: 'prayer-alarm',
-            requireInteraction: true,
-          });
-          n.onclick = () => {
-            window.focus();
-            n.close();
-            // Don't stop alarm — user must tap Dismiss
-          };
-        } catch {
-          // ignore
+        // Only the plain-notification path needs a periodic re-arm here —
+        // the AlarmEngine alarms are self-perpetuating (AlarmReceiver
+        // re-arms tomorrow's exact alarm the moment today's fires, and
+        // BootReceiver re-arms everything after a reboot), so
+        // rescheduling them every minute would just be unnecessary
+        // AlarmManager churn.
+        const reschedule = () => scheduleNativeAlarms(appointmentsRef.current);
+        const interval = setInterval(reschedule, 60000);
+        cleanupFns.push(() => clearInterval(interval));
+        return;
+      }
+
+      // ── Web fallback path ────────────────────────────────────
+      const notify = (label: string, toneId?: string) => {
+        // System notification
+        if ('Notification' in window && Notification.permission === 'granted') {
+          try {
+            const n = new Notification('🔥 Prayer Time', {
+              body: `${label} — it's time to pray!`,
+              icon: '/logo.png',
+              badge: '/logo.png',
+              tag: 'prayer-alarm',
+              requireInteraction: true,
+            });
+            n.onclick = () => {
+              window.focus();
+              n.close();
+              // Don't stop alarm — user must tap Dismiss
+            };
+          } catch {
+            // ignore
+          }
         }
-      }
 
-      // Vibrate
-      nativeVibrate();
+        // Vibrate
+        nativeVibrate();
 
-      // Play alarm CONTINUOUSLY — only stopAlarm() can stop it
-      playAlarmTone((toneId as AlarmToneId) || DEFAULT_TONE);
+        // Play alarm CONTINUOUSLY — only stopAlarm() can stop it
+        playAlarmTone((toneId as AlarmToneId) || DEFAULT_TONE);
 
-      // Show the dismiss overlay
-      setAlarmLabel(label);
-    };
+        // Show the dismiss overlay
+        setAlarmLabel(label);
+      };
 
-    const check = () => {
-      const now = new Date();
-      const hh = String(now.getHours()).padStart(2, '0');
-      const mm = String(now.getMinutes()).padStart(2, '0');
-      const current = `${hh}:${mm}`;
-      const today = now.toDateString();
+      const check = () => {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const current = `${hh}:${mm}`;
+        const today = now.toDateString();
 
-      for (const a of appointmentsRef.current) {
-        if (!a.enabled) continue;
-        if (a.time !== current) continue;
-        const firedKey = `upp_alarm_fired_${a.id}`;
-        if (localStorage.getItem(firedKey) === today) continue;
-        localStorage.setItem(firedKey, today);
-        notify(a.label, a.alarmTone);
-      }
-    };
+        for (const a of appointmentsRef.current) {
+          if (!a.enabled) continue;
+          if (a.time !== current) continue;
+          const firedKey = `upp_alarm_fired_${a.id}`;
+          if (localStorage.getItem(firedKey) === today) continue;
+          localStorage.setItem(firedKey, today);
+          notify(a.label, a.alarmTone);
+        }
+      };
 
-    check();
-    const interval = window.setInterval(check, 20000);
+      check();
+      const interval = window.setInterval(check, 20000);
+      cleanupFns.push(() => clearInterval(interval));
+    });
+
     return () => {
-      clearInterval(interval);
+      cancelled = true;
+      cleanupFns.forEach((fn) => fn());
+      cleanupFns = [];
       stopAlarm();
     };
   }, [appointments]);

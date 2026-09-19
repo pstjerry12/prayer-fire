@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import { BellRing, X, Check } from 'lucide-react';
 import { cn } from '../utils/cn';
 import {
-  isCapacitorNative,
-  getNativePlatform,
+  isAndroidNative,
   checkAlarmPermissionSync,
   requestAlarmPermission,
 } from '@/lib/capacitorAlarm';
@@ -33,50 +32,67 @@ export default function NotificationPermission() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    let cancelled = false;
 
-    // On Android native, run the FULL permission sequence (notifications +
-    // exact alarms + full-screen intent + battery exemption) once on first
-    // open, instead of only asking for bare notification permission and
-    // leaving the other three to be discovered later via the per-prayer
-    // "Ring like an alarm" toggle — most people never find that toggle, so
-    // alarms were silently running without exact-alarm scheduling or a
-    // battery-optimization exemption, which is why they'd ring briefly then
-    // get killed early by the OS/OEM instead of running reliably.
-    if (getNativePlatform() === 'android') {
-      let onboarded = false;
-      try {
-        onboarded = localStorage.getItem(NATIVE_ALARM_ONBOARD_KEY) === '1';
-      } catch {
-        // ignore
+    (async () => {
+      // On Android native, run the FULL permission sequence (notifications +
+      // exact alarms + full-screen intent + battery exemption) once on first
+      // open, instead of only asking for bare notification permission and
+      // leaving the other three to be discovered later via the per-prayer
+      // "Ring like an alarm" toggle — most people never find that toggle, so
+      // alarms were silently running without exact-alarm scheduling or a
+      // battery-optimization exemption, which is why they'd ring briefly then
+      // get killed early by the OS/OEM instead of running reliably.
+      //
+      // isAndroidNative() is checked asynchronously (not a synchronous
+      // window.Capacitor read) on purpose — this app loads its page from a
+      // remote server.url, so the native bridge's own injection can still
+      // be mid-flight on the very first render tick, which read as "not
+      // Android" for a real Android install and skipped this entire flow
+      // silently. See capacitorAlarm.ts's isNativePlatformAsync() comment.
+      const android = await isAndroidNative();
+      if (cancelled) return;
+
+      if (android) {
+        let onboarded = false;
+        try {
+          onboarded = localStorage.getItem(NATIVE_ALARM_ONBOARD_KEY) === '1';
+        } catch {
+          // ignore
+        }
+        if (!onboarded) setState('full_flow');
+        return;
       }
-      if (!onboarded) setState('full_flow');
-      return;
-    }
 
-    // Check permission synchronously (fast, no flash)
-    const perm = checkAlarmPermissionSync();
+      // Check permission synchronously (fast, no flash)
+      const perm = checkAlarmPermissionSync();
 
-    if (perm === 'granted') {
-      setState('granted');
-      return;
-    }
+      if (perm === 'granted') {
+        setState('granted');
+        return;
+      }
 
-    if (perm === 'denied') {
-      setState('hidden');
-      return;
-    }
-
-    // Only show the prompt once per session.
-    try {
-      if (sessionStorage.getItem('pfm_alarm_asked') === '1') {
+      if (perm === 'denied') {
         setState('hidden');
         return;
       }
-    } catch {
-      // ignore
-    }
 
-    setState('asking');
+      // Only show the prompt once per session.
+      try {
+        if (sessionStorage.getItem('pfm_alarm_asked') === '1') {
+          setState('hidden');
+          return;
+        }
+      } catch {
+        // ignore
+      }
+
+      setState('asking');
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const finishFullFlow = () => {
@@ -117,8 +133,10 @@ export default function NotificationPermission() {
 
   if (state !== 'asking') return null;
 
-  const isNative = isCapacitorNative();
-
+  // This state is only reached when isAndroidNative() came back false (iOS
+  // native or plain web) — the Android full_flow branch above intercepts
+  // everything else, so there's no native-vs-web copy split left to make
+  // here.
   return (
     <div className="fixed top-0 left-0 right-0 z-[90] safe-top px-4 pt-3">
       <div className="max-w-md mx-auto bg-card rounded-2xl border border-acc-edge shadow-xl p-4">
@@ -127,13 +145,9 @@ export default function NotificationPermission() {
             <BellRing className="w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-ink font-bold text-sm">
-              {isNative ? 'Enable Prayer Alarms' : 'Enable Prayer Alarms'}
-            </p>
+            <p className="text-ink font-bold text-sm">Enable Prayer Alarms</p>
             <p className="text-ink-muted text-xs mt-0.5 leading-relaxed">
-              {isNative
-                ? 'Allow notifications so your phone rings at your prayer times even when the app is closed. (12am · 12pm · 4am)'
-                : 'Allow notifications so your phone rings at your prayer times (12am · 12pm · 4am).'}
+              Allow notifications so your phone rings at your prayer times (12am · 12pm · 4am).
             </p>
           </div>
           <button onClick={dismiss} className="p-1 text-ink-faint hover:text-ink" title="Not now">
@@ -144,7 +158,7 @@ export default function NotificationPermission() {
           onClick={allow}
           className="mt-3 w-full py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500 flex items-center justify-center gap-2"
         >
-          <Check className="w-4 h-4" /> {isNative ? 'Allow Alarms' : 'Allow Notifications'}
+          <Check className="w-4 h-4" /> Allow Notifications
         </button>
       </div>
     </div>
