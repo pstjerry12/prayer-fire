@@ -16,11 +16,19 @@
 import type { PrayerAppointment } from '@/app/components/CustomizablePrayerSchedule';
 
 // ── Detect if running inside Capacitor native wrapper ──────────────
+// Capacitor 8 never sets a `Capacitor.isNative` property (it only exposes
+// `Capacitor.isNativePlatform()`, a method) — checking `.isNative` here
+// used to always read undefined/false, on every device, regardless of
+// timing. That silently broke every caller that branches on this
+// function's return value (Google Sign-In's Custom Tabs vs. plain-nav
+// choice, the auth deep-link listener in app/context.tsx, and this app's
+// sync alarm-permission check), since they always took the "not native"
+// path even inside a real native install.
 export function isCapacitorNative(): boolean {
   if (typeof window === 'undefined') return false;
   return (
-    (window as unknown as { Capacitor?: { isNative?: boolean } }).Capacitor
-      ?.isNative === true
+    (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+      .Capacitor?.isNativePlatform?.() === true
   );
 }
 
@@ -555,18 +563,9 @@ export async function openAppNotificationSettings(): Promise<boolean> {
 export async function openInAppBrowser(url: string): Promise<boolean> {
   try {
     const { Browser } = await import('@capacitor/browser');
-    // TEMPORARY diagnostic: two native manifest fixes for the Custom Tabs
-    // package-visibility lookup (versionCode 8, then 9) made no observed
-    // difference, so the next data point needed is whether Browser.open()
-    // itself throws on-device, or succeeds and the Custom Tab just isn't
-    // visually distinct enough from the full browser to notice. Remove
-    // once the real cause is confirmed.
-    alert('DEBUG: opening Custom Tab...');
     await Browser.open({ url, toolbarColor: '#059669' });
-    alert('DEBUG: Browser.open() resolved with no error');
     return true;
-  } catch (err) {
-    alert('DEBUG: Browser.open() threw: ' + String(err));
+  } catch {
     return false;
   }
 }
