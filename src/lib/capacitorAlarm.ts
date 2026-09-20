@@ -75,23 +75,36 @@ export async function isNativePlatformAsync(): Promise<boolean> {
 // import itself takes at least one tick, which is enough in practice for
 // the bridge to be ready; each plugin's own web fallback implementation
 // (bundled regardless of platform) makes it safe to just always try.
+//
+// Every loader below returns { plugin } — a plain wrapper object — rather
+// than the plugin itself. A Capacitor plugin is a Proxy whose `get` trap
+// returns a callable for literally any property name, including "then".
+// Returning the plugin directly from an async function makes JavaScript's
+// own promise-resolution machinery see a callable `.then` and treat it as
+// a thenable to unwrap, calling `plugin.then(...)` — which dispatches to
+// Capacitor's "not implemented" handler for a method literally named
+// "then" and throws, outside any try/catch here, on every platform
+// (this app's actual root cause behind "Test Alarm does nothing": the
+// hang/no-response was this exception aborting the click handler
+// mid-flight, not a native permission issue). Wrapping in a plain object
+// (no `.then` of its own) prevents the auto-unwrap.
 async function getLocalNotifications() {
   try {
     const { LocalNotifications } = await import(
       '@capacitor/local-notifications'
     );
-    return LocalNotifications;
+    return { plugin: LocalNotifications };
   } catch {
-    return null;
+    return { plugin: null };
   }
 }
 
 async function getHaptics() {
   try {
     const { Haptics } = await import('@capacitor/haptics');
-    return Haptics;
+    return { plugin: Haptics };
   } catch {
-    return null;
+    return { plugin: null };
   }
 }
 
@@ -122,25 +135,26 @@ interface AlarmEnginePluginApi {
   requestBatteryOptimizationExemption(): Promise<{ opened: boolean }>;
 }
 
-async function getAlarmEngine(): Promise<AlarmEnginePluginApi | null> {
+async function getAlarmEngine(): Promise<{ plugin: AlarmEnginePluginApi | null }> {
   try {
     const { registerPlugin, Capacitor } = await import('@capacitor/core');
-    if (Capacitor.getPlatform() !== 'android') return null;
-    return registerPlugin<AlarmEnginePluginApi>('AlarmEngine');
+    if (Capacitor.getPlatform() !== 'android') return { plugin: null };
+    return { plugin: registerPlugin<AlarmEnginePluginApi>('AlarmEngine') };
   } catch {
-    return null;
+    return { plugin: null };
   }
 }
 
 /** True only inside the native Android wrapper — gates the AlarmEngine UI/flow. */
 export async function isAndroidNative(): Promise<boolean> {
-  return (await getAlarmEngine()) !== null;
+  const { plugin } = await getAlarmEngine();
+  return plugin !== null;
 }
 
 // ── Request notification permission ─────────────────────────────────
 export async function requestAlarmPermission(): Promise<'granted' | 'denied' | 'prompt'> {
   // Native Capacitor path
-  const LocalNotifications = await getLocalNotifications();
+  const { plugin: LocalNotifications } = await getLocalNotifications();
   if (LocalNotifications) {
     try {
       const result = await LocalNotifications.requestPermissions();
@@ -180,7 +194,7 @@ export function checkAlarmPermissionSync(): 'granted' | 'denied' | 'prompt' {
 }
 
 export async function checkAlarmPermission(): Promise<'granted' | 'denied' | 'prompt'> {
-  const LocalNotifications = await getLocalNotifications();
+  const { plugin: LocalNotifications } = await getLocalNotifications();
   if (LocalNotifications) {
     try {
       const result = await LocalNotifications.checkPermissions();
@@ -208,7 +222,7 @@ export async function checkAlarmPermission(): Promise<'granted' | 'denied' | 'pr
 export async function scheduleNativeAlarms(
   appointments: PrayerAppointment[]
 ): Promise<void> {
-  const LocalNotifications = await getLocalNotifications();
+  const { plugin: LocalNotifications } = await getLocalNotifications();
   if (!LocalNotifications) return; // Web — nothing to schedule natively
 
   try {
@@ -294,7 +308,7 @@ export async function scheduleNativeAlarms(
 
 // ── Cancel all native alarms ───────────────────────────────────────
 export async function cancelAllNativeAlarms(): Promise<void> {
-  const LocalNotifications = await getLocalNotifications();
+  const { plugin: LocalNotifications } = await getLocalNotifications();
   if (!LocalNotifications) return;
 
   try {
@@ -314,7 +328,7 @@ export async function cancelAllNativeAlarms(): Promise<void> {
 export async function scheduleAlarmEngineAlarms(
   appointments: PrayerAppointment[]
 ): Promise<void> {
-  const engine = await getAlarmEngine();
+  const { plugin: engine } = await getAlarmEngine();
   if (!engine) return; // web or iOS — nothing to do
 
   try {
@@ -339,7 +353,7 @@ export async function scheduleAlarmEngineAlarms(
 }
 
 export async function cancelAllAlarmEngineAlarms(): Promise<void> {
-  const engine = await getAlarmEngine();
+  const { plugin: engine } = await getAlarmEngine();
   if (!engine) return;
   try {
     await engine.cancelAllAlarms();
@@ -350,7 +364,7 @@ export async function cancelAllAlarmEngineAlarms(): Promise<void> {
 
 /** Stops a currently-ringing native alarm (e.g. from an in-app "Dismiss" control). */
 export async function dismissNativeRinging(): Promise<void> {
-  const engine = await getAlarmEngine();
+  const { plugin: engine } = await getAlarmEngine();
   if (!engine) return;
   try {
     await engine.dismissRinging();
@@ -368,7 +382,7 @@ export async function dismissNativeRinging(): Promise<void> {
 // -> battery optimization exemption.
 
 export async function checkExactAlarmPermission(): Promise<boolean> {
-  const engine = await getAlarmEngine();
+  const { plugin: engine } = await getAlarmEngine();
   if (!engine) return true; // not Android native — nothing to gate on
   try {
     const { granted } = await engine.checkExactAlarmPermission();
@@ -380,7 +394,7 @@ export async function checkExactAlarmPermission(): Promise<boolean> {
 
 /** Android has no in-app grant dialog for this — it always opens Settings. */
 export async function requestExactAlarmPermission(): Promise<void> {
-  const engine = await getAlarmEngine();
+  const { plugin: engine } = await getAlarmEngine();
   if (!engine) return;
   try {
     await engine.requestExactAlarmPermission();
@@ -390,7 +404,7 @@ export async function requestExactAlarmPermission(): Promise<void> {
 }
 
 export async function checkFullScreenIntentPermission(): Promise<boolean> {
-  const engine = await getAlarmEngine();
+  const { plugin: engine } = await getAlarmEngine();
   if (!engine) return true;
   try {
     const { granted } = await engine.checkFullScreenIntentPermission();
@@ -402,7 +416,7 @@ export async function checkFullScreenIntentPermission(): Promise<boolean> {
 
 /** Also always opens Settings — Android 14 has no in-app grant dialog for this one either. */
 export async function requestFullScreenIntentPermission(): Promise<void> {
-  const engine = await getAlarmEngine();
+  const { plugin: engine } = await getAlarmEngine();
   if (!engine) return;
   try {
     await engine.requestFullScreenIntentPermission();
@@ -412,7 +426,7 @@ export async function requestFullScreenIntentPermission(): Promise<void> {
 }
 
 export async function checkBatteryOptimizationExemption(): Promise<boolean> {
-  const engine = await getAlarmEngine();
+  const { plugin: engine } = await getAlarmEngine();
   if (!engine) return true;
   try {
     const { granted } = await engine.checkBatteryOptimizationExemption();
@@ -423,7 +437,7 @@ export async function checkBatteryOptimizationExemption(): Promise<boolean> {
 }
 
 export async function requestBatteryOptimizationExemption(): Promise<void> {
-  const engine = await getAlarmEngine();
+  const { plugin: engine } = await getAlarmEngine();
   if (!engine) return;
   try {
     await engine.requestBatteryOptimizationExemption();
@@ -447,7 +461,7 @@ function webVibrateFallback(): void {
 // as the other gates above. Falls back to the web Vibration API only if
 // the native plugin genuinely isn't there.
 export function nativeVibrate(): void {
-  getHaptics().then((Haptics) => {
+  getHaptics().then(({ plugin: Haptics }) => {
     if (!Haptics) {
       webVibrateFallback();
       return;
@@ -460,7 +474,7 @@ export function nativeVibrate(): void {
 export async function listenNotificationTap(
   callback: (data: { appointmentId?: string; label?: string }) => void
 ): Promise<() => void> {
-  const LocalNotifications = await getLocalNotifications();
+  const { plugin: LocalNotifications } = await getLocalNotifications();
   if (!LocalNotifications) return () => {};
 
   try {
