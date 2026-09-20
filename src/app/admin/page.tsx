@@ -97,6 +97,7 @@ export default function AdminPage() {
   const [socialFacebook, setSocialFacebook] = useState('');
   const [socialInstagram, setSocialInstagram] = useState('');
   const [socialWhatsapp, setSocialWhatsapp] = useState('');
+  const [socialTiktok, setSocialTiktok] = useState('');
   const [dailyYoutubeUrl, setDailyYoutubeUrl] = useState('');
   const [dailyYoutubeTitle, setDailyYoutubeTitle] = useState('');
   const [dailyYoutubeSubtitle, setDailyYoutubeSubtitle] = useState('');
@@ -127,6 +128,7 @@ export default function AdminPage() {
         setSocialFacebook(data.settings.social_facebook || '');
         setSocialInstagram(data.settings.social_instagram || '');
         setSocialWhatsapp(data.settings.social_whatsapp || '');
+        setSocialTiktok(data.settings.social_tiktok || '');
         setDailyYoutubeUrl(data.settings.daily_youtube_url || '');
         setDailyYoutubeTitle(data.settings.daily_youtube_title || '');
         setDailyYoutubeSubtitle(data.settings.daily_youtube_subtitle || '');
@@ -692,6 +694,11 @@ export default function AdminPage() {
                   <input type="url" placeholder="https://wa.me/2348012345678" value={socialWhatsapp} onChange={(e) => setSocialWhatsapp(e.target.value)}
                     className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
                 </div>
+                <div>
+                  <label className="text-xs font-semibold text-ink-muted block mb-1">TikTok profile URL</label>
+                  <input type="url" placeholder="https://tiktok.com/@yourprofile" value={socialTiktok} onChange={(e) => setSocialTiktok(e.target.value)}
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                </div>
               </div>
 
               <button
@@ -700,6 +707,7 @@ export default function AdminPage() {
                   social_facebook: socialFacebook,
                   social_instagram: socialInstagram,
                   social_whatsapp: socialWhatsapp,
+                  social_tiktok: socialTiktok,
                 })}
                 disabled={settingsSaving}
                 className="w-full mt-3 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"

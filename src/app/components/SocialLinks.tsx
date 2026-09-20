@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Play, Camera, MessageCircle } from 'lucide-react';
+import { Play, Camera, MessageCircle, Music2 } from 'lucide-react';
 
 interface Links {
   youtube: string;
   facebook: string;
   instagram: string;
   whatsapp: string;
+  tiktok: string;
 }
 
 export default function SocialLinks() {
@@ -27,6 +28,7 @@ export default function SocialLinks() {
     { key: 'facebook', href: links.facebook, label: 'Facebook', icon: null, className: 'bg-blue-600' },
     { key: 'instagram', href: links.instagram, label: 'Instagram', icon: Camera, className: 'bg-gradient-to-br from-amber-500 via-pink-600 to-purple-600' },
     { key: 'whatsapp', href: links.whatsapp, label: 'WhatsApp', icon: MessageCircle, className: 'bg-emerald-600' },
+    { key: 'tiktok', href: links.tiktok, label: 'TikTok', icon: Music2, className: 'bg-black' },
   ].filter((item) => item.href.trim());
 
   if (items.length === 0) return null;
