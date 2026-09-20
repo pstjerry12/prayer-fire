@@ -598,6 +598,20 @@ export async function openInAppBrowser(url: string): Promise<boolean> {
   }
 }
 
+// Chrome normally dismisses the Custom Tab on its own once the OAuth
+// redirect hands off to this app's own deep-link scheme, but that's Chrome's
+// behavior to rely on, not a guarantee — explicitly closing it here after
+// the deep link lands removes any chance of it staying on screen over the
+// now-signed-in app. A no-op if no Custom Tab is open.
+export async function closeInAppBrowser(): Promise<void> {
+  try {
+    const { Browser } = await import('@capacitor/browser');
+    await Browser.close();
+  } catch {
+    // ignore
+  }
+}
+
 // ── Helper: stable numeric hash from string ────────────────────────
 function hashCode(str: string): number {
   let hash = 0;
