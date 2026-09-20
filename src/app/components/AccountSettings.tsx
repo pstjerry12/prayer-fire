@@ -15,6 +15,7 @@ import {
   UserCircle,
   Loader2,
   RefreshCw,
+  Star,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { cn } from '../utils/cn';
@@ -176,6 +177,21 @@ export default function AccountSettings({
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Rate Us */}
+            <div className="space-y-2">
+              <h3 className="text-ink-soft text-sm font-semibold">Support Us</h3>
+              <a
+                href={PLAY_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center gap-3 p-3 bg-warn-soft rounded-xl border border-warn-edge hover:bg-warn-soft-2 transition-colors"
+              >
+                <Star className="w-4 h-4 text-warn fill-warn shrink-0" />
+                <span className="flex-1 text-sm text-ink-soft font-semibold">Enjoying the app? Leave us a review</span>
+                <ChevronRight className="w-4 h-4 text-warn" />
+              </a>
             </div>
 
             {/* Privacy */}
