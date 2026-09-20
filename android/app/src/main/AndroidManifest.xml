@@ -37,13 +37,22 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <!--
-      Android 11+ (API 30+) package visibility: without this, PackageManager
-      can't see any Custom Tabs-capable browser, so @capacitor/browser's
-      CustomTabsClient.getPackageName() lookup comes back empty and Google
-      Sign-In silently falls back to a full external-browser launch instead
-      of the in-app Custom Tab overlay — same symptom as no fix at all.
+      Android 11+ (API 30+) package visibility for Chrome Custom Tabs.
+      CustomTabsClient.getPackageName() (used by @capacitor/browser) does
+      this in two steps: first it queries ALL installed browsers via a
+      plain VIEW+BROWSABLE+https intent, then it checks which of those also
+      expose the CustomTabsService action. Both queries need their own
+      <queries> declaration — declaring only the second (as the previous,
+      incomplete fix did) still leaves the first query empty on API 30+, so
+      the whole lookup still comes back empty and Google Sign-In still
+      falls back to a full external-browser launch.
     -->
     <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
         <intent>
             <action android:name="android.support.customtabs.action.CustomTabsService" />
         </intent>
