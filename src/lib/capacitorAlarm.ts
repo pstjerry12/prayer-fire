@@ -141,11 +141,26 @@ export async function isAndroidNative(): Promise<boolean> {
 export async function requestAlarmPermission(): Promise<'granted' | 'denied' | 'prompt'> {
   // Native Capacitor path
   const LocalNotifications = await getLocalNotifications();
+  // TEMPORARY diagnostic: checkPermissions()/requestPermissions() have been
+  // reported as always reading "denied" even with the OS-level toggle on,
+  // and requestPermissions() appears to hang. This narrows down whether the
+  // plugin import itself is failing (LocalNotifications would be null) vs.
+  // the plugin call hanging/throwing once loaded. Remove once confirmed.
+  alert('DEBUG: getLocalNotifications() -> ' + (LocalNotifications ? 'loaded OK' : 'NULL (import failed)'));
   if (LocalNotifications) {
     try {
-      const result = await LocalNotifications.requestPermissions();
-      return result.display === 'granted' ? 'granted' : 'denied';
-    } catch {
+      const result = await Promise.race([
+        LocalNotifications.requestPermissions().then((r) => ({ kind: 'resolved' as const, r })),
+        new Promise<{ kind: 'timeout' }>((resolve) => setTimeout(() => resolve({ kind: 'timeout' }), 6000)),
+      ]);
+      if (result.kind === 'timeout') {
+        alert('DEBUG: requestPermissions() did not resolve within 6s (hanging)');
+        return 'denied';
+      }
+      alert('DEBUG: requestPermissions() resolved -> display=' + result.r.display);
+      return result.r.display === 'granted' ? 'granted' : 'denied';
+    } catch (err) {
+      alert('DEBUG: requestPermissions() threw: ' + String(err));
       return 'denied';
     }
   }
