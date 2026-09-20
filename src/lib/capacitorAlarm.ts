@@ -141,26 +141,11 @@ export async function isAndroidNative(): Promise<boolean> {
 export async function requestAlarmPermission(): Promise<'granted' | 'denied' | 'prompt'> {
   // Native Capacitor path
   const LocalNotifications = await getLocalNotifications();
-  // TEMPORARY diagnostic: checkPermissions()/requestPermissions() have been
-  // reported as always reading "denied" even with the OS-level toggle on,
-  // and requestPermissions() appears to hang. This narrows down whether the
-  // plugin import itself is failing (LocalNotifications would be null) vs.
-  // the plugin call hanging/throwing once loaded. Remove once confirmed.
-  alert('DEBUG: getLocalNotifications() -> ' + (LocalNotifications ? 'loaded OK' : 'NULL (import failed)'));
   if (LocalNotifications) {
     try {
-      const result = await Promise.race([
-        LocalNotifications.requestPermissions().then((r) => ({ kind: 'resolved' as const, r })),
-        new Promise<{ kind: 'timeout' }>((resolve) => setTimeout(() => resolve({ kind: 'timeout' }), 6000)),
-      ]);
-      if (result.kind === 'timeout') {
-        alert('DEBUG: requestPermissions() did not resolve within 6s (hanging)');
-        return 'denied';
-      }
-      alert('DEBUG: requestPermissions() resolved -> display=' + result.r.display);
-      return result.r.display === 'granted' ? 'granted' : 'denied';
-    } catch (err) {
-      alert('DEBUG: requestPermissions() threw: ' + String(err));
+      const result = await LocalNotifications.requestPermissions();
+      return result.display === 'granted' ? 'granted' : 'denied';
+    } catch {
       return 'denied';
     }
   }
@@ -592,18 +577,9 @@ export async function openAppNotificationSettings(): Promise<boolean> {
 export async function openInAppBrowser(url: string): Promise<boolean> {
   try {
     const { Browser } = await import('@capacitor/browser');
-    // TEMPORARY diagnostic: two native manifest fixes for the Custom Tabs
-    // package-visibility lookup (versionCode 8, then 9) made no observed
-    // difference, so the next data point needed is whether Browser.open()
-    // itself throws on-device, or succeeds and the Custom Tab just isn't
-    // visually distinct enough from the full browser to notice. Remove
-    // once the real cause is confirmed.
-    alert('DEBUG: opening Custom Tab...');
     await Browser.open({ url, toolbarColor: '#059669' });
-    alert('DEBUG: Browser.open() resolved with no error');
     return true;
-  } catch (err) {
-    alert('DEBUG: Browser.open() threw: ' + String(err));
+  } catch {
     return false;
   }
 }
