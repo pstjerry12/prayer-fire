@@ -16,11 +16,19 @@
 import type { PrayerAppointment } from '@/app/components/CustomizablePrayerSchedule';
 
 // ── Detect if running inside Capacitor native wrapper ──────────────
+// Capacitor 8 never sets a `Capacitor.isNative` property (it only exposes
+// `Capacitor.isNativePlatform()`, a method) — checking `.isNative` here
+// used to always read undefined/false, on every device, regardless of
+// timing. That silently broke every caller that branches on this
+// function's return value (Google Sign-In's Custom Tabs vs. plain-nav
+// choice, the auth deep-link listener in app/context.tsx, and this app's
+// sync alarm-permission check), since they always took the "not native"
+// path even inside a real native install.
 export function isCapacitorNative(): boolean {
   if (typeof window === 'undefined') return false;
   return (
-    (window as unknown as { Capacitor?: { isNative?: boolean } }).Capacitor
-      ?.isNative === true
+    (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+      .Capacitor?.isNativePlatform?.() === true
   );
 }
 
