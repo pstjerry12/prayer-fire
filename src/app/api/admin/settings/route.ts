@@ -11,7 +11,12 @@ export async function GET(req: Request) {
   const rows = await db.select().from(appSettings);
   const map: Record<string, string> = {};
   for (const row of rows) map[row.key] = row.value;
-  return NextResponse.json({ settings: map });
+  return NextResponse.json({
+    settings: map,
+    jwtConfigured: !!process.env.JWT_SECRET,
+    googleConfigured: !!process.env.GOOGLE_CLIENT_ID,
+    adminEmail: process.env.ADMIN_EMAIL || '',
+  });
 }
 
 // PATCH — admin updates one or more settings
