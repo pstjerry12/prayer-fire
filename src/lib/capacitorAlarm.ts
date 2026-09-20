@@ -555,9 +555,18 @@ export async function openAppNotificationSettings(): Promise<boolean> {
 export async function openInAppBrowser(url: string): Promise<boolean> {
   try {
     const { Browser } = await import('@capacitor/browser');
+    // TEMPORARY diagnostic: two native manifest fixes for the Custom Tabs
+    // package-visibility lookup (versionCode 8, then 9) made no observed
+    // difference, so the next data point needed is whether Browser.open()
+    // itself throws on-device, or succeeds and the Custom Tab just isn't
+    // visually distinct enough from the full browser to notice. Remove
+    // once the real cause is confirmed.
+    alert('DEBUG: opening Custom Tab...');
     await Browser.open({ url, toolbarColor: '#059669' });
+    alert('DEBUG: Browser.open() resolved with no error');
     return true;
-  } catch {
+  } catch (err) {
+    alert('DEBUG: Browser.open() threw: ' + String(err));
     return false;
   }
 }
