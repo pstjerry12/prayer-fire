@@ -4,7 +4,7 @@ import { appSettings } from '@/db/schema';
 import { inArray } from 'drizzle-orm';
 
 const KEYS = [
-  'social_youtube', 'social_facebook', 'social_instagram', 'social_whatsapp',
+  'social_youtube', 'social_facebook', 'social_instagram', 'social_whatsapp', 'social_tiktok',
   'daily_youtube_url', 'daily_youtube_title', 'daily_youtube_subtitle',
 ] as const;
 
@@ -19,6 +19,7 @@ export async function GET() {
     facebook: links.social_facebook || '',
     instagram: links.social_instagram || '',
     whatsapp: links.social_whatsapp || '',
+    tiktok: links.social_tiktok || '',
     dailyYoutubeUrl: links.daily_youtube_url || '',
     dailyYoutubeTitle: links.daily_youtube_title || '',
     dailyYoutubeSubtitle: links.daily_youtube_subtitle || '',
