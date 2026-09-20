@@ -190,34 +190,45 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
         {/* ── Test Alarm Button ────────────────────────────────── */}
         <button
           onClick={async () => {
-            if (!notificationGranted) {
-              const result = await requestAlarmPermission();
-              if (result !== 'granted') {
-                if (isAndroid) {
-                  setShowNotificationsOffPrompt(true);
-                } else {
-                  alert('Please allow notifications first, then try again.');
-                }
-                return;
-              }
-              setNotificationGranted(true);
-            }
+            // TEMPORARY diagnostic — reported as "no longer clickable" with
+            // no clear cause found reading the code; this surfaces exactly
+            // where the handler gets to (or throws) on-device. Remove once
+            // the real cause is confirmed.
+            alert(`DEBUG: tapped. notificationGranted=${notificationGranted} isAndroid=${isAndroid}`);
             try {
-              const n = new Notification('🔥 Prayer Time', {
-                body: 'Test alarm — your prayer alarm is working! ✅',
-                icon: '/logo.png',
-                badge: '/logo.png',
-                tag: 'prayer-alarm-test',
-                requireInteraction: true,
-              });
-              n.onclick = () => { window.focus(); n.close(); };
-            } catch {
-              // Some browsers need service worker for notifications
+              if (!notificationGranted) {
+                const result = await requestAlarmPermission();
+                alert('DEBUG: requestAlarmPermission() -> ' + result);
+                if (result !== 'granted') {
+                  if (isAndroid) {
+                    setShowNotificationsOffPrompt(true);
+                  } else {
+                    alert('Please allow notifications first, then try again.');
+                  }
+                  return;
+                }
+                setNotificationGranted(true);
+              }
+              try {
+                const n = new Notification('🔥 Prayer Time', {
+                  body: 'Test alarm — your prayer alarm is working! ✅',
+                  icon: '/logo.png',
+                  badge: '/logo.png',
+                  tag: 'prayer-alarm-test',
+                  requireInteraction: true,
+                });
+                n.onclick = () => { window.focus(); n.close(); };
+              } catch (notifErr) {
+                alert('DEBUG: new Notification() threw (expected/harmless on native): ' + String(notifErr));
+              }
+              nativeVibrate();
+              ensurePreloaded();
+              playAlarmTone('classic');
+              alert('DEBUG: about to show dismiss overlay now');
+              setTestAlarmActive(true);
+            } catch (err) {
+              alert('DEBUG: handler threw: ' + String(err));
             }
-            nativeVibrate();
-            ensurePreloaded();
-            playAlarmTone('classic');
-            setTestAlarmActive(true);
           }}
           className="mb-4 flex items-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-bold hover:bg-amber-400 transition-colors shadow-md"
         >
