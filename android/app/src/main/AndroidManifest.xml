@@ -36,6 +36,19 @@
     -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
+    <!--
+      Android 11+ (API 30+) package visibility: without this, PackageManager
+      can't see any Custom Tabs-capable browser, so @capacitor/browser's
+      CustomTabsClient.getPackageName() lookup comes back empty and Google
+      Sign-In silently falls back to a full external-browser launch instead
+      of the in-app Custom Tab overlay — same symptom as no fix at all.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.support.customtabs.action.CustomTabsService" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="false"
         android:hardwareAccelerated="true"
