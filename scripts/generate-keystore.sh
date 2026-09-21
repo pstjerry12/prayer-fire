@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# Prayer Fire Movement — create / rotate the Play Store upload signing key.
+# Prayer Fire — create / rotate the Play Store upload signing key.
 #
 # Generates a PKCS12 keystore without needing a JDK: a 2048-bit RSA key and a
 # 30-year self-signed certificate are produced with OpenSSL and packed into
@@ -45,14 +45,14 @@ trap 'rm -f "$TMP_KEY" "$TMP_CRT"' EXIT
 
 openssl req -x509 -newkey rsa:2048 -sha256 -nodes -days "$VALIDITY_DAYS" \
   -keyout "$TMP_KEY" -out "$TMP_CRT" \
-  -subj "/CN=Prayer Fire Movement/OU=Mobile Apps/O=Prayer Fire Movement/L=Lagos/ST=Lagos/C=NG" 2>/dev/null
+  -subj "/CN=Prayer Fire/OU=Mobile Apps/O=Prayer Fire/L=Lagos/ST=Lagos/C=NG" 2>/dev/null
 
 openssl pkcs12 -export -name "$ALIAS" \
   -inkey "$TMP_KEY" -in "$TMP_CRT" -out "$KEYSTORE" \
   -passout "pass:$PASS" -keypbe AES-256-CBC -certpbe AES-256-CBC -macalg sha256 2>/dev/null
 
 cat > "$PROPS" <<EOF
-# Upload-key signing config for Prayer Fire Movement.
+# Upload-key signing config for Prayer Fire.
 # NEVER commit this file or the .keystore to git (both are gitignored).
 # If you lose the key, Google Play App Signing lets you reset the upload key:
 #   Play Console → Setup → App signing → "Reset upload key"

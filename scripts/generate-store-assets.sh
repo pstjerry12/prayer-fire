@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# Prayer Fire Movement — Google Play Store listing assets
+# Prayer Fire — Google Play Store listing assets
 #
 # Play Console will not let you publish without these, so generate them from
 # the same brand source (public/logo.png) as the app icons:
@@ -46,20 +46,18 @@ echo "   ✓ app-icon-512.png"
 convert -size 1024x500 "radial-gradient:${BG_IN}-${BG_OUT}" \
   \( "$TMP/flame.png" -resize 300x300 \) -geometry +78+100 -composite \
   -font "$BOLD" -pointsize 58 -fill '#FFFFFF' \
-  -annotate +430+195 'PRAYER FIRE' \
-  -font "$BOLD" -pointsize 58 -fill '#FFFFFF' \
-  -annotate +430+262 'MOVEMENT' \
+  -annotate +430+228 'PRAYER FIRE' \
   -font "$REG" -pointsize 27 -fill "$CORAL" \
-  -annotate +430+330 'Pray 3x a day — a cure for prayerlessness' \
+  -annotate +430+296 'Pray 3x a day — a cure for prayerlessness' \
   -font "$REG" -pointsize 22 -fill '#B98A8A' \
-  -annotate +430+382 'Alarms · Bible · Prayer groups · Fasting' \
+  -annotate +430+348 'Alarms · Bible · Prayer groups · Fasting' \
   "$OUT/feature-graphic-1024x500.png"
 echo "   ✓ feature-graphic-1024x500.png"
 
 # ── 3. Screenshot template (1080×1920) ───────────────────────────────────────
 convert -size 1080x1920 "radial-gradient:${BG_IN}-${BG_OUT}" \
   -font "$BOLD" -pointsize 54 -fill '#FFFFFF' \
-  -annotate +70+150 'Prayer Fire Movement' \
+  -annotate +70+150 'Prayer Fire' \
   -font "$REG" -pointsize 32 -fill "$CORAL" \
   -annotate +70+215 'Replace this area with a real screenshot' \
   -font "$REG" -pointsize 30 -fill '#B98A8A' \

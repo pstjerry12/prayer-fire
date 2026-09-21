@@ -1,6 +1,6 @@
 {
 	"appId": "com.prayerfireaction.prayerfire",
-	"appName": "Prayer Fire Movement",
+	"appName": "Prayer Fire",
 	"webDir": "out",
 	"server": {
 		"url": "https://prayer-fire.vercel.app",

@@ -77,7 +77,7 @@ export async function openFlutterwave(opts: FlutterwaveOptions): Promise<boolean
         name: opts.name || 'Anonymous',
       },
       customizations: {
-        title: 'Prayer Fire Movement',
+        title: 'Prayer Fire',
         description: 'Support the global prayer movement',
       },
       meta: {

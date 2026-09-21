@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# Prayer Fire Movement — Android asset generator
+# Prayer Fire — Android asset generator
 #
 # Regenerates EVERY branded asset in android/app/src/main/res from the single
 # source of truth, public/logo.png:
@@ -34,7 +34,7 @@ command -v convert >/dev/null || { echo "✗ ImageMagick 'convert' not found"; e
 [ -f "$SRC" ] || { echo "✗ $SRC not found"; exit 1; }
 mkdir -p "$RES"
 
-echo "🔥 Generating Prayer Fire Movement Android assets from $SRC"
+echo "🔥 Generating Prayer Fire Android assets from $SRC"
 
 # ── 1. Cut the flame out of its white background ────────────────────────────
 # The logo is a fully opaque square with a near-white backdrop. Flood-fill from

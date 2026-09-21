@@ -36,7 +36,7 @@ export default function DonationCard() {
         <div className="p-5 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <HandHeart className="w-5 h-5 text-[#ff6a00]" />
-            <span className="text-[#ff6a00] text-xs font-bold uppercase tracking-wider">Support the Movement</span>
+            <span className="text-[#ff6a00] text-xs font-bold uppercase tracking-wider">Support Prayer Fire</span>
           </div>
           <div className="text-4xl mb-3">💝</div>
           <h3 className="font-serif-heading text-lg font-bold text-ink mb-2">

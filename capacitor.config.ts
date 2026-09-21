@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.prayerfireaction.prayerfire',
-  appName: 'Prayer Fire Movement',
+  appName: 'Prayer Fire',
   // In production, the WebView loads the live Vercel site directly.
   // This means the web app stays on Vercel — Capacitor just wraps it
   // and gives us native alarm/notification powers.

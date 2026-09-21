@@ -37,7 +37,7 @@ export default function LegalModal({ isOpen, title, sections, onClose }: Props) 
 
             <div className="bg-card-2 rounded-xl p-3 border border-edge text-center">
               <p className="text-ink-muted text-[11px]">
-                Last updated: {new Date().getFullYear()} · Prayer Fire Movement
+                Last updated: {new Date().getFullYear()} · Prayer Fire
               </p>
             </div>
 

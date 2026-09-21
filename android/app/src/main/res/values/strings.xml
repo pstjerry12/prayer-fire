@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Prayer Fire Movement</string>
-    <string name="title_activity_main">Prayer Fire Movement</string>
+    <string name="app_name">Prayer Fire</string>
+    <string name="title_activity_main">Prayer Fire</string>
     <string name="package_name">com.prayerfireaction.prayerfire</string>
     <string name="custom_url_scheme">com.prayerfireaction.prayerfire</string>
 </resources>

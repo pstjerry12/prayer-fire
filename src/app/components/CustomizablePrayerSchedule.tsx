@@ -512,7 +512,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
           </div>
           <h3 className="text-lg font-bold text-ink mb-1">Notifications are off</h3>
           <p className="text-ink-muted text-sm mb-5">
-            Turn on notifications for Prayer Fire Movement so your prayer alarms can ring, then come back and try again.
+            Turn on notifications for Prayer Fire so your prayer alarms can ring, then come back and try again.
           </p>
           <div className="flex gap-2">
             <button
@@ -525,7 +525,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
               onClick={async () => {
                 const opened = await openAppNotificationSettings();
                 if (!opened) {
-                  alert('Open your phone Settings → Apps → Prayer Fire Movement → Notifications, turn them on, then try again.');
+                  alert('Open your phone Settings → Apps → Prayer Fire → Notifications, turn them on, then try again.');
                 }
                 setShowNotificationsOffPrompt(false);
               }}

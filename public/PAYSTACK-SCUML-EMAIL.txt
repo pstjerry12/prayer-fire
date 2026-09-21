@@ -13,7 +13,7 @@ I'm writing to seek clarification on the SCUML certificate requirement as it rel
 - **Business Name:** PRAYER FIRE ACTION
 - **CAC Registration Type:** Business Name (not Incorporated Trustees)
 - **Nature of Business:** Churches / Religious Organization
-- **What the app does:** Prayer Fire Movement is a Christian prayer application. It is a faith-based, non-profit ministry tool. It does NOT involve:
+- **What the app does:** Prayer Fire is a Christian prayer application. It is a faith-based, non-profit ministry tool. It does NOT involve:
   - Currency exchange or bureau de change services
   - Real estate or vehicle sales
   - Dealership of any kind
@@ -63,6 +63,6 @@ Thank you for your time and assistance.
 Warm regards,
 
 **Pst. Jerry Chijioke**
-Founder, Prayer Fire Movement
+Founder, Prayer Fire
 📧 prayerfiremovemnt@gmail.com
 🌐 https://prayer-fire.vercel.app

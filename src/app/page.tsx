@@ -48,7 +48,7 @@ export default function HomePage() {
               <Flame className="w-3.5 h-3.5" /> Pray 3x a Day
             </span>
             <h1 className="font-serif-heading text-3xl md:text-5xl font-bold text-ink mt-3">
-              Prayer Fire Movement
+              Prayer Fire
             </h1>
             <p className="text-base md:text-xl bg-gradient-to-r from-[var(--acc-strong)] via-[var(--acc)] to-[var(--acc-strong)] bg-clip-text text-transparent font-serif-heading font-semibold mt-1">
               Write it. Speak it. Pray it. Trust God.

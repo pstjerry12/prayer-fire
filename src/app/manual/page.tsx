@@ -315,7 +315,7 @@ export default function UserManualPage() {
         <div className="text-center mb-10">
           <div className="text-5xl mb-3">🔥</div>
           <h1 className="font-serif-heading text-3xl font-black text-ink mb-2">
-            Prayer Fire Movement
+            Prayer Fire
           </h1>
           <p className="text-lg text-ink-soft font-serif italic">
             Pray 3x — A Cure For Prayerlessness
@@ -339,7 +339,7 @@ export default function UserManualPage() {
           </p>
           <p className="text-acc font-bold text-lg">Until now.</p>
           <p className="text-ink-soft leading-relaxed mt-4">
-            Prayer Fire Movement is not just another Christian app. It is a <strong>spiritual alarm system</strong> for your soul. It is a <strong>cure for prayerlessness</strong>. It is the tool that transforms your desire to pray into a <strong>daily, unbreakable habit</strong> — just like Daniel did in Babylon.
+            Prayer Fire is not just another Christian app. It is a <strong>spiritual alarm system</strong> for your soul. It is a <strong>cure for prayerlessness</strong>. It is the tool that transforms your desire to pray into a <strong>daily, unbreakable habit</strong> — just like Daniel did in Babylon.
           </p>
         </div>
 
@@ -551,7 +551,7 @@ export default function UserManualPage() {
             <p className="text-white/85 text-sm">💀 It kills <strong>protection</strong> — because protection comes through intercession</p>
           </div>
           <p className="text-center font-black text-lg mt-4">
-            Prayer Fire Movement exists to kill prayerlessness.
+            Prayer Fire exists to kill prayerlessness.
           </p>
           <p className="text-center text-white/90 mt-2">
             It alarms. It guides. It writes. It speaks. It tracks. It connects. It leads.
@@ -569,7 +569,7 @@ export default function UserManualPage() {
           <div className="text-3xl font-black text-danger mb-2">PRAY 3 TIMES A DAY.</div>
           <div className="text-xl font-bold text-acc mb-4">CURE PRAYERLESSNESS. SET THE WORLD ON FIRE.</div>
           <p className="text-ink-muted text-sm">The fire is waiting. 🔥</p>
-          <p className="text-ink-faint text-xs mt-6">pst jerry chijioke — Founder, Prayer Fire Movement</p>
+          <p className="text-ink-faint text-xs mt-6">pst jerry chijioke — Founder, Prayer Fire</p>
         </div>
 
       </main>

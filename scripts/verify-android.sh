@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# Prayer Fire Movement — Android pre-flight check
+# Prayer Fire — Android pre-flight check
 #
 # Catches the mistakes that normally only surface 4 minutes into a Gradle build,
 # without needing a JDK:
@@ -21,7 +21,7 @@ step() { printf '\n\033[1m%s\033[0m\n' "$1"; }
 ok()   { printf '  \033[32m✓\033[0m %s\n' "$1"; }
 bad()  { printf '  \033[31m✗\033[0m %s\n' "$1"; FAIL=1; }
 
-echo "🔥 Prayer Fire Movement — Android pre-flight"
+echo "🔥 Prayer Fire — Android pre-flight"
 
 step "1/4  Resource references"
 python3 - "$MAIN" <<'PY'

@@ -1,4 +1,4 @@
-# 🔥 Prayer Fire Movement — "Pray 3x, A Cure For Prayerlessness"
+# 🔥 Prayer Fire — "Pray 3x, A Cure For Prayerlessness"
 
 ## Write it. Speak it. Pray it. Trust God. — "Praying like Daniel"
 
@@ -14,7 +14,7 @@ The alarm rings for everything else — work, meetings, school runs — but **no
 
 **Until now.**
 
-Prayer Fire Movement is not just another Christian app. It is a **spiritual alarm system** for your soul. It is a **cure for prayerlessness**. It is the tool that transforms your desire to pray into a **daily, unbreakable habit** — just like Daniel did in Babylon.
+Prayer Fire is not just another Christian app. It is a **spiritual alarm system** for your soul. It is a **cure for prayerlessness**. It is the tool that transforms your desire to pray into a **daily, unbreakable habit** — just like Daniel did in Babylon.
 
 ---
 
@@ -149,7 +149,7 @@ Prayerlessness is the **silent killer** of spiritual life.
 - It kills purpose — because purpose is revealed in prayer, and you're not seeking.
 - It kills protection — because protection comes through intercession, and you're not standing in the gap.
 
-**Prayer Fire Movement exists to kill prayerlessness.**
+**Prayer Fire exists to kill prayerlessness.**
 
 It alarms. It guides. It writes. It speaks. It tracks. It connects. It leads.
 
@@ -169,5 +169,5 @@ That's the vision. That's the movement. That's what you're joining.
 
 ---
 
-*Prayer Fire Movement — "Praying like Daniel"*
+*Prayer Fire — "Praying like Daniel"*
 *pst jerry chijioke — Founder*

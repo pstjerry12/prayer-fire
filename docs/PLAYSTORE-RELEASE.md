@@ -1,4 +1,4 @@
-# 🚀 Launching Prayer Fire Movement on Google Play
+# 🚀 Launching Prayer Fire on Google Play
 
 Everything in this repo is already wired up for the Play Store. This guide walks
 you from "code on GitHub" to "live on the Play Store".
@@ -82,7 +82,7 @@ android/app/build/outputs/apk/release/app-release.apk      ← sideload/share
 
 1. Buy the one-time **$25** developer account → <https://play.google.com/console>
 2. **Create app**:
-   - App name: `Prayer Fire Movement`
+   - App name: `Prayer Fire`
    - Default language: English (US) — or your primary market
    - App or game: **App**
    - Free or paid: **Free**
@@ -99,7 +99,7 @@ android/app/build/outputs/apk/release/app-release.apk      ← sideload/share
 
 ### App name
 ```
-Prayer Fire Movement: Pray 3x
+Prayer Fire: Pray 3x
 ```
 
 ### Short description (80 char max — this is your headline)
@@ -109,7 +109,7 @@ Pray 3x a day with alarms, Bible, prayer groups & fasting. Keep the fire burning
 
 ### Full description (4000 char max)
 ```
-Prayer Fire Movement is a global community learning to pray three times a day — a cure for prayerlessness.
+Prayer Fire is a global community learning to pray three times a day — a cure for prayerlessness.
 
 KEEP THE FIRE ON THE ALTAR
 Set personal prayer appointments and get real alarms that ring on time, even if your phone is asleep or the app is closed. Notifications survive a restart, so your 4 AM watch is never missed.
@@ -128,11 +128,11 @@ BUILD A PRAYER LIFE THAT LASTS
 • Start-up prayer and prayer workshop for beginners
 
 WHY 3 TIMES A DAY?
-Daniel prayed three times a day. So did David and the early Church. Prayer Fire Movement revives that rhythm — not as a rule, but as a relationship. Small, consistent watches of prayer rebuild a life of communion with God.
+Daniel prayed three times a day. So did David and the early Church. Prayer Fire revives that rhythm — not as a rule, but as a relationship. Small, consistent watches of prayer rebuild a life of communion with God.
 
 Free to use. Your prayer data stays yours.
 
-Prayer Fire Movement — Pray 3x. A cure for prayerlessness.
+Prayer Fire — Pray 3x. A cure for prayerlessness.
 ```
 
 ### Graphic assets

@@ -63,10 +63,10 @@ export default function Navbar() {
         {/* Logo (left) */}
         <Link href="/" className="flex items-center gap-3 min-w-0">
           <div className="w-11 h-11 rounded-full bg-danger-soft ring-1 ring-red-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-            <img src="/logo.png" alt="Prayer Fire Movement" className="w-full h-full object-cover" />
+            <img src="/logo.png" alt="Prayer Fire" className="w-full h-full object-cover" />
           </div>
           <div className="min-w-0">
-            <h1 className="font-serif-heading text-base font-bold text-ink leading-tight truncate">Prayer Fire Movement</h1>
+            <h1 className="font-serif-heading text-base font-bold text-ink leading-tight truncate">Prayer Fire</h1>
             <p className="text-[10px] text-ink-muted hidden sm:block">A Cure For Prayerlessness</p>
             <p className="text-[10px] text-danger font-semibold italic leading-tight hidden sm:block">Praying like Daniel</p>
           </div>
