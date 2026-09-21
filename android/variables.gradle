@@ -18,6 +18,6 @@ ext {
     // ── Release versioning ────────────────────────────────────────────────
     // Bump BOTH on every Play Store upload. versionCode must always increase
     // (Google Play rejects a repeat), versionName is what users see.
-    appVersionCode = 10
-    appVersionName = "1.0.9"
+    appVersionCode = 11
+    appVersionName = "1.0.10"
 }
