@@ -25,7 +25,7 @@ const themeScript = `try{var t=localStorage.getItem('pfm_theme');if(t==='dark'){
 const splashScript = `try{if(sessionStorage.getItem('pfm_splash_shown')==='1'){document.documentElement.classList.add('pfm-splash-done');}}catch(e){}`;
 
 export const metadata: Metadata = {
-  title: "Prayer Fire Movement — Pray 3x, A Cure for Prayerlessness",
+  title: "Prayer Fire — Pray 3x, A Cure for Prayerlessness",
   description:
     "Pray 3 Times a Day — A Cure for Prayerlessness. Build a powerful daily prayer habit with guided sessions, a fasting tracker, multi-language scripture, and a global prayer community.",
   icons: {

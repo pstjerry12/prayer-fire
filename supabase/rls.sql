@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────────────────────
--- Prayer Fire Movement — Row Level Security
+-- Prayer Fire — Row Level Security
 --
 -- Run this against Supabase (SQL editor, or `psql "$DATABASE_URL" -f rls.sql`).
 -- It is idempotent: safe to re-run.

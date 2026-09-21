@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# Prayer Fire Movement — Android release build
+# Prayer Fire — Android release build
 #
 #   bash scripts/build-mobile.sh            → signed AAB (Play Store) + APK
 #   bash scripts/build-mobile.sh apk        → signed APK only
@@ -29,7 +29,7 @@ ok()  { echo "${GREEN}✓ $*${RESET}"; }
 bad() { echo "${RED}✗ $*${RESET}"; }
 die() { bad "$*"; exit 1; }
 
-echo "🔥 ${BOLD}Prayer Fire Movement — Android build${RESET} (mode: $MODE)"
+echo "🔥 ${BOLD}Prayer Fire — Android build${RESET} (mode: $MODE)"
 echo ""
 
 # ── 0. Preflight ────────────────────────────────────────────────────────────

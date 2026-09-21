@@ -1,4 +1,4 @@
-// Service worker for Prayer Fire Movement.
+// Service worker for Prayer Fire.
 //
 // Does three jobs:
 //   1. Offline support — caches the app shell + static assets so the app

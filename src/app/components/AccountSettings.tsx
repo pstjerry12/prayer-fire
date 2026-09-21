@@ -226,7 +226,7 @@ export default function AccountSettings({
             {/* About */}
             <div className="bg-card-2 rounded-xl p-4 border border-edge text-center">
               <p className="text-ink-muted text-xs leading-relaxed">
-                <span className="text-acc-strong font-bold">Prayer Fire Movement</span>
+                <span className="text-acc-strong font-bold">Prayer Fire</span>
                 <br />
                 A Cure For Prayerlessness.
                 <br />

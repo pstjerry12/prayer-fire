@@ -27,7 +27,7 @@ export default function PrivacyPolicy({ isOpen, onClose }: Props) {
 
           <div className="p-5 space-y-5">
             <p className="text-ink-muted text-xs leading-relaxed">
-              Your privacy matters to us. This policy explains how Prayer Fire Movement handles
+              Your privacy matters to us. This policy explains how Prayer Fire handles
               your information.
             </p>
             {PRIVACY_SECTIONS.map((s) => (

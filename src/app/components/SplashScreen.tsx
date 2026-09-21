@@ -77,11 +77,11 @@ export default function SplashScreen() {
     >
       {/* Logo */}
       <div className="w-24 h-24 rounded-full bg-red-50 ring-2 ring-red-200 flex items-center justify-center overflow-hidden shadow-lg shadow-red-500/20 mb-4">
-        <img src="/logo.png" alt="Prayer Fire Movement" className="w-full h-full object-cover" />
+        <img src="/logo.png" alt="Prayer Fire" className="w-full h-full object-cover" />
       </div>
 
       {/* App name */}
-      <h1 className="font-serif-heading text-2xl font-bold text-ink">Prayer Fire Movement</h1>
+      <h1 className="font-serif-heading text-2xl font-bold text-ink">Prayer Fire</h1>
       <p className="text-red-600 font-semibold italic text-sm mt-1">Praying like Daniel</p>
 
       {/* Progress bar */}

@@ -1,4 +1,4 @@
-# Prayer Fire Movement — Android (Capacitor 8)
+# Prayer Fire — Android (Capacitor 8)
 
 A thin native shell around the live web app. The WebView loads
 **https://prayer-fire.vercel.app** (see `capacitor.config.ts → server.url`), so

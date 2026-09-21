@@ -1,6 +1,6 @@
 #!/bin/bash
 # ──────────────────────────────────────────────
-# Prayer Fire Movement — Mobile App Build Script
+# Prayer Fire — Mobile App Build Script
 # ──────────────────────────────────────────────
 # Prerequisites:
 #   - Node.js + npm
@@ -17,7 +17,7 @@ set -e
 
 PLATFORM="${1:-android}"
 
-echo "🔥 Prayer Fire Movement — Mobile Build"
+echo "🔥 Prayer Fire — Mobile Build"
 echo "Platform: $PLATFORM"
 echo ""
 

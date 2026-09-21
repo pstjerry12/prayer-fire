@@ -76,13 +76,13 @@ export default function PrivacyPage() {
             <ShieldCheck className="w-6 h-6 text-acc" />
           </div>
           <div>
-            <h1 className="font-serif-heading text-2xl font-bold text-ink">Privacy Policy — Prayer Fire Movement</h1>
+            <h1 className="font-serif-heading text-2xl font-bold text-ink">Privacy Policy — Prayer Fire</h1>
             <p className="text-xs text-ink-muted">Last updated: {lastUpdated}</p>
           </div>
         </div>
 
         <p className="text-ink-soft text-sm leading-relaxed mt-4 mb-5">
-          Prayer Fire Movement (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;the app&rdquo;) respects your privacy.
+          Prayer Fire (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;the app&rdquo;) respects your privacy.
           This policy explains what information we collect and how we use it.
         </p>
 

@@ -6,11 +6,11 @@ export interface LegalSection {
 export const TERMS_SECTIONS: LegalSection[] = [
   {
     title: '1. Acceptance of Terms',
-    body: 'By creating an account or using Prayer Fire Movement ("the Service"), you agree to these Terms of Service. If you do not agree, please do not use the Service.',
+    body: 'By creating an account or using Prayer Fire ("the Service"), you agree to these Terms of Service. If you do not agree, please do not use the Service.',
   },
   {
     title: '2. Nature of the Service',
-    body: 'Prayer Fire Movement is a faith-based spiritual wellness application. The Service provides prayer planning tools, scripture content, fasting trackers, and community features. The Service does not provide medical, psychological, financial, legal, or other professional advice. Always consult a qualified professional for such matters.',
+    body: 'Prayer Fire is a faith-based spiritual wellness application. The Service provides prayer planning tools, scripture content, fasting trackers, and community features. The Service does not provide medical, psychological, financial, legal, or other professional advice. Always consult a qualified professional for such matters.',
   },
   {
     title: '3. Your Account',
@@ -26,7 +26,7 @@ export const TERMS_SECTIONS: LegalSection[] = [
   },
   {
     title: '6. Intellectual Property',
-    body: 'The Prayer Fire Movement name, logo, scripture compilations, teachings, and design are the property of the Service. You may not copy, reproduce, or redistribute our content without permission. Scripture text from the King James Version is in the public domain.',
+    body: 'The Prayer Fire name, logo, scripture compilations, teachings, and design are the property of the Service. You may not copy, reproduce, or redistribute our content without permission. Scripture text from the King James Version is in the public domain.',
   },
   {
     title: '7. Donations & Purchases',
@@ -38,7 +38,7 @@ export const TERMS_SECTIONS: LegalSection[] = [
   },
   {
     title: '9. Limitation of Liability',
-    body: 'To the fullest extent permitted by law, Prayer Fire Movement and its operators shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Service.',
+    body: 'To the fullest extent permitted by law, Prayer Fire and its operators shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Service.',
   },
   {
     title: '10. Changes to These Terms',

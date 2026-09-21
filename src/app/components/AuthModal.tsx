@@ -152,11 +152,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
           <div className="p-5 border-b border-edge flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-danger-soft ring-1 ring-red-200 flex items-center justify-center overflow-hidden">
-                <img src="/logo.png" alt="Prayer Fire Movement" className="w-full h-full object-cover" />
+                <img src="/logo.png" alt="Prayer Fire" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h2 className="font-serif-heading text-lg font-bold text-ink">
-                  {mode === 'login' ? 'Welcome Back' : 'Join the Movement'}
+                  {mode === 'login' ? 'Welcome Back' : 'Join Prayer Fire'}
                 </h2>
                 <p className="text-ink-muted text-xs">
                   {mode === 'login' ? 'Sign in to continue your prayer journey' : 'Create your Prayer Fire account'}
