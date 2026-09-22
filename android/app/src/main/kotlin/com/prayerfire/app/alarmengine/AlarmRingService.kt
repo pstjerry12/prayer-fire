@@ -29,6 +29,7 @@ class AlarmRingService : Service() {
         const val CHANNEL_ID = "prayer_alarm_ring"
         const val NOTIFICATION_ID = 7719
         const val RING_DURATION_MS = 5 * 60 * 1000L
+        const val ACTION_STOP = "com.prayerfire.app.alarmengine.ACTION_STOP"
     }
 
     private var mediaPlayer: MediaPlayer? = null
@@ -39,6 +40,17 @@ class AlarmRingService : Service() {
     override fun onBind(intent: Intent?) = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // The notification's own "Stop" action posts this directly to the
+        // running service — the full-screen ringing Activity is a nice-to-have
+        // (and on Android 14+ needs its own separately-granted permission to
+        // auto-launch), but it was never the only way to silence the alarm:
+        // without this, a user whose device didn't auto-launch that Activity
+        // had no way to stop the ringing except opening the app itself.
+        if (intent?.action == ACTION_STOP) {
+            stopSelfSafely()
+            return START_NOT_STICKY
+        }
+
         val id = intent?.getStringExtra(AlarmScheduler.EXTRA_ID) ?: "prayer"
         val label = intent?.getStringExtra(AlarmScheduler.EXTRA_LABEL) ?: "Prayer Time"
         val tone = intent?.getStringExtra(AlarmScheduler.EXTRA_TONE) ?: "classic"
@@ -84,6 +96,14 @@ class AlarmRingService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val stopIntent = Intent(this, AlarmRingService::class.java).apply { action = ACTION_STOP }
+        val stopPendingIntent = PendingIntent.getService(
+            this,
+            id.hashCode(),
+            stopIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle("🔥 Prayer Time")
@@ -92,6 +112,7 @@ class AlarmRingService : Service() {
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .setContentIntent(fullScreenPendingIntent)
+            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", stopPendingIntent)
             .setOngoing(true)
             .setAutoCancel(false)
             .build()
