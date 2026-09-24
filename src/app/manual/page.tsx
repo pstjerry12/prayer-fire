@@ -569,7 +569,7 @@ export default function UserManualPage() {
           <div className="text-3xl font-black text-danger mb-2">PRAY 3 TIMES A DAY.</div>
           <div className="text-xl font-bold text-acc mb-4">CURE PRAYERLESSNESS. SET THE WORLD ON FIRE.</div>
           <p className="text-ink-muted text-sm">The fire is waiting. 🔥</p>
-          <p className="text-ink-faint text-xs mt-6">pst jerry chijioke — Founder, Prayer Fire</p>
+          <p className="text-ink-faint text-xs mt-6">Pastor Jerry C. — Founder, Prayer Fire</p>
         </div>
 
       </main>

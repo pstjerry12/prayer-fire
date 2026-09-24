@@ -170,4 +170,4 @@ That's the vision. That's the movement. That's what you're joining.
 ---
 
 *Prayer Fire — "Praying like Daniel"*
-*pst jerry chijioke — Founder*
+*Pastor Jerry C. — Founder*

@@ -42,7 +42,7 @@ export default function BottomNav() {
       </div>
       {/* Jerry's name — always visible above phone's home bar */}
       <div className="text-center py-1 border-t border-edge/50">
-        <span className="text-ink-faint text-[9px] font-medium">pst jerry chijioke</span>
+        <span className="text-ink-faint text-[9px] font-medium">Pastor Jerry C.</span>
       </div>
     </nav>
   );

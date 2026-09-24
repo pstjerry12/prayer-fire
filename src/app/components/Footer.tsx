@@ -14,7 +14,7 @@ export default function Footer() {
         <p className="text-ink-muted text-[11px] mt-2">
           Write it. Speak it. Pray it. Trust God — Praying like Daniel.
         </p>
-        <p className="text-ink-faint text-[10px] mt-1">pst jerry chijioke</p>
+        <p className="text-ink-faint text-[10px] mt-1">Pastor Jerry C.</p>
 
         <SocialLinks />
       </div>

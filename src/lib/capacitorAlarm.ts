@@ -250,6 +250,17 @@ export async function scheduleNativeAlarms(
     const notifications = [];
     for (const appt of appointments) {
       if (!appt.enabled) continue;
+      // On Android, an appointment with "Ring like an alarm" on is already
+      // fully covered by scheduleAlarmEngineAlarms() below — scheduling a
+      // plain notification here too meant BOTH fired at the same time: the
+      // loud AlarmEngine ring (which the user correctly stops via its own
+      // notification) and this separate plain notification, whose own tap
+      // handler (listenNotificationTap in PrayerAlarm.tsx) starts an
+      // entirely different ringing loop with its own dismiss button. That
+      // read as "I stopped the alarm and a few seconds later it came back."
+      // iOS has no AlarmEngine to fall back on, so it keeps using this path
+      // regardless of the toggle — this is Android-only.
+      if (appt.useNativeAlarm && getNativePlatform() === 'android') continue;
 
       const [hh, mm] = appt.time.split(':').map(Number);
       if (isNaN(hh) || isNaN(mm)) continue;
