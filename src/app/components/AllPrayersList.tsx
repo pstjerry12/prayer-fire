@@ -95,7 +95,7 @@ export default function AllPrayersList({
           >
             <div className="flex-1 min-w-0">
               <p className={cn(
-                'text-[10px] font-semibold uppercase tracking-wider mb-1',
+                'text-[0.625rem] font-semibold uppercase tracking-wider mb-1',
                 prayer.type === 'family' && 'text-acc-strong',
                 prayer.type === 'personal' && 'text-ink-muted',
                 prayer.type === 'intercessory' && 'text-danger'

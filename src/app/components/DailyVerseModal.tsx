@@ -109,7 +109,7 @@ export default function DailyVerseModal({ isOpen, onClose }: Props) {
           <p className="text-ink text-lg leading-relaxed italic font-serif-heading">
             &ldquo;{displayText}&rdquo;
           </p>
-          <p className="text-ink-faint text-[11px] mt-3">{translationName}</p>
+          <p className="text-ink-faint text-[0.6875rem] mt-3">{translationName}</p>
           <p className="text-ink-muted text-xs mt-5">Start your day with the Word of God.</p>
           <button
             onClick={onClose}

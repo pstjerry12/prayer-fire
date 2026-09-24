@@ -93,11 +93,11 @@ export default function SplashScreen() {
           />
         </div>
         <div className="flex items-center justify-between mt-2">
-          <span className="text-ink-muted text-[11px] flex items-center gap-1">
+          <span className="text-ink-muted text-[0.6875rem] flex items-center gap-1">
             <Flame className="w-3 h-3 text-[#ff6a00]" />
             {BOOT_MESSAGES[messageIndex]}
           </span>
-          <span className="text-ink-muted text-[11px] font-bold tabular-nums">{Math.round(progress)}%</span>
+          <span className="text-ink-muted text-[0.6875rem] font-bold tabular-nums">{Math.round(progress)}%</span>
         </div>
       </div>
     </div>

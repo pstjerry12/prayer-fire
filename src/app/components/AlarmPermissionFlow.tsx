@@ -155,7 +155,7 @@ export default function AlarmPermissionFlow({
         )}
 
         {s.goesToSettings && !waiting && !checking && (
-          <p className="text-ink-faint text-[11px] mt-3 text-center">
+          <p className="text-ink-faint text-[0.6875rem] mt-3 text-center">
             This one has no in-app switch — Android only offers it from Settings.
           </p>
         )}

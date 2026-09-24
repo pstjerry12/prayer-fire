@@ -222,7 +222,7 @@ export default function PrayerGroups() {
               <Lock className="w-4 h-4" /> Private
             </button>
           </div>
-          <p className="text-[11px] text-ink-muted mt-1.5">
+          <p className="text-[0.6875rem] text-ink-muted mt-1.5">
             {newPublic ? 'Anyone can join instantly.' : 'Only people you approve can join.'}
           </p>
         </div>
@@ -294,7 +294,7 @@ export default function PrayerGroups() {
           </div>
 
           {/* Info chips */}
-          <div className="flex flex-wrap gap-2 text-[11px]">
+          <div className="flex flex-wrap gap-2 text-[0.6875rem]">
             <span className="bg-acc-soft text-acc-strong px-2 py-1 rounded-full flex items-center gap-1">
               <Users className="w-3 h-3" /> {activeGroup.members.length} members
             </span>
@@ -332,7 +332,7 @@ export default function PrayerGroups() {
             <Flame className={cn('w-4 h-4', iPrayedToday && 'animate-flicker')} />
             {iPrayedToday ? 'I prayed today ✓' : 'Mark: I prayed today'}
             {prayedTodayCount > 0 && (
-              <span className={cn('text-[10px] px-1.5 py-0.5 rounded-full', iPrayedToday ? 'bg-acc text-white' : 'bg-card-2 text-ink-muted')}>
+              <span className={cn('text-[0.625rem] px-1.5 py-0.5 rounded-full', iPrayedToday ? 'bg-acc text-white' : 'bg-card-2 text-ink-muted')}>
                 {prayedTodayCount}
               </span>
             )}
@@ -343,7 +343,7 @@ export default function PrayerGroups() {
         {isAdmin && (
           <div className="bg-card rounded-2xl border border-edge p-3 space-y-2">
             <div>
-              <label className="text-[10px] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1">
+              <label className="text-[0.625rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1">
                 <Pin className="w-3 h-3" /> Pinned verse
               </label>
               <input
@@ -355,7 +355,7 @@ export default function PrayerGroups() {
               />
             </div>
             <div>
-              <label className="text-[10px] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1">
+              <label className="text-[0.625rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1">
                 <Clock className="w-3 h-3" /> Group prayer time
               </label>
               <select value={activeGroup.prayerTime || ''} onChange={(e) => setGroupPrayerTime(activeGroup.id, e.target.value)} className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink">
@@ -363,7 +363,7 @@ export default function PrayerGroups() {
               </select>
             </div>
             <div>
-              <label className="text-[10px] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1">
+              <label className="text-[0.625rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1">
                 <Lock className="w-3 h-3" /> Who can join
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -381,7 +381,7 @@ export default function PrayerGroups() {
         {/* Pending join requests (admin) */}
         {isAdmin && (activeGroup.pendingMembers?.length ?? 0) > 0 && (
           <div className="bg-card rounded-2xl border border-warn-edge p-3">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-warn-strong flex items-center gap-1 mb-2">
+            <label className="text-[0.625rem] font-bold uppercase tracking-wider text-warn-strong flex items-center gap-1 mb-2">
               <UserPlus className="w-3 h-3" /> Pending requests
             </label>
             <div className="space-y-2">
@@ -420,13 +420,13 @@ export default function PrayerGroups() {
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-ink font-bold text-xs">{m.senderName}</span>
                   {m.kind === 'alert' && (
-                    <span className="bg-danger text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                    <span className="bg-danger text-white text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
                       <Siren className="w-2.5 h-2.5" /> EMERGENCY
                     </span>
                   )}
                 </div>
                 <p className={cn('text-sm', m.kind === 'alert' ? 'text-danger-strong font-semibold' : 'text-ink-soft')}>{m.text}</p>
-                <p className="text-ink-faint text-[9px] mt-1">{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                <p className="text-ink-faint text-[0.5625rem] mt-1">{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
               </div>
             ))
           )}
@@ -496,17 +496,17 @@ export default function PrayerGroups() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="text-ink font-bold text-sm truncate">{g.name}</h3>
-                  <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0', g.public ? 'bg-acc-soft text-acc-strong' : 'bg-warn-soft text-warn-strong')}>
+                  <span className={cn('text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0', g.public ? 'bg-acc-soft text-acc-strong' : 'bg-warn-soft text-warn-strong')}>
                     {g.public ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
                     {g.public ? 'Public' : 'Private'}
                   </span>
                 </div>
                 <p className="text-ink-muted text-xs truncate">{g.description || 'No description'}</p>
                 <div className="flex gap-2 mt-1">
-                  <span className="text-acc-strong text-[10px] font-semibold flex items-center gap-0.5"><Users className="w-3 h-3" /> {g.members.length}</span>
-                  <span className="text-warn-strong text-[10px] font-semibold flex items-center gap-0.5"><Clock className="w-3 h-3" /> {fmtTime(g.prayerTime)}</span>
+                  <span className="text-acc-strong text-[0.625rem] font-semibold flex items-center gap-0.5"><Users className="w-3 h-3" /> {g.members.length}</span>
+                  <span className="text-warn-strong text-[0.625rem] font-semibold flex items-center gap-0.5"><Clock className="w-3 h-3" /> {fmtTime(g.prayerTime)}</span>
                   {prayedCount(g) > 0 && (
-                    <span className="text-warn-strong text-[10px] font-semibold flex items-center gap-0.5"><Flame className="w-3 h-3" /> {prayedCount(g)}</span>
+                    <span className="text-warn-strong text-[0.625rem] font-semibold flex items-center gap-0.5"><Flame className="w-3 h-3" /> {prayedCount(g)}</span>
                   )}
                 </div>
               </div>

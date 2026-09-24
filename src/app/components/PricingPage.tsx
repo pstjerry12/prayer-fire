@@ -94,7 +94,7 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
                     )}
                   >
                     {plan.highlighted && (
-                      <span className="self-start mb-3 inline-flex items-center gap-1 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      <span className="self-start mb-3 inline-flex items-center gap-1 bg-emerald-600 text-white text-[0.625rem] font-bold px-2 py-0.5 rounded-full">
                         <Crown className="w-3 h-3" /> MOST POPULAR
                       </span>
                     )}

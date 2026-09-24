@@ -247,10 +247,10 @@ export default function AdminPage() {
             <Link href="/" className="p-2 hover:bg-card-2 rounded-full text-ink-muted"><ChevronLeft className="w-5 h-5" /></Link>
             <div>
               <h1 className="font-serif-heading text-lg font-bold text-ink">🔥 Admin Command Center</h1>
-              <p className="text-[11px] text-ink-muted">Signed in as {adminName}</p>
+              <p className="text-[0.6875rem] text-ink-muted">Signed in as {adminName}</p>
             </div>
           </div>
-          <span className="bg-acc-soft-2 text-acc-strong text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> ADMIN</span>
+          <span className="bg-acc-soft-2 text-acc-strong text-[0.625rem] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> ADMIN</span>
         </div>
       </header>
 
@@ -322,7 +322,7 @@ export default function AdminPage() {
                     <p className="text-ink font-semibold text-sm truncate">{u.name || 'Anonymous'}</p>
                     <p className="text-ink-muted text-xs truncate">{u.email || (u.phone ? `${u.countryCode ?? ''} ${u.phone}` : '—')}</p>
                   </div>
-                  <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0', u.role === 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-card-2 text-ink-muted')}>
+                  <span className={cn('text-[0.625rem] font-bold px-2 py-0.5 rounded-full flex-shrink-0', u.role === 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-card-2 text-ink-muted')}>
                     {u.role === 'admin' ? 'ADMIN' : 'USER'}
                   </span>
                   {u.role === 'admin' ? (
@@ -348,7 +348,7 @@ export default function AdminPage() {
                     <p className="text-ink font-bold text-sm">{r.name}</p>
                     <p className="text-ink-muted text-xs">{r.location || 'Unknown location'} · {r.prayers} prayers</p>
                   </div>
-                  <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0', r.approved ? 'bg-acc-soft-2 text-acc-strong' : 'bg-amber-100 text-amber-700')}>
+                  <span className={cn('text-[0.625rem] font-bold px-2 py-0.5 rounded-full flex-shrink-0', r.approved ? 'bg-acc-soft-2 text-acc-strong' : 'bg-amber-100 text-amber-700')}>
                     {r.approved ? 'APPROVED' : 'PENDING'}
                   </span>
                 </div>
@@ -394,7 +394,7 @@ export default function AdminPage() {
                       <div className="flex items-center gap-2 mb-1">
                         <p className="text-ink font-semibold text-sm">{t.isAnonymous || !t.name ? 'Anonymous' : t.name}</p>
                         <span className="text-ink-muted text-xs">{t.location}</span>
-                        <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full', t.approved ? 'bg-acc-soft-2 text-acc-strong' : 'bg-amber-100 text-amber-700')}>
+                        <span className={cn('text-[0.625rem] font-bold px-2 py-0.5 rounded-full', t.approved ? 'bg-acc-soft-2 text-acc-strong' : 'bg-amber-100 text-amber-700')}>
                           {t.approved ? 'VISIBLE' : 'HIDDEN'}
                         </span>
                       </div>
@@ -424,7 +424,7 @@ export default function AdminPage() {
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="text-ink font-bold text-sm">{fmtMoney(d.amount, d.currency)}</p>
-                    <p className="text-acc-strong text-[10px] font-bold uppercase">{d.status}</p>
+                    <p className="text-acc-strong text-[0.625rem] font-bold uppercase">{d.status}</p>
                   </div>
                 </div>
               ))}
@@ -462,7 +462,7 @@ export default function AdminPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-ink font-semibold text-sm">{a.title}</p>
                       <p className="text-ink-soft text-xs mt-0.5">{a.body}</p>
-                      <p className="text-ink-faint text-[10px] mt-1">{a.createdAt ? new Date(a.createdAt).toLocaleString() : ''}</p>
+                      <p className="text-ink-faint text-[0.625rem] mt-1">{a.createdAt ? new Date(a.createdAt).toLocaleString() : ''}</p>
                     </div>
                     <button onClick={() => deleteAnnouncement(a.id)} className="p-2 text-ink-faint hover:text-danger shrink-0" title="Delete"><Trash2 className="w-4 h-4" /></button>
                   </div>
@@ -509,7 +509,7 @@ export default function AdminPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-ink font-semibold text-sm">{ev.title}</p>
                       {ev.description && <p className="text-ink-soft text-xs mt-0.5">{ev.description}</p>}
-                      <div className="flex items-center gap-3 mt-1 text-[11px] text-ink-muted">
+                      <div className="flex items-center gap-3 mt-1 text-[0.6875rem] text-ink-muted">
                         <span>📅 {ev.date}</span>
                         {ev.time && <span>🕐 {ev.time}</span>}
                         {ev.link && <a href={ev.link} target="_blank" rel="noopener" className="text-acc-strong hover:underline flex items-center gap-0.5"><LinkIcon className="w-3 h-3" /> Join</a>}
@@ -538,7 +538,7 @@ export default function AdminPage() {
               <div className="flex items-center gap-2 mb-3">
                 <Key className="w-5 h-5 text-text-fire" />
                 <h2 className="font-bold text-ink text-lg">💳 Flutterwave Key</h2>
-                <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full ml-auto',
+                <span className={cn('text-[0.625rem] font-bold px-2 py-0.5 rounded-full ml-auto',
                   dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')}>
                   {dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? 'LIVE' : dbSettings.flutterwave_public_key ? 'TEST' : 'NOT SET'}
                 </span>
@@ -807,7 +807,7 @@ function StatCard({ label, value, sub, icon, color }: { label: string; value: st
       <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center mb-2', bg)}>{icon}</div>
       <p className="text-2xl font-bold text-ink leading-none">{value}</p>
       <p className="text-ink-muted text-xs mt-1">{label}</p>
-      {sub && <p className="text-acc-strong text-[10px] font-semibold mt-0.5">{sub}</p>}
+      {sub && <p className="text-acc-strong text-[0.625rem] font-semibold mt-0.5">{sub}</p>}
     </div>
   );
 }

@@ -26,6 +26,7 @@ import type { PrayerAppointment } from '@/app/components/CustomizablePrayerSched
 import { getStoredUser, fetchMe, apiLogout, apiDeleteAccount, storeSession } from '@/lib/authClient';
 import { saveSongBlob, deleteSongBlob } from '@/lib/audioStore';
 import { listenAuthDeepLink, closeInAppBrowser } from '@/lib/capacitorAlarm';
+import { applyTextScale, getStoredTextScale } from '@/lib/textScale';
 
 // useNativeAlarm defaults to true so every user gets the loud, full-screen
 // "ring like an alarm" experience out of the box (Android only — a no-op
@@ -219,6 +220,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     localStorage.setItem('pfm_theme', theme);
   }, [theme]);
+
+  // Re-apply the saved text size after hydration (the pre-paint script's inline
+  // style on <html> is dropped if React has to re-render the root).
+  useEffect(() => {
+    applyTextScale(getStoredTextScale());
+  }, []);
 
   const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
 

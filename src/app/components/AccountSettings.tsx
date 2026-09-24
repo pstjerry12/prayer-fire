@@ -16,12 +16,14 @@ import {
   Loader2,
   RefreshCw,
   Star,
+  Type,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { cn } from '../utils/cn';
 import { CURRENCIES, type Currency } from '../data/pricingPlans';
 import type { AuthUser } from '@/app/types';
 import { getAppVersionInfo, PLAY_STORE_URL } from '@/lib/capacitorAlarm';
+import { TEXT_SCALE_OPTIONS, getStoredTextScale, setTextScale } from '@/lib/textScale';
 
 interface Props {
   isOpen: boolean;
@@ -56,9 +58,11 @@ export default function AccountSettings({
 }: Props) {
   const [signingOut, setSigningOut] = useState(false);
   const [appVersion, setAppVersion] = useState<{ version: string; build: string } | null>(null);
+  const [textScale, setTextScaleState] = useState(1);
 
   useEffect(() => {
     if (!isOpen) return;
+    setTextScaleState(getStoredTextScale());
     let cancelled = false;
     getAppVersionInfo().then((info) => {
       if (!cancelled) setAppVersion(info);
@@ -74,6 +78,11 @@ export default function AccountSettings({
     setSigningOut(true);
     await onSignOut();
     setSigningOut(false);
+  };
+
+  const handleTextScale = (scale: number) => {
+    setTextScale(scale);
+    setTextScaleState(scale);
   };
 
   const displayIdentifier = user?.email || (user?.phone ? `${user.countryCode ?? ''} ${user.phone}` : null);
@@ -106,7 +115,7 @@ export default function AccountSettings({
                       {displayIdentifier && (
                         <p className="text-ink-muted text-xs truncate">{displayIdentifier}</p>
                       )}
-                      <span className="inline-block mt-1 bg-acc-soft-2 text-acc-strong text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      <span className="inline-block mt-1 bg-acc-soft-2 text-acc-strong text-[0.625rem] font-bold px-2 py-0.5 rounded-full">
                         SIGNED IN
                       </span>
                     </div>
@@ -137,20 +146,57 @@ export default function AccountSettings({
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="bg-card-2 rounded-xl p-3 text-center border border-edge">
+              <div className="bg-card-2 rounded-xl py-3 px-1 text-center border border-edge">
                 <Flame className="w-5 h-5 text-acc mx-auto mb-1" />
                 <p className="text-ink font-bold text-xl">{streakCount}</p>
-                <p className="text-ink-muted text-[10px]">Day Streak</p>
+                <p className="text-ink-muted text-[0.625rem]">Day Streak</p>
               </div>
-              <div className="bg-card-2 rounded-xl p-3 text-center border border-edge">
+              <div className="bg-card-2 rounded-xl py-3 px-1 text-center border border-edge">
                 <Heart className="w-5 h-5 text-danger mx-auto mb-1" />
                 <p className="text-ink font-bold text-xl">{prayerCount}</p>
-                <p className="text-ink-muted text-[10px]">Personal</p>
+                <p className="text-ink-muted text-[0.625rem]">Personal</p>
               </div>
-              <div className="bg-card-2 rounded-xl p-3 text-center border border-edge">
+              <div className="bg-card-2 rounded-xl py-3 px-1 text-center border border-edge">
                 <Users className="w-5 h-5 text-acc mx-auto mb-1" />
                 <p className="text-ink font-bold text-xl">{intercessoryCount}</p>
-                <p className="text-ink-muted text-[10px]">Intercessory</p>
+                <p className="text-ink-muted text-[0.625rem]">Intercessory</p>
+              </div>
+            </div>
+
+            {/* Text Size */}
+            <div>
+              <h3 className="text-ink-soft text-sm font-semibold mb-1 flex items-center gap-2">
+                <Type className="w-4 h-4 text-acc" /> Text Size
+              </h3>
+              <p className="text-ink-muted text-xs mb-3">Make words bigger and easier to read across the whole app.</p>
+              <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="Text size">
+                {TEXT_SCALE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    role="radio"
+                    aria-checked={textScale === opt.value}
+                    aria-label={opt.label}
+                    onClick={() => handleTextScale(opt.value)}
+                    className={cn(
+                      'flex flex-col items-center justify-end gap-1 py-2 rounded-lg border transition-all',
+                      textScale === opt.value
+                        ? 'bg-acc-soft text-acc-strong border-acc-edge'
+                        : 'bg-card text-ink-muted border-edge hover:bg-card-2'
+                    )}
+                  >
+                    {/* Fixed px so each sample shows its relative size regardless of the current scale */}
+                    <span className="font-serif-heading font-bold leading-none" style={{ fontSize: `${Math.round(16 * opt.value)}px` }}>
+                      A
+                    </span>
+                    <span className="text-[0.5625rem] font-semibold leading-none">{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="mt-3 bg-card-2 rounded-xl p-3 border border-edge">
+                <p className="text-ink text-sm leading-relaxed font-serif-heading">
+                  &ldquo;Call unto me, and I will answer thee, and shew thee great and mighty things, which thou knowest not.&rdquo;
+                </p>
+                <p className="text-ink-faint text-xs mt-1">Jeremiah 33:3 · Preview</p>
               </div>
             </div>
 
@@ -233,7 +279,7 @@ export default function AccountSettings({
                 <span className="text-ink-faint">Write it. Speak it. Pray it. Trust God.</span>
               </p>
               {appVersion && (
-                <p className="text-ink-faint text-[10px] mt-2">
+                <p className="text-ink-faint text-[0.625rem] mt-2">
                   Version {appVersion.version} (build {appVersion.build})
                 </p>
               )}

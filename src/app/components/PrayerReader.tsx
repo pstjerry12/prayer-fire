@@ -34,7 +34,7 @@ export default function PrayerReader({ items, initialIndex, onClose }: Props) {
         {/* Header */}
         <div className="px-5 py-4 border-b border-edge flex items-center justify-between flex-shrink-0">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-acc">Prayer Point</p>
+            <p className="text-[0.625rem] font-bold uppercase tracking-wider text-acc">Prayer Point</p>
             <p className="text-ink-muted text-xs tabular-nums">{index + 1} of {items.length}</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">

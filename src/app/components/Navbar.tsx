@@ -67,8 +67,8 @@ export default function Navbar() {
           </div>
           <div className="min-w-0">
             <h1 className="font-serif-heading text-base font-bold text-ink leading-tight truncate">Prayer Fire</h1>
-            <p className="text-[10px] text-ink-muted hidden sm:block">A Cure For Prayerlessness</p>
-            <p className="text-[10px] text-danger font-semibold italic leading-tight hidden sm:block">Praying like Daniel</p>
+            <p className="text-[0.625rem] text-ink-muted hidden sm:block">A Cure For Prayerlessness</p>
+            <p className="text-[0.625rem] text-danger font-semibold italic leading-tight hidden sm:block">Praying like Daniel</p>
           </div>
         </Link>
 
@@ -183,7 +183,7 @@ export default function Navbar() {
                 onClick={() => setOpenCat(openCat === cat.id ? null : cat.id)}
                 onMouseEnter={() => setOpenCat(cat.id)}
                 className={cn(
-                  'flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors',
+                  'flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg text-[0.8125rem] font-semibold transition-colors',
                   openCat === cat.id ? 'bg-acc-soft text-acc-strong' : 'text-ink-muted hover:text-acc-strong hover:bg-card-2'
                 )}
               >
@@ -214,7 +214,7 @@ export default function Navbar() {
           <Link
             href="/partner"
             className={cn(
-              'ml-auto whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] font-bold transition-colors flex items-center gap-1',
+              'ml-auto whitespace-nowrap px-3 py-1.5 rounded-lg text-[0.8125rem] font-bold transition-colors flex items-center gap-1',
               isActive('/partner') ? 'bg-warn-soft text-warn-strong' : 'text-warn hover:bg-warn-soft'
             )}
           >
@@ -246,7 +246,7 @@ export default function Navbar() {
 
           {MENU_CATEGORIES.map((cat) => (
             <div key={cat.id}>
-              <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-1.5 px-1">
+              <p className="flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-wider text-ink-muted mb-1.5 px-1">
                 <cat.icon className="w-3.5 h-3.5" /> {cat.label}
               </p>
               <div className="space-y-1">

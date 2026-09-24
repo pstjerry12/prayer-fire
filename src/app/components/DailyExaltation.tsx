@@ -48,10 +48,10 @@ export default function DailyExaltation() {
         </div>
       )}
       <div className="p-4 md:p-5">
-        <p className="text-red-600 text-[10px] font-bold uppercase tracking-wider">📺 Daily Morning Exaltation</p>
+        <p className="text-red-600 text-[0.625rem] font-bold uppercase tracking-wider">📺 Daily Morning Exaltation</p>
         <h3 className="text-ink font-bold text-sm md:text-base mt-1">{data.dailyYoutubeTitle || 'Watch on YouTube'}</h3>
         {data.dailyYoutubeSubtitle && (
-          <p className="text-ink-muted text-[11px] md:text-sm mt-0.5">{data.dailyYoutubeSubtitle}</p>
+          <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">{data.dailyYoutubeSubtitle}</p>
         )}
       </div>
     </a>

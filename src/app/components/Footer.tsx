@@ -11,10 +11,10 @@ export default function Footer() {
           <span className="text-ink font-serif font-bold text-sm">Prayer Fire</span>
         </div>
 
-        <p className="text-ink-muted text-[11px] mt-2">
+        <p className="text-ink-muted text-[0.6875rem] mt-2">
           Write it. Speak it. Pray it. Trust God — Praying like Daniel.
         </p>
-        <p className="text-ink-faint text-[10px] mt-1">Pastor Jerry C.</p>
+        <p className="text-ink-faint text-[0.625rem] mt-1">Pastor Jerry C.</p>
 
         <SocialLinks />
       </div>

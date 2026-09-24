@@ -29,7 +29,7 @@ export default function AnnouncementBanner() {
           <Megaphone className="w-4 h-4" />
         </span>
         <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-warn-strong">Announcement</p>
+          <p className="text-[0.625rem] font-bold uppercase tracking-wider text-warn-strong">Announcement</p>
           <p className="text-ink font-bold text-sm mt-0.5">{latest.title}</p>
           <p className="text-ink-soft text-xs mt-0.5 leading-relaxed">{latest.body}</p>
         </div>

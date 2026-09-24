@@ -180,7 +180,7 @@ export default function WorshipPlayer({ compact = false }: { compact?: boolean }
               onChange={seek}
               className="flex-1 accent-emerald-600"
             />
-            <span className="text-[10px] text-ink-muted tabular-nums whitespace-nowrap">{fmt(progress)} / {fmt(duration)}</span>
+            <span className="text-[0.625rem] text-ink-muted tabular-nums whitespace-nowrap">{fmt(progress)} / {fmt(duration)}</span>
           </div>
         </div>
       )}
@@ -236,7 +236,7 @@ export default function WorshipPlayer({ compact = false }: { compact?: boolean }
                 </button>
                 <div className="flex-1 min-w-0">
                   <p className={cn('text-sm font-semibold truncate', active ? 'text-acc-strong' : 'text-ink')}>{song.name}</p>
-                  <p className="text-[10px] text-ink-muted">{song.source === 'file' ? 'Uploaded song' : 'Streamed link'}</p>
+                  <p className="text-[0.625rem] text-ink-muted">{song.source === 'file' ? 'Uploaded song' : 'Streamed link'}</p>
                 </div>
                 <button onClick={() => handleRemove(song)} className="p-1.5 text-ink-faint hover:text-danger transition-colors" title="Remove">
                   <Trash2 className="w-4 h-4" />

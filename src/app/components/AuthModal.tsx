@@ -367,7 +367,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                         />
                       ))}
                     </div>
-                    <p className={cn('text-[11px] font-semibold', strengthTextColor)}>
+                    <p className={cn('text-[0.6875rem] font-semibold', strengthTextColor)}>
                       Password strength: {strengthLabel}
                     </p>
                   </div>

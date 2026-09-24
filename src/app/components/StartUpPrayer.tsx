@@ -203,7 +203,7 @@ export default function StartUpPrayer() {
               <p className="text-xs text-ink-muted font-semibold">Total Prayer Time</p>
               <p className="text-sm font-bold text-ink">
                 {formatTime(totalSeconds)}
-                <span className="text-ink-faint font-normal text-[11px] ml-1">
+                <span className="text-ink-faint font-normal text-[0.6875rem] ml-1">
                   · 30s Mercy · 30s Thanks · 30s Holy Spirit · rest shared
                 </span>
               </p>
@@ -279,7 +279,7 @@ export default function StartUpPrayer() {
         </div>
         <h3 className="text-xl font-bold text-ink mb-1">{currentStep?.title}</h3>
         <p className="text-ink-muted text-sm">{currentStep?.subtitle}</p>
-        <p className="text-ink-faint text-[11px] mt-1">‹ Swipe left for next</p>
+        <p className="text-ink-faint text-[0.6875rem] mt-1">‹ Swipe left for next</p>
       </div>
 
       {currentStep?.verse && (
@@ -306,7 +306,7 @@ export default function StartUpPrayer() {
             <div className="bg-card-2 rounded-xl p-3 border border-edge text-center">
               <Sparkles className="w-6 h-6 text-ink-ghost mx-auto mb-1" />
               <p className="text-ink-muted text-xs">No special prayers yet.</p>
-              <p className="text-ink-faint text-[10px] mt-0.5">Add them in the Prayer Workshop → Special Prayer.</p>
+              <p className="text-ink-faint text-[0.625rem] mt-0.5">Add them in the Prayer Workshop → Special Prayer.</p>
             </div>
           ) : (
             prayers.map((prayer, idx) => (
@@ -315,7 +315,7 @@ export default function StartUpPrayer() {
                 onClick={() => setSpecialOpenIndex(idx)}
                 className={cn('w-full text-left rounded-xl p-3 border-l-4 transition-all hover:brightness-95 active:scale-[0.99]', prayer.isAnswered ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge' : prayer.urgency === 'high' ? 'bg-card border-l-red-500 border border-edge' : 'bg-card border-l-edge-strong border border-edge')}
               >
-                <p className="text-[10px] font-semibold uppercase tracking-wider mb-1 text-ink-muted">🙏 {prayer.category} · Special Prayer</p>
+                <p className="text-[0.625rem] font-semibold uppercase tracking-wider mb-1 text-ink-muted">🙏 {prayer.category} · Special Prayer</p>
                 <h4 className="text-ink font-bold text-sm">{prayer.title}</h4>
                 {prayer.notes && <p className="text-ink-muted text-xs mt-1 italic line-clamp-2">{prayer.notes}</p>}
                 {prayer.scripture && <p className="text-acc-strong text-xs mt-1 italic">📖 {prayer.scripture}</p>}
@@ -336,7 +336,7 @@ export default function StartUpPrayer() {
       {currentStep?.isIntercessory && (
         <div className="mb-5 space-y-3">
           {!user && (
-            <p className="text-ink-faint text-[10px] text-center">
+            <p className="text-ink-faint text-[0.625rem] text-center">
               Sign in to have your prayer points saved and available here every time you pray.
             </p>
           )}
@@ -356,7 +356,7 @@ export default function StartUpPrayer() {
                   onClick={() => setIntercessoryOpenIndex(idx)}
                   className="w-full text-left bg-danger-soft/50 border border-danger-edge rounded-xl p-3 border-l-4 border-l-red-500 transition-all hover:brightness-95 active:scale-[0.99]"
                 >
-                  <p className="text-[10px] font-semibold uppercase tracking-wider mb-1 text-danger">🙏 {prayer.category} · Intercessory Prayer</p>
+                  <p className="text-[0.625rem] font-semibold uppercase tracking-wider mb-1 text-danger">🙏 {prayer.category} · Intercessory Prayer</p>
                   <h4 className="text-ink font-bold text-sm">{prayer.title}</h4>
                   {prayer.details && <p className="text-ink-muted text-xs mt-1 italic line-clamp-2">{prayer.details}</p>}
                 </button>
@@ -461,7 +461,7 @@ function FamilyPrayersList() {
                 : 'bg-card border-l-emerald-500 border border-edge'
             )}
           >
-            <p className="text-[10px] font-semibold uppercase tracking-wider mb-1 text-acc-strong">
+            <p className="text-[0.625rem] font-semibold uppercase tracking-wider mb-1 text-acc-strong">
               👨‍👩‍👧‍👦 {prayer.category} · {prayer.subCategory}
             </p>
             <h4 className="text-ink font-bold text-sm">{prayer.title}</h4>
