@@ -35,7 +35,7 @@ export default function SocialLinks() {
 
   return (
     <div className="flex flex-col items-center gap-2 mt-4">
-      <p className="text-ink-faint text-[10px] uppercase tracking-wider font-bold">Follow Us</p>
+      <p className="text-ink-faint text-[0.625rem] uppercase tracking-wider font-bold">Follow Us</p>
       <div className="flex items-center justify-center gap-3">
         {items.map(({ key, href, label, icon: Icon, className }) => (
           <a

@@ -68,7 +68,7 @@ export default function HomePage() {
                 <Flame className="w-6 h-6 md:w-8 md:h-8" />
               </div>
               <h3 className="font-bold text-sm md:text-lg leading-tight">Write Prayer Point</h3>
-              <p className="text-emerald-50 text-[11px] md:text-xs font-semibold mt-1">Prayer Workshop</p>
+              <p className="text-emerald-50 text-[0.6875rem] md:text-xs font-semibold mt-1">Prayer Workshop</p>
             </Link>
 
             <Link
@@ -79,7 +79,7 @@ export default function HomePage() {
                 <Sparkles className="w-6 h-6 md:w-8 md:h-8" />
               </div>
               <h3 className="font-bold text-sm md:text-lg leading-tight">Start-Up Prayer</h3>
-              <p className="text-acc text-[11px] md:text-xs font-semibold mt-1">7-step guided</p>
+              <p className="text-acc text-[0.6875rem] md:text-xs font-semibold mt-1">7-step guided</p>
             </Link>
           </section>
 
@@ -100,7 +100,7 @@ export default function HomePage() {
                 <div key={a.id} className="bg-card-2 rounded-xl py-2.5 md:py-4 px-1 text-center border border-edge">
                   <span className="flex justify-center text-acc mb-1">{watchIcon(a.id)}</span>
                   <p className="text-ink font-bold text-sm md:text-base leading-none">{formatTime(a.time)}</p>
-                  <p className="text-ink-muted text-[9px] md:text-xs mt-1 truncate">{a.label}</p>
+                  <p className="text-ink-muted text-[0.5625rem] md:text-xs mt-1 truncate">{a.label}</p>
                 </div>
               ))}
             </div>
@@ -117,7 +117,7 @@ export default function HomePage() {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-ink font-bold text-sm md:text-base">Prayer Groups</h3>
-                <p className="text-ink-muted text-[11px] md:text-sm mt-0.5">
+                <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">
                   Pray together in teams{groups.length > 0 ? ` · ${groups.length} teams` : ''}
                 </p>
               </div>
@@ -136,7 +136,7 @@ export default function HomePage() {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-ink font-bold text-sm md:text-base">Prayer Network</h3>
-                <p className="text-ink-muted text-[11px] md:text-sm mt-0.5">Stand in the gap for others worldwide</p>
+                <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">Stand in the gap for others worldwide</p>
               </div>
               <ChevronRight className="w-4 h-4 text-ink-ghost shrink-0" />
             </div>
@@ -153,7 +153,7 @@ export default function HomePage() {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-ink font-bold text-sm md:text-base">KJV Bible</h3>
-                <p className="text-ink-muted text-[11px] md:text-sm mt-0.5">Read the full Bible by book &amp; chapter</p>
+                <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">Read the full Bible by book &amp; chapter</p>
               </div>
               <ChevronRight className="w-4 h-4 text-ink-ghost shrink-0" />
             </div>
@@ -171,7 +171,7 @@ export default function HomePage() {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-ink font-bold text-sm md:text-base">User Manual &amp; Benefits</h3>
-              <p className="text-ink-muted text-[11px] md:text-sm mt-0.5">Discover how this app transforms your prayer life — and the spiritual power of each feature</p>
+              <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">Discover how this app transforms your prayer life — and the spiritual power of each feature</p>
             </div>
             <span className="text-ink-faint text-lg md:text-xl">›</span>
           </Link>
@@ -186,7 +186,7 @@ export default function HomePage() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-ink font-bold text-sm md:text-base">Become a Prayer Fire Partner</p>
-              <p className="text-ink-muted text-[11px] md:text-sm">Unlock the full intercessory community</p>
+              <p className="text-ink-muted text-[0.6875rem] md:text-sm">Unlock the full intercessory community</p>
             </div>
             <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-warn" />
           </Link>

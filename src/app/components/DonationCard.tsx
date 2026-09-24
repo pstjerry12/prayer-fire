@@ -150,7 +150,7 @@ export default function DonationCard() {
     <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
       {/* Live/test mode indicator */}
       <div className={cn(
-        'text-white text-[10px] font-bold text-center py-1.5 px-3 flex items-center justify-center gap-1.5',
+        'text-white text-[0.625rem] font-bold text-center py-1.5 px-3 flex items-center justify-center gap-1.5',
         isLiveMode ? 'bg-emerald-600' : 'bg-amber-600'
       )}>
         {isLiveMode ? '🔒 Secure giving via Flutterwave (Live)' : '🧪 Test mode — no real money moves'}
@@ -226,7 +226,7 @@ export default function DonationCard() {
             {paying ? 'Opening payment…' : 'Continue'}
           </button>
 
-          <p className="text-center text-ink-faint text-[10px] mt-2">
+          <p className="text-center text-ink-faint text-[0.625rem] mt-2">
             Secure giving via Flutterwave · 100% supports the prayer movement
           </p>
         </div>

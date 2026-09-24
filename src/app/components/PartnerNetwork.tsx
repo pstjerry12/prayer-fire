@@ -42,9 +42,9 @@ export default function PartnerNetwork() {
           <div className="flex items-center gap-2">
             <h2 className="font-bold text-ink">Partner Network</h2>
             {isPremium ? (
-              <span className="bg-acc-soft-2 text-acc-strong text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><Crown className="w-3 h-3" /> PREMIUM</span>
+              <span className="bg-acc-soft-2 text-acc-strong text-[0.625rem] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><Crown className="w-3 h-3" /> PREMIUM</span>
             ) : (
-              <span className="bg-card-3 text-ink-muted text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><Lock className="w-3 h-3" /> PREMIUM</span>
+              <span className="bg-card-3 text-ink-muted text-[0.625rem] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><Lock className="w-3 h-3" /> PREMIUM</span>
             )}
           </div>
         </div>
@@ -70,7 +70,7 @@ export default function PartnerNetwork() {
             <Link href="/partner" className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500 flex items-center justify-center gap-2">
               <Crown className="w-4 h-4" /> Upgrade to Prayer Fire Partner
             </Link>
-            <p className="text-ink-muted text-[10px]">7-day free trial • then choose a plan</p>
+            <p className="text-ink-muted text-[0.625rem]">7-day free trial • then choose a plan</p>
           </div>
         </div>
       )}

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 import AppShell from "./AppShell";
+import { textScaleScript } from "@/lib/textScale";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script dangerouslySetInnerHTML={{ __html: splashScript }} />
+        <script dangerouslySetInnerHTML={{ __html: textScaleScript }} />
       </head>
       <body className="bg-page text-ink antialiased">
         <AppShell>{children}</AppShell>

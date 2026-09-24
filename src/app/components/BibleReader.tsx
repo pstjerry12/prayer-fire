@@ -127,11 +127,11 @@ export default function BibleReader() {
       {/* ── Translation picker ───────────────────────────────────── */}
       <div className="flex items-center justify-between gap-3 bg-card rounded-2xl border border-edge px-4 py-3">
         <span className="text-xs font-semibold text-ink-muted">Translation</span>
-        <div className="relative">
+        <div className="relative min-w-0">
           <select
             value={translationId}
             onChange={(e) => changeTranslation(e.target.value as TranslationId)}
-            className="appearance-none bg-card-2 border border-edge-strong rounded-lg pl-3 pr-8 py-2 text-sm font-bold text-acc-strong cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="appearance-none bg-card-2 border border-edge-strong rounded-lg pl-3 pr-8 py-2 max-w-full truncate text-sm font-bold text-acc-strong cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
           >
             {BIBLE_TRANSLATIONS.map((t) => (
               <option key={t.id} value={t.id}>{t.shortName} — {t.name}</option>
@@ -142,7 +142,7 @@ export default function BibleReader() {
       </div>
 
       {/* ── Step indicator ───────────────────────────────────────── */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {STEPS.map((s, i) => (
           <div key={s.n} className="flex items-center gap-1.5">
             <button
@@ -166,7 +166,7 @@ export default function BibleReader() {
       {/* ── PAGE 1: Choose a book ────────────────────────────────── */}
       {step === 1 && (
         <div className="bg-card rounded-2xl border border-edge p-5">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-ink-muted mb-3 flex items-center gap-1">
+          <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-ink-muted mb-3 flex items-center gap-1">
             <BookMarked className="w-3.5 h-3.5" /> Choose a book
           </p>
           <div className="grid sm:grid-cols-2 gap-3">
@@ -196,7 +196,7 @@ export default function BibleReader() {
               </select>
             </label>
           </div>
-          <p className="text-[11px] text-ink-muted mt-3">Tap a book to see its chapters.</p>
+          <p className="text-[0.6875rem] text-ink-muted mt-3">Tap a book to see its chapters.</p>
         </div>
       )}
 
@@ -207,7 +207,7 @@ export default function BibleReader() {
             <button onClick={() => setStep(1)} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc">
               <ChevronLeft className="w-4 h-4" /> Books
             </button>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1">
+            <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1">
               <ListOrdered className="w-3.5 h-3.5" /> Chapters of {book}
             </p>
             <span className="text-xs font-semibold text-ink-muted">{currentBook.chapters} chapters</span>
@@ -235,7 +235,7 @@ export default function BibleReader() {
               <button onClick={() => setStep(2)} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc">
                 <ChevronLeft className="w-4 h-4" /> Chapters
               </button>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1">
+              <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1">
                 <ListOrdered className="w-3.5 h-3.5" /> Verses in {book} {chapter}
               </p>
               <span className="text-xs font-semibold text-ink-muted">{verses?.length ?? '…'} verses</span>
@@ -271,7 +271,7 @@ export default function BibleReader() {
                   <h2 className="font-serif-heading text-lg font-bold text-ink truncate">
                     {book} {chapter}
                   </h2>
-                  <p className="text-[11px] text-ink-muted">{translationMeta.name}</p>
+                  <p className="text-[0.6875rem] text-ink-muted">{translationMeta.name}</p>
                 </div>
               </div>
               {verses && !loading && (
@@ -307,7 +307,7 @@ export default function BibleReader() {
                       selectedVerse === v.number ? 'bg-warn-soft ring-1 ring-warn-edge' : 'hover:bg-card-2'
                     )}
                   >
-                    <p className="text-[15px] leading-relaxed text-ink-soft">
+                    <p className="text-[0.9375rem] leading-relaxed text-ink-soft">
                       <sup className="mr-1.5 font-serif-heading font-bold text-acc-strong">{v.number}</sup>
                       {v.text}
                     </p>

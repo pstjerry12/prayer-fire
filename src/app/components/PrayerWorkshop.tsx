@@ -43,7 +43,7 @@ function SpeechToTextButton({
         {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
       </button>
       {error && (
-        <div className="absolute right-0 top-full mt-1 text-[10px] text-danger bg-danger-soft px-2 py-1 rounded border border-danger-edge z-10">{error}</div>
+        <div className="absolute right-0 top-full mt-1 text-[0.625rem] text-danger bg-danger-soft px-2 py-1 rounded border border-danger-edge z-10">{error}</div>
       )}
     </>
   );
@@ -118,7 +118,7 @@ function FamilyPrayerSession() {
             <div className="flex items-center gap-2">
               {CATEGORY_ICONS[cat.name] || <Sparkles className="w-4 h-4 text-acc" />}
               <span className="text-ink text-sm font-medium">{cat.name}</span>
-              <span className="text-ink-faint text-[10px]">({cat.subCategories.reduce((acc, s) => acc + s.entries.length, 0)})</span>
+              <span className="text-ink-faint text-[0.625rem]">({cat.subCategories.reduce((acc, s) => acc + s.entries.length, 0)})</span>
             </div>
             {expandedCat === cat.id ? <ChevronUp className="w-4 h-4 text-ink-faint" /> : <ChevronDown className="w-4 h-4 text-ink-faint" />}
           </button>
@@ -133,7 +133,7 @@ function FamilyPrayerSession() {
                     <div className="flex items-center gap-2">
                       <span className="text-acc-strong text-xs font-semibold">{sub.name}</span>
                       {sub.entries.length > 0 && (
-                        <span className="bg-acc-soft-2 text-acc-strong text-[10px] px-1.5 py-0.5 rounded">
+                        <span className="bg-acc-soft-2 text-acc-strong text-[0.625rem] px-1.5 py-0.5 rounded">
                           {sub.entries.filter((e) => e.isAnswered).length}/{sub.entries.length}
                         </span>
                       )}
@@ -154,7 +154,7 @@ function FamilyPrayerSession() {
                         >
                           {editingId === entry.id ? (
                             <div className="space-y-2">
-                              <p className="text-acc-strong text-[10px] font-semibold flex items-center gap-1">
+                              <p className="text-acc-strong text-[0.625rem] font-semibold flex items-center gap-1">
                                 <Plus className="w-3 h-3" /> NEW ENTRY — [{sub.name}] · {cat.name}
                               </p>
                               <div className="relative">
@@ -303,7 +303,7 @@ function SpecialPrayerForm() {
           </div>
           {title.trim() && (
             <div className="pt-3 border-t border-edge">
-              <p className="text-ink-muted text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 mb-2"><Eye className="w-3 h-3" /> Preview:</p>
+              <p className="text-ink-muted text-[0.625rem] font-bold uppercase tracking-wider flex items-center gap-1 mb-2"><Eye className="w-3 h-3" /> Preview:</p>
               <div className={cn('rounded-xl p-4 border-l-4', urgency === 'high' ? 'bg-card border-l-red-500 border border-edge' : 'bg-card border-l-emerald-500 border border-edge')}>
                 <h4 className="text-ink font-bold text-base">[{category}] {title}</h4>
                 <p className="text-ink-muted text-xs flex items-center gap-1">{urgency === 'high' && '🔥 High Priority · '}Special Prayer{isPrivate && <Lock className="w-3 h-3" />}</p>
@@ -359,22 +359,22 @@ function IntercessoryForm() {
   return (
     <div className="space-y-3">
       <div className="bg-danger-soft/50 rounded-xl p-3 border border-danger-edge">
-        <p className="text-danger-strong text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
-          <span className="w-4 h-4 rounded-full bg-red-600 text-white text-[9px] flex items-center justify-center">1</span> Who are you praying for?
+        <p className="text-danger-strong text-[0.625rem] font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+          <span className="w-4 h-4 rounded-full bg-red-600 text-white text-[0.5625rem] flex items-center justify-center">1</span> Who are you praying for?
         </p>
         <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full bg-card rounded-lg px-3 py-2 text-sm text-ink border border-edge-strong focus:outline-none focus:ring-2 focus:ring-red-500/40">
           {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
         </select>
       </div>
       <div className="bg-danger-soft/50 rounded-xl p-3 border border-danger-edge">
-        <p className="text-danger-strong text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
-          <span className="w-4 h-4 rounded-full bg-red-600 text-white text-[9px] flex items-center justify-center">2</span> Name or Title
+        <p className="text-danger-strong text-[0.625rem] font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+          <span className="w-4 h-4 rounded-full bg-red-600 text-white text-[0.5625rem] flex items-center justify-center">2</span> Name or Title
         </p>
         <input type="text" placeholder="e.g. Sister Mary, Pastor John" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full bg-card rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint border border-edge-strong focus:outline-none focus:ring-2 focus:ring-red-500/40" />
       </div>
       <div className="bg-danger-soft/50 rounded-xl p-3 border border-danger-edge">
-        <p className="text-danger-strong text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
-          <span className="w-4 h-4 rounded-full bg-red-600 text-white text-[9px] flex items-center justify-center">3</span> What are you praying for?
+        <p className="text-danger-strong text-[0.625rem] font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+          <span className="w-4 h-4 rounded-full bg-red-600 text-white text-[0.5625rem] flex items-center justify-center">3</span> What are you praying for?
         </p>
         <textarea placeholder="e.g. healing, salvation, breakthrough..." value={details} onChange={(e) => setDetails(e.target.value)} rows={3} className="w-full bg-card rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint border border-edge-strong resize-none focus:outline-none focus:ring-2 focus:ring-red-500/40" />
       </div>
@@ -387,11 +387,11 @@ function IntercessoryForm() {
         </p>
       )}
       {!user && (
-        <p className="text-ink-faint text-[10px] text-center">
+        <p className="text-ink-faint text-[0.625rem] text-center">
           Sign in to also see this in your Start-Up Prayer session — for now it&apos;s saved on this device only.
         </p>
       )}
-      <p className="text-danger/70 text-[10px] text-center italic">"Praying for others is standing in the gap for them"</p>
+      <p className="text-danger/70 text-[0.625rem] text-center italic">"Praying for others is standing in the gap for them"</p>
     </div>
   );
 }
@@ -544,9 +544,9 @@ export default function PrayerWorkshop() {
           <div className="w-8 h-8 rounded-lg bg-acc-soft-2 text-acc-strong flex items-center justify-center flex-shrink-0"><Heart className="w-4 h-4" /></div>
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm text-acc-strong">Session 1: My Family Prayers</p>
-            <p className="text-[10px] text-ink-muted">Cover your loved ones in prayer</p>
+            <p className="text-[0.625rem] text-ink-muted">Cover your loved ones in prayer</p>
           </div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-acc-soft-2 text-acc-strong">MY FAMILY</span>
+          <span className="text-[0.625rem] px-2 py-0.5 rounded-full font-semibold bg-acc-soft-2 text-acc-strong">MY FAMILY</span>
           {activeSession === 'family' ? <ChevronUp className="w-4 h-4 text-ink-faint flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-ink-faint flex-shrink-0" />}
         </button>
         {activeSession === 'family' && <div className="px-3 pb-3"><FamilyPrayerSession /></div>}
@@ -558,9 +558,9 @@ export default function PrayerWorkshop() {
           <div className="w-8 h-8 rounded-lg bg-card-3 text-ink-muted flex items-center justify-center flex-shrink-0"><StickyNote className="w-4 h-4" /></div>
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm text-ink">Session 2: Special Prayer</p>
-            <p className="text-[10px] text-ink-muted">Special prayer points for your own journey</p>
+            <p className="text-[0.625rem] text-ink-muted">Special prayer points for your own journey</p>
           </div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-card-3 text-ink-muted">FOR YOU</span>
+          <span className="text-[0.625rem] px-2 py-0.5 rounded-full font-semibold bg-card-3 text-ink-muted">FOR YOU</span>
           {activeSession === 'special' ? <ChevronUp className="w-4 h-4 text-ink-faint flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-ink-faint flex-shrink-0" />}
         </button>
         {activeSession === 'special' && <div className="px-3 pb-3"><SpecialPrayerForm /></div>}
@@ -572,9 +572,9 @@ export default function PrayerWorkshop() {
           <div className="w-8 h-8 rounded-lg bg-danger-soft-2 text-danger flex items-center justify-center flex-shrink-0"><Users className="w-4 h-4" /></div>
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm text-danger-strong">Session 3: Intercessory Prayer</p>
-            <p className="text-[10px] text-ink-muted">Standing in the gap for others</p>
+            <p className="text-[0.625rem] text-ink-muted">Standing in the gap for others</p>
           </div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-danger-soft-2 text-danger-strong">FOR OTHERS</span>
+          <span className="text-[0.625rem] px-2 py-0.5 rounded-full font-semibold bg-danger-soft-2 text-danger-strong">FOR OTHERS</span>
           {activeSession === 'intercessory' ? <ChevronUp className="w-4 h-4 text-ink-faint flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-ink-faint flex-shrink-0" />}
         </button>
         {activeSession === 'intercessory' && <div className="px-3 pb-3"><IntercessoryForm /></div>}

@@ -254,12 +254,12 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                   </div>
 
                   {/* Label */}
-                  <span className="text-ink font-semibold text-[11px] leading-tight mb-1.5">{appt.label}</span>
+                  <span className="text-ink font-semibold text-[0.6875rem] leading-tight mb-1.5">{appt.label}</span>
 
                   {/* Time (editable) — card expands full width so both pickers visible */}
                   {isEditing ? (
                     <div className="mb-2 flex flex-col gap-2">
-                      <label className="text-[10px] font-semibold text-ink-muted text-left">Set prayer time</label>
+                      <label className="text-[0.625rem] font-semibold text-ink-muted text-left">Set prayer time</label>
                       <div className="flex gap-2 items-center justify-center">
                         <select
                           value={appt.time.split(':')[0]}
@@ -300,7 +300,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                     onClick={() => toggleDone(appt)}
                     disabled={isEditing}
                     className={cn(
-                      'w-full py-2 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center gap-1',
+                      'w-full py-2 rounded-lg text-[0.625rem] font-bold transition-all flex items-center justify-center gap-1',
                       isDone
                         ? 'bg-emerald-600 text-white'
                         : 'bg-card-3 text-ink-muted hover:bg-acc-soft-2 hover:text-acc-strong border border-dashed border-edge-strong'
@@ -405,7 +405,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                   </span>
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-ink">Ring like an alarm</p>
-                    <p className="text-[11px] text-ink-muted leading-relaxed">
+                    <p className="text-[0.6875rem] text-ink-muted leading-relaxed">
                       Rings loudly for 5 minutes and wakes the screen, like a real alarm clock — not just a notification.
                     </p>
                   </div>
@@ -447,7 +447,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                       <span className="text-xl">{tone.emoji}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-ink">{tone.name}</p>
-                        <p className="text-[11px] text-ink-muted truncate">{tone.description}</p>
+                        <p className="text-[0.6875rem] text-ink-muted truncate">{tone.description}</p>
                       </div>
                       <button
                         onClick={() => { ensurePreloaded(); previewAlarmTone(tone.id); }}

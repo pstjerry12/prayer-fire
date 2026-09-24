@@ -59,7 +59,7 @@ export default function PartnerPage() {
                 return (
                   <div key={plan.id} className={cn('rounded-2xl border p-5 flex flex-col', plan.highlighted ? 'border-emerald-500 bg-acc-soft/50 shadow-lg shadow-emerald-500/10' : 'border-edge bg-card')}>
                     {plan.highlighted && (
-                      <span className="self-start mb-3 inline-flex items-center gap-1 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full"><Crown className="w-3 h-3" /> MOST POPULAR</span>
+                      <span className="self-start mb-3 inline-flex items-center gap-1 bg-emerald-600 text-white text-[0.625rem] font-bold px-2 py-0.5 rounded-full"><Crown className="w-3 h-3" /> MOST POPULAR</span>
                     )}
                     <div className="text-2xl mb-1">{plan.icon}</div>
                     <h3 className="text-ink font-bold">{plan.name}</h3>

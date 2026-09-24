@@ -79,14 +79,14 @@ export default function WisdomSection() {
           <div className="flex-1">
             <h2 className="font-bold text-ink text-lg">Learn to Pray</h2>
             <p className="text-ink-muted text-xs italic">The Pray 3x guide — pray three times a day</p>
-            <p className="text-ink-muted text-[11px]">From Pastor Jerry C.&apos;s book — to deepen your daily prayer life</p>
+            <p className="text-ink-muted text-[0.6875rem]">From Pastor Jerry C.&apos;s book — to deepen your daily prayer life</p>
           </div>
         </div>
         <div className="flex items-center gap-2 mt-3">
           <div className="flex-1 h-1.5 bg-card-3 rounded-full overflow-hidden">
             <div className="h-full bg-emerald-600 transition-all duration-500" style={{ width: `${(readCount / WISDOM_CHAPTERS.length) * 100}%` }} />
           </div>
-          <span className="text-acc-strong text-[10px] font-semibold">{readCount}/{WISDOM_CHAPTERS.length}</span>
+          <span className="text-acc-strong text-[0.625rem] font-semibold">{readCount}/{WISDOM_CHAPTERS.length}</span>
         </div>
       </div>
       <div className="p-4 space-y-2">
@@ -98,11 +98,11 @@ export default function WisdomSection() {
                 <div className="w-10 h-10 rounded-lg bg-acc-soft flex items-center justify-center text-xl flex-shrink-0">{chapter.icon}</div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-[10px] font-bold text-acc-strong uppercase tracking-wider">Chapter {chapter.id}</span>
-                    {isRead && <span className="bg-acc-soft-2 text-acc-strong text-[9px] px-1.5 py-0.5 rounded-full font-bold">✓ READ</span>}
+                    <span className="text-[0.625rem] font-bold text-acc-strong uppercase tracking-wider">Chapter {chapter.id}</span>
+                    {isRead && <span className="bg-acc-soft-2 text-acc-strong text-[0.5625rem] px-1.5 py-0.5 rounded-full font-bold">✓ READ</span>}
                   </div>
                   <h3 className="text-ink font-bold text-sm truncate">{chapter.title}</h3>
-                  <p className="text-ink-muted text-[11px] italic truncate">{chapter.subtitle}</p>
+                  <p className="text-ink-muted text-[0.6875rem] italic truncate">{chapter.subtitle}</p>
                 </div>
                 <ChevronRight className="w-4 h-4 text-ink-ghost group-hover:translate-x-1 group-hover:text-acc transition-transform" />
               </div>
