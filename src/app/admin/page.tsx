@@ -101,6 +101,7 @@ export default function AdminPage() {
   const [dailyYoutubeUrl, setDailyYoutubeUrl] = useState('');
   const [dailyYoutubeTitle, setDailyYoutubeTitle] = useState('');
   const [dailyYoutubeSubtitle, setDailyYoutubeSubtitle] = useState('');
+  const [androidLatestBuild, setAndroidLatestBuild] = useState('');
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState('');
 
@@ -132,6 +133,7 @@ export default function AdminPage() {
         setDailyYoutubeUrl(data.settings.daily_youtube_url || '');
         setDailyYoutubeTitle(data.settings.daily_youtube_title || '');
         setDailyYoutubeSubtitle(data.settings.daily_youtube_subtitle || '');
+        setAndroidLatestBuild(data.settings.android_latest_build || '');
       }
     }
   }, []);
@@ -770,6 +772,32 @@ export default function AdminPage() {
                 className="w-full mt-3 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
               >
                 <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save Daily Video'}
+              </button>
+            </div>
+
+            {/* App updates — Play Store prompt */}
+            <div className="bg-card border border-edge rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">📲</span>
+                <h2 className="font-bold text-ink text-lg">App Updates</h2>
+              </div>
+
+              <div className="bg-card-2 rounded-xl p-3 mb-3">
+                <p className="text-xs text-ink-muted">
+                  💡 Once a new Android release is <strong>live on the Play Store</strong>, enter its version code here (e.g. 13). Anyone on an older build sees a &quot;New version available&quot; bar with an Update button the next time they open the app. Leave blank to turn the prompt off. Web-only updates don&apos;t need this — they reach everyone automatically, with a one-tap Refresh if the app was left open.
+                </p>
+              </div>
+
+              <label className="text-xs font-semibold text-ink-muted block mb-1">Latest Android version code on the Play Store</label>
+              <input type="number" inputMode="numeric" min={1} placeholder="e.g. 13" value={androidLatestBuild} onChange={(e) => setAndroidLatestBuild(e.target.value.replace(/[^0-9]/g, ''))}
+                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+
+              <button
+                onClick={() => saveSettings({ android_latest_build: androidLatestBuild })}
+                disabled={settingsSaving}
+                className="w-full mt-3 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save'}
               </button>
             </div>
 

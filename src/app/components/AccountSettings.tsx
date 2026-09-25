@@ -17,6 +17,7 @@ import {
   RefreshCw,
   Star,
   Type,
+  Sparkles,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { cn } from '../utils/cn';
@@ -39,6 +40,7 @@ interface Props {
   onSignIn: () => void;
   onSignOut: () => void;
   onOpenPrivacy: () => void;
+  onOpenWhatsNew: () => void;
 }
 
 export default function AccountSettings({
@@ -55,6 +57,7 @@ export default function AccountSettings({
   onSignIn,
   onSignOut,
   onOpenPrivacy,
+  onOpenWhatsNew,
 }: Props) {
   const [signingOut, setSigningOut] = useState(false);
   const [appVersion, setAppVersion] = useState<{ version: string; build: string } | null>(null);
@@ -283,6 +286,12 @@ export default function AccountSettings({
                   Version {appVersion.version} (build {appVersion.build})
                 </p>
               )}
+              <button
+                onClick={onOpenWhatsNew}
+                className="mt-3 mr-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-card border border-edge-strong rounded-full text-ink-soft text-xs font-semibold hover:bg-card-3 transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5" /> What&apos;s new
+              </button>
               <a
                 href={PLAY_STORE_URL}
                 target="_blank"

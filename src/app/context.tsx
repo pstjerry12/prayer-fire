@@ -27,6 +27,7 @@ import { getStoredUser, fetchMe, apiLogout, apiDeleteAccount, storeSession } fro
 import { saveSongBlob, deleteSongBlob } from '@/lib/audioStore';
 import { listenAuthDeepLink, closeInAppBrowser } from '@/lib/capacitorAlarm';
 import { applyTextScale, getStoredTextScale } from '@/lib/textScale';
+import { LATEST_RELEASE, WHATS_NEW_SEEN_KEY } from './data/whatsNew';
 
 // useNativeAlarm defaults to true so every user gets the loud, full-screen
 // "ring like an alarm" experience out of the box (Android only — a no-op
@@ -115,6 +116,9 @@ interface AppContextValue {
   setShowDailyVerse: Dispatch<SetStateAction<boolean>>;
   showDailyWisdom: boolean;
   setShowDailyWisdom: Dispatch<SetStateAction<boolean>>;
+  showWhatsNew: boolean;
+  openWhatsNew: () => void;
+  closeWhatsNew: () => void;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
   songs: WorshipSong[];
@@ -205,6 +209,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [showPricing, setShowPricing] = useState(false);
   const [showDailyVerse, setShowDailyVerse] = useState(false);
   const [showDailyWisdom, setShowDailyWisdom] = useState(false);
+  const [showWhatsNew, setShowWhatsNew] = useState(false);
+  const [whatsNewPending, setWhatsNewPending] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'light';
     return localStorage.getItem('pfm_theme') === 'dark' ? 'dark' : 'light';
@@ -496,18 +502,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Prompt to sign in once per device (after daily devotionals)
   useEffect(() => {
     if (!authChecked || user) return;
-    if (showDailyVerse || showDailyWisdom) return;
+    if (showDailyVerse || showDailyWisdom || whatsNewPending || showWhatsNew) return;
     if (typeof window !== 'undefined' && localStorage.getItem('pfm_auth_prompted')) return;
     setShowAuth(true);
     localStorage.setItem('pfm_auth_prompted', '1');
-  }, [authChecked, user, showDailyVerse, showDailyWisdom]);
+  }, [authChecked, user, showDailyVerse, showDailyWisdom, whatsNewPending, showWhatsNew]);
 
-  // Daily devotionals
+  // Daily devotionals + "What's New" after an update
   useEffect(() => {
     const lastDailyShown = localStorage.getItem('upp_daily_devotion_shown');
     const today = new Date().toDateString();
     if (lastDailyShown !== today) setShowDailyVerse(true);
+
+    if (LATEST_RELEASE && localStorage.getItem(WHATS_NEW_SEEN_KEY) !== LATEST_RELEASE.id) {
+      // Existing users get the release notes; a brand-new install (never
+      // finished a daily devotional) starts fresh without them.
+      if (lastDailyShown) setWhatsNewPending(true);
+      else localStorage.setItem(WHATS_NEW_SEEN_KEY, LATEST_RELEASE.id);
+    }
   }, []);
+
+  // Show "What's New" once the daily devotionals are out of the way
+  useEffect(() => {
+    if (whatsNewPending && !showDailyVerse && !showDailyWisdom) setShowWhatsNew(true);
+  }, [whatsNewPending, showDailyVerse, showDailyWisdom]);
+
+  const openWhatsNew = () => setShowWhatsNew(true);
+  const closeWhatsNew = () => {
+    setShowWhatsNew(false);
+    setWhatsNewPending(false);
+    if (LATEST_RELEASE) localStorage.setItem(WHATS_NEW_SEEN_KEY, LATEST_RELEASE.id);
+  };
 
   // Persist data
   useEffect(() => {
@@ -656,6 +681,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setShowDailyVerse,
         showDailyWisdom,
         setShowDailyWisdom,
+        showWhatsNew,
+        openWhatsNew,
+        closeWhatsNew,
         theme,
         toggleTheme,
         songs,

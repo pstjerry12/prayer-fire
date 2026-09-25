@@ -7,6 +7,8 @@ import AccountSettings from './components/AccountSettings';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import DailyVerseModal from './components/DailyVerseModal';
 import DailyWisdomModal from './components/DailyWisdomModal';
+import WhatsNewModal from './components/WhatsNewModal';
+import UpdateBanner from './components/UpdateBanner';
 import BottomNav from './components/BottomNav';
 import PrayerAlarm from './components/PrayerAlarm';
 import SplashScreen from './components/SplashScreen';
@@ -40,6 +42,9 @@ function Overlays() {
     setShowDailyVerse,
     showDailyWisdom,
     setShowDailyWisdom,
+    showWhatsNew,
+    closeWhatsNew,
+    openWhatsNew,
     upgrade,
   } = useApp();
 
@@ -53,7 +58,7 @@ function Overlays() {
     localStorage.setItem('upp_daily_devotion_shown', new Date().toDateString());
   };
 
-  const anyModalOpen = showAuth || showPrivacy || showSettings || showPricing || showDailyVerse || showDailyWisdom;
+  const anyModalOpen = showAuth || showPrivacy || showSettings || showPricing || showDailyVerse || showDailyWisdom || showWhatsNew;
 
   return (
     <>
@@ -74,9 +79,11 @@ function Overlays() {
         onSignIn={() => setShowAuth(true)}
         onSignOut={signOut}
         onOpenPrivacy={() => setShowPrivacy(true)}
+        onOpenWhatsNew={() => { setShowSettings(false); openWhatsNew(); }}
       />
       <DailyVerseModal isOpen={showDailyVerse} onClose={handleDailyVerseClose} />
       <DailyWisdomModal isOpen={showDailyWisdom} onClose={handleDailyWisdomClose} />
+      <WhatsNewModal isOpen={showWhatsNew} onClose={closeWhatsNew} />
       {!anyModalOpen && <BottomNav />}
     </>
   );
@@ -103,6 +110,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <RouteMemory />
       <PrayerAlarm />
       <NotificationPermission />
+      <UpdateBanner />
       <BackButtonExit />
       <PullToRefresh>{children}</PullToRefresh>
       <Overlays />
