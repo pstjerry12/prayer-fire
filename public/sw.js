@@ -40,6 +40,9 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
+  // Update checks must always hit the network, never the cache
+  if (url.pathname === '/api/app-version') return;
+
   // ── Navigation (HTML pages) ──────────────────────────────────────
   if (req.mode === 'navigate') {
     event.respondWith(
