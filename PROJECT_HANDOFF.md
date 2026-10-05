@@ -129,17 +129,18 @@ prayer-fire/
 │       │   ├── AlarmStore.kt          persists scheduled alarms (SharedPreferences)
 │       │   └── BootReceiver.kt        re-schedules after reboot
 │       └── res/raw/              alarm tones: beep, bells, chime, classic, digital, praise (.wav)
-├── docs/PLAYSTORE-RELEASE.md     full Play Store launch guide (store listing copy, data safety, testing gate, updates)
+├── docs/
+│   ├── PLAYSTORE-RELEASE.md      full Play Store launch guide (store listing copy, data safety, testing gate, updates)
+│   └── payments/PAYSTACK-*.txt   old Paystack KYC/SCUML email drafts (private; moved out of public/ in PR #62)
 ├── public/
 │   ├── sw.js                     service worker (offline cache; /api/app-version bypassed)
 │   ├── manifest.webmanifest, manifest.json, logo.png, icons, sounds
-│   ├── SALES-PITCH.md, sales-pitch.txt   marketing copy
-│   └── PAYSTACK-*.txt            ⚠ old payment-provider KYC email drafts — see Known Issues
+│   └── SALES-PITCH.md, sales-pitch.txt   marketing copy (intentionally public)
 ├── scripts/
 │   ├── build-mobile.sh, verify-android.sh, prepare-android-webdir.sh
 │   ├── generate-keystore.sh, generate-android-assets.sh, generate-store-assets.sh
-│   ├── web/fallback.html          offline fallback page copied into Capacitor webDir (out/)
-│   └── scripts/…                  ⚠ accidental duplicate nested copies — see Known Issues
+│   ├── generate-alarm-sounds.js   regenerates the alarm tone WAVs (node scripts/generate-alarm-sounds.js)
+│   └── web/fallback.html          offline fallback page copied into Capacitor webDir (out/)
 ├── store-assets/                 Play listing graphics (icon 512, feature graphic, screenshot template)
 ├── supabase/
 │   ├── rls.sql                   Row Level Security policies — re-run after every drizzle-kit push
@@ -412,7 +413,7 @@ Clearing app data on a phone wipes all of the above (except server-synced interc
 - **Premium tiers (Partner/Leader) currently charge nothing.** The trial is a free on-device flag, so there is no policy problem today.
 - **⚠ Rule for the future:** if the owner wants to actually charge for Partner/Leader (digital subscriptions), the **Android app MUST use Google Play Billing**. Use a Play Billing library or a Capacitor plugin with server-side purchase verification. **Never** charge for subscriptions through Flutterwave inside the Android app. That is the most likely cause of a Play removal. Google's fee on subscriptions is 15%. Web-only users can be charged through other providers, but the Android app must not link out to them for that purchase.
 - In Play Console → App content, answer **"No in-app purchases"** until Play Billing exists.
-- History: payments started on **Paystack** and were moved to **Flutterwave**. Paystack required SCUML/KYC documents for a religious organisation, and those drafts are the `public/PAYSTACK-*.txt` files.
+- History: payments started on **Paystack** and were moved to **Flutterwave**. Paystack required SCUML/KYC documents for a religious organisation, and those drafts are now in `docs/payments/PAYSTACK-*.txt`. They contain the owner's legal details, so keep them out of `public/`.
 
 ---
 
@@ -507,17 +508,19 @@ Notes:
 4. **Legacy demo Google route** `POST /api/auth/google` creates or reuses a demo account (`demo.google@prayerfire.example`). It is unused by the UI and should be deleted.
 5. **`JWT_SECRET` has a hard-coded fallback** in `src/lib/auth.ts`. If the env var were ever missing in production, tokens would be signed with a public value. Consider throwing in production instead.
 6. **Donation verification "demo fallback":** if no Flutterwave secret key is configured at all, `/api/donations` records donations as `success` without verification. That's fine while the live key is set, but risky if it is removed.
-7. **`public/PAYSTACK-*.txt` and `public/SALES-PITCH.md` / `sales-pitch.txt` are publicly downloadable** from the live site. The Paystack files are KYC/SCUML email drafts with the owner's legal details. They should move out of `public/` (e.g. into `docs/`, or be deleted).
-8. **Stray files in the repo root:** `12`, `123` (1-byte files) and `cloud` (empty, also listed in `.gitignore`). There are also duplicate nested copies under `scripts/scripts/` and `scripts/scripts/scripts/`. All are safe to delete.
-9. **Lint is not clean.** `npm run lint` reports pre-existing errors (mainly `react-hooks/set-state-in-effect` and `react/no-unescaped-entities`, e.g. `AccountSettings.tsx`, `admin/page.tsx`). CI runs only `tsc` and `next build`. New code should lint clean.
-10. **`package.json` name is still `nextjs-postgresql-template`** (cosmetic).
-11. **Pricing FX rates are hard-coded** in `pricingPlans.ts` (e.g. NGN 1500/USD) and go stale.
-12. **The service worker caches same-origin GETs cache-first** (stale-while-revalidate), including most `/api/*` responses. Users may briefly see stale announcements and testimonials until the background refresh. `/api/app-version` is explicitly bypassed.
-13. **Earlier "app froze / blank white screen after the alarm" report:**
+7. **Paystack KYC drafts were publicly downloadable until PR #62.** They have been moved from `public/` to `docs/payments/`, so the live site no longer serves them. Two caveats remain:
+   - They are still in git history.
+   - Older immutable Vercel deployment URLs may still serve them.
+   If the repo is or becomes public, consider deleting them and purging history.
+8. **Lint is not clean.** `npm run lint` reports pre-existing errors (mainly `react-hooks/set-state-in-effect` and `react/no-unescaped-entities`, e.g. `AccountSettings.tsx`, `admin/page.tsx`). CI runs only `tsc` and `next build`. New code should lint clean.
+9. **`package.json` name is still `nextjs-postgresql-template`** (cosmetic).
+10. **Pricing FX rates are hard-coded** in `pricingPlans.ts` (e.g. NGN 1500/USD) and go stale.
+11. **The service worker caches same-origin GETs cache-first** (stale-while-revalidate), including most `/api/*` responses. Users may briefly see stale announcements and testimonials until the background refresh. `/api/app-version` is explicitly bypassed.
+12. **Earlier "app froze / blank white screen after the alarm" report:**
     - No code cause was found, and all deployments were READY.
     - It was most likely the phone's network reconnecting after Doze woke it for the alarm, since the WebView loads the live site.
     - A "Reconnecting…" UI was offered but not built.
-14. **One historical donation stuck `pending`** (made before the secret key was fixed). Expected; leave it.
+13. **One historical donation stuck `pending`** (made before the secret key was fixed). Expected; leave it.
 
 ---
 
@@ -527,8 +530,6 @@ Notes:
    - **If rejected:** read the reasons, strengthen the tester engagement and feedback answers, and re-apply. Google may require another 14-day test.
 2. Keep testers engaged. Keep ≥ 12 opted in, and add a buffer of 2–3. Add a `whatsNew.ts` entry with every user-visible change.
 3. **Housekeeping:**
-   - Move or delete `public/PAYSTACK-*.txt` (privacy).
-   - Delete stray root files and the `scripts/scripts/` duplicates.
    - Delete the demo `POST /api/auth/google` route.
    - Make `JWT_SECRET` mandatory in production.
 4. Fix the Home-page hydration mismatch (#418) at its root.
