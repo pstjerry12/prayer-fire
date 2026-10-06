@@ -1,7 +1,7 @@
 # Prayer Fire — Project Handoff
 
 > **Read this first.** This file is the single source of truth for resuming work on Prayer Fire in a fresh session.
-> Last updated: **2026-10-05**. `main` is at `518edf9` ("Tell users about updates: What's New popup and update prompts (#61)").
+> Last updated: **2026-10-06**, after Google's first production-access rejection and the in-app feedback feature (PR #63).
 > No secrets appear in this file. Credentials are listed by **name only**, with where they live.
 
 ---
@@ -26,7 +26,7 @@
 | Live web app | `https://prayer-fire.vercel.app` (Vercel, Next.js) |
 | GitHub repo | `pstjerry12/prayer-fire` |
 | Play Store URL | `https://play.google.com/store/apps/details?id=com.prayerfireaction.prayerfire` (`PLAY_STORE_URL` in `src/lib/capacitorAlarm.ts`) |
-| Current Android version | `versionCode 12`, `versionName "1.0.11"` (`android/variables.gradle`) |
+| Current Android version | `versionCode 13`, `versionName "1.0.12"` in `android/variables.gradle`. Build 13 was prepared for the second closed test; check Play Console for what is actually uploaded. |
 
 ### Working with the owner (important for any assistant)
 - The owner is **non-technical**. They usually send phone screenshots, often of Play Console, Vercel or Flutterwave. Explain things in plain language with numbered click-by-click steps.
@@ -320,7 +320,11 @@ Light/dark toggle (`pfm_theme`), applied pre-paint.
 
 ### Admin back office (`/admin`) ✅
 - Access is granted to users whose `role = 'admin'`. The account whose email equals `ADMIN_EMAIL` is auto-promoted (self-healing in `getAdminUser`).
-- Tabs: overview, users, requests (partner wall moderation), testimonials, donations, announcements, events, settings.
+- Tabs: overview, users, **feedback**, requests (partner wall moderation), testimonials, donations, announcements, events, settings.
+- The **Feedback** tab:
+  - lists in-app feedback, newest first;
+  - lets the admin set a status (New / Planned / Done) and a resolution note (e.g. "Fixed in build 14");
+  - has a **Copy log** button that copies a dated "feedback → what we did" log for the Play Console production application.
 - The Settings tab has these cards:
   - Flutterwave public/secret key (stored in DB)
   - Pricing
@@ -328,6 +332,13 @@ Light/dark toggle (`pfm_theme`), applied pre-paint.
   - Daily Morning Exaltation video
   - **App Updates** (`android_latest_build`)
   - App Status (JWT / Google / Admin email / Flutterwave live checks)
+
+### In-app feedback (PR #63) ✅
+- **Settings → Send Feedback**, plus a "Have feedback? Tell us 💬" link under the What's New popup.
+- The form (`FeedbackModal.tsx`) has a category (🐞 Problem / 💡 Idea / 🙏 Praise / 💬 Other), a message (≤ 2000 characters), and optional name and contact, prefilled when signed in.
+- It sends app version/build, platform and current page automatically.
+- `POST /api/feedback` is public and links `user_id` when a Bearer token or cookie is present. Data goes into the `feedback` table, which is private (RLS on, no policies).
+- **Why it exists:** Google rejected production access for weak tester engagement and feedback. This gives testers an easy channel and gives us a dated record of feedback and fixes.
 
 ### Legal ✅
 `/privacy`, `/terms` and `LegalModal` (text in `src/app/data/legal.ts`).
@@ -348,6 +359,7 @@ Not started. There is no `ios/` project, and the AlarmEngine is Android-only.
 | `announcements` | title, body |
 | `testimonials` | name (null if anonymous), location, testimony, is_anonymous, approved |
 | `intercessory_prayers` | user_id (private per user), category, title, details, is_answered |
+| `feedback` | In-app tester feedback: user_id (nullable), name, contact, category (`bug`/`idea`/`praise`/`other`), message, app_version, platform, page, status (`new`/`planned`/`done`), resolution (admin note). Private: RLS on, no policies. Created in production on 2026-10-06 via Supabase migration `create_feedback_table`. |
 | `events` | title, description, date (ISO string), time, link |
 | `app_settings` | key/value store, edited from Admin. Keys in use: `flutterwave_public_key`, `flutterwave_secret_key`, `price_partner_monthly`, `price_partner_yearly`, `price_leader_monthly`, `price_leader_yearly`, `social_youtube`, `social_facebook`, `social_instagram`, `social_whatsapp`, `social_tiktok`, `daily_youtube_url`, `daily_youtube_title`, `daily_youtube_subtitle`, `android_latest_build` |
 
@@ -366,6 +378,7 @@ Not started. There is no `ios/` project, and the AlarmEngine is Android-only.
 | `pricing-config`, `social-links`, `announcements`, `testimonials`, `partner-requests`, `intercessory-prayers` | Public / user content |
 | `app-version` (GET, public, `force-dynamic`, `no-store`) | `{ build, androidLatestBuild }`; DB lookup has a 3 s timeout |
 | `health` (GET) | `select 1` DB check |
+| `feedback` (POST, public) / `admin/feedback` (GET, PATCH, DELETE) | In-app feedback; admin can update status/resolution |
 | `admin/*` (me, stats, users, partner-requests, testimonials, donations, announcements, events, settings) | All gated by `getAdminUser` |
 
 ---
@@ -490,9 +503,23 @@ Notes:
 
 ---
 
-## 11. Google Play status (as of 2026-10-05)
-- **Closed testing track:** active with 12+ testers. The 14-day continuous requirement was met.
-- **Production access:** **applied Saturday 2026-10-03, 11:41 PM**, and is under Google's review (usually ≤ 7 days). The answers submitted describe the closed-test feedback and fixes: alarm reliability, Stop button, Google sign-in, Text Size, What's New, back button, and so on.
+## 11. Google Play status (as of 2026-10-06)
+- **Closed testing track:** active with 12+ testers.
+- **Production access, first attempt: REJECTED on 2026-10-06** ("More testing required"). The application was submitted on 2026-10-03.
+  - Google's stated possible reasons: testers were not engaged during the closed test, or testing best practices weren't followed (gathering feedback and acting on it **through updates to the app**).
+  - Google requires **another 14 days of closed testing with real testers** before re-applying.
+- **Our diagnosis:** Google only sees Play-side signals:
+  1. testers installing from Play and opening the app;
+  2. private feedback sent through the Play Store;
+  3. **new builds uploaded to the closed-testing track**.
+
+  Almost all of our ~30 fixes shipped as **web (Vercel) updates**, which Google cannot see. Only about 3 new AABs were uploaded during the first test.
+- **Plan for the second test (2026-10-06 → about 2026-10-20):**
+  - Keep ≥ 12 (ideally 15) real testers, each installed **from the Play testing link** and opening the app daily.
+  - Ask testers to send **private feedback from the Play Store listing**, in addition to in-app feedback.
+  - **Upload a new closed-testing build every 4–5 days** (versionCode 13, 14, 15…), each with release notes describing the tester feedback it addresses.
+  - Log feedback and resolutions in Admin → Feedback.
+  - Re-apply around 2026-10-20 with answers built from that log.
 - **Android developer verification:** package `com.prayerfireaction.prayerfire` is **Registered** with 3 keys. No action needed. The app is distributed only through Play, so the "register keys for outside-Play distribution" banner can be dismissed. Its friendly name still reads "Prayer Fire Movement", which is cosmetic and optional to change.
 - Store listing guide and data-safety answers: `docs/PLAYSTORE-RELEASE.md`.
 
@@ -525,9 +552,11 @@ Notes:
 ---
 
 ## 13. Next tasks (prioritised)
-1. **Watch for Google's production-access decision** (expected around 2026-10-10).
-   - **If approved:** Play Console → Production → Create new release → "Add from library" (the current closed-test build, versionCode 12). Start a **staged rollout of about 20%**, then go to 100%. Set `android_latest_build = 12` once it is live.
-   - **If rejected:** read the reasons, strengthen the tester engagement and feedback answers, and re-apply. Google may require another 14-day test.
+1. **Run the second 14-day closed test (see §11).**
+   - Build 13 carries the in-app feedback feature.
+   - Ship builds 14 and 15 a few days apart, each fixing real tester feedback, with Play release notes.
+   - Re-apply around 2026-10-20. Use Admin → Feedback → Copy log for the "feedback summary" and "changes made" answers.
+   - **Once approved:** Play Console → Production → Create new release → "Add from library" (latest closed-test build). Start a **staged rollout of about 20%**, then go to 100%. Set `android_latest_build` to that versionCode once it is live.
 2. Keep testers engaged. Keep ≥ 12 opted in, and add a buffer of 2–3. Add a `whatsNew.ts` entry with every user-visible change.
 3. **Housekeeping:**
    - Delete the demo `POST /api/auth/google` route.
@@ -544,6 +573,8 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
+| #63 | In-app Send Feedback (Settings + What's New link), `feedback` table, Admin → Feedback tab with Copy log; versionCode 13 (1.0.12) for the second closed test |
+| #62 | PROJECT_HANDOFF.md; Paystack drafts moved out of `public/`; stray files removed |
 | #61 | What's New popup + update banner (web build SHA / Play `android_latest_build`), `/api/app-version`, SW bypass |
 | #60 | App-wide Text Size setting, px→rem font conversion, "Aa" shortcut, Bible picker overflow fixes |
 | #59 | Alarm no longer "comes back" after Stop (skip duplicate local notification on Android); credit → "Pastor Jerry C." |

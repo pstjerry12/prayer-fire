@@ -13,6 +13,15 @@ export interface WhatsNewRelease {
 
 export const WHATS_NEW: WhatsNewRelease[] = [
   {
+    id: '2026-10-06',
+    date: 'October 2026',
+    title: 'Tell us what you think',
+    items: [
+      { emoji: '💬', text: 'New “Send Feedback” button in Settings — report a problem or share an idea in seconds. Every message goes straight to the Prayer Fire team.' },
+      { emoji: '🛠️', text: 'Your feedback shapes each update. Thank you for testing Prayer Fire!' },
+    ],
+  },
+  {
     id: '2026-09-25',
     date: 'September 2026',
     title: 'Easier reading & a quieter alarm',

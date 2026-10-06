@@ -117,6 +117,8 @@ interface AppContextValue {
   showDailyWisdom: boolean;
   setShowDailyWisdom: Dispatch<SetStateAction<boolean>>;
   showWhatsNew: boolean;
+  showFeedback: boolean;
+  setShowFeedback: Dispatch<SetStateAction<boolean>>;
   openWhatsNew: () => void;
   closeWhatsNew: () => void;
   theme: 'light' | 'dark';
@@ -210,6 +212,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [showDailyVerse, setShowDailyVerse] = useState(false);
   const [showDailyWisdom, setShowDailyWisdom] = useState(false);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [whatsNewPending, setWhatsNewPending] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'light';
@@ -682,6 +685,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         showDailyWisdom,
         setShowDailyWisdom,
         showWhatsNew,
+        showFeedback,
+        setShowFeedback,
         openWhatsNew,
         closeWhatsNew,
         theme,
