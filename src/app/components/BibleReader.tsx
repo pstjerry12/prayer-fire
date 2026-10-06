@@ -22,7 +22,8 @@ function range(n: number): number[] {
   return Array.from({ length: n }, (_, i) => i + 1);
 }
 
-// 3-step reading flow: Book → Chapters → Verses
+// 3-step reading flow: Book → Chapters → Verses. Every step stays tappable at
+// all times (e.g. Book → pick again → jump straight back to Chapters/Verses).
 type Step = 1 | 2 | 3;
 
 const STEPS: { n: Step; label: string }[] = [
@@ -146,17 +147,16 @@ export default function BibleReader() {
         {STEPS.map((s, i) => (
           <div key={s.n} className="flex items-center gap-1.5">
             <button
-              onClick={() => s.n < step && setStep(s.n)}
+              onClick={() => setStep(s.n)}
+              aria-current={step === s.n ? 'step' : undefined}
               className={cn(
                 'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all',
                 step === s.n
                   ? 'bg-emerald-600 text-white'
-                  : s.n < step
-                    ? 'bg-acc-soft text-acc-strong'
-                    : 'bg-card-2 text-ink-muted'
+                  : 'bg-acc-soft text-acc-strong hover:brightness-95 active:scale-95'
               )}
             >
-              <span>{s.n}</span> {s.label}
+              {s.label}
             </button>
             {i < STEPS.length - 1 && <ChevronLeft className="w-3.5 h-3.5 text-ink-faint rotate-180" />}
           </div>
