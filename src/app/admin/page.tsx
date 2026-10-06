@@ -6,12 +6,12 @@ import {
   LayoutDashboard, Users, Globe, HandHeart, ChevronLeft, ShieldCheck,
   Trash2, Check, X, RefreshCw, Loader2, Search, Megaphone, Send, Crown, UserMinus,
   Settings, MessageSquareHeart, CalendarDays, DollarSign, Key, ExternalLink,
-  AlertTriangle, Flame, Eye, EyeOff, Plus, Edit3, Save, Link as LinkIcon,
+  AlertTriangle, Flame, Eye, EyeOff, Plus, Edit3, Save, Link as LinkIcon, MessageCircle, Copy,
 } from 'lucide-react';
 import { cn } from '@/app/utils/cn';
 import { extractYouTubeVideoId } from '@/app/utils/youtube';
 
-type Tab = 'overview' | 'users' | 'requests' | 'testimonials' | 'donations' | 'announcements' | 'events' | 'settings';
+type Tab = 'overview' | 'users' | 'feedback' | 'requests' | 'testimonials' | 'donations' | 'announcements' | 'events' | 'settings';
 
 interface Stats {
   users: number;
@@ -45,6 +45,19 @@ interface TestimonialRow {
   isAnonymous: boolean; approved: boolean; createdAt: string | null;
 }
 
+interface FeedbackItem {
+  id: string; userId: string | null; name: string | null; contact: string | null;
+  category: string; message: string; appVersion: string | null; platform: string | null;
+  page: string | null; status: string; resolution: string | null; createdAt: string | null;
+}
+
+const FEEDBACK_EMOJI: Record<string, string> = { bug: '🐞', idea: '💡', praise: '🙏', other: '💬' };
+const FEEDBACK_STATUS: { id: string; label: string; cls: string }[] = [
+  { id: 'new', label: 'New', cls: 'bg-amber-100 text-amber-700' },
+  { id: 'planned', label: 'Planned', cls: 'bg-blue-100 text-blue-700' },
+  { id: 'done', label: 'Done', cls: 'bg-acc-soft-2 text-acc-strong' },
+];
+
 interface EventRow {
   id: string; title: string; description: string | null; date: string;
   time: string | null; link: string | null; createdAt: string | null;
@@ -59,6 +72,9 @@ export default function AdminPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminName, setAdminName] = useState('');
   const [tab, setTab] = useState<Tab>('overview');
+  const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
+  const [resolutionDrafts, setResolutionDrafts] = useState<Record<string, string>>({});
+  const [feedbackCopied, setFeedbackCopied] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [requests, setRequests] = useState<RequestRow[]>([]);
@@ -110,6 +126,7 @@ export default function AdminPage() {
   const fetchRequests = useCallback(async () => { setLoading(true); const res = await fetch('/api/admin/partner-requests'); if (res.ok) setRequests((await res.json()).requests); setLoading(false); }, []);
   const fetchDonations = useCallback(async () => { setLoading(true); const res = await fetch('/api/admin/donations'); if (res.ok) setDonations((await res.json()).donations); setLoading(false); }, []);
   const fetchAnnouncements = useCallback(async () => { setLoading(true); const res = await fetch('/api/admin/announcements'); if (res.ok) setAnnouncements((await res.json()).announcements); setLoading(false); }, []);
+  const fetchFeedback = useCallback(async () => { setLoading(true); const res = await fetch('/api/admin/feedback'); if (res.ok) setFeedbackItems((await res.json()).feedback); setLoading(false); }, []);
   const fetchTestimonials = useCallback(async () => { setLoading(true); const res = await fetch('/api/admin/testimonials'); if (res.ok) setTestimonials((await res.json()).testimonials); setLoading(false); }, []);
   const fetchEvents = useCallback(async () => { setLoading(true); const res = await fetch('/api/admin/events'); if (res.ok) setEvents((await res.json()).events); setLoading(false); }, []);
   const fetchSettings = useCallback(async () => {
@@ -152,11 +169,12 @@ export default function AdminPage() {
     if (tab === 'users') fetchUsers();
     if (tab === 'requests') fetchRequests();
     if (tab === 'testimonials') fetchTestimonials();
+    if (tab === 'feedback') fetchFeedback();
     if (tab === 'donations') fetchDonations();
     if (tab === 'announcements') fetchAnnouncements();
     if (tab === 'events') fetchEvents();
     if (tab === 'settings') fetchSettings();
-  }, [tab, isAdmin, fetchStats, fetchUsers, fetchRequests, fetchDonations, fetchAnnouncements, fetchTestimonials, fetchEvents, fetchSettings]);
+  }, [tab, isAdmin, fetchStats, fetchUsers, fetchRequests, fetchDonations, fetchAnnouncements, fetchTestimonials, fetchEvents, fetchSettings, fetchFeedback]);
 
   const approveRequest = async (id: string, approved: boolean) => { await fetch('/api/admin/partner-requests', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, approved }) }); fetchRequests(); };
   const deleteRequest = async (id: string) => { if (!confirm('Delete this prayer request?')) return; await fetch(`/api/admin/partner-requests?id=${id}`, { method: 'DELETE' }); fetchRequests(); fetchStats(); };
@@ -172,6 +190,21 @@ export default function AdminPage() {
   };
   const deleteAnnouncement = async (id: string) => { if (!confirm('Delete?')) return; await fetch(`/api/admin/announcements?id=${id}`, { method: 'DELETE' }); fetchAnnouncements(); };
 
+  const updateFeedback = async (id: string, updates: { status?: string; resolution?: string }) => {
+    await fetch('/api/admin/feedback', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...updates }) });
+    fetchFeedback();
+  };
+  const deleteFeedback = async (id: string) => { if (!confirm('Delete this feedback?')) return; await fetch('/api/admin/feedback', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }); fetchFeedback(); };
+  // Plain-text log (feedback → what we did) — handy for the Play Console production application.
+  const copyFeedbackLog = async () => {
+    const lines = feedbackItems.slice().reverse().map((f) => {
+      const date = f.createdAt ? new Date(f.createdAt).toLocaleDateString() : '';
+      const who = f.name || 'Tester';
+      const done = f.resolution ? ` → ${f.resolution}` : '';
+      return `${date} · ${FEEDBACK_EMOJI[f.category] ?? '💬'} ${who} (${f.appVersion || f.platform || 'web'}): "${f.message}" [${f.status}]${done}`;
+    });
+    try { await navigator.clipboard.writeText(lines.join('\n')); setFeedbackCopied(true); setTimeout(() => setFeedbackCopied(false), 2500); } catch { /* clipboard blocked */ }
+  };
   const approveTestimonial = async (id: string, approved: boolean) => { await fetch('/api/admin/testimonials', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, approved }) }); fetchTestimonials(); };
   const deleteTestimonial = async (id: string) => { if (!confirm('Delete this testimony?')) return; await fetch('/api/admin/testimonials', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }); fetchTestimonials(); };
   const addTestimonial = async () => {
@@ -227,6 +260,7 @@ export default function AdminPage() {
   const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'users', label: 'Users', icon: Users },
+    { id: 'feedback', label: 'Feedback', icon: MessageCircle },
     { id: 'requests', label: 'Requests', icon: Globe },
     { id: 'testimonials', label: 'Testimonials', icon: MessageSquareHeart },
     { id: 'donations', label: 'Donations', icon: HandHeart },
@@ -366,6 +400,68 @@ export default function AdminPage() {
               </div>
             ))}
             {requests.length === 0 && <p className="text-center text-ink-muted text-sm py-8">No prayer requests yet.</p>}
+          </div>
+        )}
+
+        {/* ══════ FEEDBACK ══════ */}
+        {tab === 'feedback' && (
+          <div className="space-y-4">
+            <div className="bg-card border border-edge rounded-2xl p-4 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="font-bold text-ink">Tester Feedback</h2>
+                <p className="text-ink-muted text-xs">
+                  {feedbackItems.length} message{feedbackItems.length === 1 ? '' : 's'} · {feedbackItems.filter((f) => f.status === 'new').length} new.
+                  Record what you changed so you have a log for Google Play.
+                </p>
+              </div>
+              <button onClick={copyFeedbackLog} disabled={feedbackItems.length === 0}
+                className="shrink-0 flex items-center gap-1.5 px-3 py-2 bg-card-2 border border-edge rounded-lg text-xs font-semibold text-ink-soft hover:bg-card-3 disabled:opacity-50">
+                {feedbackCopied ? <Check className="w-3.5 h-3.5 text-acc" /> : <Copy className="w-3.5 h-3.5" />} {feedbackCopied ? 'Copied' : 'Copy log'}
+              </button>
+            </div>
+            <div className="bg-card border border-edge rounded-2xl overflow-hidden divide-y divide-edge">
+              {feedbackItems.map((f) => {
+                const status = FEEDBACK_STATUS.find((st) => st.id === f.status) ?? FEEDBACK_STATUS[0];
+                const draft = resolutionDrafts[f.id] ?? f.resolution ?? '';
+                return (
+                  <div key={f.id} className="p-4 space-y-2">
+                    <div className="flex items-start gap-2">
+                      <span className="text-lg leading-none" aria-hidden>{FEEDBACK_EMOJI[f.category] ?? '💬'}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                          <p className="text-ink font-semibold text-sm">{f.name || 'Anonymous'}</p>
+                          {f.contact && <span className="text-ink-muted text-xs">{f.contact}</span>}
+                          <span className={cn('text-[0.625rem] font-bold px-2 py-0.5 rounded-full', status.cls)}>{status.label.toUpperCase()}</span>
+                        </div>
+                        <p className="text-ink-faint text-[0.6875rem]">
+                          {f.createdAt ? new Date(f.createdAt).toLocaleString() : ''} · {f.platform || 'web'}{f.appVersion ? ` ${f.appVersion}` : ''}{f.page ? ` · ${f.page}` : ''}
+                        </p>
+                      </div>
+                      <button onClick={() => deleteFeedback(f.id)} className="p-1.5 text-ink-faint hover:text-danger" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                    <p className="text-ink-soft text-sm whitespace-pre-wrap">{f.message}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {FEEDBACK_STATUS.map((st) => (
+                        <button key={st.id} onClick={() => updateFeedback(f.id, { status: st.id })}
+                          className={cn('px-2.5 py-1 rounded-full text-xs font-semibold border', f.status === st.id ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-card border-edge text-ink-muted hover:bg-card-2')}>
+                          {st.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <input type="text" placeholder="What did we do? e.g. Fixed in build 13" value={draft}
+                        onChange={(e) => setResolutionDrafts((d) => ({ ...d, [f.id]: e.target.value }))}
+                        className="flex-1 min-w-0 bg-page border border-edge-strong rounded-lg px-3 py-1.5 text-xs text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                      <button onClick={() => updateFeedback(f.id, { resolution: draft })} disabled={draft === (f.resolution ?? '')}
+                        className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold disabled:opacity-40">
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              {feedbackItems.length === 0 && <p className="text-center text-ink-muted text-sm py-8">No feedback yet. Testers can send it from Settings → Send Feedback.</p>}
+            </div>
           </div>
         )}
 

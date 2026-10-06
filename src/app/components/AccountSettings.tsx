@@ -18,6 +18,7 @@ import {
   Star,
   Type,
   Sparkles,
+  MessageSquareHeart,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { cn } from '../utils/cn';
@@ -41,6 +42,7 @@ interface Props {
   onSignOut: () => void;
   onOpenPrivacy: () => void;
   onOpenWhatsNew: () => void;
+  onSendFeedback: () => void;
 }
 
 export default function AccountSettings({
@@ -58,6 +60,7 @@ export default function AccountSettings({
   onSignOut,
   onOpenPrivacy,
   onOpenWhatsNew,
+  onSendFeedback,
 }: Props) {
   const [signingOut, setSigningOut] = useState(false);
   const [appVersion, setAppVersion] = useState<{ version: string; build: string } | null>(null);
@@ -165,6 +168,19 @@ export default function AccountSettings({
                 <p className="text-ink-muted text-[0.625rem]">Intercessory</p>
               </div>
             </div>
+
+            {/* Feedback */}
+            <button
+              onClick={onSendFeedback}
+              className="w-full flex items-center gap-3 p-4 bg-acc-soft border border-acc-edge rounded-xl hover:bg-acc-soft-2/60 transition-all"
+            >
+              <MessageSquareHeart className="w-5 h-5 text-acc shrink-0" />
+              <div className="flex-1 text-left">
+                <p className="text-acc-strong font-bold text-sm">Send Feedback</p>
+                <p className="text-ink-muted text-xs">Report a problem or suggest an idea</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-acc" />
+            </button>
 
             {/* Text Size */}
             <div>

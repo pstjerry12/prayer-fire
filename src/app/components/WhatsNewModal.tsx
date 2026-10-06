@@ -6,9 +6,10 @@ import { LATEST_RELEASE } from '../data/whatsNew';
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  onSendFeedback: () => void;
 }
 
-export default function WhatsNewModal({ isOpen, onClose }: Props) {
+export default function WhatsNewModal({ isOpen, onClose, onSendFeedback }: Props) {
   if (!isOpen || !LATEST_RELEASE) return null;
   const release = LATEST_RELEASE;
 
@@ -44,6 +45,12 @@ export default function WhatsNewModal({ isOpen, onClose }: Props) {
               className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 transition-all"
             >
               Got it 🙏
+            </button>
+            <button
+              onClick={onSendFeedback}
+              className="w-full py-2 text-acc-strong text-sm font-semibold hover:underline"
+            >
+              Have feedback? Tell us 💬
             </button>
           </div>
         </div>

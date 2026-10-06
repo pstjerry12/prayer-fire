@@ -73,6 +73,25 @@ export const intercessoryPrayers = pgTable("intercessory_prayers", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// In-app feedback from testers/users (Settings → Send Feedback). Private —
+// only the admin sees it. `status` + `resolution` let the admin record what
+// was done about it (e.g. "Fixed in build 13"), which doubles as the
+// feedback log Google Play asks about when applying for production.
+export const feedback = pgTable("feedback", {
+  id: text("id").primaryKey(),
+  userId: text("user_id"),            // null when not signed in
+  name: text("name"),
+  contact: text("contact"),           // optional email/phone for follow-up
+  category: text("category").notNull().default("other"), // bug | idea | praise | other
+  message: text("message").notNull(),
+  appVersion: text("app_version"),    // e.g. "1.0.12 (13)", or null on web
+  platform: text("platform"),         // android | ios | web
+  page: text("page"),                 // path the user was on
+  status: text("status").notNull().default("new"), // new | planned | done
+  resolution: text("resolution"),     // admin note: what we changed and in which build
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Upcoming global prayer events/programs announced by admin.
 export const events = pgTable("events", {
   id: text("id").primaryKey(),
@@ -101,3 +120,4 @@ export type TestimonialRow = typeof testimonials.$inferSelect;
 export type EventRow = typeof events.$inferSelect;
 export type AppSettingRow = typeof appSettings.$inferSelect;
 export type IntercessoryPrayerRow = typeof intercessoryPrayers.$inferSelect;
+export type FeedbackRow = typeof feedback.$inferSelect;

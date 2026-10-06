@@ -35,8 +35,9 @@
 -- donations            | ON  | none          | giving history + Paystack references
 -- app_settings         | ON  | none          | holds the Paystack SECRET key
 -- intercessory_prayers | ON  | none          | private per-user prayer points
+-- feedback             | ON  | none          | private tester feedback (contact details)
 --
--- Total: 8 tables protected by RLS, 4 read-only policies. The four zero-policy
+-- Total: 9 tables protected by RLS, 4 read-only policies. The five zero-policy
 -- tables are not an oversight — with RLS enabled and no matching policy, the
 -- anon key gets *nothing*, which is exactly what those tables need.
 --
@@ -54,6 +55,7 @@ ALTER TABLE public.testimonials      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.events            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.app_settings      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.intercessory_prayers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.feedback          ENABLE ROW LEVEL SECURITY;
 
 -- 2. Public, curated, read-only content.
 DROP POLICY IF EXISTS "public read announcements" ON public.announcements;
@@ -72,14 +74,14 @@ DROP POLICY IF EXISTS "public read approved partner_requests" ON public.partner_
 CREATE POLICY "public read approved partner_requests" ON public.partner_requests
   FOR SELECT TO anon, authenticated USING (approved = true);
 
--- 3. users / donations / app_settings / intercessory_prayers get NO policies
+-- 3. users / donations / app_settings / intercessory_prayers / feedback get NO policies
 --    on purpose. Make sure nobody ever adds one, e.g. an "anon can read
 --    settings" policy would leak the Paystack secret key, and an "anon can
 --    read intercessory_prayers" policy would leak every user's private
 --    prayer requests to anyone with the public anon key.
 
 -- 4. Verification query — run after applying.
---    Expect rowsecurity = t on all 8 tables and exactly 4 policies.
+--    Expect rowsecurity = t on all 9 tables and exactly 4 policies.
 --
 --    SELECT t.tablename,
 --           t.rowsecurity,

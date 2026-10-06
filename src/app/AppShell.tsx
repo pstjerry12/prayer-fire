@@ -8,6 +8,7 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import DailyVerseModal from './components/DailyVerseModal';
 import DailyWisdomModal from './components/DailyWisdomModal';
 import WhatsNewModal from './components/WhatsNewModal';
+import FeedbackModal from './components/FeedbackModal';
 import UpdateBanner from './components/UpdateBanner';
 import BottomNav from './components/BottomNav';
 import PrayerAlarm from './components/PrayerAlarm';
@@ -45,6 +46,8 @@ function Overlays() {
     showWhatsNew,
     closeWhatsNew,
     openWhatsNew,
+    showFeedback,
+    setShowFeedback,
     upgrade,
   } = useApp();
 
@@ -58,7 +61,7 @@ function Overlays() {
     localStorage.setItem('upp_daily_devotion_shown', new Date().toDateString());
   };
 
-  const anyModalOpen = showAuth || showPrivacy || showSettings || showPricing || showDailyVerse || showDailyWisdom || showWhatsNew;
+  const anyModalOpen = showAuth || showPrivacy || showSettings || showPricing || showDailyVerse || showDailyWisdom || showWhatsNew || showFeedback;
 
   return (
     <>
@@ -80,10 +83,16 @@ function Overlays() {
         onSignOut={signOut}
         onOpenPrivacy={() => setShowPrivacy(true)}
         onOpenWhatsNew={() => { setShowSettings(false); openWhatsNew(); }}
+        onSendFeedback={() => { setShowSettings(false); setShowFeedback(true); }}
       />
       <DailyVerseModal isOpen={showDailyVerse} onClose={handleDailyVerseClose} />
       <DailyWisdomModal isOpen={showDailyWisdom} onClose={handleDailyWisdomClose} />
-      <WhatsNewModal isOpen={showWhatsNew} onClose={closeWhatsNew} />
+      <WhatsNewModal
+        isOpen={showWhatsNew}
+        onClose={closeWhatsNew}
+        onSendFeedback={() => { closeWhatsNew(); setShowFeedback(true); }}
+      />
+      <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} user={user} />
       {!anyModalOpen && <BottomNav />}
     </>
   );
