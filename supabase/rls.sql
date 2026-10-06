@@ -36,8 +36,10 @@
 -- app_settings         | ON  | none          | holds the Paystack SECRET key
 -- intercessory_prayers | ON  | none          | private per-user prayer points
 -- feedback             | ON  | none          | private tester feedback (contact details)
+-- user_activity        | ON  | none          | which accounts opened the app each day
+-- testers              | ON  | none          | admin's hand-typed tester list (names, phones)
 --
--- Total: 9 tables protected by RLS, 4 read-only policies. The five zero-policy
+-- Total: 11 tables protected by RLS, 4 read-only policies. The seven zero-policy
 -- tables are not an oversight — with RLS enabled and no matching policy, the
 -- anon key gets *nothing*, which is exactly what those tables need.
 --
@@ -56,6 +58,8 @@ ALTER TABLE public.events            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.app_settings      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.intercessory_prayers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.feedback          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_activity     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.testers           ENABLE ROW LEVEL SECURITY;
 
 -- 2. Public, curated, read-only content.
 DROP POLICY IF EXISTS "public read announcements" ON public.announcements;
@@ -74,14 +78,15 @@ DROP POLICY IF EXISTS "public read approved partner_requests" ON public.partner_
 CREATE POLICY "public read approved partner_requests" ON public.partner_requests
   FOR SELECT TO anon, authenticated USING (approved = true);
 
--- 3. users / donations / app_settings / intercessory_prayers / feedback get NO policies
+-- 3. users / donations / app_settings / intercessory_prayers / feedback / user_activity /
+--    testers get NO policies
 --    on purpose. Make sure nobody ever adds one, e.g. an "anon can read
 --    settings" policy would leak the Paystack secret key, and an "anon can
 --    read intercessory_prayers" policy would leak every user's private
 --    prayer requests to anyone with the public anon key.
 
 -- 4. Verification query — run after applying.
---    Expect rowsecurity = t on all 9 tables and exactly 4 policies.
+--    Expect rowsecurity = t on all 11 tables and exactly 4 policies.
 --
 --    SELECT t.tablename,
 --           t.rowsecurity,

@@ -53,7 +53,7 @@ export const TERMS_SECTIONS: LegalSection[] = [
 export const PRIVACY_SECTIONS: LegalSection[] = [
   {
     title: '1. Information We Collect',
-    body: 'When you create an account, we collect your name, email address, and/or phone number (including your country dial code) together with a securely hashed password. Your prayer points, fasting plans, scripture favorites, and preferences are stored locally on your device by default.',
+    body: 'When you create an account, we collect your name, email address, and/or phone number (including your country dial code) together with a securely hashed password. Your prayer points, fasting plans, scripture favorites, and preferences are stored locally on your device by default. When you are signed in, we also record the days on which your account opens the app, so we can understand how the app is used and, if needed, send you a friendly reminder.',
   },
   {
     title: '2. How We Use Your Information',

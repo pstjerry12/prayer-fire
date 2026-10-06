@@ -17,7 +17,9 @@ const SECTIONS: PrivacySection[] = [
     bullets: [
       'Testimonies: If you submit a testimony, we collect the text you provide and, optionally, your name and location. You may choose to submit anonymously.',
       'Prayer requests: Intercessory prayer points you create are stored to display within your own prayer sessions.',
-      'Account information: If you create an account, we collect your email address for authentication purposes.',
+      'Account information: If you create an account, we collect your name, email address and/or phone number for authentication purposes.',
+      'Feedback: If you send feedback from Settings, we store your message and the details you choose to add (name, email or phone), along with your app version and device type, to help us improve the app.',
+      'App activity: When you are signed in, we record the days on which your account opens the app. This helps us understand how the app is used and lets us send you a friendly reminder if needed.',
       'Payment information: If you choose to give voluntarily, payments are processed securely through Flutterwave. We do not store your card details — Flutterwave handles all payment data according to their own security standards.',
       'Device permissions: The app may request permission to schedule notifications/alarms for your daily prayer reminders. This is used solely to deliver prayer time alerts and is not shared with third parties.',
     ],
