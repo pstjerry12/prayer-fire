@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { users, userActivity } from "@/db/schema";
 import { verifyToken, AUTH_COOKIE } from "@/lib/auth";
 import { toAuthUser } from "@/lib/user";
 import { promoteAdminIfMatches } from "@/lib/adminBootstrap";
@@ -36,6 +36,17 @@ export async function GET(request: Request) {
 
     if (rows.length === 0) {
       return NextResponse.json({ user: null });
+    }
+
+    // Record that this account opened the app today (Africa/Lagos day). One row
+    // per account per day, so repeat opens are a no-op. Never let this break /me.
+    try {
+      await db
+        .insert(userActivity)
+        .values({ userId: rows[0].id, day: sql`(now() at time zone 'Africa/Lagos')::date` })
+        .onConflictDoNothing();
+    } catch (err) {
+      console.error("activity log error (ignored)", err);
     }
 
     // Self-heal: promote the owner on every /me check (catches accounts created earlier).

@@ -4,6 +4,8 @@ import {
   timestamp,
   integer,
   boolean,
+  date,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
@@ -92,6 +94,30 @@ export const feedback = pgTable("feedback", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// One row per signed-in account per day it opened the app (the day is in
+// Africa/Lagos time, the owner's timezone). Written from /api/auth/me, which
+// the app calls on every launch. Powers Admin → Feedback → Daily activity.
+export const userActivity = pgTable(
+  "user_activity",
+  {
+    userId: text("user_id").notNull(),
+    day: date("day").notNull(),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.day] })]
+);
+
+// Testers the admin has listed by hand (name + phone and/or email) so people
+// who have NOT created an account yet can still be reminded. Matched to real
+// accounts by phone/email, so they drop off this list once they sign up.
+export const testers = pgTable("testers", {
+  id: text("id").primaryKey(),
+  name: text("name"),
+  phone: text("phone"),   // digits only, including country code (e.g. 2348012345678)
+  email: text("email"),   // lower-cased
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Upcoming global prayer events/programs announced by admin.
 export const events = pgTable("events", {
   id: text("id").primaryKey(),
@@ -121,3 +147,4 @@ export type EventRow = typeof events.$inferSelect;
 export type AppSettingRow = typeof appSettings.$inferSelect;
 export type IntercessoryPrayerRow = typeof intercessoryPrayers.$inferSelect;
 export type FeedbackRow = typeof feedback.$inferSelect;
+export type TesterRow = typeof testers.$inferSelect;

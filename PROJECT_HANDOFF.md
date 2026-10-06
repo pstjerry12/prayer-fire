@@ -1,7 +1,7 @@
 # Prayer Fire — Project Handoff
 
 > **Read this first.** This file is the single source of truth for resuming work on Prayer Fire in a fresh session.
-> Last updated: **2026-10-06**, after Google's first production-access rejection and the in-app feedback feature (PR #63).
+> Last updated: **2026-10-06**, after Google's first production-access rejection, the in-app feedback feature (PR #63) and the Daily activity / reminders admin view (PR #64).
 > No secrets appear in this file. Credentials are listed by **name only**, with where they live.
 
 ---
@@ -22,7 +22,7 @@
 | Owner / founder | Credited in-app as **"Pastor Jerry C."**. GitHub `pstjerry12`, Play Console developer account "Prayer Fire Movement" (personal account). Based in **Nigeria**. |
 | Audience | Christians of all ages, starting in Nigeria and Africa, then worldwide. This includes church members, intercessors, prayer groups and pastors. Many users are older, which is why the Text Size setting exists. |
 | App name | **"Prayer Fire"**. Renamed from "Prayer Fire Movement" in PR #56. **"Prayer Fire Movement" is intentionally kept as the name of the default in-app prayer group** (`SEED_GROUP_ID = 'group-prayer-fire-movement'` in `src/app/context.tsx`). Do not rename that group. |
-| Android package / applicationId | `com.prayerfireaction.prayerfire` |
+| Android package / applicationId | `com.prayerfireaction.prayerfire`. **Permanent: the owner decided on 2026-10-06 to keep it** (see §8, decision 12). Do not propose changing it. |
 | Live web app | `https://prayer-fire.vercel.app` (Vercel, Next.js) |
 | GitHub repo | `pstjerry12/prayer-fire` |
 | Play Store URL | `https://play.google.com/store/apps/details?id=com.prayerfireaction.prayerfire` (`PLAY_STORE_URL` in `src/lib/capacitorAlarm.ts`) |
@@ -320,7 +320,7 @@ Light/dark toggle (`pfm_theme`), applied pre-paint.
 
 ### Admin back office (`/admin`) ✅
 - Access is granted to users whose `role = 'admin'`. The account whose email equals `ADMIN_EMAIL` is auto-promoted (self-healing in `getAdminUser`).
-- Tabs: overview, users, **feedback**, requests (partner wall moderation), testimonials, donations, announcements, events, settings.
+- Tabs: overview, users, **feedback** (two views: Messages and Daily activity), requests (partner wall moderation), testimonials, donations, announcements, events, settings.
 - The **Feedback** tab:
   - lists in-app feedback, newest first;
   - lets the admin set a status (New / Planned / Done) and a resolution note (e.g. "Fixed in build 14");
@@ -339,6 +339,17 @@ Light/dark toggle (`pfm_theme`), applied pre-paint.
 - It sends app version/build, platform and current page automatically.
 - `POST /api/feedback` is public and links `user_id` when a Bearer token or cookie is present. Data goes into the `feedback` table, which is private (RLS on, no policies).
 - **Why it exists:** Google rejected production access for weak tester engagement and feedback. This gives testers an easy channel and gives us a dated record of feedback and fixes.
+
+### Daily activity & reminders (PR #64) ✅
+- **Admin → Feedback → "📅 Daily activity"** shows, for any day (Today by default, with ‹ › arrows and a 14-day bar chart you can tap):
+  - **Opened the app**: name, phone and the time (Nigeria time) of the first open that day.
+  - **Did not open**: registered accounts with no activity that day, with "last opened N days ago", sorted so never-seen and longest-absent come first. Admin accounts are excluded from this list.
+  - **Testers who have not signed up yet**: people the admin typed in by hand (one per line, "Name, 0803 123 4567" or an email). They leave the list automatically once an account matches their phone (last 10 digits) or email.
+- **Reminders are manual by design.** Each row has a **WhatsApp** button (`wa.me` link with the editable message, `{name}` becomes the first name) and an **email** button (`mailto:`). Bulk helpers: Copy phones, Copy emails, Copy message. The message is saved in `app_settings.tester_reminder_template`. The "✓ Reminded" ticks are stored in the admin's browser only (`pfm_admin_reminded_v1`, reset each day).
+- **How activity is recorded:** `/api/auth/me` (called on every app launch for a signed-in user) inserts one row per account per Africa/Lagos day into `user_activity`, `ON CONFLICT DO NOTHING`. Only **signed-in accounts** are tracked; guests are invisible. History starts from the day this shipped.
+- Account deletion (`DELETE /api/auth/account`) also deletes that account's `user_activity` rows and strips name/contact/user link from feedback they sent (the message stays as anonymous feedback).
+- Phone helpers (`src/lib/reminders.ts`): stored phones are digits without the country code and `users.country_code` holds e.g. "+234". `fullPhone()` builds international digits (a leading 0 is replaced by the dial code; no dial code assumes Nigeria).
+- Privacy policy text (`legal.ts` and `/privacy`) was updated to mention feedback and daily app activity. **Play Console → Data safety may need "App activity" declared**; check it before the production application.
 
 ### Legal ✅
 `/privacy`, `/terms` and `LegalModal` (text in `src/app/data/legal.ts`).
@@ -359,6 +370,8 @@ Not started. There is no `ios/` project, and the AlarmEngine is Android-only.
 | `announcements` | title, body |
 | `testimonials` | name (null if anonymous), location, testimony, is_anonymous, approved |
 | `intercessory_prayers` | user_id (private per user), category, title, details, is_answered |
+| `user_activity` | PK (user_id, day): one row per signed-in account per Africa/Lagos day it opened the app; `first_seen_at`. Private (RLS on, no policies). Created 2026-10-06 via migration `create_user_activity_and_testers_tables`. |
+| `testers` | Admin's hand-typed tester list: name, phone (international digits), email (lower-case). Private. Same migration. |
 | `feedback` | In-app tester feedback: user_id (nullable), name, contact, category (`bug`/`idea`/`praise`/`other`), message, app_version, platform, page, status (`new`/`planned`/`done`), resolution (admin note). Private: RLS on, no policies. Created in production on 2026-10-06 via Supabase migration `create_feedback_table`. |
 | `events` | title, description, date (ISO string), time, link |
 | `app_settings` | key/value store, edited from Admin. Keys in use: `flutterwave_public_key`, `flutterwave_secret_key`, `price_partner_monthly`, `price_partner_yearly`, `price_leader_monthly`, `price_leader_yearly`, `social_youtube`, `social_facebook`, `social_instagram`, `social_whatsapp`, `social_tiktok`, `daily_youtube_url`, `daily_youtube_title`, `daily_youtube_subtitle`, `android_latest_build` |
@@ -379,6 +392,7 @@ Not started. There is no `ios/` project, and the AlarmEngine is Android-only.
 | `app-version` (GET, public, `force-dynamic`, `no-store`) | `{ build, androidLatestBuild }`; DB lookup has a 3 s timeout |
 | `health` (GET) | `select 1` DB check |
 | `feedback` (POST, public) / `admin/feedback` (GET, PATCH, DELETE) | In-app feedback; admin can update status/resolution |
+| `admin/activity` (GET `?day=YYYY-MM-DD`) / `admin/testers` (POST, DELETE) | Daily activity lists + the manual tester list. `auth/me` records the daily activity row |
 | `admin/*` (me, stats, users, partner-requests, testimonials, donations, announcements, events, settings) | All gated by `getAdminUser` |
 
 ---
@@ -418,6 +432,8 @@ Clearing app data on a phone wipes all of the above (except server-synced interc
 8. **Update awareness built in-app** (What's New + build-SHA comparison). Testers did not notice silent web updates.
 9. **Bundled Bible JSON (~14 MB)** gives offline reading with no third-party Bible API dependency. `bible-api.com` was removed earlier.
 10. **Founder credit shortened to "Pastor Jerry C."** The owner chose this to avoid a tribal-identifying surname. Legal and KYC documents keep the full legal name.
+11. **Reminders are WhatsApp/email links, not automatic sends.** The app has no email provider or push-notification service, and Google Play never reveals testers' identities (emails), so the admin triggers each reminder from their own phone. Automatic sending would need an email service (e.g. Resend) and/or push notifications (FCM) plus storing consent.
+12. **The package name stays `com.prayerfireaction.prayerfire`, even though the owner now has a registered company, Nexus Digital Collective LTD.** The owner asked about `com.nexus.prayerfire` and, after hearing the consequences, chose to keep the current name. The owner's other apps use the same `com.prayerfireaction.*` prefix (`examready`, `churchsms`). Why changing it is costly: Google Play treats a package name as an app's permanent identity, so a different one is a brand-new listing (testers reinstall, on-device data such as prayer points and streaks doesn't carry over, closed-test progress restarts, the deep-link scheme and Play URL change). The name has no legal meaning and need not match the company. If the company ever needs to own the app, options are an app transfer between developer accounts (keeps the package; reports say the 12-tester testing rule can follow the app) or a new Play *organization* account (exempt from the testing rule but requires a D-U-N-S number and a new package). Neither was chosen. If the company becomes the publisher, also revisit: which entity receives donations (Flutterwave), the donation-policy wording for an LTD publisher, and the company name/contact in the Privacy Policy and Terms.
 
 ### Payment and Google Play Billing compliance (important)
 - **Donations via Flutterwave are allowed and must NOT use Play Billing.** Google Play's Payments policy excludes charitable/ministry donations from Play Billing. Conditions to keep it compliant:
@@ -542,12 +558,14 @@ Notes:
 8. **Lint is not clean.** `npm run lint` reports pre-existing errors (mainly `react-hooks/set-state-in-effect` and `react/no-unescaped-entities`, e.g. `AccountSettings.tsx`, `admin/page.tsx`). CI runs only `tsc` and `next build`. New code should lint clean.
 9. **`package.json` name is still `nextjs-postgresql-template`** (cosmetic).
 10. **Pricing FX rates are hard-coded** in `pricingPlans.ts` (e.g. NGN 1500/USD) and go stale.
-11. **The service worker caches same-origin GETs cache-first** (stale-while-revalidate), including most `/api/*` responses. Users may briefly see stale announcements and testimonials until the background refresh. `/api/app-version` is explicitly bypassed.
+11. **The service worker caches same-origin GETs cache-first** (stale-while-revalidate), including most `/api/*` responses. Users may briefly see stale announcements and testimonials until the background refresh. `/api/app-version` and **everything under `/api/admin/`** are explicitly bypassed so admin data is never stale. (When testing with Playwright `page.route`, set `serviceWorkers: 'block'` or the service worker will bypass your mocks.)
 12. **Earlier "app froze / blank white screen after the alarm" report:**
     - No code cause was found, and all deployments were READY.
     - It was most likely the phone's network reconnecting after Doze woke it for the alarm, since the WebView loads the live site.
     - A "Reconnecting…" UI was offered but not built.
 13. **One historical donation stuck `pending`** (made before the secret key was fixed). Expected; leave it.
+14. **Account deletion leaves `intercessory_prayers` rows behind** (pre-existing: only the `users` row, activity and feedback links are removed). A user's private prayer points remain in the database after they delete their account. This should be fixed (delete by `user_id`).
+15. **Two leftover test rows in `user_activity`** with `user_id = '__test_user__'` (from verifying the migration on 2026-10-06). Harmless (they match no account and are excluded from the history chart) but untidy: delete them from the Supabase SQL editor (`delete from user_activity where user_id = '__test_user__';`). The Supabase MCP tool treats DELETE as destructive and needs a human confirmation, so it timed out in a non-interactive session.
 
 ---
 
@@ -573,6 +591,7 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
+| #64 | Admin → Feedback → Daily activity (who opened the app, who didn't, WhatsApp/email reminders, manual tester list); `user_activity` + `testers` tables; activity recorded in `/api/auth/me`; service worker no longer caches `/api/admin/*`; admin bottom padding; privacy text; Android workflow artifact-name fix |
 | #63 | In-app Send Feedback (Settings + What's New link), `feedback` table, Admin → Feedback tab with Copy log; versionCode 13 (1.0.12) for the second closed test |
 | #62 | PROJECT_HANDOFF.md; Paystack drafts moved out of `public/`; stray files removed |
 | #61 | What's New popup + update banner (web build SHA / Play `android_latest_build`), `/api/app-version`, SW bypass |

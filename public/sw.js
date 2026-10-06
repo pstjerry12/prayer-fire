@@ -40,8 +40,10 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
-  // Update checks must always hit the network, never the cache
-  if (url.pathname === '/api/app-version') return;
+  // Update checks and everything in the admin back office must always hit the
+  // network, never the cache — stale numbers there (e.g. who opened the app
+  // today) would be actively misleading.
+  if (url.pathname === '/api/app-version' || url.pathname.startsWith('/api/admin/')) return;
 
   // ── Navigation (HTML pages) ──────────────────────────────────────
   if (req.mode === 'navigate') {

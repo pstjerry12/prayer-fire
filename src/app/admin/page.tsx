@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/app/utils/cn';
 import { extractYouTubeVideoId } from '@/app/utils/youtube';
+import AdminDailyActivity from '@/app/components/AdminDailyActivity';
 
 type Tab = 'overview' | 'users' | 'feedback' | 'requests' | 'testimonials' | 'donations' | 'announcements' | 'events' | 'settings';
 
@@ -75,6 +76,7 @@ export default function AdminPage() {
   const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
   const [resolutionDrafts, setResolutionDrafts] = useState<Record<string, string>>({});
   const [feedbackCopied, setFeedbackCopied] = useState(false);
+  const [feedbackView, setFeedbackView] = useState<'messages' | 'activity'>('messages');
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [requests, setRequests] = useState<RequestRow[]>([]);
@@ -290,7 +292,7 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-4 py-5">
+      <div className="max-w-5xl mx-auto px-4 pt-5 pb-28 md:pb-5">
         {/* Tabs */}
         <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
           {TABS.map((t) => {
@@ -406,6 +408,15 @@ export default function AdminPage() {
         {/* ══════ FEEDBACK ══════ */}
         {tab === 'feedback' && (
           <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-1.5 bg-card-2 border border-edge rounded-xl p-1" role="tablist" aria-label="Feedback view">
+              {([['messages', '💬 Messages'], ['activity', '📅 Daily activity']] as const).map(([id, label]) => (
+                <button key={id} role="tab" aria-selected={feedbackView === id} onClick={() => setFeedbackView(id)}
+                  className={cn('py-2 rounded-lg text-sm font-semibold transition-all', feedbackView === id ? 'bg-emerald-600 text-white shadow-sm' : 'text-ink-muted hover:bg-card-3')}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            {feedbackView === 'activity' ? <AdminDailyActivity /> : (<>
             <div className="bg-card border border-edge rounded-2xl p-4 flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="font-bold text-ink">Tester Feedback</h2>
@@ -462,6 +473,7 @@ export default function AdminPage() {
               })}
               {feedbackItems.length === 0 && <p className="text-center text-ink-muted text-sm py-8">No feedback yet. Testers can send it from Settings → Send Feedback.</p>}
             </div>
+            </>)}
           </div>
         )}
 
