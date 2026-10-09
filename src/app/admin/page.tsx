@@ -120,6 +120,7 @@ export default function AdminPage() {
   const [dailyYoutubeTitle, setDailyYoutubeTitle] = useState('');
   const [dailyYoutubeSubtitle, setDailyYoutubeSubtitle] = useState('');
   const [androidLatestBuild, setAndroidLatestBuild] = useState('');
+  const [idleLockMinutes, setIdleLockMinutes] = useState('');
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState('');
 
@@ -153,6 +154,7 @@ export default function AdminPage() {
         setDailyYoutubeTitle(data.settings.daily_youtube_title || '');
         setDailyYoutubeSubtitle(data.settings.daily_youtube_subtitle || '');
         setAndroidLatestBuild(data.settings.android_latest_build || '');
+        setIdleLockMinutes(data.settings.idle_lock_minutes ?? '');
       }
     }
   }, []);
@@ -902,6 +904,32 @@ export default function AdminPage() {
 
               <button
                 onClick={() => saveSettings({ android_latest_build: androidLatestBuild })}
+                disabled={settingsSaving}
+                className="w-full mt-3 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+
+            {/* Sign-in security — auto sign-out when the app is left alone */}
+            <div className="bg-card border border-edge rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">🔒</span>
+                <h2 className="font-bold text-ink text-lg">Sign-in &amp; Auto Sign-out</h2>
+              </div>
+
+              <div className="bg-card-2 rounded-xl p-3 mb-3">
+                <p className="text-xs text-ink-muted">
+                  💡 Everyone must sign in to use Prayer Fire, so every visit shows up in Feedback → Daily activity. If the app is left alone (closed, in the background, or open but untouched) for this many minutes, it signs the person out and asks them to sign in again. Leave blank for the default (30). Enter <strong>0</strong> to never sign people out.
+                </p>
+              </div>
+
+              <label className="text-xs font-semibold text-ink-muted block mb-1">Sign out after (minutes of inactivity)</label>
+              <input type="number" inputMode="numeric" min={0} max={1440} placeholder="30" value={idleLockMinutes} onChange={(e) => setIdleLockMinutes(e.target.value.replace(/[^0-9]/g, ''))}
+                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+
+              <button
+                onClick={() => saveSettings({ idle_lock_minutes: idleLockMinutes })}
                 disabled={settingsSaving}
                 className="w-full mt-3 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
               >

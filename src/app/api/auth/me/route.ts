@@ -59,6 +59,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ user: { ...toAuthUser(rows[0]), role } });
   } catch (err) {
     console.error("me error", err);
-    return NextResponse.json({ user: null });
+    // 503 (not a "signed out" answer) so a database hiccup never signs anyone out.
+    return NextResponse.json({ user: null, error: "unavailable" }, { status: 503 });
   }
 }

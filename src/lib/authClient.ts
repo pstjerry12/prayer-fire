@@ -88,13 +88,34 @@ export async function apiDeleteAccount(): Promise<void> {
   }
 }
 
-export async function fetchMe(): Promise<AuthUser | null> {
+export type SessionCheck =
+  | { status: "ok"; user: AuthUser }
+  | { status: "invalid" } // the server answered: this session is expired or the account is gone
+  | { status: "error" }; // offline / server hiccup — keep whatever we had
+
+/**
+ * Asks the server who this device is signed in as. Sends the stored token as a
+ * Bearer header as well as the cookie: the Android app's WebView never gets the
+ * cookie after Google sign-in (the token only comes back via a deep link), so
+ * without the header the server couldn't recognise those users — and wouldn't
+ * count them in Daily activity.
+ */
+export async function checkSession(): Promise<SessionCheck> {
   try {
-    const res = await fetch("/api/auth/me", { cache: "no-store" });
-    if (!res.ok) return null;
+    const token = getStoredToken();
+    const res = await fetch("/api/auth/me", {
+      cache: "no-store",
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+    if (!res.ok) return { status: "error" };
     const data = (await res.json()) as { user: AuthUser | null };
-    return data.user ?? null;
+    return data.user ? { status: "ok", user: data.user } : { status: "invalid" };
   } catch {
-    return null;
+    return { status: "error" };
   }
+}
+
+export async function fetchMe(): Promise<AuthUser | null> {
+  const check = await checkSession();
+  return check.status === "ok" ? check.user : null;
 }
