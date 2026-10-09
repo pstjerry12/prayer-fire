@@ -43,6 +43,17 @@ export async function POST(request: Request) {
     const account = rows[0];
     const valid = await verifyPassword(password, account.passwordHash);
     if (!valid) {
+      // Accounts created with Google have a random password nobody knows, so a
+      // password can never work for them — point them to Google instead.
+      if (account.provider === "google") {
+        return NextResponse.json(
+          {
+            error: "This account was created with Google, so it has no password. Tap “Continue with Google” to sign in.",
+            googleOnly: true,
+          },
+          { status: 401 }
+        );
+      }
       return NextResponse.json({ error: "Incorrect password. Please try again." }, { status: 401 });
     }
 
