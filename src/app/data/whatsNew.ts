@@ -13,6 +13,16 @@ export interface WhatsNewRelease {
 
 export const WHATS_NEW: WhatsNewRelease[] = [
   {
+    id: '2026-10-09',
+    date: 'October 2026',
+    title: 'Sign in to keep your prayers safe',
+    items: [
+      { emoji: '🔑', text: 'Prayer Fire now asks you to sign in — one tap with Google, or with your email or phone. Your prayers, streak and progress stay safe in your account.' },
+      { emoji: '🔒', text: 'If the app is left alone for a while, it signs you out for your privacy and asks you to sign in again.' },
+      { emoji: '📖', text: 'In the Bible, Book, Chapters and Verses are now always tappable, so you can jump between them any time.' },
+    ],
+  },
+  {
     id: '2026-10-06',
     date: 'October 2026',
     title: 'Tell us what you think',

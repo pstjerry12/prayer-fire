@@ -268,7 +268,10 @@ YouTube, Facebook, Instagram, WhatsApp and TikTok, editable by the admin (`socia
   - The callback then redirects to the deep link `com.prayerfireaction.prayerfire://auth-callback?token=…`.
   - The app catches the link (`listenAuthDeepLink`), closes the Custom Tab (`closeInAppBrowser()`), closes the auth modal and exchanges the token (PR #54).
   - The manifest `<queries>` entries are required for Custom Tabs on Android 11+.
-- One-time sign-in prompt after the devotionals (`pfm_auth_prompted`).
+- **Sign-in is required (PR after #66).** `SignInGate.tsx` is a full-screen wall (z-75) shown whenever `authChecked && !user`, except on `/privacy` and `/terms` (Play needs a public privacy page). "Continue with Google" is primary; email/phone sign-in opens the existing `AuthModal` (kept so older accounts and a Play-reviewer test account still work). Shared Google flow: `src/lib/googleSignIn.ts`. The old one-time prompt (`pfm_auth_prompted`) was removed.
+- **Auto sign-out when idle** (`SessionGuard.tsx`): signs the person out after N minutes of inactivity (app closed/backgrounded or open-but-untouched). N comes from the admin setting `idle_lock_minutes` (Admin → Settings → "Sign-in & Auto Sign-out"; blank = 30, `0` = never), served by `/api/app-version` as `idleLockMinutes` and cached in `pfm_idle_minutes`. Activity is stamped in `pfm_last_active`; `pfm_idle_notice` shows the "signed out for inactivity" note. A fresh sign-in has no stamp, so it never locks instantly. It is a client-side rule; the JWT itself still lasts 30 days.
+- **Session check** (`checkSession()` in `authClient.ts`): sends the stored token as a `Bearer` header as well as the cookie. Before this fix, Google-signed-in Android users (token only in localStorage) were never recognised by `/api/auth/me` on later opens, so their opens were **not counted** in Daily activity. `/me` answers `{user:null}` (200) only for an invalid/expired session and **503** on a server error; the app signs out only on the former, so a database hiccup or being offline never logs anyone out. A `authEpochRef` in `context.tsx` stops a late "ok" answer re-signing someone in after a sign-out.
+- Native prayer alarms are scheduled by the Android AlarmEngine and keep ringing even while the wall is up.
 - Account deletion and data export live in Settings (`/api/auth/account`).
 
 ### Account Settings modal (`AccountSettings.tsx`) ✅
@@ -405,7 +408,8 @@ Most user data lives on the device in `context.tsx` (`AppProvider`) and is persi
 - **Reading:** `upp_bible_favorites`, `upp_bible_translation`, `upp_wisdom_read`
 - **Other features:** `upp_fasting_plan`, `upp_worship_songs`, `pfm_groups`, `pfm_group_messages`
 - **Premium:** `upp_is_premium`, `upp_trial_start`
-- **Onboarding and popups:** `upp_daily_devotion_shown`, `pfm_auth_prompted`, `pfm_alarm_asked`, `pfm_native_alarm_onboarded`, `pfm_whats_new_seen`, `pfm_splash_shown` (sessionStorage)
+- **Onboarding and popups:** `upp_daily_devotion_shown`, `pfm_alarm_asked`, `pfm_native_alarm_onboarded`, `pfm_whats_new_seen`, `pfm_splash_shown` (sessionStorage)
+- **Session:** `pfm_token`, `pfm_user`, `pfm_last_active`, `pfm_idle_notice`, `pfm_idle_minutes`
 - **Preferences and navigation:** `pfm_theme`, `pfm_text_scale`, `preferred_currency`, `pfm_last_path`, `pfm_last_path_at`
 
 Clearing app data on a phone wipes all of the above (except server-synced intercessory prayers and the account).
@@ -433,6 +437,7 @@ Clearing app data on a phone wipes all of the above (except server-synced interc
 9. **Bundled Bible JSON (~14 MB)** gives offline reading with no third-party Bible API dependency. `bible-api.com` was removed earlier.
 10. **Founder credit shortened to "Pastor Jerry C."** The owner chose this to avoid a tribal-identifying surname. Legal and KYC documents keep the full legal name.
 11. **Reminders are WhatsApp/email links, not automatic sends.** The app has no email provider or push-notification service, and Google Play never reveals testers' identities (emails), so the admin triggers each reminder from their own phone. Automatic sending would need an email service (e.g. Resend) and/or push notifications (FCM) plus storing consent.
+13. **Everyone must sign in (decided 2026-10-09).** Reason: Google Play never shows who tests the app, and Daily activity can only count signed-in accounts, so the owner wanted every open tied to an account. Consequences to remember: (a) **Play "App access"** must give reviewers working sign-in details (an email/phone + password test account) because the app is no longer usable without logging in; (b) there is no guest mode any more; (c) people on a phone with no internet can't sign in for the first time (a returning, already-signed-in user can still open the app offline).
 12. **The package name stays `com.prayerfireaction.prayerfire`, even though the owner now has a registered company, Nexus Digital Collective LTD.** The owner asked about `com.nexus.prayerfire` and, after hearing the consequences, chose to keep the current name. The owner's other apps use the same `com.prayerfireaction.*` prefix (`examready`, `churchsms`). Why changing it is costly: Google Play treats a package name as an app's permanent identity, so a different one is a brand-new listing (testers reinstall, on-device data such as prayer points and streaks doesn't carry over, closed-test progress restarts, the deep-link scheme and Play URL change). The name has no legal meaning and need not match the company. If the company ever needs to own the app, options are an app transfer between developer accounts (keeps the package; reports say the 12-tester testing rule can follow the app) or a new Play *organization* account (exempt from the testing rule but requires a D-U-N-S number and a new package). Neither was chosen. If the company becomes the publisher, also revisit: which entity receives donations (Flutterwave), the donation-policy wording for an LTD publisher, and the company name/contact in the Privacy Policy and Terms.
 
 ### Payment and Google Play Billing compliance (important)
@@ -591,6 +596,9 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
+| next | **Sign-in wall + idle auto sign-out** (`SignInGate`, `SessionGuard`, `googleSignIn.ts`), `/api/app-version` returns `idleLockMinutes`, admin "Sign-in & Auto Sign-out" card, `/me` sends Bearer token (fixes uncounted Android opens) and returns 503 on errors, What's New entry |
+| #66 | Android build 14: versionCode 14 (1.0.13) |
+| #65 | Bible reader: plain Book / Chapters / Verses labels, always clickable |
 | #64 | Admin → Feedback → Daily activity (who opened the app, who didn't, WhatsApp/email reminders, manual tester list); `user_activity` + `testers` tables; activity recorded in `/api/auth/me`; service worker no longer caches `/api/admin/*`; admin bottom padding; privacy text; Android workflow artifact-name fix |
 | #63 | In-app Send Feedback (Settings + What's New link), `feedback` table, Admin → Feedback tab with Copy log; versionCode 13 (1.0.12) for the second closed test |
 | #62 | PROJECT_HANDOFF.md; Paystack drafts moved out of `public/`; stray files removed |

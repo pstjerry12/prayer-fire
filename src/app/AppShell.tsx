@@ -18,6 +18,8 @@ import PricingPage from './components/PricingPage';
 import BackButtonExit from './components/BackButtonExit';
 import PullToRefresh from './components/PullToRefresh';
 import RouteMemory from './components/RouteMemory';
+import SessionGuard from './components/SessionGuard';
+import SignInGate, { useSignInRequired } from './components/SignInGate';
 
 function Overlays() {
   const {
@@ -50,6 +52,8 @@ function Overlays() {
     setShowFeedback,
     upgrade,
   } = useApp();
+
+  const signInRequired = useSignInRequired();
 
   const handleDailyVerseClose = () => {
     setShowDailyVerse(false);
@@ -93,9 +97,16 @@ function Overlays() {
         onSendFeedback={() => { closeWhatsNew(); setShowFeedback(true); }}
       />
       <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} user={user} />
-      {!anyModalOpen && <BottomNav />}
+      {!anyModalOpen && !signInRequired && <BottomNav />}
     </>
   );
+}
+
+// The alarm-permission banner waits until the person has signed in, so the
+// very first screen is just the sign-in wall.
+function GatedNotificationPermission() {
+  const signInRequired = useSignInRequired();
+  return signInRequired ? null : <NotificationPermission />;
 }
 
 function ServiceWorkerRegister() {
@@ -117,11 +128,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <SplashScreen />
       <ServiceWorkerRegister />
       <RouteMemory />
+      <SessionGuard />
       <PrayerAlarm />
-      <NotificationPermission />
+      <GatedNotificationPermission />
       <UpdateBanner />
       <BackButtonExit />
       <PullToRefresh>{children}</PullToRefresh>
+      <SignInGate />
       <Overlays />
     </AppProvider>
   );

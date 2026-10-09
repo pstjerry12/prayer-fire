@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type Dispatch,
   type ReactNode,
@@ -23,7 +24,7 @@ import type {
 import { DEFAULT_INTERCESSORY_CATEGORIES } from '@/app/data/bibleVerses';
 import { getDefaultCurrency, type Currency } from '@/app/data/pricingPlans';
 import type { PrayerAppointment } from '@/app/components/CustomizablePrayerSchedule';
-import { getStoredUser, fetchMe, apiLogout, apiDeleteAccount, storeSession } from '@/lib/authClient';
+import { getStoredUser, checkSession, clearSession, apiLogout, apiDeleteAccount, storeSession } from '@/lib/authClient';
 import { saveSongBlob, deleteSongBlob } from '@/lib/audioStore';
 import { listenAuthDeepLink, closeInAppBrowser } from '@/lib/capacitorAlarm';
 import { applyTextScale, getStoredTextScale } from '@/lib/textScale';
@@ -104,6 +105,8 @@ interface AppContextValue {
   setCurrency: Dispatch<SetStateAction<Currency>>;
   user: AuthUser | null;
   setUser: Dispatch<SetStateAction<AuthUser | null>>;
+  /** True once the first sign-in check (stored session + server) has finished. */
+  authChecked: boolean;
   showAuth: boolean;
   setShowAuth: Dispatch<SetStateAction<boolean>>;
   showPrivacy: boolean;
@@ -205,6 +208,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   });
   const [user, setUser] = useState<AuthUser | null>(() => getStoredUser());
   const [authChecked, setAuthChecked] = useState(false);
+  const authEpochRef = useRef(0); // bumps on every sign-out, to discard stale session checks
   const [showAuth, setShowAuth] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -455,10 +459,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Restore / verify session
   useEffect(() => {
     (async () => {
+      const epoch = authEpochRef.current;
       const stored = getStoredUser();
       if (stored) setUser(stored);
-      const me = await fetchMe();
-      if (me) setUser(me);
+      const check = await checkSession();
+      // Signed out (e.g. the idle sign-out) while this check was in flight:
+      // don't let a stale "ok" answer sign the person straight back in.
+      if (epoch !== authEpochRef.current) {
+        setAuthChecked(true);
+        return;
+      }
+      if (check.status === 'ok') {
+        setUser(check.user);
+      } else if (check.status === 'invalid' && stored) {
+        // The server says this session has expired (or the account is gone):
+        // drop it so the sign-in wall asks again instead of leaving a
+        // "signed-in" app whose requests all fail. Offline/server errors keep
+        // the stored session.
+        clearSession();
+        setUser(null);
+      }
       setAuthChecked(true);
     })();
   }, []);
@@ -501,15 +521,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }).then((fn) => { cleanup = fn; });
     return () => cleanup?.();
   }, []);
-
-  // Prompt to sign in once per device (after daily devotionals)
-  useEffect(() => {
-    if (!authChecked || user) return;
-    if (showDailyVerse || showDailyWisdom || whatsNewPending || showWhatsNew) return;
-    if (typeof window !== 'undefined' && localStorage.getItem('pfm_auth_prompted')) return;
-    setShowAuth(true);
-    localStorage.setItem('pfm_auth_prompted', '1');
-  }, [authChecked, user, showDailyVerse, showDailyWisdom, whatsNewPending, showWhatsNew]);
 
   // Daily devotionals + "What's New" after an update
   useEffect(() => {
@@ -597,6 +608,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    authEpochRef.current += 1;
     await apiLogout();
     setUser(null);
   };
@@ -672,6 +684,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setCurrency,
         user,
         setUser,
+        authChecked,
         showAuth,
         setShowAuth,
         showPrivacy,
