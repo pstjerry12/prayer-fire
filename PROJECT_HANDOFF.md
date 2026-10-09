@@ -26,7 +26,7 @@
 | Live web app | `https://prayer-fire.vercel.app` (Vercel, Next.js) |
 | GitHub repo | `pstjerry12/prayer-fire` |
 | Play Store URL | `https://play.google.com/store/apps/details?id=com.prayerfireaction.prayerfire` (`PLAY_STORE_URL` in `src/lib/capacitorAlarm.ts`) |
-| Current Android version | `versionCode 13`, `versionName "1.0.12"` in `android/variables.gradle`. Build 13 was prepared for the second closed test; check Play Console for what is actually uploaded. |
+| Current Android version | `versionCode 14`, `versionName "1.0.13"` in `android/variables.gradle`. Build 14 adds Daily activity + the Bible stepper fix (web changes also ship via Vercel); check Play Console for what is actually uploaded. |
 
 ### Working with the owner (important for any assistant)
 - The owner is **non-technical**. They usually send phone screenshots, often of Play Console, Vercel or Flutterwave. Explain things in plain language with numbered click-by-click steps.
