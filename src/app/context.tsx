@@ -24,7 +24,7 @@ import type {
 import { DEFAULT_INTERCESSORY_CATEGORIES } from '@/app/data/bibleVerses';
 import { getDefaultCurrency, type Currency } from '@/app/data/pricingPlans';
 import type { PrayerAppointment } from '@/app/components/CustomizablePrayerSchedule';
-import { getStoredUser, checkSession, clearSession, apiLogout, apiDeleteAccount, storeSession } from '@/lib/authClient';
+import { getStoredUser, checkSession, clearSession, apiLogout, apiDeleteAccount, storeSession, setLastLogin } from '@/lib/authClient';
 import { saveSongBlob, deleteSongBlob } from '@/lib/audioStore';
 import { listenAuthDeepLink, closeInAppBrowser } from '@/lib/capacitorAlarm';
 import { applyTextScale, getStoredTextScale } from '@/lib/textScale';
@@ -455,6 +455,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
     setMessages((prev) => [...prev, m]);
   };
+
+  // Remember who signed in, so the sign-in form can pre-fill them next time.
+  useEffect(() => {
+    if (!user) return;
+    const id = user.email || user.phone;
+    if (id) setLastLogin({ id, method: user.provider === 'google' ? 'google' : 'password', name: user.name });
+  }, [user]);
 
   // Restore / verify session
   useEffect(() => {

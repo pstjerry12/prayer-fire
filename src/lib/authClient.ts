@@ -33,6 +33,43 @@ export function clearSession(): void {
   localStorage.removeItem(USER_KEY);
 }
 
+/** Error from the auth API; `googleOnly` means the account was created with Google and has no password. */
+export class AuthError extends Error {
+  googleOnly = false;
+}
+
+// Remembers who last signed in on this device, so the sign-in form can fill in
+// their email/phone and they only have to type their password.
+const LAST_LOGIN_KEY = "pfm_last_login";
+
+export interface LastLogin {
+  id: string; // email or phone, as the sign-in form expects it
+  method: "password" | "google";
+  name?: string | null;
+}
+
+export function getLastLogin(): LastLogin | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(LAST_LOGIN_KEY);
+    if (!raw) return null;
+    const v = JSON.parse(raw) as Partial<LastLogin>;
+    if (typeof v.id !== "string" || !v.id) return null;
+    return { id: v.id, method: v.method === "google" ? "google" : "password", name: v.name ?? null };
+  } catch {
+    return null;
+  }
+}
+
+export function setLastLogin(v: LastLogin): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(LAST_LOGIN_KEY, JSON.stringify(v));
+  } catch {
+    // storage unavailable — the form just won't be pre-filled
+  }
+}
+
 async function post<T>(url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
     method: "POST",
@@ -41,7 +78,9 @@ async function post<T>(url: string, body?: unknown): Promise<T> {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error((data as { error?: string }).error || "Something went wrong. Please try again.");
+    const err = new AuthError((data as { error?: string }).error || "Something went wrong. Please try again.");
+    err.googleOnly = (data as { googleOnly?: boolean }).googleOnly === true;
+    throw err;
   }
   return data as T;
 }
