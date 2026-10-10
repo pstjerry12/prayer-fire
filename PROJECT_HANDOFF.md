@@ -26,7 +26,7 @@
 | Live web app | `https://prayer-fire.vercel.app` (Vercel, Next.js) |
 | GitHub repo | `pstjerry12/prayer-fire` |
 | Play Store URL | `https://play.google.com/store/apps/details?id=com.prayerfireaction.prayerfire` (`PLAY_STORE_URL` in `src/lib/capacitorAlarm.ts`) |
-| Current Android version | `versionCode 14`, `versionName "1.0.13"` in `android/variables.gradle`. Build 14 adds Daily activity + the Bible stepper fix (web changes also ship via Vercel); check Play Console for what is actually uploaded. |
+| Current Android version | `versionCode 15`, `versionName "1.0.14"` in `android/variables.gradle`. Builds 14 and 15 contain the same native app; all recent changes (Daily activity, Bible fix, sign-in, Next.js upgrade) are web and ship via Vercel. Check Play Console for what is actually uploaded. |
 
 ### Working with the owner (important for any assistant)
 - The owner is **non-technical**. They usually send phone screenshots, often of Play Console, Vercel or Flutterwave. Explain things in plain language with numbered click-by-click steps.
@@ -597,6 +597,7 @@ Notes:
 | PR | Change |
 |---|---|
 | next | **Sign-in wall + idle auto sign-out** (`SignInGate`, `SessionGuard`, `googleSignIn.ts`), `/api/app-version` returns `idleLockMinutes`, admin "Sign-in & Auto Sign-out" card, `/me` sends Bearer token (fixes uncounted Android opens) and returns 503 on errors, What's New entry |
+| next | Android build 15: versionCode 15 (1.0.14), requested by the owner; no native code change since build 14 |
 | #66 | Android build 14: versionCode 14 (1.0.13) |
 | #65 | Bible reader: plain Book / Chapters / Verses labels, always clickable |
 | #64 | Admin → Feedback → Daily activity (who opened the app, who didn't, WhatsApp/email reminders, manual tester list); `user_activity` + `testers` tables; activity recorded in `/api/auth/me`; service worker no longer caches `/api/admin/*`; admin bottom padding; privacy text; Android workflow artifact-name fix |
