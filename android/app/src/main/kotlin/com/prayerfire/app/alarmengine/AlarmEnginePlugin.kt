@@ -16,7 +16,7 @@ import com.getcapacitor.annotation.CapacitorPlugin
 
 /**
  * Bridges the web app to the native alarm engine: AlarmManager exact
- * scheduling, a foreground service that rings at max alarm volume for 3
+ * scheduling, a foreground service that rings at max alarm volume for 5
  * minutes, and the Android 12+/13+/14+ permissions all of that needs.
  *
  * Web (and iOS) keep using @capacitor/local-notifications as before — this
@@ -67,7 +67,7 @@ class AlarmEnginePlugin : Plugin() {
 
     @PluginMethod
     fun dismissRinging(call: PluginCall) {
-        context.stopService(Intent(context, AlarmRingService::class.java))
+        AlarmRingService.stopRinging(context)
         call.resolve()
     }
 

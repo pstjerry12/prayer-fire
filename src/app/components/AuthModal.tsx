@@ -180,11 +180,14 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   };
 
   return (
-    <div className="fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="min-h-full flex items-start justify-center p-4 py-10">
-        <div className="bg-card rounded-3xl w-full max-w-md border border-edge shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-md overflow-y-auto">
+      {/* Centered card that never grows taller than the screen: the header and
+          tabs stay put and only the form scrolls, so the app stays visible
+          (blurred) around it instead of a full-height sheet hiding it. */}
+      <div className="min-h-full flex items-center justify-center p-4">
+        <div className="bg-card rounded-3xl w-full max-w-md max-h-[calc(100dvh-2rem)] flex flex-col border border-edge shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className="p-5 border-b border-edge flex items-start justify-between">
+          <div className="p-5 border-b border-edge flex items-start justify-between shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-danger-soft ring-1 ring-red-200 flex items-center justify-center overflow-hidden">
                 <img src="/logo.png" alt="Prayer Fire" className="w-full h-full object-cover" />
@@ -206,7 +209,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
           </div>
 
           {/* Tabs */}
-          <div className="grid grid-cols-2 border-b border-edge">
+          <div className="grid grid-cols-2 border-b border-edge shrink-0">
             <button
               onClick={() => switchMode('login')}
               className={cn(
@@ -231,7 +234,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
             </button>
           </div>
 
-          <div className="p-5 space-y-4">
+          <div className="p-5 space-y-4 overflow-y-auto min-h-0">
             {notice && (
               <div className="bg-card-2 border border-edge rounded-xl p-3 text-xs text-ink-muted">{notice}</div>
             )}
