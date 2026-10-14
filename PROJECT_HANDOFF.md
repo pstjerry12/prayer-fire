@@ -26,7 +26,7 @@
 | Live web app | `https://prayer-fire.vercel.app` (Vercel, Next.js) |
 | GitHub repo | `pstjerry12/prayer-fire` |
 | Play Store URL | `https://play.google.com/store/apps/details?id=com.prayerfireaction.prayerfire` (`PLAY_STORE_URL` in `src/lib/capacitorAlarm.ts`) |
-| Current Android version | `versionCode 15`, `versionName "1.0.14"` in `android/variables.gradle`. Builds 14 and 15 contain the same native app; all recent changes (Daily activity, Bible fix, sign-in, Next.js upgrade) are web and ship via Vercel. Check Play Console for what is actually uploaded. |
+| Current Android version | `versionCode 16`, `versionName "1.0.15"` in `android/variables.gradle`. Builds 14, 15 and 16 contain the same native app; all recent changes (Daily activity, Bible fix, sign-in, Next.js upgrade, 500 Prayer Verses) are web and ship via Vercel. Check Play Console for what is actually uploaded. |
 
 ### Working with the owner (important for any assistant)
 - The owner is **non-technical**. They usually send phone screenshots, often of Play Console, Vercel or Flutterwave. Explain things in plain language with numbered click-by-click steps.
@@ -597,6 +597,7 @@ Notes:
 | PR | Change |
 |---|---|
 | next | Prayer Verses: 50 KJV verses in each of the 10 themes (500 total), generated from the bundled KJV |
+| next | Android build 16: versionCode 16 (1.0.15), requested by the owner; no native code change since build 14 |
 | #70 | Android build 15: versionCode 15 (1.0.14), requested by the owner; no native code change since build 14 |
 | #69 | Security upgrade: Next.js 16.2.11, postcss 8.5.23, eslint-config-next 16.2.11 (with lock file); Dependabot #4 closed |
 | #67–#68 | **Sign-in wall + idle auto sign-out** (`SignInGate`, `SessionGuard`, `googleSignIn.ts`), `/api/app-version` returns `idleLockMinutes`, admin "Sign-in & Auto Sign-out" card, `/me` sends Bearer token (fixes uncounted Android opens) and returns 503 on errors, What's New entry |
