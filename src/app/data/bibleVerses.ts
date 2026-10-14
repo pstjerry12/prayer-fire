@@ -1,4 +1,5 @@
 import type { IntercessoryCategory } from '../types';
+import { EXTRA_PRAYER_VERSES } from './bibleVersesExtra';
 
 // ---------------------------------------------------------------------------
 // KJV Bible Library
@@ -30,7 +31,7 @@ export const KJV_BIBLE_CATEGORIES: BibleCategory[] = [
   { id: 'thanksgiving', name: 'Thanksgiving', icon: '🎉' },
 ];
 
-export const KJV_BIBLE_VERSES: BibleVerse[] = [
+const BASE_PRAYER_VERSES: BibleVerse[] = [
   // Faith
   {
     id: 'faith-1',
@@ -319,6 +320,10 @@ export const KJV_BIBLE_VERSES: BibleVerse[] = [
 // ---------------------------------------------------------------------------
 // Scripture Vault (multilingual)
 // ---------------------------------------------------------------------------
+
+// Hand-written verses first, then the generated ones (see
+// scripts/generate-prayer-verses.mjs) — 50 per category in total.
+export const KJV_BIBLE_VERSES: BibleVerse[] = [...BASE_PRAYER_VERSES, ...EXTRA_PRAYER_VERSES];
 
 export interface ScriptureCard {
   id: string;
