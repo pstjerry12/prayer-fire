@@ -120,6 +120,7 @@ export default function AdminPage() {
   const [dailyYoutubeTitle, setDailyYoutubeTitle] = useState('');
   const [dailyYoutubeSubtitle, setDailyYoutubeSubtitle] = useState('');
   const [androidLatestBuild, setAndroidLatestBuild] = useState('');
+  const [androidUpdateMessage, setAndroidUpdateMessage] = useState('');
   const [idleLockMinutes, setIdleLockMinutes] = useState('');
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState('');
@@ -154,6 +155,7 @@ export default function AdminPage() {
         setDailyYoutubeTitle(data.settings.daily_youtube_title || '');
         setDailyYoutubeSubtitle(data.settings.daily_youtube_subtitle || '');
         setAndroidLatestBuild(data.settings.android_latest_build || '');
+        setAndroidUpdateMessage(data.settings.android_update_message || '');
         setIdleLockMinutes(data.settings.idle_lock_minutes ?? '');
       }
     }
@@ -894,16 +896,21 @@ export default function AdminPage() {
 
               <div className="bg-card-2 rounded-xl p-3 mb-3">
                 <p className="text-xs text-ink-muted">
-                  💡 Once a new Android release is <strong>live on the Play Store</strong>, enter its version code here (e.g. 13). Anyone on an older build sees a &quot;New version available&quot; bar with an Update button the next time they open the app. Leave blank to turn the prompt off. Web-only updates don&apos;t need this — they reach everyone automatically, with a one-tap Refresh if the app was left open.
+                  💡 Once a new Android release is <strong>live on the Play Store</strong> (approved and available, not just uploaded), enter its version code here (e.g. 16). Anyone using an older Android build then sees an <strong>&quot;New version available&quot; popup</strong> the next time they open the app, with an <strong>Update now</strong> button that opens Prayer Fire on Google Play (and a &quot;Remind me later&quot; that asks again the next day). Leave blank to turn the popup off. Web-only updates don&apos;t need this — they reach everyone automatically, with a one-tap Refresh if the app was left open.
                 </p>
               </div>
 
               <label className="text-xs font-semibold text-ink-muted block mb-1">Latest Android version code on the Play Store</label>
-              <input type="number" inputMode="numeric" min={1} placeholder="e.g. 13" value={androidLatestBuild} onChange={(e) => setAndroidLatestBuild(e.target.value.replace(/[^0-9]/g, ''))}
+              <input type="number" inputMode="numeric" min={1} placeholder="e.g. 16" value={androidLatestBuild} onChange={(e) => setAndroidLatestBuild(e.target.value.replace(/[^0-9]/g, ''))}
                 className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
 
+              <label className="text-xs font-semibold text-ink-muted block mt-3 mb-1">What&apos;s new (optional, shown in the popup)</label>
+              <textarea rows={3} maxLength={300} placeholder="e.g. 500 prayer verses, easier sign-in, and bug fixes." value={androidUpdateMessage} onChange={(e) => setAndroidUpdateMessage(e.target.value)}
+                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40 resize-none" />
+              <p className="text-[0.6875rem] text-ink-faint mt-1 text-right">{androidUpdateMessage.length}/300</p>
+
               <button
-                onClick={() => saveSettings({ android_latest_build: androidLatestBuild })}
+                onClick={() => saveSettings({ android_latest_build: androidLatestBuild, android_update_message: androidUpdateMessage })}
                 disabled={settingsSaving}
                 className="w-full mt-3 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
               >

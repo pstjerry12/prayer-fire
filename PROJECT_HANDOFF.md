@@ -296,10 +296,10 @@ Opened from the Navbar profile menu, `HeroProfile`, or the **"Aa" button** in th
   - Brand-new installs skip it.
   - It can be reopened from Settings → About → What's new.
   - **To announce an update, add a new entry at the top of `WHATS_NEW` with a new unique `id`** (a date works well).
-- **Update bar** (`UpdateBanner.tsx`) checks `/api/app-version` on launch and on every return to the foreground, throttled to once per 60 s:
+- **Update prompts** (`UpdateBanner.tsx`) check `/api/app-version` on launch and on every return to the foreground, throttled to once per 60 s:
   - **Web update:** if the server's `VERCEL_GIT_COMMIT_SHA` ≠ the client's baked-in `NEXT_PUBLIC_BUILD_SHA`, it shows "A new update is ready — Refresh".
-  - **Play Store update:** if `app_settings.android_latest_build` > the installed `versionCode` (Android only), it shows "New version available — Update", linking to the Play Store.
-  - **`android_latest_build` is NOT set yet.** Set it only after a release is live on Play, either in Admin → Settings → App Updates or directly in the DB.
+  - **Play Store update (a popup, since the PR after #72):** if `app_settings.android_latest_build` > the installed `versionCode` (Android app only), it shows a centred "New version available" popup with **Update now** (opens `PLAY_STORE_URL`) and **Remind me later**. "Later" snoozes that build for 24 h; tapping Update snoozes it for 6 h (`pfm_update_snooze`, keyed by build number, so a newer release always prompts again). The Android back button counts as "later". The optional `app_settings.android_update_message` (Admin → Settings → App Updates → "What's new", max 300 chars) is shown inside the popup. It works for every already-installed build, because the code is part of the website.
+  - **`android_latest_build` is NOT set yet.** Set it only after a release is **live on Play (approved, not just uploaded)**, either in Admin → Settings → App Updates or directly in the DB; otherwise people are sent to a store page with no update. It is manual because the app cannot ask Google Play what is live. A future option is Google's in-app update API (a Capacitor plugin, which needs a new native build).
 
 ### Theme ✅
 Light/dark toggle (`pfm_theme`), applied pre-paint.
@@ -596,8 +596,9 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
-| next | Prayer Verses: 50 KJV verses in each of the 10 themes (500 total), generated from the bundled KJV |
-| next | Android build 16: versionCode 16 (1.0.15), requested by the owner; no native code change since build 14 |
+| next | **Update popup:** Play Store "New version available" popup (Update now / Remind me later, 24 h snooze) replacing the top bar for Android updates; optional "What's new" message in Admin → App Updates; `/api/app-version` returns `androidUpdateMessage` |
+| #71 | Prayer Verses: 50 KJV verses in each of the 10 themes (500 total), generated from the bundled KJV |
+| #72 | Android build 16: versionCode 16 (1.0.15), requested by the owner; no native code change since build 14 |
 | #70 | Android build 15: versionCode 15 (1.0.14), requested by the owner; no native code change since build 14 |
 | #69 | Security upgrade: Next.js 16.2.11, postcss 8.5.23, eslint-config-next 16.2.11 (with lock file); Dependabot #4 closed |
 | #67–#68 | **Sign-in wall + idle auto sign-out** (`SignInGate`, `SessionGuard`, `googleSignIn.ts`), `/api/app-version` returns `idleLockMinutes`, admin "Sign-in & Auto Sign-out" card, `/me` sends Bearer token (fixes uncounted Android opens) and returns 503 on errors, What's New entry |
