@@ -66,7 +66,7 @@ External services: Google OAuth (sign-in), Flutterwave (donations + webhook), Go
 **Web**
 | Package | Version |
 |---|---|
-| next | 16.2.6 (App Router) |
+| next | 16.2.11 (App Router) |
 | react / react-dom | 19.2.6 |
 | typescript | 5.9.3 |
 | tailwindcss / @tailwindcss/postcss | 4.1.17 (v4, `@theme` tokens in `src/app/globals.css`) |
@@ -76,7 +76,7 @@ External services: Google OAuth (sign-in), Flutterwave (donations + webhook), Go
 | bcryptjs | ^3.0.3 |
 | lucide-react (icons) | ^1.31.0 |
 | dotenv | 17.3.1 |
-| eslint / eslint-config-next | 9.39.4 / 16.2.6 |
+| eslint / eslint-config-next | 9.39.4 / 16.2.11 |
 | @types/node | 22.19.15 |
 | Node.js | 22 (CI uses `node-version: 22`) |
 
@@ -222,7 +222,7 @@ Status key: ✅ live and working · 🟡 works with caveats · ⏳ not built / f
 - KJV, ASV and WEB are bundled as JSON, so it is **fully offline**.
 - 3-step flow: Book → Chapters → Verses (`BibleReader.tsx`). The Android back button steps back through it.
 - Favorites (`upp_bible_favorites`) and translation choice (`upp_bible_translation`) are saved.
-- `BibleLibrary.tsx` holds the "Prayer Verses" collection.
+- `BibleLibrary.tsx` holds the "Prayer Verses" collection: 10 themes (Faith, Protection, Healing, Strength, Peace, Provision, Wisdom, Prayer, Family, Thanksgiving) with **50 KJV verses each (500 total)**. The first few per theme are hand-written in `src/app/data/bibleVerses.ts`; the rest are in `src/app/data/bibleVersesExtra.ts`, which is **generated** by `node scripts/generate-prayer-verses.mjs`. Only the references are chosen in that script; the wording is copied from the bundled `src/data/bible/kjv.json`. To add or swap verses, edit the reference lists in the script and re-run it (never hand-edit the generated file).
 
 ### Scripture Vault (`/scripture`) ✅
 Curated verses in English, Spanish, French, Portuguese and Swahili.
@@ -596,8 +596,10 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
-| next | **Sign-in wall + idle auto sign-out** (`SignInGate`, `SessionGuard`, `googleSignIn.ts`), `/api/app-version` returns `idleLockMinutes`, admin "Sign-in & Auto Sign-out" card, `/me` sends Bearer token (fixes uncounted Android opens) and returns 503 on errors, What's New entry |
-| next | Android build 15: versionCode 15 (1.0.14), requested by the owner; no native code change since build 14 |
+| next | Prayer Verses: 50 KJV verses in each of the 10 themes (500 total), generated from the bundled KJV |
+| #70 | Android build 15: versionCode 15 (1.0.14), requested by the owner; no native code change since build 14 |
+| #69 | Security upgrade: Next.js 16.2.11, postcss 8.5.23, eslint-config-next 16.2.11 (with lock file); Dependabot #4 closed |
+| #67–#68 | **Sign-in wall + idle auto sign-out** (`SignInGate`, `SessionGuard`, `googleSignIn.ts`), `/api/app-version` returns `idleLockMinutes`, admin "Sign-in & Auto Sign-out" card, `/me` sends Bearer token (fixes uncounted Android opens) and returns 503 on errors, What's New entry |
 | #66 | Android build 14: versionCode 14 (1.0.13) |
 | #65 | Bible reader: plain Book / Chapters / Verses labels, always clickable |
 | #64 | Admin → Feedback → Daily activity (who opened the app, who didn't, WhatsApp/email reminders, manual tester list); `user_activity` + `testers` tables; activity recorded in `/api/auth/me`; service worker no longer caches `/api/admin/*`; admin bottom padding; privacy text; Android workflow artifact-name fix |
