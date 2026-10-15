@@ -26,7 +26,7 @@
 | Live web app | `https://prayer-fire.vercel.app` (Vercel, Next.js) |
 | GitHub repo | `pstjerry12/prayer-fire` |
 | Play Store URL | `https://play.google.com/store/apps/details?id=com.prayerfireaction.prayerfire` (`PLAY_STORE_URL` in `src/lib/capacitorAlarm.ts`) |
-| Current Android version | `versionCode 18`, `versionName "1.0.17"` in `android/variables.gradle`. Builds 14–17 contain the same native app; build 18 adds the alarm fixes (stuck ringing, Stop opens the app); all other recent changes (Daily activity, Bible fix, sign-in, Next.js upgrade, 500 Prayer Verses, update popup) are web and ship via Vercel. Check Play Console for what is actually uploaded. |
+| Current Android version | `versionCode 19`, `versionName "1.0.18"` in `android/variables.gradle`. Builds 14–17 contain the same native app; builds 18–19 contain the alarm fixes (stuck ringing, Stop opens the app); all other recent changes (Daily activity, Bible fix, sign-in, Next.js upgrade, 500 Prayer Verses, update popup) are web and ship via Vercel. Check Play Console for what is actually uploaded. |
 
 ### Working with the owner (important for any assistant)
 - The owner is **non-technical**. They usually send phone screenshots, often of Play Console, Vercel or Flutterwave. Explain things in plain language with numbered click-by-click steps.
@@ -596,6 +596,7 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
+| next | Android build 19: versionCode 19 (1.0.18), requested by the owner; no native code change since build 18 |
 | #75 | Alarm fix + popup + Stop opens app (Android build 18, versionCode 18 / 1.0.17). Native: `AlarmRingService` now keeps ONE process-wide MediaPlayer, released before every start and by every stop (before, a second start while ringing orphaned a looping player that Stop could not reach — a tester's alarm rang until the process was killed by an update); new `AlarmStopActivity` (invisible) behind the notification Stop button and the DISMISS button silence the alarm via `AlarmRingService.stopRinging()` and open the app so users land on sign-in. Web: sign-in popup is vertically centered, never taller than the screen (form scrolls inside), and the app shows blurred behind it instead of a solid page |
 | #74 | Android build 17: versionCode 17 (1.0.16), requested by the owner; no native code change since build 14 |
 | #73 | Update popup: Play Store "New version available" popup (Update now / Remind me later, 24 h snooze) replacing the top bar for Android updates; optional "What's new" message in Admin → App Updates; `/api/app-version` returns `androidUpdateMessage` |
