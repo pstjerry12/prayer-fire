@@ -16,6 +16,7 @@ import android.os.Looper
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import com.prayerfire.app.MainActivity
 
 /**
  * Foreground service that does the actual ringing: loops the chosen tone on
@@ -30,9 +31,74 @@ class AlarmRingService : Service() {
         const val NOTIFICATION_ID = 7719
         const val RING_DURATION_MS = 5 * 60 * 1000L
         const val ACTION_STOP = "com.prayerfire.app.alarmengine.ACTION_STOP"
+
+        // One player for the whole process. Previously each service start
+        // created its own MediaPlayer in an instance field and never released
+        // the old one — if the alarm fired again while still ringing (or the
+        // service was re-delivered), the first looping player was orphaned:
+        // nothing referenced it any more, so Stop/DISMISS could not silence
+        // it and it kept ringing until the process was killed (e.g. by
+        // installing an update). Every start and every stop now goes through
+        // this single reference.
+        @Volatile
+        private var activePlayer: MediaPlayer? = null
+
+        @Synchronized
+        private fun releaseActivePlayer() {
+            val player = activePlayer
+            activePlayer = null
+            if (player == null) return
+            try {
+                player.setOnErrorListener(null)
+                if (player.isPlaying) player.stop()
+            } catch (e: Exception) {
+                // not in a stoppable state — release below still frees it
+            }
+            try {
+                player.release()
+            } catch (e: Exception) {
+                // already released
+            }
+        }
+
+        /**
+         * Silences the alarm from anywhere (notification Stop, the ringing
+         * screen, or the web app). Releases the sound first, directly, so it
+         * stops even if the service itself is mid-restart, then tears down
+         * the service and its notification.
+         */
+        fun stopRinging(context: Context) {
+            releaseActivePlayer()
+            val app = context.applicationContext
+            try {
+                app.stopService(Intent(app, AlarmRingService::class.java))
+            } catch (e: Exception) {
+                // service not running
+            }
+            try {
+                (app.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+                    .cancel(NOTIFICATION_ID)
+            } catch (e: Exception) {
+                // ignore
+            }
+        }
+
+        /** Brings the app to the front (its sign-in screen if signed out). */
+        fun openApp(context: Context) {
+            try {
+                context.startActivity(
+                    Intent(context, MainActivity::class.java).addFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK or
+                            Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                            Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    )
+                )
+            } catch (e: Exception) {
+                // background-launch restriction — the alarm is already silenced
+            }
+        }
     }
 
-    private var mediaPlayer: MediaPlayer? = null
     private var wakeLock: PowerManager.WakeLock? = null
     private val stopHandler = Handler(Looper.getMainLooper())
     private val stopRunnable = Runnable { stopSelfSafely() }
@@ -96,10 +162,17 @@ class AlarmRingService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val stopIntent = Intent(this, AlarmRingService::class.java).apply { action = ACTION_STOP }
-        val stopPendingIntent = PendingIntent.getService(
+        // Stop goes through a tiny invisible Activity rather than a service or
+        // broadcast PendingIntent: it silences the alarm and opens the app in
+        // one tap, and an Activity PendingIntent started from a notification
+        // is allowed to launch the app even on Android 12+ (which blocks
+        // "notification trampolines" via services/receivers).
+        val stopIntent = Intent(this, AlarmStopActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY)
+        }
+        val stopPendingIntent = PendingIntent.getActivity(
             this,
-            id.hashCode(),
+            id.hashCode() + 1,
             stopIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -146,8 +219,15 @@ class AlarmRingService : Service() {
             .takeIf { it != 0 }
             ?: resources.getIdentifier("classic", "raw", packageName)
 
+        // Never leave a previous player alive underneath the new one.
+        releaseActivePlayer()
+
         try {
-            mediaPlayer = MediaPlayer().apply {
+            activePlayer = MediaPlayer().apply {
+                setOnErrorListener { _, _, _ ->
+                    releaseActivePlayer()
+                    true
+                }
                 setAudioAttributes(
                     AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_ALARM)
@@ -166,22 +246,14 @@ class AlarmRingService : Service() {
                 start()
             }
         } catch (e: Exception) {
-            mediaPlayer = null
+            releaseActivePlayer()
         }
     }
 
     private fun stopSelfSafely() {
         stopHandler.removeCallbacks(stopRunnable)
 
-        try {
-            mediaPlayer?.let {
-                if (it.isPlaying) it.stop()
-                it.release()
-            }
-        } catch (e: Exception) {
-            // already released
-        }
-        mediaPlayer = null
+        releaseActivePlayer()
 
         try {
             if (wakeLock?.isHeld == true) wakeLock?.release()

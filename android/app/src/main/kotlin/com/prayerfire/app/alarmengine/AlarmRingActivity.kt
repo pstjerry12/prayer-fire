@@ -85,7 +85,10 @@ class AlarmRingActivity : AppCompatActivity() {
             textSize = 18f
             setPadding(72, 40, 72, 40)
             setOnClickListener {
-                stopService(Intent(this@AlarmRingActivity, AlarmRingService::class.java))
+                // Silence the alarm, then bring the app up so the user lands
+                // in Prayer Fire (and its sign-in screen if signed out).
+                AlarmRingService.stopRinging(this@AlarmRingActivity)
+                AlarmRingService.openApp(this@AlarmRingActivity)
                 finish()
             }
         }

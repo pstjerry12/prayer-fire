@@ -50,9 +50,10 @@ export default function SignInGate() {
   const idleMinutes = readIdleNotice();
 
   return (
-    <div className="fixed inset-0 z-[75] bg-page">
-      {/* The sign-in form is the wall. Someone who has signed in on this phone
-          before lands on Sign In (their email/phone already filled in); a new
+    <div className="fixed inset-0 z-[75]">
+      {/* The sign-in form is the wall — a centered popup over the blurred app
+          (the AuthModal's own backdrop blocks taps on everything behind it).
+          Someone who has signed in on this phone before lands on Sign In (their email/phone already filled in); a new
           person lands on Create Account, where "Continue with Google" lives. */}
       <AuthModal
         isOpen
