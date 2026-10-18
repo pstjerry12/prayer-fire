@@ -6,9 +6,10 @@ import { checkSession, clearSession } from '@/lib/authClient';
 
 export const LAST_ACTIVE_KEY = 'pfm_last_active';
 export const IDLE_NOTICE_KEY = 'pfm_idle_notice';
-export const IDLE_MINUTES_KEY = 'pfm_idle_minutes';
+// v2: ignore the old cached 30-minute limit that earlier versions saved on phones
+export const IDLE_MINUTES_KEY = 'pfm_idle_minutes_v2';
 
-const DEFAULT_IDLE_MINUTES = 30; // used until the server's setting is known
+const DEFAULT_IDLE_MINUTES = 0; // off unless the admin turns it on: people stay signed in until they sign out
 const TOUCH_EVERY_MS = 15_000; // how often use of the app is recorded
 const CHECK_EVERY_MS = 30_000; // how often an open-but-untouched app is checked
 const RECHECK_SESSION_MS = 20 * 60_000; // re-verify (and count today's visit) after being away this long
@@ -23,10 +24,11 @@ function readNumber(key: string): number | null {
 }
 
 /**
- * Signs the person out when the app has been left alone for a while, so the
- * sign-in wall asks again (default 30 minutes; the admin can change it or turn
- * it off in Admin → Settings). "Left alone" means either the app sat in the
- * background / was closed for that long, or it stayed open without being touched.
+ * Optional auto sign-out (OFF by default — people stay signed in until they sign
+ * out themselves). If the admin sets a number of minutes in Admin → Settings, the
+ * person is signed out when the app has been left alone that long, so the sign-in
+ * wall asks again. "Left alone" means either the app sat in the background / was
+ * closed for that long, or it stayed open without being touched.
  *
  * It also re-checks the session whenever the app comes back to the front, so a
  * phone that keeps the app alive across midnight still counts as a visit on the

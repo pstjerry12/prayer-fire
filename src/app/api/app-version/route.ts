@@ -12,8 +12,9 @@ export const dynamic = 'force-dynamic';
 //  - androidUpdateMessage: optional note the admin wants shown in the
 //    "update available" popup (what's new in the release)
 //  - idleLockMinutes: minutes of inactivity before the app asks for sign-in
-//    again (admin setting; 0 = never). Defaults to 30 when unset.
-const DEFAULT_IDLE_LOCK_MINUTES = 30;
+//    again (admin setting; 0 = never). Defaults to 0 (off) when unset: people
+//    stay signed in until they sign out themselves.
+const DEFAULT_IDLE_LOCK_MINUTES = 0;
 
 export async function GET() {
   let androidLatestBuild: number | null = null;
