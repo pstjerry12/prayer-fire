@@ -7,7 +7,7 @@ const secret = new TextEncoder().encode(
 );
 
 export const AUTH_COOKIE = "pfm_token";
-export const TOKEN_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
+export const TOKEN_MAX_AGE = 60 * 60 * 24 * 365; // 1 year — people stay signed in until they sign out
 
 export function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10);
@@ -21,7 +21,7 @@ export async function signToken(payload: Record<string, unknown>): Promise<strin
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("30d")
+    .setExpirationTime("365d")
     .sign(secret);
 }
 

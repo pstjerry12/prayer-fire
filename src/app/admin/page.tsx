@@ -927,12 +927,12 @@ export default function AdminPage() {
 
               <div className="bg-card-2 rounded-xl p-3 mb-3">
                 <p className="text-xs text-ink-muted">
-                  💡 Everyone must sign in to use Prayer Fire, so every visit shows up in Feedback → Daily activity. If the app is left alone (closed, in the background, or open but untouched) for this many minutes, it signs the person out and asks them to sign in again. Leave blank for the default (30). Enter <strong>0</strong> to never sign people out.
+                  💡 Everyone must sign in to use Prayer Fire, so every visit shows up in Feedback → Daily activity. This is <strong>off</strong> by default: people stay signed in until they tap Sign out themselves. To turn it on, enter a number of minutes — if the app is left alone (closed, in the background, or open but untouched) for that long, it signs the person out and asks them to sign in again. Leave blank or enter <strong>0</strong> to keep it off.
                 </p>
               </div>
 
-              <label className="text-xs font-semibold text-ink-muted block mb-1">Sign out after (minutes of inactivity)</label>
-              <input type="number" inputMode="numeric" min={0} max={1440} placeholder="30" value={idleLockMinutes} onChange={(e) => setIdleLockMinutes(e.target.value.replace(/[^0-9]/g, ''))}
+              <label className="text-xs font-semibold text-ink-muted block mb-1">Sign out after (minutes of inactivity, 0 = off)</label>
+              <input type="number" inputMode="numeric" min={0} max={1440} placeholder="0 (off)" value={idleLockMinutes} onChange={(e) => setIdleLockMinutes(e.target.value.replace(/[^0-9]/g, ''))}
                 className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
 
               <button
