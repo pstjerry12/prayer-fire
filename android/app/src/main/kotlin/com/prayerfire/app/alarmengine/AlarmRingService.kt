@@ -20,7 +20,8 @@ import com.prayerfire.app.MainActivity
 
 /**
  * Foreground service that does the actual ringing: loops the chosen tone on
- * the ALARM stream at max volume for exactly 5 minutes, then stops itself.
+ * the ALARM stream at a moderate volume for exactly 5 minutes, then stops
+ * itself.
  * Also posts the full-screen-intent notification that launches
  * AlarmRingActivity over the lock screen.
  */
@@ -30,6 +31,11 @@ class AlarmRingService : Service() {
         const val CHANNEL_ID = "prayer_alarm_ring"
         const val NOTIFICATION_ID = 7719
         const val RING_DURATION_MS = 5 * 60 * 1000L
+
+        // How loud the alarm rings, as a percentage of the phone's maximum
+        // alarm volume. It used to be forced to 100%, which testers found far
+        // too loud. Raise or lower this number to taste (1-100).
+        const val ALARM_VOLUME_PERCENT = 50
         const val ACTION_STOP = "com.prayerfire.app.alarmengine.ACTION_STOP"
 
         // One player for the whole process. Previously each service start
@@ -205,11 +211,9 @@ class AlarmRingService : Service() {
     private fun startRinging(tone: String) {
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         try {
-            audioManager.setStreamVolume(
-                AudioManager.STREAM_ALARM,
-                audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM),
-                0
-            )
+            val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
+            val level = (max * ALARM_VOLUME_PERCENT / 100).coerceIn(1, max)
+            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, level, 0)
         } catch (e: SecurityException) {
             // Some OEMs restrict programmatic volume changes — ringing still
             // plays at whatever the current alarm-stream volume already is.
