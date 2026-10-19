@@ -26,7 +26,7 @@
 | Live web app | `https://prayer-fire.vercel.app` (Vercel, Next.js) |
 | GitHub repo | `pstjerry12/prayer-fire` |
 | Play Store URL | `https://play.google.com/store/apps/details?id=com.prayerfireaction.prayerfire` (`PLAY_STORE_URL` in `src/lib/capacitorAlarm.ts`) |
-| Current Android version | `versionCode 20`, `versionName "1.0.19"` in `android/variables.gradle`. Builds 14–17 contain the same native app; builds 18–20 contain the alarm fixes (stuck ringing, Stop opens the app); build 20 also lowers the alarm volume to 50%; all other recent changes (Daily activity, Bible fix, sign-in, Next.js upgrade, 500 Prayer Verses, update popup) are web and ship via Vercel. Check Play Console for what is actually uploaded. |
+| Current Android version | `versionCode 21`, `versionName "1.0.20"` in `android/variables.gradle`. Builds 14–17 contain the same native app; builds 18–21 contain the alarm fixes (stuck ringing, Stop opens the app); builds 20–21 also lower the alarm volume to 50%; all other recent changes (Daily activity, Bible fix, sign-in, Next.js upgrade, 500 Prayer Verses, update popup) are web and ship via Vercel. Check Play Console for what is actually uploaded. |
 
 ### Working with the owner (important for any assistant)
 - The owner is **non-technical**. They usually send phone screenshots, often of Play Console, Vercel or Flutterwave. Explain things in plain language with numbered click-by-click steps.
@@ -596,6 +596,7 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
+| #79 | Android build 21: versionCode 21 (1.0.20), requested by the owner because Play said version code 20 was already used when uploading; no code change since build 20 |
 | next | Android build 19: versionCode 19 (1.0.18), requested by the owner; no native code change since build 18 |
 | next | **Quieter alarm (Android build 20, versionCode 20 / 1.0.19):** `AlarmRingService` no longer forces the ALARM stream to 100%; it sets it to `ALARM_VOLUME_PERCENT` (50) of the phone's max (change that constant to taste). Build 19 was never uploaded to Play, so upload 20 instead |
 | #77 | **Stay signed in until sign-out:** idle auto sign-out is now OFF by default (server default `idleLockMinutes` 0, client default 0, `app_settings.idle_lock_minutes` set to `0` in production, cache key bumped to `pfm_idle_minutes_v2` so phones drop the old cached 30). The admin card "Sign-in & Auto Sign-out" still exists to turn it back on. Login now lasts 1 year (`TOKEN_MAX_AGE`/JWT 365d, was 30d) so people are only signed out by tapping Sign out, a password change/account deletion, or clearing app data. The sign-in wall still appears for anyone who is signed out |
