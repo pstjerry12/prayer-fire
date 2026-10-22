@@ -89,7 +89,8 @@ export default function PrayerVersePage() {
 
             {reader.problem && (
               <p className="mx-6 mt-3 rounded-lg bg-warn-soft border border-warn-edge px-3 py-2 text-xs text-ink-soft">
-                Read aloud isn&apos;t available on this device. Check that a text-to-speech voice is installed in your phone&apos;s settings.
+                Read aloud couldn&apos;t start on this device. Check that a text-to-speech voice is installed and your media volume is up.
+                <span className="block mt-1 text-[0.6875rem] text-ink-muted break-words">Details: {reader.problemDetail ?? 'no voice available'}</span>
               </p>
             )}
 

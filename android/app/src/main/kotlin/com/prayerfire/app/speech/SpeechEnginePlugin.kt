@@ -245,8 +245,12 @@ class SpeechEnginePlugin : Plugin() {
         try {
             val voices = engine.voices ?: return
             val wantedLang = localeFor(lang).language
+            // Only voices that are installed and work without internet: a "network" voice
+            // would stay silent whenever the phone is offline.
             val usable = voices.filter {
-                it.locale.language == wantedLang && !it.features.contains("notInstalled")
+                it.locale.language == wantedLang &&
+                    !it.features.contains("notInstalled") &&
+                    !it.isNetworkConnectionRequired
             }
             for (hint in hints) {
                 if (hint.isBlank()) continue

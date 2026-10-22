@@ -33,8 +33,8 @@ export interface ReadOptions {
   /** A new item starts being spoken. */
   onItemStart?: (index: number, item: SpeechItem) => void;
   onStateChange?: (state: ReaderState) => void;
-  /** Called once when reading finishes, is stopped, or can't run. */
-  onEnd?: (reason: SpeechEndReason) => void;
+  /** Called once when reading finishes, is stopped, or can't run. `detail` says why when it couldn't. */
+  onEnd?: (reason: SpeechEndReason, detail?: string) => void;
 }
 
 export interface ReadController {
@@ -65,24 +65,30 @@ interface SpeechEnginePluginApi {
   addListener(event: 'verseStart', cb: (data: { index: number }) => void): Promise<{ remove: () => Promise<void> }>;
 }
 
-let nativePlugin: Promise<SpeechEnginePluginApi | null> | null = null;
+let nativeHandle: { plugin: SpeechEnginePluginApi } | null = null;
 let nativeMissing = false; // this install has no SpeechEngine queue support (older build)
 let session = 0; // bumps on every start/stop so stale callbacks are ignored
 let active: { stop: () => void } | null = null;
 
-function getNativePlugin(): Promise<SpeechEnginePluginApi | null> {
-  if (!nativePlugin) {
-    nativePlugin = (async () => {
-      try {
-        const { registerPlugin, Capacitor } = await import('@capacitor/core');
-        if (Capacitor.getPlatform() !== 'android') return null;
-        return registerPlugin<SpeechEnginePluginApi>('SpeechEngine');
-      } catch {
-        return null;
-      }
-    })();
+/**
+ * The native plugin, wrapped in a plain object on purpose: a Capacitor plugin is
+ * a Proxy that answers to ANY property name, including "then". Returning it
+ * straight from an async function makes JavaScript treat it as a promise and
+ * call plugin.then(), which fails natively ("then is not implemented") — that
+ * is exactly what left read aloud silent on Android. Wrapping it avoids that.
+ * "Not Android yet" is never cached: the bridge can report "web" for a moment
+ * right after the app opens (see capacitorAlarm.ts), so we look again next time.
+ */
+async function getNative(): Promise<{ plugin: SpeechEnginePluginApi } | null> {
+  if (nativeHandle) return nativeHandle;
+  try {
+    const { registerPlugin, Capacitor } = await import('@capacitor/core');
+    if (Capacitor.getPlatform() !== 'android') return null;
+    nativeHandle = { plugin: registerPlugin<SpeechEnginePluginApi>('SpeechEngine') };
+    return nativeHandle;
+  } catch {
+    return null;
   }
-  return nativePlugin;
 }
 
 // ── Browser voices ──────────────────────────────────────────────────────
@@ -134,8 +140,8 @@ export function pickBrowserVoice(voices: SpeechSynthesisVoice[], langTag: string
 export function preloadVoices(): void {
   if (typeof window === 'undefined') return;
   loadVoices().catch(() => {});
-  getNativePlugin()
-    .then((plugin) => plugin?.warmUp?.().catch(() => {}))
+  getNative()
+    .then((native) => native?.plugin.warmUp?.().catch(() => {}))
     .catch(() => {});
 }
 
@@ -202,12 +208,12 @@ export function readItems(items: SpeechItem[], opts: ReadOptions = {}): ReadCont
     state = next;
     opts.onStateChange?.(next);
   };
-  const finish = (reason: SpeechEndReason) => {
+  const finish = (reason: SpeechEndReason, detail?: string) => {
     if (ended) return;
     ended = true;
     if (active === handle) active = null;
     setState('idle');
-    opts.onEnd?.(reason);
+    opts.onEnd?.(reason, detail);
   };
 
   const lang = opts.lang ?? 'en';
@@ -215,8 +221,8 @@ export function readItems(items: SpeechItem[], opts: ReadOptions = {}): ReadCont
   const rate = opts.rate ?? VOICE_CONFIG.rate;
   const pitch = opts.pitch ?? VOICE_CONFIG.pitch;
 
-  /** Speaks items[startIndex…]. Resolves with how it ended. */
-  const run = async (): Promise<SpeechEndReason> => {
+  /** Speaks items[startIndex…]. Resolves with how it ended (and why, when it couldn't). */
+  const run = async (): Promise<{ reason: SpeechEndReason; detail?: string }> => {
     const runSession = session;
     const remaining = items.slice(startIndex);
     const offset = startIndex;
@@ -226,15 +232,18 @@ export function readItems(items: SpeechItem[], opts: ReadOptions = {}): ReadCont
       opts.onItemStart?.(offset + i, items[offset + i]);
     };
 
-    // 1. Native Android engine
+    // 1. Native Android engine. If it can't speak, the browser engine below is tried
+    //    next, so a problem in the plugin never leaves the person with silence.
+    let nativeProblem: string | undefined;
     if (!nativeMissing) {
-      const plugin = await getNativePlugin();
-      if (runSession !== session) return 'stopped';
-      if (plugin) {
+      const native = await getNative();
+      if (runSession !== session) return { reason: 'stopped' };
+      if (native) {
+        const plugin = native.plugin;
         let listener: { remove: () => Promise<void> } | null = null;
         try {
           listener = await plugin.addListener('verseStart', (d) => notify(d.index));
-          if (runSession !== session) return 'stopped';
+          if (runSession !== session) return { reason: 'stopped' };
           const result = await plugin.speakQueue({
             items: remaining.map((it) => it.text),
             rate,
@@ -242,37 +251,41 @@ export function readItems(items: SpeechItem[], opts: ReadOptions = {}): ReadCont
             lang,
             voiceHints: VOICE_CONFIG.androidVoicePreference,
           });
-          return result?.stopped ? 'stopped' : 'done';
+          return { reason: result?.stopped ? 'stopped' : 'done' };
         } catch (err) {
           const message = String((err as { message?: string })?.message ?? err);
-          if (!/not implemented|unimplemented/i.test(message)) return 'error';
-          // Build 22 only has the single-text "speak": read everything as one piece
-          // (no per-verse highlight). Anything older has no plugin at all.
-          try {
-            const result = await plugin.speak({
-              text: remaining.map((it) => it.text).join(' '),
-              rate,
-              pitch,
-              lang,
-            });
-            return result?.stopped ? 'stopped' : 'done';
-          } catch (err2) {
-            const message2 = String((err2 as { message?: string })?.message ?? err2);
-            if (!/not implemented|unimplemented/i.test(message2)) return 'error';
-            nativeMissing = true; // no usable native plugin: use the browser engine from now on
+          if (!/not implemented|unimplemented/i.test(message)) {
+            nativeProblem = message;
+          } else {
+            // Build 22 only has the single-text "speak": read everything as one piece
+            // (no per-verse highlight). Anything older has no plugin at all.
+            try {
+              const result = await plugin.speak({
+                text: remaining.map((it) => it.text).join(' '),
+                rate,
+                pitch,
+                lang,
+              });
+              return { reason: result?.stopped ? 'stopped' : 'done' };
+            } catch (err2) {
+              const message2 = String((err2 as { message?: string })?.message ?? err2);
+              if (!/not implemented|unimplemented/i.test(message2)) nativeProblem = message2;
+              else nativeMissing = true; // no usable native plugin: use the browser engine from now on
+            }
           }
         } finally {
           listener?.remove().catch(() => {});
         }
+        if (runSession !== session) return { reason: 'stopped' };
       }
     }
 
     // 2. Browser engine, one utterance per piece of a verse
-    if (!webSpeechAvailable()) return 'unsupported';
+    if (!webSpeechAvailable()) return { reason: 'unsupported', detail: nativeProblem };
     const synth = window.speechSynthesis;
     synth.cancel();
     const voices = await loadVoices();
-    if (runSession !== session) return 'stopped';
+    if (runSession !== session) return { reason: 'stopped' };
     const voice = pickBrowserVoice(voices, langTag);
 
     const queue: { item: number; text: string; first: boolean }[] = [];
@@ -280,13 +293,13 @@ export function readItems(items: SpeechItem[], opts: ReadOptions = {}): ReadCont
       splitForSpeech(it.text).forEach((piece, n) => queue.push({ item: i, text: piece, first: n === 0 }));
     });
 
-    return new Promise<SpeechEndReason>((resolve) => {
+    return new Promise<{ reason: SpeechEndReason; detail?: string }>((resolve) => {
       let index = 0;
       let settled = false;
       const settle = (reason: SpeechEndReason) => {
         if (settled) return;
         settled = true;
-        resolve(reason);
+        resolve({ reason, detail: reason === 'error' ? nativeProblem ?? 'the browser voice reported an error' : undefined });
       };
       cancelRun = () => settle('stopped');
 
@@ -322,20 +335,20 @@ export function readItems(items: SpeechItem[], opts: ReadOptions = {}): ReadCont
         // ignore
       }
     }
-    getNativePlugin()
-      .then((plugin) => plugin?.stop().catch(() => {}))
+    getNative()
+      .then((native) => native?.plugin.stop().catch(() => {}))
       .catch(() => {});
   };
 
   const start = () => {
     const thisRun = session;
     run()
-      .then((reason) => {
+      .then(({ reason, detail }) => {
         if (thisRun !== session) return; // paused or replaced; whoever did that reports the state
-        finish(reason);
+        finish(reason, detail);
       })
-      .catch(() => {
-        if (thisRun === session) finish('error');
+      .catch((err) => {
+        if (thisRun === session) finish('error', String((err as { message?: string })?.message ?? err));
       });
   };
 
@@ -398,7 +411,7 @@ export function stopSpeech(): void {
       // ignore
     }
   }
-  getNativePlugin()
-    .then((plugin) => plugin?.stop().catch(() => {}))
+  getNative()
+    .then((native) => native?.plugin.stop().catch(() => {}))
     .catch(() => {});
 }
