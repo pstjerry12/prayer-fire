@@ -1,13 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
-  BookOpen, ChevronLeft, Volume2, Loader2, BookMarked, ListOrdered, AlertTriangle, ChevronDown,
+  BookOpen, ChevronLeft, Volume2, Square, Loader2, BookMarked, ListOrdered, AlertTriangle, ChevronDown, Bookmark as BookmarkIcon,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { pushBackHandler } from '@/lib/backHandlerStack';
 import { BIBLE_BOOKS } from '@/app/data/bibleBooks';
-import { speakText } from '@/lib/clientUtils';
+import { speakText, stopSpeech } from '@/lib/readAloud';
+import { bibleBookmarkKey, useBookmarks } from '@/lib/bookmarks';
+import LongPressable from './LongPressable';
+import VerseActionBar from './VerseActionBar';
 import { loadTranslation, getChapter, type BibleVerse } from '@/lib/bible/loadTranslation';
 import {
   BIBLE_TRANSLATIONS,
@@ -32,7 +36,39 @@ const STEPS: { n: Step; label: string }[] = [
   { n: 3, label: 'Verses' },
 ];
 
+// Where the reader was, kept for this session only, so coming back from a
+// verse page (or the Bookmarks tab) lands on the same chapter instead of the book list.
+const POSITION_KEY = 'pfm_bible_position';
+
+interface SavedPosition {
+  step: Step;
+  book: string;
+  chapter: number;
+  verse: number | null;
+}
+
+function readPosition(): SavedPosition | null {
+  try {
+    const raw = sessionStorage.getItem(POSITION_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw) as SavedPosition;
+    if (!BIBLE_BOOKS.some((b) => b.name === p.book)) return null;
+    return p;
+  } catch {
+    return null;
+  }
+}
+
 export default function BibleReader() {
+  const router = useRouter();
+  const { isBookmarked, toggle } = useBookmarks();
+  const [heldVerse, setHeldVerse] = useState<number | null>(null);
+  const [speaking, setSpeaking] = useState(false);
+  const [restoredVerse, setRestoredVerse] = useState<number | null>(null);
+  const [speechProblem, setSpeechProblem] = useState(false);
+  // True once the saved reading position (if any) has been applied; until then we
+  // must not overwrite it with the default Genesis 1 screen.
+  const [positionLoaded, setPositionLoaded] = useState(false);
   const [step, setStep] = useState<Step>(1);
   const [book, setBook] = useState('Genesis');
   const [chapter, setChapter] = useState(1);
@@ -48,7 +84,32 @@ export default function BibleReader() {
 
   useEffect(() => {
     setTranslationId(getSelectedTranslation());
+    const saved = readPosition();
+    if (saved) {
+      setBook(saved.book);
+      setChapter(saved.chapter);
+      setStep(saved.step);
+      setRestoredVerse(saved.verse);
+    }
+    setPositionLoaded(true);
   }, []);
+
+  // Stop reading when leaving the page.
+  useEffect(() => () => stopSpeech(), []);
+
+  function savePosition(verse: number | null) {
+    try {
+      sessionStorage.setItem(POSITION_KEY, JSON.stringify({ step, book, chapter, verse } satisfies SavedPosition));
+    } catch {
+      // ignore
+    }
+  }
+
+  // Remember the step/book/chapter whenever they change.
+  useEffect(() => {
+    if (positionLoaded) savePosition(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [positionLoaded, step, book, chapter]);
 
   const currentBook = BIBLE_BOOKS.find((b) => b.name === book) ?? BIBLE_BOOKS[0];
   const otBooks = BIBLE_BOOKS.filter((b) => b.testament === 'OT');
@@ -60,6 +121,9 @@ export default function BibleReader() {
     setUnavailable(false);
     setVerses(null);
     setSelectedVerse(null);
+    setHeldVerse(null);
+    stopSpeech();
+    setSpeaking(false);
 
     try {
       const data = await loadTranslation(translation);
@@ -79,6 +143,17 @@ export default function BibleReader() {
     if (step === 3) loadChapter(currentBook.osis, chapter, translationId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, book, chapter, translationId]);
+
+  // Coming back from a verse page: scroll to the verse that was opened.
+  useEffect(() => {
+    if (!verses || restoredVerse == null) return;
+    setSelectedVerse(restoredVerse);
+    const t = setTimeout(() => {
+      verseRefs.current[restoredVerse]?.scrollIntoView({ block: 'center' });
+    }, 50);
+    setRestoredVerse(null);
+    return () => clearTimeout(t);
+  }, [verses, restoredVerse]);
 
   // Let the hardware/gesture back button step back through Verses → Chapters
   // → Book one level at a time instead of falling straight through to the
@@ -119,8 +194,41 @@ export default function BibleReader() {
 
   function readChapter() {
     if (!verses) return;
+    if (speaking) {
+      stopSpeech();
+      setSpeaking(false);
+      return;
+    }
     const text = verses.map((v) => `${v.number}. ${v.text}`).join(' ');
-    speakText(`${book} chapter ${chapter}. ${text}`);
+    setSpeaking(true);
+    speakText(`${book} chapter ${chapter}. ${text}`, {
+      onEnd: (reason) => {
+        setSpeaking(false);
+        if (reason === 'unsupported' || reason === 'error') {
+          setSpeechProblem(true);
+        }
+      },
+    });
+    setSpeechProblem(false);
+  }
+
+  function openVerse(n: number) {
+    stopSpeech();
+    savePosition(n);
+    router.push(`/bible/verse/${currentBook.osis}/${chapter}/${n}`);
+  }
+
+  function bookmarkFor(v: BibleVerse) {
+    return {
+      key: bibleBookmarkKey(translationId, currentBook.osis, chapter, v.number),
+      kind: 'bible' as const,
+      reference: `${book} ${chapter}:${v.number}`,
+      text: v.text,
+      translation: translationMeta.shortName,
+      osis: currentBook.osis,
+      chapter,
+      verse: v.number,
+    };
   }
 
   return (
@@ -275,8 +383,15 @@ export default function BibleReader() {
                 </div>
               </div>
               {verses && !loading && (
-                <button onClick={readChapter} className="shrink-0 flex items-center gap-1.5 px-3 py-2 bg-card-2 text-ink-soft rounded-lg text-xs font-bold hover:bg-card-3">
-                  <Volume2 className="w-4 h-4" /> Read aloud
+                <button
+                  onClick={readChapter}
+                  className={cn(
+                    'shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold',
+                    speaking ? 'bg-emerald-600 text-white' : 'bg-card-2 text-ink-soft hover:bg-card-3'
+                  )}
+                >
+                  {speaking ? <Square className="w-4 h-4 fill-current" /> : <Volume2 className="w-4 h-4" />}
+                  {speaking ? 'Stop' : 'Read aloud'}
                 </button>
               )}
             </div>
@@ -295,25 +410,62 @@ export default function BibleReader() {
                 </button>
               </div>
             ) : verses ? (
+              <>
+              {speechProblem && (
+                <p className="mb-3 rounded-lg bg-warn-soft border border-warn-edge px-3 py-2 text-xs text-ink-soft">
+                  Read aloud isn&apos;t available on this device. Check that a text-to-speech voice is installed in your phone&apos;s settings.
+                </p>
+              )}
+              <p className="mb-3 text-[0.6875rem] text-ink-muted">
+                Tap a verse to open it · hold a verse for 2 seconds to copy or bookmark it
+              </p>
               <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
-                {verses.map((v) => (
-                  <div
-                    key={v.number}
-                    ref={(el) => {
-                      verseRefs.current[v.number] = el;
-                    }}
-                    className={cn(
-                      'rounded-xl px-3 py-2 -mx-1 transition-colors',
-                      selectedVerse === v.number ? 'bg-warn-soft ring-1 ring-warn-edge' : 'hover:bg-card-2'
-                    )}
-                  >
-                    <p className="text-[0.9375rem] leading-relaxed text-ink-soft">
-                      <sup className="mr-1.5 font-serif-heading font-bold text-acc-strong">{v.number}</sup>
-                      {v.text}
-                    </p>
-                  </div>
-                ))}
+                {verses.map((v) => {
+                  const held = heldVerse === v.number;
+                  const saved = isBookmarked(bibleBookmarkKey(translationId, currentBook.osis, chapter, v.number));
+                  return (
+                    <div
+                      key={v.number}
+                      ref={(el) => {
+                        verseRefs.current[v.number] = el;
+                      }}
+                    >
+                      <LongPressable
+                        onTap={() => {
+                          if (held) setHeldVerse(null);
+                          else openVerse(v.number);
+                        }}
+                        onLongPress={() => setHeldVerse(v.number)}
+                        className={cn(
+                          'rounded-xl px-3 py-2 -mx-1 transition-colors',
+                          held
+                            ? 'bg-warn-soft ring-2 ring-warn-edge'
+                            : selectedVerse === v.number
+                              ? 'bg-warn-soft ring-1 ring-warn-edge'
+                              : 'hover:bg-card-2'
+                        )}
+                      >
+                        <p className="text-[0.9375rem] leading-relaxed text-ink-soft">
+                          <sup className="mr-1.5 font-serif-heading font-bold text-acc-strong">{v.number}</sup>
+                          {v.text}
+                          {saved && <BookmarkIcon className="inline-block ml-1.5 w-3.5 h-3.5 fill-current text-acc align-text-bottom" />}
+                        </p>
+                      </LongPressable>
+                      {held && (
+                        <div className="px-2 pb-1">
+                          <VerseActionBar
+                            copyValue={`"${v.text}" — ${book} ${chapter}:${v.number} (${translationMeta.shortName})`}
+                            bookmarked={saved}
+                            onToggleBookmark={() => toggle(bookmarkFor(v))}
+                            onClose={() => setHeldVerse(null)}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
+              </>
             ) : null}
           </div>
         </div>

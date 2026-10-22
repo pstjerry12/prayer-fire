@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { BookOpen, Copy, Check, Volume2, MicOff } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { SCRIPTURE_CARDS } from '@/app/data/bibleVerses';
-import { speakText, stopSpeech } from '@/lib/clientUtils';
+import { speakText, stopSpeech } from '@/lib/readAloud';
 
 const LANGS = [
   { code: 'en', label: 'English', flag: '🇺🇸' },
@@ -32,9 +32,11 @@ export default function ScriptureVault() {
       stopSpeech();
       setSpeaking(null);
     } else {
-      speakText(text);
       setSpeaking(id);
-      setTimeout(() => setSpeaking(null), 5000);
+      speakText(text, {
+        lang,
+        onEnd: () => setSpeaking((current) => (current === id ? null : current)),
+      });
     }
   };
 

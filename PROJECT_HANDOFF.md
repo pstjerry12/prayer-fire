@@ -26,7 +26,7 @@
 | Live web app | `https://prayer-fire.vercel.app` (Vercel, Next.js) |
 | GitHub repo | `pstjerry12/prayer-fire` |
 | Play Store URL | `https://play.google.com/store/apps/details?id=com.prayerfireaction.prayerfire` (`PLAY_STORE_URL` in `src/lib/capacitorAlarm.ts`) |
-| Current Android version | `versionCode 21`, `versionName "1.0.20"` in `android/variables.gradle`. Builds 14–17 contain the same native app; builds 18–21 contain the alarm fixes (stuck ringing, Stop opens the app); builds 20–21 also lower the alarm volume to 50%; all other recent changes (Daily activity, Bible fix, sign-in, Next.js upgrade, 500 Prayer Verses, update popup) are web and ship via Vercel. Check Play Console for what is actually uploaded. |
+| Current Android version | `versionCode 22`, `versionName "1.0.21"` in `android/variables.gradle`. Builds 14–17 contain the same native app; builds 18–21 contain the alarm fixes (stuck ringing, Stop opens the app); builds 20–22 also lower the alarm volume to 50%; build 22 adds the native read-aloud engine; all other recent changes (Daily activity, Bible fix, sign-in, Next.js upgrade, 500 Prayer Verses, update popup) are web and ship via Vercel. Check Play Console for what is actually uploaded. |
 
 ### Working with the owner (important for any assistant)
 - The owner is **non-technical**. They usually send phone screenshots, often of Play Console, Vercel or Flutterwave. Explain things in plain language with numbered click-by-click steps.
@@ -596,6 +596,7 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
+| #80 | **Read aloud fix + verse pages + bookmarks (Android build 22, versionCode 22 / 1.0.21).** Read aloud: `window.speechSynthesis` does nothing in the Android WebView, so new native plugin `SpeechEngine` (`android/.../speech/SpeechEnginePlugin.kt`, Android TextToSpeech; manifest `<queries>` TTS_SERVICE; registered in MainActivity) used first by `src/lib/readAloud.ts`; installs without the plugin and plain browsers fall back to speechSynthesis, now chunked per sentence (Chrome cut long chapters off). Bible: tapping a verse opens `/bible/verse/[osis]/[chapter]/[verse]` (verse page: read aloud/copy/bookmark/share/prev-next); reader position is kept in sessionStorage so Back returns to the chapter. Prayer Verses: tapping a topic opens `/bible/topic/[category]`. Holding any verse 2 seconds (`LongPressable`) highlights it and shows Copy + Bookmark (`VerseActionBar`). Bookmarks live in localStorage `pfm_bookmarks` (`src/lib/bookmarks.ts`), shown in a new Bookmarks tab on /bible; the old Prayer Verses hearts (`upp_bible_favorites`) are migrated once. Web parts ship via Vercel at merge; the read-aloud fix inside the app needs build 22 |
 | #79 | Android build 21: versionCode 21 (1.0.20), requested by the owner because Play said version code 20 was already used when uploading; no code change since build 20 |
 | next | Android build 19: versionCode 19 (1.0.18), requested by the owner; no native code change since build 18 |
 | next | **Quieter alarm (Android build 20, versionCode 20 / 1.0.19):** `AlarmRingService` no longer forces the ALARM stream to 100%; it sets it to `ALARM_VOLUME_PERCENT` (50) of the phone's max (change that constant to taste). Build 19 was never uploaded to Play, so upload 20 instead |

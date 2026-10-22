@@ -129,21 +129,8 @@ export const playCelebration = () => {
   });
 };
 
-export const speakText = (text: string) => {
-  if (typeof window === 'undefined') return;
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    window.speechSynthesis.speak(utterance);
-  }
-};
-
-export const stopSpeech = () => {
-  if (typeof window === 'undefined') return;
-  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-};
+// Read-aloud lives in readAloud.ts (native Android engine + chunked browser fallback).
+export { speakText, stopSpeech } from './readAloud';
 
 interface SpeechRecognitionType extends EventTarget {
   lang: string;

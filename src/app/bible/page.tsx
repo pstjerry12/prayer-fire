@@ -1,16 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ScrollText, BookOpen } from 'lucide-react';
+import { ChevronLeft, ScrollText, BookOpen, Bookmark } from 'lucide-react';
 import { cn } from '@/app/utils/cn';
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
 import BibleLibrary from '@/app/components/BibleLibrary';
 import BibleReader from '@/app/components/BibleReader';
+import BookmarksPanel from '@/app/components/BookmarksPanel';
+import { KJV_BIBLE_VERSES } from '@/app/data/bibleVerses';
+import { migrateLegacyFavorites } from '@/lib/bookmarks';
+
+type Mode = 'read' | 'verses' | 'bookmarks';
+// The tab is remembered for this session so Back from a verse or topic page returns to the same tab.
+const TAB_KEY = 'pfm_bible_tab';
 
 export default function BiblePage() {
-  const [mode, setMode] = useState<'read' | 'verses'>('read');
+  const [mode, setModeState] = useState<Mode>('read');
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(TAB_KEY);
+      // Read after mount (not in the initial state) so the server and first client render match.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (saved === 'read' || saved === 'verses' || saved === 'bookmarks') setModeState(saved);
+    } catch {
+      // ignore
+    }
+    migrateLegacyFavorites(KJV_BIBLE_VERSES);
+  }, []);
+
+  function setMode(next: Mode) {
+    setModeState(next);
+    try {
+      sessionStorage.setItem(TAB_KEY, next);
+    } catch {
+      // ignore
+    }
+  }
 
   return (
     <>
@@ -30,22 +58,28 @@ export default function BiblePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-1 rounded-xl bg-card-2 p-1 mb-5">
+        <div className="grid grid-cols-3 gap-1 rounded-xl bg-card-2 p-1 mb-5">
           <button
             onClick={() => setMode('read')}
-            className={cn('py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition-all', mode === 'read' ? 'bg-card text-acc-strong shadow-sm' : 'text-ink-muted')}
+            className={cn('py-2 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-1 transition-all', mode === 'read' ? 'bg-card text-acc-strong shadow-sm' : 'text-ink-muted')}
           >
-            <BookOpen className="w-4 h-4" /> Read the Bible
+            <BookOpen className="w-4 h-4" /> Read
           </button>
           <button
             onClick={() => setMode('verses')}
-            className={cn('py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition-all', mode === 'verses' ? 'bg-card text-acc-strong shadow-sm' : 'text-ink-muted')}
+            className={cn('py-2 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-1 transition-all', mode === 'verses' ? 'bg-card text-acc-strong shadow-sm' : 'text-ink-muted')}
           >
             <ScrollText className="w-4 h-4" /> Prayer Verses
           </button>
+          <button
+            onClick={() => setMode('bookmarks')}
+            className={cn('py-2 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-1 transition-all', mode === 'bookmarks' ? 'bg-card text-acc-strong shadow-sm' : 'text-ink-muted')}
+          >
+            <Bookmark className="w-4 h-4" /> Bookmarks
+          </button>
         </div>
 
-        {mode === 'read' ? <BibleReader /> : <BibleLibrary />}
+        {mode === 'read' ? <BibleReader /> : mode === 'verses' ? <BibleLibrary /> : <BookmarksPanel />}
       </main>
       <Footer />
     </>
