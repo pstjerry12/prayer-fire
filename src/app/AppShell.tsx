@@ -19,6 +19,8 @@ import BackButtonExit from './components/BackButtonExit';
 import PullToRefresh from './components/PullToRefresh';
 import RouteMemory from './components/RouteMemory';
 import SessionGuard from './components/SessionGuard';
+import StudySync from './components/StudySync';
+import VoicePreloader from './components/VoicePreloader';
 import SignInGate, { useSignInRequired } from './components/SignInGate';
 
 function Overlays() {
@@ -129,6 +131,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <ServiceWorkerRegister />
       <RouteMemory />
       <SessionGuard />
+      <StudySync />
+      <VoicePreloader />
       <PrayerAlarm />
       <GatedNotificationPermission />
       <UpdateBanner />

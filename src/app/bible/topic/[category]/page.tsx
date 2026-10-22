@@ -41,7 +41,7 @@ export default function TopicPage() {
                 </p>
               </div>
             </div>
-            <p className="mb-4 text-[0.6875rem] text-ink-muted">Hold a verse for 2 seconds to copy or bookmark it</p>
+            <p className="mb-4 text-[0.6875rem] text-ink-muted">Tap a verse to open it · hold a verse for copy, read aloud and bookmark</p>
             <div className="space-y-3">
               {verses.map((verse) => (
                 <PrayerVerseCard key={verse.id} verse={verse} />

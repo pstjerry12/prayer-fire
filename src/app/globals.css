@@ -90,6 +90,15 @@
   --warn-soft: #fffbeb;
   --warn-soft-2: #fef3c7;
   --warn-edge: #fde68a;
+
+  /* Verse highlight colours (translucent so they read on light and dark pages) */
+  --hl-bookmark: rgba(250, 204, 21, 0.4);
+  --hl-orange: rgba(251, 146, 60, 0.4);
+  --hl-green: rgba(74, 222, 128, 0.36);
+  --hl-blue: rgba(96, 165, 250, 0.4);
+  --hl-pink: rgba(244, 114, 182, 0.4);
+  --hl-purple: rgba(168, 139, 250, 0.4);
+  --hl-reading: rgba(251, 146, 60, 0.28);
 }
 
 .dark {

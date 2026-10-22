@@ -9,15 +9,17 @@ import Footer from '@/app/components/Footer';
 import { BIBLE_BOOKS } from '@/app/data/bibleBooks';
 import { loadTranslation, getChapter } from '@/lib/bible/loadTranslation';
 import { getSelectedTranslation, getTranslationMeta, type TranslationId } from '@/lib/bible/translations';
-import { bibleBookmarkKey, useBookmarks } from '@/lib/bookmarks';
+import { formatVerse, isVerseBookmarked, toggleBookmarks, useStudy, type VerseInfo } from '@/lib/study';
 import { copyText } from '@/lib/clipboard';
-import { speakText, stopSpeech } from '@/lib/readAloud';
+import { useReadAloud } from '@/lib/useReadAloud';
+import ReadAloudBar from '@/app/components/ReadAloudBar';
 
 /** One verse on its own page — opened by tapping a verse in the Bible reader. */
 export default function VersePage() {
   const params = useParams<{ osis: string; chapter: string; verse: string }>();
   const router = useRouter();
-  const { isBookmarked, toggle } = useBookmarks();
+  const study = useStudy();
+  const reader = useReadAloud();
 
   const osis = decodeURIComponent(params.osis ?? '');
   const chapter = parseInt(params.chapter ?? '', 10);
@@ -28,8 +30,6 @@ export default function VersePage() {
   const [verseCount, setVerseCount] = useState<number | null>(null);
   const [text, setText] = useState<string | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'missing'>('loading');
-  const [speaking, setSpeaking] = useState(false);
-  const [speechProblem, setSpeechProblem] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -40,12 +40,9 @@ export default function VersePage() {
 
   useEffect(() => {
     let cancelled = false;
-    stopSpeech();
     // Reset for the newly selected verse before its text loads.
-    /* eslint-disable react-hooks/set-state-in-effect */
-    setSpeaking(false);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setState('loading');
-    /* eslint-enable react-hooks/set-state-in-effect */
     loadTranslation(translationId)
       .then((data) => {
         if (cancelled) return;
@@ -67,13 +64,12 @@ export default function VersePage() {
     };
   }, [translationId, osis, chapter, verseNumber]);
 
-  // Stop reading when leaving the page.
-  useEffect(() => () => stopSpeech(), []);
-
   const reference = book ? `${book.name} ${chapter}:${verseNumber}` : '';
   const shortName = getTranslationMeta(translationId).shortName;
-  const key = bibleBookmarkKey(translationId, osis, chapter, verseNumber);
-  const saved = isBookmarked(key);
+  const info: VerseInfo | null = text
+    ? { translationId, osis, chapter, verse: verseNumber, reference, text }
+    : null;
+  const saved = isVerseBookmarked(study, { translationId, osis, chapter, verse: verseNumber });
 
   function goToVerse(n: number) {
     router.replace(`/bible/verse/${osis}/${chapter}/${n}`);
@@ -81,41 +77,20 @@ export default function VersePage() {
 
   function handleSpeak() {
     if (!text) return;
-    if (speaking) {
-      stopSpeech();
-      setSpeaking(false);
-      return;
-    }
-    setSpeechProblem(false);
-    setSpeaking(true);
-    speakText(`${reference}. ${text}`, {
-      onEnd: (reason) => {
-        setSpeaking(false);
-        if (reason === 'unsupported' || reason === 'error') setSpeechProblem(true);
-      },
-    });
+    if (reader.reading) reader.stop();
+    else reader.start([{ id: verseNumber, text: `${reference}. ${text}` }]);
   }
 
   async function handleCopy() {
     if (!text) return;
-    if (await copyText(`"${text}" — ${reference} (${shortName})`)) {
+    if (await copyText(formatVerse(reference, shortName, text))) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     }
   }
 
   function handleBookmark() {
-    if (!text || !book) return;
-    toggle({
-      key,
-      kind: 'bible',
-      reference,
-      text,
-      translation: shortName,
-      osis,
-      chapter,
-      verse: verseNumber,
-    });
+    if (info) toggleBookmarks([info]);
   }
 
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
@@ -168,7 +143,7 @@ export default function VersePage() {
               )}
             </div>
 
-            {speechProblem && (
+            {reader.problem && (
               <p className="mx-5 mb-3 rounded-lg bg-warn-soft border border-warn-edge px-3 py-2 text-xs text-ink-soft">
                 Read aloud isn&apos;t available on this device. Check that a text-to-speech voice is installed in your phone&apos;s settings.
               </p>
@@ -180,11 +155,11 @@ export default function VersePage() {
                 disabled={state !== 'ready'}
                 className={cn(
                   'flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold disabled:opacity-50',
-                  speaking ? 'bg-emerald-600 text-white' : 'bg-card-2 text-ink-soft hover:bg-card-3'
+                  reader.reading ? 'bg-emerald-600 text-white' : 'bg-card-2 text-ink-soft hover:bg-card-3'
                 )}
               >
-                {speaking ? <Square className="w-4 h-4 fill-current" /> : <Volume2 className="w-4 h-4" />}
-                {speaking ? 'Stop' : 'Read aloud'}
+                {reader.reading ? <Square className="w-4 h-4 fill-current" /> : <Volume2 className="w-4 h-4" />}
+                {reader.reading ? 'Stop' : 'Read Aloud'}
               </button>
               <button
                 onClick={handleCopy}
@@ -196,7 +171,7 @@ export default function VersePage() {
               </button>
               {canShare && (
                 <button
-                  onClick={() => text && navigator.share({ title: reference, text: `"${text}" — ${reference} (${shortName})` }).catch(() => {})}
+                  onClick={() => text && navigator.share({ title: reference, text: formatVerse(reference, shortName, text) }).catch(() => {})}
                   disabled={state !== 'ready'}
                   className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-card-2 text-ink-soft text-xs font-bold hover:bg-card-3 disabled:opacity-50"
                 >
@@ -225,6 +200,7 @@ export default function VersePage() {
         )}
       </main>
       <Footer />
+      <ReadAloudBar state={reader.state} label={`Reading ${reference}`} onPause={reader.pause} onResume={reader.resume} onStop={reader.stop} />
     </>
   );
 }

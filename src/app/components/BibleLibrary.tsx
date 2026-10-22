@@ -55,7 +55,7 @@ export default function BibleLibrary() {
               <p className="text-center text-ink-muted py-8">No verses found</p>
             ) : (
               <>
-                <p className="text-[0.6875rem] text-ink-muted">Hold a verse for 2 seconds to copy or bookmark it</p>
+                <p className="text-[0.6875rem] text-ink-muted">Tap a verse to open it · hold a verse for copy, read aloud and bookmark</p>
                 {results.map((verse) => (
                   <PrayerVerseCard key={verse.id} verse={verse} />
                 ))}
