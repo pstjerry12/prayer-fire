@@ -2,6 +2,7 @@ package com.prayerfire.app.speech
 
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 import com.getcapacitor.Plugin
 import com.getcapacitor.PluginCall
@@ -18,8 +19,11 @@ import java.util.Locale
  * calls this plugin first and only falls back to the browser engine when the
  * plugin isn't present (older installs).
  *
- * speak() resolves when the whole text has been read (or { stopped: true } if it
- * was interrupted), so the UI can show a Stop button for exactly that long.
+ * speakQueue() reads a list of items (one verse each) and tells the web layer
+ * which one has started through a "verseStart" event, so the reader can highlight
+ * and scroll to the verse being read. Both speak() and speakQueue() resolve when
+ * everything has been read (or { stopped: true } if it was interrupted).
+ * warmUp() starts the engine early so the first read has no delay.
  */
 @CapacitorPlugin(name = "SpeechEngine")
 class SpeechEnginePlugin : Plugin() {
@@ -50,6 +54,45 @@ class SpeechEnginePlugin : Plugin() {
             } else {
                 startSpeaking(call, text, rate, pitch, lang)
             }
+        }
+    }
+
+    @PluginMethod
+    fun speakQueue(call: PluginCall) {
+        val array: JSArray? = call.getArray("items")
+        val texts = mutableListOf<String>()
+        if (array != null) {
+            for (i in 0 until array.length()) {
+                val t = array.optString(i, "").trim()
+                if (t.isNotEmpty()) texts.add(t)
+            }
+        }
+        if (texts.isEmpty()) {
+            call.resolve()
+            return
+        }
+        val rate = call.getFloat("rate", 0.9f) ?: 0.9f
+        val pitch = call.getFloat("pitch", 1f) ?: 1f
+        val lang = call.getString("lang") ?: "en"
+        val hints = mutableListOf<String>()
+        call.getArray("voiceHints")?.let { arr ->
+            for (i in 0 until arr.length()) hints.add(arr.optString(i, ""))
+        }
+
+        ensureEngine { ok ->
+            if (!ok) {
+                call.reject("Text-to-speech is not available on this device")
+            } else {
+                startQueue(call, texts, rate, pitch, lang, hints)
+            }
+        }
+    }
+
+    /** Wakes the engine ahead of time so the first "Read aloud" starts instantly. */
+    @PluginMethod
+    fun warmUp(call: PluginCall) {
+        ensureEngine { ok ->
+            if (ok) call.resolve() else call.reject("Text-to-speech is not available on this device")
         }
     }
 
@@ -103,7 +146,13 @@ class SpeechEnginePlugin : Plugin() {
     }
 
     private val progressListener = object : UtteranceProgressListener() {
-        override fun onStart(utteranceId: String?) {}
+        override fun onStart(utteranceId: String?) {
+            // ids look like "pf-<session>-<index>": tell the web layer which item began
+            val index = utteranceId?.substringAfterLast('-')?.toIntOrNull() ?: return
+            val data = JSObject()
+            data.put("index", index)
+            this@SpeechEnginePlugin.notifyListeners("verseStart", data)
+        }
 
         override fun onDone(utteranceId: String?) {
             synchronized(this@SpeechEnginePlugin) {
@@ -153,6 +202,62 @@ class SpeechEnginePlugin : Plugin() {
                 failActive("Text-to-speech could not start")
                 return
             }
+        }
+    }
+
+    @Synchronized
+    private fun startQueue(call: PluginCall, texts: List<String>, rate: Float, pitch: Float, lang: String, hints: List<String>) {
+        val engine = tts
+        if (engine == null) {
+            call.reject("Text-to-speech is not available on this device")
+            return
+        }
+        finishActive(stopped = true)
+        session++
+        val mySession = session
+
+        val availability = engine.setLanguage(localeFor(lang))
+        if (availability == TextToSpeech.LANG_MISSING_DATA || availability == TextToSpeech.LANG_NOT_SUPPORTED) {
+            engine.setLanguage(Locale.US)
+        }
+        chooseVoice(engine, lang, hints)
+        engine.setSpeechRate(rate)
+        engine.setPitch(pitch)
+
+        val maxLen = (TextToSpeech.getMaxSpeechInputLength() - 100).coerceIn(200, 3500)
+        activeCall = call
+        lastUtteranceId = "pf-$mySession-${texts.size - 1}"
+
+        texts.forEachIndexed { index, raw ->
+            val text = if (raw.length > maxLen) raw.substring(0, maxLen) else raw
+            val mode = if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
+            val result = engine.speak(text, mode, null, "pf-$mySession-$index")
+            if (result == TextToSpeech.ERROR) {
+                failActive("Text-to-speech could not start")
+                return
+            }
+        }
+    }
+
+    /** Prefers the first installed voice matching one of the hints (e.g. a male English voice); otherwise keeps the default. */
+    private fun chooseVoice(engine: TextToSpeech, lang: String, hints: List<String>) {
+        if (hints.isEmpty()) return
+        try {
+            val voices = engine.voices ?: return
+            val wantedLang = localeFor(lang).language
+            val usable = voices.filter {
+                it.locale.language == wantedLang && !it.features.contains("notInstalled")
+            }
+            for (hint in hints) {
+                if (hint.isBlank()) continue
+                val match = usable.firstOrNull { it.name.contains(hint, ignoreCase = true) }
+                if (match != null) {
+                    engine.voice = match
+                    return
+                }
+            }
+        } catch (e: Exception) {
+            // some engines don't expose their voices — the default voice is used
         }
     }
 

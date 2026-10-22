@@ -2,17 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ScrollText, BookOpen, Bookmark } from 'lucide-react';
+import { ChevronLeft, ScrollText, BookOpen, NotebookPen } from 'lucide-react';
 import { cn } from '@/app/utils/cn';
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
 import BibleLibrary from '@/app/components/BibleLibrary';
 import BibleReader from '@/app/components/BibleReader';
-import BookmarksPanel from '@/app/components/BookmarksPanel';
+import VerseOfTheDayCard from '@/app/components/VerseOfTheDayCard';
 import { KJV_BIBLE_VERSES } from '@/app/data/bibleVerses';
-import { migrateLegacyFavorites } from '@/lib/bookmarks';
+import { migrateLegacyFavorites } from '@/lib/study';
 
-type Mode = 'read' | 'verses' | 'bookmarks';
+type Mode = 'read' | 'verses';
 // The tab is remembered for this session so Back from a verse or topic page returns to the same tab.
 const TAB_KEY = 'pfm_bible_tab';
 
@@ -24,7 +24,7 @@ export default function BiblePage() {
       const saved = sessionStorage.getItem(TAB_KEY);
       // Read after mount (not in the initial state) so the server and first client render match.
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (saved === 'read' || saved === 'verses' || saved === 'bookmarks') setModeState(saved);
+      if (saved === 'read' || saved === 'verses') setModeState(saved);
     } catch {
       // ignore
     }
@@ -58,6 +58,8 @@ export default function BiblePage() {
           </div>
         </div>
 
+        <VerseOfTheDayCard />
+
         <div className="grid grid-cols-3 gap-1 rounded-xl bg-card-2 p-1 mb-5">
           <button
             onClick={() => setMode('read')}
@@ -71,15 +73,15 @@ export default function BiblePage() {
           >
             <ScrollText className="w-4 h-4" /> Prayer Verses
           </button>
-          <button
-            onClick={() => setMode('bookmarks')}
-            className={cn('py-2 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-1 transition-all', mode === 'bookmarks' ? 'bg-card text-acc-strong shadow-sm' : 'text-ink-muted')}
+          <Link
+            href="/study"
+            className="py-2 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-1 text-ink-muted hover:text-acc-strong"
           >
-            <Bookmark className="w-4 h-4" /> Bookmarks
-          </button>
+            <NotebookPen className="w-4 h-4" /> My Study
+          </Link>
         </div>
 
-        {mode === 'read' ? <BibleReader /> : mode === 'verses' ? <BibleLibrary /> : <BookmarksPanel />}
+        {mode === 'read' ? <BibleReader /> : <BibleLibrary />}
       </main>
       <Footer />
     </>

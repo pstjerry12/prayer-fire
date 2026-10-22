@@ -6,6 +6,7 @@ import {
   boolean,
   date,
   primaryKey,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
@@ -134,6 +135,16 @@ export const events = pgTable("events", {
 export const appSettings = pgTable("app_settings", {
   key: text("key").primaryKey(),    // e.g. "flutterwave_public_key", "price_partner_monthly"
   value: text("value").notNull(),   // the actual value
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// "My Study" backup: one row per signed-in user holding their bookmarks,
+// highlights and sermon notes as a single JSON document (see src/lib/studyMerge.ts).
+// The phone keeps its own copy and works offline; this row only lets it follow
+// the user to another phone. Private — only ever read/written for the signed-in user.
+export const userStudy = pgTable("user_study", {
+  userId: text("user_id").primaryKey(),
+  data: jsonb("data").notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

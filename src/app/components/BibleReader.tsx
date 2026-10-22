@@ -1,17 +1,27 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
-  BookOpen, ChevronLeft, Volume2, Square, Loader2, BookMarked, ListOrdered, AlertTriangle, ChevronDown, Bookmark as BookmarkIcon,
+  BookOpen, ChevronLeft, Volume2, Square, Loader2, BookMarked, ListOrdered, AlertTriangle, ChevronDown, Bookmark as BookmarkIcon, BookOpenText, X, Minus, Plus,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { pushBackHandler } from '@/lib/backHandlerStack';
 import { BIBLE_BOOKS } from '@/app/data/bibleBooks';
-import { speakText, stopSpeech } from '@/lib/readAloud';
-import { bibleBookmarkKey, useBookmarks } from '@/lib/bookmarks';
-import LongPressable from './LongPressable';
-import VerseActionBar from './VerseActionBar';
+import { readItems, stopSpeech, type ReadController, type ReaderState } from '@/lib/readAloud';
+import { copyText } from '@/lib/clipboard';
+import {
+  activeSermon,
+  addVersesToSermon,
+  formatVerse,
+  getStudyDoc,
+  setActiveSermon,
+  setHighlights,
+  toggleBookmarks,
+  useStudy,
+  verseKey,
+  type VerseInfo,
+} from '@/lib/study';
+import { BOOKMARK_BG, HIGHLIGHT_STYLES, READING_BG } from '@/lib/highlightStyles';
 import { loadTranslation, getChapter, type BibleVerse } from '@/lib/bible/loadTranslation';
 import {
   BIBLE_TRANSLATIONS,
@@ -21,6 +31,11 @@ import {
   getTranslationMeta,
   type TranslationId,
 } from '@/lib/bible/translations';
+import LongPressable from './LongPressable';
+import VerseActionSheet from './VerseActionSheet';
+import SermonStartModal from './SermonStartModal';
+import ReadAloudBar from './ReadAloudBar';
+import BibleSearchBar from './BibleSearchBar';
 
 function range(n: number): number[] {
   return Array.from({ length: n }, (_, i) => i + 1);
@@ -36,15 +51,19 @@ const STEPS: { n: Step; label: string }[] = [
   { n: 3, label: 'Verses' },
 ];
 
-// Where the reader was, kept for this session only, so coming back from a
-// verse page (or the Bookmarks tab) lands on the same chapter instead of the book list.
+// Where the reader was, kept for this session only, so coming back from another
+// page lands on the same chapter instead of the book list.
 const POSITION_KEY = 'pfm_bible_position';
+const FONT_KEY = 'pfm_bible_font';
+const FONT_MIN = 13;
+const FONT_MAX = 26;
+const FONT_DEFAULT = 16;
+const HOLD_MS = 1000; // press-and-hold time for the verse menu
 
 interface SavedPosition {
   step: Step;
   book: string;
   chapter: number;
-  verse: number | null;
 }
 
 function readPosition(): SavedPosition | null {
@@ -60,19 +79,12 @@ function readPosition(): SavedPosition | null {
 }
 
 export default function BibleReader() {
-  const router = useRouter();
-  const { isBookmarked, toggle } = useBookmarks();
-  const [heldVerse, setHeldVerse] = useState<number | null>(null);
-  const [speaking, setSpeaking] = useState(false);
-  const [restoredVerse, setRestoredVerse] = useState<number | null>(null);
-  const [speechProblem, setSpeechProblem] = useState(false);
-  // True once the saved reading position (if any) has been applied; until then we
-  // must not overwrite it with the default Genesis 1 screen.
-  const [positionLoaded, setPositionLoaded] = useState(false);
+  const study = useStudy();
+  const sermon = activeSermon(study);
+
   const [step, setStep] = useState<Step>(1);
   const [book, setBook] = useState('Genesis');
   const [chapter, setChapter] = useState(1);
-  const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
   const [verses, setVerses] = useState<BibleVerse[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
@@ -80,16 +92,47 @@ export default function BibleReader() {
   // localStorage client-side, so this stays DEFAULT_TRANSLATION during SSR.
   const [translationId, setTranslationId] = useState<TranslationId>(DEFAULT_TRANSLATION);
 
+  // Soft-highlighted verses (tap to add/remove). Read Aloud starts from these.
+  const [selected, setSelected] = useState<number[]>([]);
+  // The long-press menu and what it applies to.
+  const [menu, setMenu] = useState<number[] | null>(null);
+  const [sermonStart, setSermonStart] = useState<{ infos: VerseInfo[] } | null>(null);
+  const [toast, setToast] = useState<{ id: number; message: string } | null>(null);
+  const [fontSize, setFontSize] = useState(FONT_DEFAULT);
+
+  // Read aloud
+  const [readerState, setReaderState] = useState<ReaderState>('idle');
+  const [readingVerse, setReadingVerse] = useState<number | null>(null);
+  const [speechProblem, setSpeechProblem] = useState(false);
+  const controllerRef = useRef<ReadController | null>(null);
+
+  // A verse to select and scroll to once its chapter has loaded (search/jump, or coming back).
+  const [pendingVerse, setPendingVerse] = useState<number | null>(null);
+  // True once the saved reading position (if any) has been applied; until then we
+  // must not overwrite it with the default Genesis 1 screen.
+  const [positionLoaded, setPositionLoaded] = useState(false);
+
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
+  const currentBook = BIBLE_BOOKS.find((b) => b.name === book) ?? BIBLE_BOOKS[0];
+  const otBooks = BIBLE_BOOKS.filter((b) => b.testament === 'OT');
+  const ntBooks = BIBLE_BOOKS.filter((b) => b.testament === 'NT');
+  const translationMeta = getTranslationMeta(translationId);
+
   useEffect(() => {
+    // These saved values are only readable on the client, after mount.
     setTranslationId(getSelectedTranslation());
+    try {
+      const f = parseInt(localStorage.getItem(FONT_KEY) ?? '', 10);
+      if (f >= FONT_MIN && f <= FONT_MAX) setFontSize(f);
+    } catch {
+      // ignore
+    }
     const saved = readPosition();
     if (saved) {
       setBook(saved.book);
       setChapter(saved.chapter);
       setStep(saved.step);
-      setRestoredVerse(saved.verse);
     }
     setPositionLoaded(true);
   }, []);
@@ -97,33 +140,37 @@ export default function BibleReader() {
   // Stop reading when leaving the page.
   useEffect(() => () => stopSpeech(), []);
 
-  function savePosition(verse: number | null) {
+  // Remember the step/book/chapter whenever they change.
+  useEffect(() => {
+    if (!positionLoaded) return;
     try {
-      sessionStorage.setItem(POSITION_KEY, JSON.stringify({ step, book, chapter, verse } satisfies SavedPosition));
+      sessionStorage.setItem(POSITION_KEY, JSON.stringify({ step, book, chapter } satisfies SavedPosition));
     } catch {
       // ignore
     }
-  }
-
-  // Remember the step/book/chapter whenever they change.
-  useEffect(() => {
-    if (positionLoaded) savePosition(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [positionLoaded, step, book, chapter]);
 
-  const currentBook = BIBLE_BOOKS.find((b) => b.name === book) ?? BIBLE_BOOKS[0];
-  const otBooks = BIBLE_BOOKS.filter((b) => b.testament === 'OT');
-  const ntBooks = BIBLE_BOOKS.filter((b) => b.testament === 'NT');
-  const translationMeta = getTranslationMeta(translationId);
+  const showToast = useCallback((message: string) => {
+    const id = Date.now() + Math.random();
+    setToast({ id, message });
+    setTimeout(() => setToast((t) => (t && t.id === id ? null : t)), 2200);
+  }, []);
+
+  const stopReading = useCallback(() => {
+    controllerRef.current?.stop();
+    controllerRef.current = null;
+    stopSpeech();
+    setReaderState('idle');
+    setReadingVerse(null);
+  }, []);
 
   const loadChapter = useCallback(async (osis: string, ch: number, translation: TranslationId) => {
     setLoading(true);
     setUnavailable(false);
     setVerses(null);
-    setSelectedVerse(null);
-    setHeldVerse(null);
-    stopSpeech();
-    setSpeaking(false);
+    setSelected([]);
+    setMenu(null);
+    stopReading();
 
     try {
       const data = await loadTranslation(translation);
@@ -137,23 +184,23 @@ export default function BibleReader() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [stopReading]);
 
   useEffect(() => {
     if (step === 3) loadChapter(currentBook.osis, chapter, translationId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, book, chapter, translationId]);
 
-  // Coming back from a verse page: scroll to the verse that was opened.
+  // Select and scroll to a verse requested by search / jump once its chapter is on screen.
   useEffect(() => {
-    if (!verses || restoredVerse == null) return;
-    setSelectedVerse(restoredVerse);
-    const t = setTimeout(() => {
-      verseRefs.current[restoredVerse]?.scrollIntoView({ block: 'center' });
-    }, 50);
-    setRestoredVerse(null);
+    if (!verses || pendingVerse == null) return;
+    const wanted = pendingVerse;
+    setPendingVerse(null);
+    if (!verses.some((v) => v.number === wanted)) return;
+    setSelected([wanted]);
+    const t = setTimeout(() => verseRefs.current[wanted]?.scrollIntoView({ block: 'center' }), 60);
     return () => clearTimeout(t);
-  }, [verses, restoredVerse]);
+  }, [verses, pendingVerse]);
 
   // Let the hardware/gesture back button step back through Verses → Chapters
   // → Book one level at a time instead of falling straight through to the
@@ -163,10 +210,14 @@ export default function BibleReader() {
   useEffect(() => {
     if (step === 1) return;
     return pushBackHandler(() => {
+      if (menu) {
+        setMenu(null);
+        return true;
+      }
       setStep((s) => (s - 1) as Step);
       return true;
     });
-  }, [step]);
+  }, [step, menu]);
 
   function selectBook(name: string) {
     const b = BIBLE_BOOKS.find((x) => x.name === name);
@@ -186,53 +237,107 @@ export default function BibleReader() {
     setSelectedTranslation(id);
   }
 
+  function goTo(target: { osis: string; chapter: number; verse: number | null }) {
+    const b = BIBLE_BOOKS.find((x) => x.osis === target.osis);
+    if (!b) return;
+    setBook(b.name);
+    setChapter(target.chapter);
+    setStep(3);
+    setPendingVerse(target.verse);
+  }
+
   function jumpToVerse(n: number) {
-    setSelectedVerse(n);
-    const el = verseRefs.current[n];
-    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setSelected([n]);
+    verseRefs.current[n]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  function readChapter() {
-    if (!verses) return;
-    if (speaking) {
-      stopSpeech();
-      setSpeaking(false);
-      return;
-    }
-    const text = verses.map((v) => `${v.number}. ${v.text}`).join(' ');
-    setSpeaking(true);
-    speakText(`${book} chapter ${chapter}. ${text}`, {
-      onEnd: (reason) => {
-        setSpeaking(false);
-        if (reason === 'unsupported' || reason === 'error') {
-          setSpeechProblem(true);
-        }
-      },
+  function toggleSelected(n: number) {
+    setSelected((cur) => (cur.includes(n) ? cur.filter((x) => x !== n) : [...cur, n].sort((a, b) => a - b)));
+  }
+
+  function changeFont(delta: number) {
+    setFontSize((cur) => {
+      const next = Math.min(FONT_MAX, Math.max(FONT_MIN, cur + delta));
+      try {
+        localStorage.setItem(FONT_KEY, String(next));
+      } catch {
+        // ignore
+      }
+      return next;
     });
-    setSpeechProblem(false);
   }
 
-  function openVerse(n: number) {
-    stopSpeech();
-    savePosition(n);
-    router.push(`/bible/verse/${currentBook.osis}/${chapter}/${n}`);
-  }
-
-  function bookmarkFor(v: BibleVerse) {
-    return {
-      key: bibleBookmarkKey(translationId, currentBook.osis, chapter, v.number),
-      kind: 'bible' as const,
-      reference: `${book} ${chapter}:${v.number}`,
-      text: v.text,
-      translation: translationMeta.shortName,
+  const infoFor = useCallback(
+    (v: BibleVerse): VerseInfo => ({
+      translationId,
       osis: currentBook.osis,
       chapter,
       verse: v.number,
-    };
+      reference: `${book} ${chapter}:${v.number}`,
+      text: v.text,
+    }),
+    [translationId, currentBook.osis, chapter, book]
+  );
+
+  const versesFor = useCallback(
+    (numbers: number[]): BibleVerse[] => {
+      if (!verses) return [];
+      return [...numbers].sort((a, b) => a - b).map((n) => verses.find((v) => v.number === n)).filter((v): v is BibleVerse => !!v);
+    },
+    [verses]
+  );
+
+  // ── Read aloud ────────────────────────────────────────────────────────
+  // Highlighted verses are read in order; with nothing highlighted the whole
+  // chapter is read from verse 1. One utterance per verse, so the verse being
+  // read can be highlighted and scrolled into view.
+  function startReading(numbers: number[] | null) {
+    if (!verses) return;
+    const list = numbers && numbers.length > 0 ? versesFor(numbers) : verses;
+    const items = list.map((v) => ({ id: v.number, text: v.text }));
+    if (!numbers || numbers.length === 0) items.unshift({ id: 0, text: `${book} chapter ${chapter}.` });
+
+    setSpeechProblem(false);
+    controllerRef.current = readItems(items, {
+      onItemStart: (_i, item) => {
+        const n = typeof item.id === 'number' ? item.id : 0;
+        setReadingVerse(n > 0 ? n : null);
+        if (n > 0) verseRefs.current[n]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      },
+      onStateChange: setReaderState,
+      onEnd: (reason) => {
+        setReadingVerse(null);
+        controllerRef.current = null;
+        if (reason === 'unsupported' || reason === 'error') setSpeechProblem(true);
+      },
+    });
+  }
+
+  const reading = readerState !== 'idle';
+  const readingLabel = readingVerse ? `Reading ${book} ${chapter}:${readingVerse}` : `Reading ${book} ${chapter}`;
+
+  // ── Menu actions ──────────────────────────────────────────────────────
+  const menuVerses = menu ? versesFor(menu) : [];
+  const menuInfos = menuVerses.map(infoFor);
+  const menuTitle =
+    menuVerses.length === 1
+      ? `${book} ${chapter}:${menuVerses[0].number}`
+      : `${book} ${chapter}:${menuVerses.map((v) => v.number).join(', ')}`;
+  const menuAllBookmarked = menuInfos.length > 0 && menuInfos.every((i) => study.verses[verseKey(i)]?.bookmarkedAt != null);
+  const menuHighlight = menuInfos.length > 0 ? study.verses[verseKey(menuInfos[0])]?.highlight ?? null : null;
+
+  function addToSermon(infos: VerseInfo[], sermonId: string) {
+    const added = addVersesToSermon(sermonId, infos);
+    // Read the title fresh: a sermon created a moment ago isn't in this render's snapshot yet.
+    const title = getStudyDoc().sermons[sermonId]?.title;
+    showToast(added > 0 ? `Added ${added} verse${added === 1 ? '' : 's'} to ${title ?? 'your sermon notes'}` : 'Already in your sermon notes');
   }
 
   return (
     <div className="space-y-4">
+      {/* ── Search & quick jump ──────────────────────────────────── */}
+      <BibleSearchBar translationId={translationId} onGoTo={goTo} />
+
       {/* ── Translation picker ───────────────────────────────────── */}
       <div className="flex items-center justify-between gap-3 bg-card rounded-2xl border border-edge px-4 py-3">
         <span className="text-xs font-semibold text-ink-muted">Translation</span>
@@ -356,7 +461,7 @@ export default function BibleReader() {
                     onClick={() => jumpToVerse(v.number)}
                     className={cn(
                       'grid h-9 place-items-center rounded-lg text-xs font-bold transition-all',
-                      selectedVerse === v.number ? 'bg-warn text-white' : 'bg-card-2 text-ink-muted hover:text-ink hover:bg-card-3'
+                      selected.includes(v.number) ? 'bg-warn text-white' : 'bg-card-2 text-ink-muted hover:text-ink hover:bg-card-3'
                     )}
                   >
                     {v.number}
@@ -370,7 +475,7 @@ export default function BibleReader() {
 
           {/* Reading pane */}
           <div className="bg-card rounded-2xl border border-edge p-5">
-            <div className="flex items-center justify-between gap-2 border-b border-edge pb-3 mb-4">
+            <div className="flex items-center justify-between gap-2 border-b border-edge pb-3 mb-3">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="grid h-9 w-9 place-items-center rounded-lg bg-acc-soft text-acc shrink-0">
                   <BookOpen className="w-4 h-4" />
@@ -384,17 +489,53 @@ export default function BibleReader() {
               </div>
               {verses && !loading && (
                 <button
-                  onClick={readChapter}
+                  onClick={() => (reading ? stopReading() : startReading(selected))}
                   className={cn(
                     'shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold',
-                    speaking ? 'bg-emerald-600 text-white' : 'bg-card-2 text-ink-soft hover:bg-card-3'
+                    reading ? 'bg-emerald-600 text-white' : 'bg-card-2 text-ink-soft hover:bg-card-3'
                   )}
                 >
-                  {speaking ? <Square className="w-4 h-4 fill-current" /> : <Volume2 className="w-4 h-4" />}
-                  {speaking ? 'Stop' : 'Read aloud'}
+                  {reading ? <Square className="w-4 h-4 fill-current" /> : <Volume2 className="w-4 h-4" />}
+                  {reading ? 'Stop' : selected.length > 0 ? `Read ${selected.length === 1 ? 'verse' : `${selected.length} verses`}` : 'Read Aloud'}
                 </button>
               )}
             </div>
+
+            {/* Tools: text size, sermon session, selection */}
+            {verses && !loading && (
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <div className="flex items-center rounded-lg bg-card-2 border border-edge" role="group" aria-label="Text size">
+                  <button onClick={() => changeFont(-1)} disabled={fontSize <= FONT_MIN} aria-label="Smaller text" className="grid h-8 w-8 place-items-center text-ink-soft disabled:opacity-40">
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="px-1 text-xs font-bold text-ink-muted tabular-nums">Aa {fontSize}</span>
+                  <button onClick={() => changeFont(1)} disabled={fontSize >= FONT_MAX} aria-label="Larger text" className="grid h-8 w-8 place-items-center text-ink-soft disabled:opacity-40">
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+                {sermon ? (
+                  <span className="flex items-center gap-1.5 rounded-lg bg-warn-soft border border-warn-edge pl-2.5 pr-1 py-1 text-xs font-bold text-warn-strong max-w-full">
+                    <BookOpenText className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">Sermon: {sermon.title}</span>
+                    <button onClick={() => setActiveSermon(null)} aria-label="End sermon session" className="p-1 rounded-md hover:bg-warn-soft-2">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => setSermonStart({ infos: [] })}
+                    className="flex items-center gap-1.5 rounded-lg bg-card-2 border border-edge px-2.5 py-1.5 text-xs font-bold text-ink-soft hover:bg-card-3"
+                  >
+                    <BookOpenText className="w-3.5 h-3.5" /> Sermon session
+                  </button>
+                )}
+                {selected.length > 0 && (
+                  <button onClick={() => setSelected([])} className="ml-auto text-xs font-bold text-acc hover:underline">
+                    Clear {selected.length} selected
+                  </button>
+                )}
+              </div>
+            )}
 
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12 text-ink-muted">
@@ -411,63 +552,123 @@ export default function BibleReader() {
               </div>
             ) : verses ? (
               <>
-              {speechProblem && (
-                <p className="mb-3 rounded-lg bg-warn-soft border border-warn-edge px-3 py-2 text-xs text-ink-soft">
-                  Read aloud isn&apos;t available on this device. Check that a text-to-speech voice is installed in your phone&apos;s settings.
+                {speechProblem && (
+                  <p className="mb-3 rounded-lg bg-warn-soft border border-warn-edge px-3 py-2 text-xs text-ink-soft">
+                    Read aloud isn&apos;t available on this device. Check that a text-to-speech voice is installed in your phone&apos;s settings.
+                  </p>
+                )}
+                <p className="mb-3 text-[0.6875rem] text-ink-muted">
+                  Tap verses to select them · hold a verse for a menu (copy, read, bookmark, highlight, sermon notes)
                 </p>
-              )}
-              <p className="mb-3 text-[0.6875rem] text-ink-muted">
-                Tap a verse to open it · hold a verse for 2 seconds to copy or bookmark it
-              </p>
-              <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
-                {verses.map((v) => {
-                  const held = heldVerse === v.number;
-                  const saved = isBookmarked(bibleBookmarkKey(translationId, currentBook.osis, chapter, v.number));
-                  return (
-                    <div
-                      key={v.number}
-                      ref={(el) => {
-                        verseRefs.current[v.number] = el;
-                      }}
-                    >
-                      <LongPressable
-                        onTap={() => {
-                          if (held) setHeldVerse(null);
-                          else openVerse(v.number);
+                <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-1">
+                  {verses.map((v) => {
+                    const info = infoFor(v);
+                    const record = study.verses[verseKey(info)];
+                    const isSelected = selected.includes(v.number);
+                    const isReading = readingVerse === v.number;
+                    const bookmarked = record?.bookmarkedAt != null;
+                    const color = record?.highlight ?? null;
+                    const background = isReading
+                      ? READING_BG
+                      : color
+                        ? HIGHLIGHT_STYLES[color].bg
+                        : bookmarked
+                          ? BOOKMARK_BG
+                          : undefined;
+                    return (
+                      <div
+                        key={v.number}
+                        ref={(el) => {
+                          verseRefs.current[v.number] = el;
                         }}
-                        onLongPress={() => setHeldVerse(v.number)}
-                        className={cn(
-                          'rounded-xl px-3 py-2 -mx-1 transition-colors',
-                          held
-                            ? 'bg-warn-soft ring-2 ring-warn-edge'
-                            : selectedVerse === v.number
-                              ? 'bg-warn-soft ring-1 ring-warn-edge'
-                              : 'hover:bg-card-2'
-                        )}
                       >
-                        <p className="text-[0.9375rem] leading-relaxed text-ink-soft">
-                          <sup className="mr-1.5 font-serif-heading font-bold text-acc-strong">{v.number}</sup>
-                          {v.text}
-                          {saved && <BookmarkIcon className="inline-block ml-1.5 w-3.5 h-3.5 fill-current text-acc align-text-bottom" />}
-                        </p>
-                      </LongPressable>
-                      {held && (
-                        <div className="px-2 pb-1">
-                          <VerseActionBar
-                            copyValue={`"${v.text}" — ${book} ${chapter}:${v.number} (${translationMeta.shortName})`}
-                            bookmarked={saved}
-                            onToggleBookmark={() => toggle(bookmarkFor(v))}
-                            onClose={() => setHeldVerse(null)}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                        <LongPressable
+                          holdMs={HOLD_MS}
+                          onTap={() => toggleSelected(v.number)}
+                          onLongPress={() => {
+                            const targets = isSelected && selected.length > 1 ? selected : [v.number];
+                            setSelected(targets);
+                            setMenu(targets);
+                          }}
+                          style={background ? { background } : undefined}
+                          className={cn(
+                            'rounded-xl px-3 py-2 -mx-1 transition-colors',
+                            isReading && 'ring-2 ring-orange-400',
+                            !isReading && isSelected && 'ring-2 ring-warn-edge',
+                            !isReading && isSelected && !background && 'bg-warn-soft',
+                            !isReading && !isSelected && !background && 'hover:bg-card-2'
+                          )}
+                        >
+                          <p className="leading-relaxed text-ink-soft" style={{ fontSize }}>
+                            <sup className="mr-1.5 font-serif-heading font-bold text-acc-strong">{v.number}</sup>
+                            {v.text}
+                            {bookmarked && <BookmarkIcon className="inline-block ml-1.5 w-3.5 h-3.5 fill-current text-warn align-text-bottom" aria-label="Bookmarked" />}
+                          </p>
+                        </LongPressable>
+                      </div>
+                    );
+                  })}
+                </div>
               </>
             ) : null}
           </div>
+        </div>
+      )}
+
+      {/* Floating player while reading */}
+      <ReadAloudBar
+        state={readerState}
+        label={readingLabel}
+        onPause={() => controllerRef.current?.pause()}
+        onResume={() => controllerRef.current?.resume()}
+        onStop={stopReading}
+      />
+
+      {/* Long-press menu */}
+      {menu && menuVerses.length > 0 && (
+        <VerseActionSheet
+          title={menuTitle}
+          onClose={() => setMenu(null)}
+          onCopy={() => copyText(menuInfos.map((i) => formatVerse(i.reference, translationMeta.shortName, i.text)).join('\n'))}
+          onReadAloud={() => startReading(menu)}
+          bookmarked={menuAllBookmarked}
+          onToggleBookmark={() => {
+            const saved = toggleBookmarks(menuInfos);
+            showToast(saved ? 'Bookmarked' : 'Bookmark removed');
+          }}
+          highlight={{
+            current: menuHighlight,
+            onPick: (color) => {
+              setHighlights(menuInfos, color);
+              showToast(color ? `Highlighted ${HIGHLIGHT_STYLES[color].label.toLowerCase()}` : 'Highlight removed');
+            },
+          }}
+          sermon={{
+            activeTitle: sermon?.title ?? null,
+            onAdd: () => {
+              if (sermon) addToSermon(menuInfos, sermon.id);
+              else setSermonStart({ infos: menuInfos });
+            },
+          }}
+        />
+      )}
+
+      {/* Start a sermon session (optionally adding the verses that were chosen) */}
+      {sermonStart && (
+        <SermonStartModal
+          onClose={() => setSermonStart(null)}
+          onStarted={(id) => {
+            const infos = sermonStart.infos;
+            setSermonStart(null);
+            if (infos.length > 0) addToSermon(infos, id);
+            else showToast('Sermon session started');
+          }}
+        />
+      )}
+
+      {toast && (
+        <div className="fixed left-1/2 -translate-x-1/2 z-[95] bottom-[calc(8.5rem+env(safe-area-inset-bottom))] md:bottom-24 max-w-[calc(100%-2rem)] rounded-full bg-ink text-page px-4 py-2 text-xs font-bold shadow-xl" role="status">
+          {toast.message}
         </div>
       )}
     </div>

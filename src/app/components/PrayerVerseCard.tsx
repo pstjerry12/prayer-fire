@@ -1,87 +1,61 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Bookmark as BookmarkIcon, Share2, Square, Volume2 } from 'lucide-react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Bookmark as BookmarkIcon, ChevronRight } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { BibleVerse } from '@/app/data/bibleVerses';
-import { prayerBookmarkKey, useBookmarks } from '@/lib/bookmarks';
-import { speakText, stopSpeech } from '@/lib/readAloud';
+import { copyText } from '@/lib/clipboard';
+import { formatVerse, isPrayerBookmarked, togglePrayerBookmark, useStudy } from '@/lib/study';
+import { useReadAloud } from '@/lib/useReadAloud';
+import { BOOKMARK_BG } from '@/lib/highlightStyles';
 import LongPressable from './LongPressable';
-import VerseActionBar from './VerseActionBar';
+import ReadAloudBar from './ReadAloudBar';
+import VerseActionSheet from './VerseActionSheet';
+
+export const PRAYER_VERSE_PATH = (id: string) => `/bible/prayer/${encodeURIComponent(id)}`;
 
 /**
- * One Prayer Verse. Hold it for 2 seconds and it highlights and shows
- * Copy / Bookmark; Listen and Share are always there.
+ * One Prayer Verse in a list. Tap it to open it on its own page; hold it for the
+ * menu (Copy, Read Aloud, Bookmark).
  */
 export default function PrayerVerseCard({ verse }: { verse: BibleVerse }) {
-  const { isBookmarked, toggle } = useBookmarks();
-  const [held, setHeld] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
-  const key = prayerBookmarkKey(verse.id);
-  const saved = isBookmarked(key);
-
-  // Stop reading if this card goes away.
-  useEffect(() => () => {
-    if (speaking) stopSpeech();
-  }, [speaking]);
-
-  function handleSpeak() {
-    if (speaking) {
-      stopSpeech();
-      setSpeaking(false);
-      return;
-    }
-    setSpeaking(true);
-    speakText(`${verse.reference}. ${verse.text}`, {
-      onEnd: () => setSpeaking(false),
-    });
-  }
-
-  const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+  const router = useRouter();
+  const study = useStudy();
+  const reader = useReadAloud();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const bookmarked = isPrayerBookmarked(study, verse.id);
 
   return (
-    <div
-      className={cn(
-        'rounded-xl border p-4 transition-colors',
-        held ? 'bg-warn-soft border-warn-edge ring-2 ring-warn-edge' : 'bg-card border-edge'
-      )}
-    >
-      <LongPressable onLongPress={() => setHeld(true)} onTap={() => held && setHeld(false)}>
-        <div className="flex items-start justify-between mb-2">
+    <>
+      <LongPressable
+        onTap={() => router.push(PRAYER_VERSE_PATH(verse.id))}
+        onLongPress={() => setMenuOpen(true)}
+        style={bookmarked ? { background: BOOKMARK_BG } : undefined}
+        className={cn('rounded-xl border border-edge p-4 transition-colors', !bookmarked && 'bg-card hover:bg-card-2 active:bg-card-2')}
+      >
+        <div className="flex items-start justify-between gap-2 mb-2">
           <p className="text-acc-strong text-xs font-semibold">{verse.reference}</p>
-          {saved && <BookmarkIcon className="w-4 h-4 fill-current text-acc" aria-label="Bookmarked" />}
+          <span className="flex items-center gap-1 text-ink-faint">
+            {bookmarked && <BookmarkIcon className="w-4 h-4 fill-current text-warn" aria-label="Bookmarked" />}
+            <ChevronRight className="w-4 h-4" />
+          </span>
         </div>
         <p className="text-ink-soft text-sm leading-relaxed">&ldquo;{verse.text}&rdquo;</p>
       </LongPressable>
 
-      {held && (
-        <VerseActionBar
-          copyValue={`"${verse.text}" — ${verse.reference}`}
-          bookmarked={saved}
-          onToggleBookmark={() =>
-            toggle({ key, kind: 'prayer', reference: verse.reference, text: verse.text })
-          }
-          onClose={() => setHeld(false)}
+      <ReadAloudBar state={reader.state} label={`Reading ${verse.reference}`} onPause={reader.pause} onResume={reader.resume} onStop={reader.stop} />
+
+      {menuOpen && (
+        <VerseActionSheet
+          title={verse.reference}
+          onClose={() => setMenuOpen(false)}
+          onCopy={() => copyText(formatVerse(verse.reference, 'KJV', verse.text))}
+          onReadAloud={() => reader.start([{ id: verse.id, text: `${verse.reference}. ${verse.text}` }])}
+          bookmarked={bookmarked}
+          onToggleBookmark={() => togglePrayerBookmark(verse.id, verse.reference, verse.text)}
         />
       )}
-
-      <div className="flex gap-3 mt-3">
-        <button
-          onClick={handleSpeak}
-          className={cn('flex items-center gap-1 text-xs', speaking ? 'text-acc font-bold' : 'text-ink-muted hover:text-ink')}
-        >
-          {speaking ? <Square className="w-3 h-3 fill-current" /> : <Volume2 className="w-3 h-3" />}
-          {speaking ? 'Stop' : 'Listen'}
-        </button>
-        {canShare && (
-          <button
-            onClick={() => navigator.share({ title: verse.reference, text: `"${verse.text}" — ${verse.reference}` }).catch(() => {})}
-            className="flex items-center gap-1 text-xs text-ink-muted hover:text-ink"
-          >
-            <Share2 className="w-3 h-3" /> Share
-          </button>
-        )}
-      </div>
-    </div>
+    </>
   );
 }
