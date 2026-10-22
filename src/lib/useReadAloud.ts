@@ -8,18 +8,23 @@ export function useReadAloud() {
   const [state, setState] = useState<ReaderState>('idle');
   const [index, setIndex] = useState<number | null>(null);
   const [problem, setProblem] = useState(false);
+  const [problemDetail, setProblemDetail] = useState<string | null>(null);
   const controller = useRef<ReadController | null>(null);
 
   const start = useCallback((items: SpeechItem[], lang?: string) => {
     setProblem(false);
+    setProblemDetail(null);
     controller.current = readItems(items, {
       lang,
       onItemStart: (i) => setIndex(i),
       onStateChange: setState,
-      onEnd: (reason) => {
+      onEnd: (reason, detail) => {
         setIndex(null);
         controller.current = null;
-        if (reason === 'unsupported' || reason === 'error') setProblem(true);
+        if (reason === 'unsupported' || reason === 'error') {
+          setProblem(true);
+          setProblemDetail(detail ?? null);
+        }
       },
     });
   }, []);
@@ -36,5 +41,5 @@ export function useReadAloud() {
     []
   );
 
-  return { state, index, problem, start, stop, pause, resume, reading: state !== 'idle' };
+  return { state, index, problem, problemDetail, start, stop, pause, resume, reading: state !== 'idle' };
 }

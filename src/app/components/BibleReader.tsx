@@ -103,7 +103,7 @@ export default function BibleReader() {
   // Read aloud
   const [readerState, setReaderState] = useState<ReaderState>('idle');
   const [readingVerse, setReadingVerse] = useState<number | null>(null);
-  const [speechProblem, setSpeechProblem] = useState(false);
+  const [speechProblem, setSpeechProblem] = useState<string | null>(null);
   const controllerRef = useRef<ReadController | null>(null);
 
   // A verse to select and scroll to once its chapter has loaded (search/jump, or coming back).
@@ -297,7 +297,7 @@ export default function BibleReader() {
     const items = list.map((v) => ({ id: v.number, text: v.text }));
     if (!numbers || numbers.length === 0) items.unshift({ id: 0, text: `${book} chapter ${chapter}.` });
 
-    setSpeechProblem(false);
+    setSpeechProblem(null);
     controllerRef.current = readItems(items, {
       onItemStart: (_i, item) => {
         const n = typeof item.id === 'number' ? item.id : 0;
@@ -305,10 +305,10 @@ export default function BibleReader() {
         if (n > 0) verseRefs.current[n]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       },
       onStateChange: setReaderState,
-      onEnd: (reason) => {
+      onEnd: (reason, detail) => {
         setReadingVerse(null);
         controllerRef.current = null;
-        if (reason === 'unsupported' || reason === 'error') setSpeechProblem(true);
+        if (reason === 'unsupported' || reason === 'error') setSpeechProblem(detail || 'no voice available');
       },
     });
   }
@@ -554,7 +554,8 @@ export default function BibleReader() {
               <>
                 {speechProblem && (
                   <p className="mb-3 rounded-lg bg-warn-soft border border-warn-edge px-3 py-2 text-xs text-ink-soft">
-                    Read aloud isn&apos;t available on this device. Check that a text-to-speech voice is installed in your phone&apos;s settings.
+                    Read aloud couldn&apos;t start on this device. Check that a text-to-speech voice is installed and your media volume is up.
+                    <span className="block mt-1 text-[0.6875rem] text-ink-muted break-words">Details: {speechProblem}</span>
                   </p>
                 )}
                 <p className="mb-3 text-[0.6875rem] text-ink-muted">
