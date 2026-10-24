@@ -12,6 +12,7 @@ import VerseActionSheet from '@/app/components/VerseActionSheet';
 import { PRAYER_VERSE_PATH } from '@/app/components/PrayerVerseCard';
 import { KJV_BIBLE_CATEGORIES, KJV_BIBLE_VERSES } from '@/app/data/bibleVerses';
 import { copyText } from '@/lib/clipboard';
+import { shareVerse } from '@/lib/shareVerse';
 import { formatVerse, isPrayerBookmarked, togglePrayerBookmark, useStudy } from '@/lib/study';
 import { useReadAloud } from '@/lib/useReadAloud';
 import { BOOKMARK_BG } from '@/lib/highlightStyles';
@@ -151,6 +152,7 @@ export default function PrayerVersePage() {
           onClose={() => setMenuOpen(false)}
           onCopy={() => copyText(formatVerse(verse.reference, 'KJV', verse.text))}
           onReadAloud={() => reader.start([{ id: verse.id, text: `${verse.reference}. ${verse.text}` }])}
+          onShare={() => shareVerse(formatVerse(verse.reference, 'KJV', verse.text))}
           bookmarked={bookmarked}
           onToggleBookmark={() => togglePrayerBookmark(verse.id, verse.reference, verse.text)}
         />

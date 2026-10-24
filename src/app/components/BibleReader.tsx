@@ -9,6 +9,7 @@ import { pushBackHandler } from '@/lib/backHandlerStack';
 import { BIBLE_BOOKS } from '@/app/data/bibleBooks';
 import { readItems, stopSpeech, type ReadController, type ReaderState } from '@/lib/readAloud';
 import { copyText } from '@/lib/clipboard';
+import { shareVerse } from '@/lib/shareVerse';
 import {
   activeSermon,
   addVersesToSermon,
@@ -705,6 +706,7 @@ export default function BibleReader() {
           onClose={() => setMenu(null)}
           onCopy={() => copyText(menuInfos.map((i) => formatVerse(i.reference, translationMeta.shortName, i.text)).join('\n'))}
           onReadAloud={() => startReading(menu)}
+          onShare={() => shareVerse(menuInfos.map((i) => formatVerse(i.reference, translationMeta.shortName, i.text)).join('\n'))}
           bookmarked={menuAllBookmarked}
           onToggleBookmark={() => {
             const saved = toggleBookmarks(menuInfos);

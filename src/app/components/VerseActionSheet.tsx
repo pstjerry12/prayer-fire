@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { Bookmark as BookmarkIcon, BookOpenText, Check, Copy, Highlighter, Volume2, X } from 'lucide-react';
+import { Bookmark as BookmarkIcon, BookOpenText, Check, Copy, Highlighter, Share2, Volume2, X } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { HIGHLIGHT_COLORS, type HighlightColor } from '@/lib/studyMerge';
 import { HIGHLIGHT_STYLES } from '@/lib/highlightStyles';
+import type { ShareResult } from '@/lib/shareVerse';
 
 interface Props {
   /** "John 3:16" or "John 3:16, 18 (3 verses)" */
@@ -12,6 +13,8 @@ interface Props {
   onClose: () => void;
   onCopy: () => Promise<boolean> | boolean;
   onReadAloud: () => void;
+  /** Opens the phone's share sheet with the verse and a link to the Bible in Prayer Fire. */
+  onShare?: () => Promise<ShareResult>;
   bookmarked: boolean;
   onToggleBookmark: () => void;
   /** Bible verses only: highlight colours. Left out for prayer verses. */
@@ -45,15 +48,29 @@ function Row({ icon, label, hint, onClick, active }: { icon: ReactNode; label: s
 }
 
 /** The long-press menu for a verse (or several selected verses). */
-export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, bookmarked, onToggleBookmark, highlight, sermon }: Props) {
+export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, onShare, bookmarked, onToggleBookmark, highlight, sermon }: Props) {
   const [copied, setCopied] = useState(false);
   const [showColors, setShowColors] = useState(false);
+  const [shareNote, setShareNote] = useState<string | null>(null);
 
   async function handleCopy() {
     const ok = await onCopy();
     if (ok) {
       setCopied(true);
       setTimeout(onClose, 700);
+    } else {
+      onClose();
+    }
+  }
+
+  async function handleShare() {
+    if (!onShare) return;
+    const result = await onShare();
+    if (result === 'copied') {
+      setShareNote('Copied with the link. Paste it into WhatsApp or a message.');
+      setTimeout(onClose, 1800);
+    } else if (result === 'failed') {
+      setShareNote('Could not share on this device.');
     } else {
       onClose();
     }
@@ -77,6 +94,14 @@ export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, 
             hint="With the reference, e.g. John 3:16 (KJV) - …"
             onClick={handleCopy}
           />
+          {onShare && (
+            <Row
+              icon={<Share2 className="w-4 h-4" />}
+              label="Share"
+              hint={shareNote ?? 'Send the verse with a link to the Bible in Prayer Fire'}
+              onClick={handleShare}
+            />
+          )}
           <Row
             icon={<Volume2 className="w-4 h-4" />}
             label="Read Aloud"
