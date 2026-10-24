@@ -6,6 +6,7 @@ import { Bookmark as BookmarkIcon, ChevronRight } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { BibleVerse } from '@/app/data/bibleVerses';
 import { copyText } from '@/lib/clipboard';
+import { shareVerse } from '@/lib/shareVerse';
 import { formatVerse, isPrayerBookmarked, togglePrayerBookmark, useStudy } from '@/lib/study';
 import { useReadAloud } from '@/lib/useReadAloud';
 import { BOOKMARK_BG } from '@/lib/highlightStyles';
@@ -52,6 +53,7 @@ export default function PrayerVerseCard({ verse }: { verse: BibleVerse }) {
           onClose={() => setMenuOpen(false)}
           onCopy={() => copyText(formatVerse(verse.reference, 'KJV', verse.text))}
           onReadAloud={() => reader.start([{ id: verse.id, text: `${verse.reference}. ${verse.text}` }])}
+          onShare={() => shareVerse(formatVerse(verse.reference, 'KJV', verse.text))}
           bookmarked={bookmarked}
           onToggleBookmark={() => togglePrayerBookmark(verse.id, verse.reference, verse.text)}
         />

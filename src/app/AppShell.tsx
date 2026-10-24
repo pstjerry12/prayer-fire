@@ -21,6 +21,7 @@ import RouteMemory from './components/RouteMemory';
 import SessionGuard from './components/SessionGuard';
 import StudySync from './components/StudySync';
 import VoicePreloader from './components/VoicePreloader';
+import WelcomeSlides from './components/WelcomeSlides';
 import SignInGate, { useSignInRequired } from './components/SignInGate';
 
 function Overlays() {
@@ -140,6 +141,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <PullToRefresh>{children}</PullToRefresh>
       <SignInGate />
       <Overlays />
+      <WelcomeSlides />
     </AppProvider>
   );
 }
