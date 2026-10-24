@@ -13,6 +13,16 @@ export interface WhatsNewRelease {
 
 export const WHATS_NEW: WhatsNewRelease[] = [
   {
+    id: '2026-10-24',
+    date: 'October 2026',
+    title: 'Prayer Fire is also an Audio Bible',
+    items: [
+      { emoji: '📖', text: 'Full Holy Bible, offline, with Audio. Read or listen anytime — tap Bible at the bottom of the screen.' },
+      { emoji: '🎧', text: 'Tap the big green Listen button in the Bible to hear any chapter read aloud. You can pause or stop whenever you like.' },
+      { emoji: '✨', text: 'New Verse of the Day card on the home screen: tap Read to open its chapter, or Listen to hear it.' },
+    ],
+  },
+  {
     id: '2026-10-09',
     date: 'October 2026',
     title: 'Sign in to keep your prayers safe',

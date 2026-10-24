@@ -10,7 +10,7 @@ const TABS = [
   { href: '/', label: 'Home', icon: Home, exact: true },
   { href: '/workshop', label: 'Write', icon: Pencil, exact: false },
   { href: '/startup', label: 'Start-Up', icon: Play, exact: false },
-  { href: '/bible', label: 'KJV Bible', icon: BookOpen, exact: false },
+  { href: '/bible', label: 'Bible', icon: BookOpen, exact: false },
   { href: '/scripture', label: 'Scripture', icon: Sparkles, exact: false },
   { href: '/network', label: 'Partners', icon: Globe, exact: false },
   { href: '/fasting', label: 'Fasting', icon: Clock, exact: false },

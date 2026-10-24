@@ -83,14 +83,15 @@ const HOW_TO_QA = [
   },
   {
     emoji: '📚',
-    question: 'How do I read the KJV Bible?',
+    question: 'How do I read or listen to the Bible?',
     answer: (
       <ol className="list-decimal list-inside space-y-2 text-ink-soft text-sm leading-relaxed">
-        <li>Tap <strong>&quot;KJV Bible&quot;</strong> in the bottom navigation</li>
+        <li>Tap <strong>&quot;Bible&quot;</strong> in the bottom navigation</li>
         <li>All <strong>66 books</strong> are listed — Old Testament and New Testament</li>
         <li>Tap any book (e.g. <strong>Psalms</strong>)</li>
         <li>Tap a chapter number</li>
         <li>Read the full chapter with all verses</li>
+        <li>Tap the big green <strong>Listen</strong> button to hear the chapter read aloud (pause or stop any time)</li>
         <li>The Bible works <strong>offline</strong> after the first read (verses are cached)</li>
       </ol>
     ),
