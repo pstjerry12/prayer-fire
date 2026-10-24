@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  BookOpen, ChevronLeft, Volume2, Square, Loader2, BookMarked, ListOrdered, AlertTriangle, ChevronDown, Bookmark as BookmarkIcon, BookOpenText, X, Minus, Plus,
+  BookOpen, ChevronLeft, Volume2, Square, Play, Loader2, BookMarked, ListOrdered, AlertTriangle, ChevronDown, Bookmark as BookmarkIcon, BookOpenText, X, Minus, Plus,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { pushBackHandler } from '@/lib/backHandlerStack';
@@ -64,7 +64,11 @@ interface SavedPosition {
   step: Step;
   book: string;
   chapter: number;
+  /** Set by the Verse of the Day "Read" button: select and scroll to this verse once, then forget it. */
+  verse?: number;
 }
+
+const LISTEN_TIP_KEY = 'pfm_listen_tip_seen';
 
 function readPosition(): SavedPosition | null {
   try {
@@ -105,6 +109,9 @@ export default function BibleReader() {
   const [readingVerse, setReadingVerse] = useState<number | null>(null);
   const [speechProblem, setSpeechProblem] = useState<string | null>(null);
   const controllerRef = useRef<ReadController | null>(null);
+  // One-time hint pointing at the Listen button, and "Listen was tapped before a chapter was open".
+  const [showListenTip, setShowListenTip] = useState(false);
+  const autoListenRef = useRef(false);
 
   // A verse to select and scroll to once its chapter has loaded (search/jump, or coming back).
   const [pendingVerse, setPendingVerse] = useState<number | null>(null);
@@ -133,6 +140,12 @@ export default function BibleReader() {
       setBook(saved.book);
       setChapter(saved.chapter);
       setStep(saved.step);
+      if (saved.verse) setPendingVerse(saved.verse);
+    }
+    try {
+      setShowListenTip(localStorage.getItem(LISTEN_TIP_KEY) !== '1');
+    } catch {
+      // ignore
     }
     setPositionLoaded(true);
   }, []);
@@ -314,7 +327,44 @@ export default function BibleReader() {
   }
 
   const reading = readerState !== 'idle';
+
   const readingLabel = readingVerse ? `Reading ${book} ${chapter}:${readingVerse}` : `Reading ${book} ${chapter}`;
+
+  // "Listen" tapped on the book/chapter list: open the chapter, then read it from verse 1 once it has loaded.
+  useEffect(() => {
+    if (!autoListenRef.current || !verses || loading) return;
+    autoListenRef.current = false;
+    startReading(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [verses, loading]);
+
+  // The hint fades by itself after a while; it is shown only once per device.
+  useEffect(() => {
+    if (!showListenTip) return;
+    const t = setTimeout(dismissListenTip, 12000);
+    return () => clearTimeout(t);
+  }, [showListenTip]);
+
+  function dismissListenTip() {
+    setShowListenTip(false);
+    try {
+      localStorage.setItem(LISTEN_TIP_KEY, '1');
+    } catch {
+      // ignore
+    }
+  }
+
+  function onListen() {
+    dismissListenTip();
+    if (reading) return;
+    if (step === 3) {
+      startReading(selected);
+    } else {
+      autoListenRef.current = true;
+      setStep(3);
+    }
+  }
+
 
   // ── Menu actions ──────────────────────────────────────────────────────
   const menuVerses = menu ? versesFor(menu) : [];
@@ -613,6 +663,29 @@ export default function BibleReader() {
               </>
             ) : null}
           </div>
+        </div>
+      )}
+
+      {/* Big floating Listen button: the Bible can be heard, not just read */}
+      {!reading && !menu && !sermonStart && (step !== 3 || (verses && !loading)) && (
+        <div className="fixed right-4 z-[55] bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:bottom-8 flex flex-col items-end gap-2">
+          {showListenTip && (
+            <div role="status" className="relative max-w-[15rem] rounded-xl bg-ink text-page pl-3 pr-8 py-2 text-xs font-bold shadow-xl">
+              Tap Listen to hear the Bible read aloud.
+              <button onClick={dismissListenTip} aria-label="Dismiss tip" className="absolute right-1.5 top-1.5 p-0.5 rounded-md hover:bg-page/20">
+                <X className="w-3.5 h-3.5" />
+              </button>
+              <span className="absolute -bottom-1 right-8 h-2.5 w-2.5 rotate-45 bg-ink" aria-hidden />
+            </div>
+          )}
+          <button
+            onClick={onListen}
+            aria-label={selected.length > 0 ? `Listen to the ${selected.length} selected verse${selected.length === 1 ? '' : 's'}` : 'Listen: hear this chapter read aloud'}
+            className="flex items-center gap-2 h-14 pl-4 pr-5 rounded-full bg-emerald-600 text-white font-bold text-base shadow-2xl ring-4 ring-orange-400/40 active:scale-95 hover:bg-emerald-500"
+          >
+            <Play className="w-6 h-6 fill-current" />
+            Listen
+          </button>
         </div>
       )}
 

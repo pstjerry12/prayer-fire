@@ -10,6 +10,7 @@ import DonationCard from './components/DonationCard';
 import TestimonyCard from './components/TestimonyCard';
 import AnnouncementBanner from './components/AnnouncementBanner';
 import DailyExaltation from './components/DailyExaltation';
+import VerseOfTheDayCard from './components/VerseOfTheDayCard';
 import { useApp } from './context';
 
 function formatTime(time: string): string {
@@ -58,8 +59,13 @@ export default function HomePage() {
             </p>
           </section>
 
+          {/* ── Verse of the Day: Read / Listen ──── */}
+          <div className="mt-5 md:max-w-2xl md:mx-auto">
+            <VerseOfTheDayCard />
+          </div>
+
           {/* ── Primary actions ──────────────────── */}
-          <section className="grid grid-cols-2 gap-3 md:gap-4 mt-6 md:mt-8 md:max-w-2xl md:mx-auto">
+          <section className="grid grid-cols-2 gap-3 md:gap-4 md:max-w-2xl md:mx-auto">
             <Link
               href="/workshop"
               className="bg-emerald-600 text-white rounded-2xl p-4 md:p-7 text-center shadow-sm hover:bg-emerald-500 hover:-translate-y-0.5 transition-all"
@@ -142,7 +148,7 @@ export default function HomePage() {
             </div>
           </Link>
 
-          {/* ── KJV Bible (horizontal) ────────────── */}
+          {/* ── Holy Bible: read + audio (horizontal) ── */}
           <Link
             href="/bible"
             className="block bg-card rounded-2xl mt-4 p-4 md:p-5 border border-edge shadow-sm hover:border-acc-edge transition-all"
@@ -152,8 +158,8 @@ export default function HomePage() {
                 <BookOpen className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-ink font-bold text-sm md:text-base">KJV Bible</h3>
-                <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">Read the full Bible by book &amp; chapter</p>
+                <h3 className="text-ink font-bold text-sm md:text-base">Holy Bible &middot; Read &amp; Listen</h3>
+                <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">The full Bible, offline, with audio read-aloud</p>
               </div>
               <ChevronRight className="w-4 h-4 text-ink-ghost shrink-0" />
             </div>

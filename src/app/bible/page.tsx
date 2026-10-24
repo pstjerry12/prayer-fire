@@ -54,11 +54,11 @@ export default function BiblePage() {
           </div>
           <div>
             <h1 className="font-serif-heading text-2xl font-bold text-ink">Holy Bible</h1>
-            <p className="text-xs text-ink-muted">Read by book &amp; chapter, in your chosen translation — fully offline</p>
+            <p className="text-xs text-ink-muted">Read or listen, by book &amp; chapter, in your chosen translation</p>
           </div>
         </div>
 
-        <VerseOfTheDayCard />
+        <VerseOfTheDayCard showRead={false} />
 
         <div className="grid grid-cols-3 gap-1 rounded-xl bg-card-2 p-1 mb-5">
           <button
