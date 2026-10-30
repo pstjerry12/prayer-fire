@@ -24,7 +24,7 @@ function fmtTime(t?: string) {
 
 export default function PrayerGroups() {
   const {
-    groups, messages, user, isPremium, setShowAuth, setShowPricing,
+    groups, messages, user, isPremium, isAndroidApp, setShowAuth, setShowPricing,
     createGroup, joinGroup, requestJoin, approveMember, rejectMember, setGroupPublic,
     leaveGroup, deleteGroup,
     setGroupPrayerTime, setGroupVerse, togglePrayedToday, sendMessage,
@@ -176,7 +176,7 @@ export default function PrayerGroups() {
           onClick={() => setShowPricing(true)}
           className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500"
         >
-          Start 7-Day Free Trial
+          {isAndroidApp ? 'See Prayer Fire Partner' : 'Start 7-Day Free Trial'}
         </button>
       </div>
     );

@@ -148,8 +148,25 @@ export const userStudy = pgTable("user_study", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Paid "Prayer Fire Partner" subscription, one row per account. Written ONLY by the
+// RevenueCat webhook (/api/revenuecat/webhook) and the sync route (/api/subscription/sync),
+// which both mirror what Google Play (via RevenueCat) says. The app reads it to unlock features.
+export const subscriptions = pgTable("subscriptions", {
+  userId: text("user_id").primaryKey(), // = users.id = the RevenueCat app user id
+  entitlement: text("entitlement").notNull().default("partner"),
+  productId: text("product_id"), // e.g. prayerfire_partner:monthly
+  store: text("store"), // PLAY_STORE | APP_STORE | STRIPE ...
+  periodType: text("period_type"), // TRIAL | INTRO | NORMAL
+  environment: text("environment").notNull().default("PRODUCTION"), // SANDBOX = a licence tester
+  expiresAt: timestamp("expires_at", { withTimezone: true }), // access lasts until this moment
+  willRenew: boolean("will_renew").notNull().default(true),
+  lastEventAt: timestamp("last_event_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+export type SubscriptionRow = typeof subscriptions.$inferSelect;
 export type PartnerRequestRow = typeof partnerRequests.$inferSelect;
 export type DonationRow = typeof donations.$inferSelect;
 export type AnnouncementRow = typeof announcements.$inferSelect;

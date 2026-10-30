@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { X, Check, Crown, Globe } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { useApp } from '../context';
+import PlaySubscription from './PlaySubscription';
 import {
   PRICING_PLANS,
   CURRENCIES,
@@ -20,6 +22,7 @@ interface Props {
 export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
   const [currency, setCurrency] = useState<Currency>(getDefaultCurrency);
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
+  const { isAndroidApp } = useApp();
 
   if (!isOpen) return null;
 
@@ -40,6 +43,12 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
             </button>
           </div>
 
+          {isAndroidApp ? (
+            // The Android app sells Partner through Google Play only.
+            <div className="p-5">
+              <PlaySubscription />
+            </div>
+          ) : (
           <div className="p-5 space-y-5">
             {/* Currency + billing */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -145,6 +154,7 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
               🎁 7-day free trial &middot; No charge today &middot; Pay after your trial
             </p>
           </div>
+          )}
         </div>
       </div>
     </div>

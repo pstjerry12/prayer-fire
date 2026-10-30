@@ -8,6 +8,17 @@ export interface AuthUser {
   role: string;
 }
 
+/** The paid Prayer Fire Partner subscription, as the server reports it (null = none). */
+export interface SubscriptionInfo {
+  tier: "partner";
+  expiresAt: string | null;
+  willRenew: boolean;
+  store: string | null;
+  productId: string | null;
+  isTrial: boolean;
+  sandbox: boolean;
+}
+
 export interface WorshipSong {
   id: string;
   name: string;

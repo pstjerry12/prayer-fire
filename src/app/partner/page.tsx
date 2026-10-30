@@ -8,9 +8,10 @@ import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
 import { PRICING_PLANS, CURRENCIES, getDefaultCurrency, formatPrice, type Currency } from '@/app/data/pricingPlans';
 import { useApp } from '@/app/context';
+import PlaySubscription from '@/app/components/PlaySubscription';
 
 export default function PartnerPage() {
-  const { isPremium, upgrade } = useApp();
+  const { isPremium, upgrade, isAndroidApp } = useApp();
   const [currency, setCurrency] = useState<Currency>(getDefaultCurrency);
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
 
@@ -30,7 +31,10 @@ export default function PartnerPage() {
           <p className="text-ink-muted text-sm mt-1">Join the global intercessory community</p>
         </div>
 
-        {isPremium ? (
+        {isAndroidApp ? (
+          // The Android app sells Partner through Google Play only.
+          <PlaySubscription />
+        ) : isPremium ? (
           <div className="bg-acc-soft border border-acc-edge rounded-2xl p-6 text-center">
             <div className="text-4xl mb-3">👑</div>
             <h2 className="text-acc-strong font-bold text-lg mb-1">You are a Prayer Fire Partner!</h2>
