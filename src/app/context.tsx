@@ -17,9 +17,6 @@ import type {
   IntercessoryCategory,
   AuthUser,
   WorshipSong,
-  PrayerGroup,
-  GroupMessage,
-  JoinResult,
   SubscriptionInfo,
   FreeModeInfo,
 } from '@/app/types';
@@ -41,23 +38,6 @@ const DEFAULT_APPOINTMENTS: PrayerAppointment[] = [
   { id: 'noon', time: '12:00', label: 'Noon Prayer', enabled: true, useNativeAlarm: true },
   { id: 'morning', time: '04:00', label: 'Morning Watch', enabled: true, useNativeAlarm: true },
 ];
-
-// The official team that always appears first in the group directory.
-export const SEED_GROUP_ID = 'group-prayer-fire-movement';
-
-function buildSeedGroup(): PrayerGroup {
-  return {
-    id: SEED_GROUP_ID,
-    name: 'Prayer Fire Movement',
-    description: 'The official global prayer team — praying like Daniel, 3× a day.',
-    inviteCode: 'PRAYER',
-    admins: ['prayerfiremovemnt@gmail.com'],
-    members: [],
-    prayerTime: '00:00',
-    public: true,
-    createdAt: new Date().toISOString(),
-  };
-}
 
 // 7-day free trial for the premium (Prayer Fire Partner) features.
 const TRIAL_KEY = 'upp_trial_start';
@@ -148,22 +128,6 @@ interface AppContextValue {
   addSongFiles: (files: File[]) => Promise<void>;
   addSongUrl: (name: string, url: string) => Promise<void>;
   removeSong: (id: string) => Promise<void>;
-  groups: PrayerGroup[];
-  messages: GroupMessage[];
-  createGroup: (name: string, description: string, prayerTime?: string, isPublic?: boolean) => PrayerGroup;
-  joinGroup: (inviteCode: string) => JoinResult;
-  requestJoin: (groupId: string) => JoinResult;
-  approveMember: (groupId: string, memberName: string) => void;
-  rejectMember: (groupId: string, memberName: string) => void;
-  setGroupPublic: (groupId: string, isPublic: boolean) => void;
-  leaveGroup: (groupId: string) => void;
-  deleteGroup: (groupId: string) => void;
-  setGroupPrayerTime: (groupId: string, time: string) => void;
-  setGroupVerse: (groupId: string, verse: string) => void;
-  togglePrayedToday: (groupId: string) => void;
-  promoteMember: (groupId: string, memberName: string) => void;
-  removeMember: (groupId: string, memberName: string) => void;
-  sendMessage: (groupId: string, text: string, kind?: 'message' | 'alert') => void;
   markPrayedToday: () => void;
   signOut: () => Promise<void>;
   deleteAccount: () => void;
@@ -295,188 +259,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const removeSong = async (id: string) => {
     setSongs((prev) => prev.filter((s) => s.id !== id));
     await deleteSongBlob(id).catch(() => {});
-  };
-
-  // ── Prayer Groups (WhatsApp-style, stored locally) ────────────────
-  const [groups, setGroups] = useState<PrayerGroup[]>(() => {
-    if (typeof window === 'undefined') return [];
-    const stored = localStorage.getItem('pfm_groups');
-    if (stored) {
-      const parsed = JSON.parse(stored) as PrayerGroup[];
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-    // First visit: seed the official movement team so the directory isn't empty.
-    return [buildSeedGroup()];
-  });
-  const [messages, setMessages] = useState<GroupMessage[]>(() => {
-    if (typeof window === 'undefined') return [];
-    const stored = localStorage.getItem('pfm_group_messages');
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem('pfm_groups', JSON.stringify(groups));
-  }, [groups]);
-  useEffect(() => {
-    localStorage.setItem('pfm_group_messages', JSON.stringify(messages));
-  }, [messages]);
-
-  const myId = user?.id || 'guest';
-
-  const createGroup = (name: string, description: string, prayerTime?: string, isPublic = true): PrayerGroup => {
-    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
-    const g: PrayerGroup = {
-      id: `group-${Date.now()}`,
-      name: name.trim(),
-      description: description.trim(),
-      inviteCode: code,
-      admins: [myId],
-      members: [user?.name || 'Me'],
-      prayerTime,
-      public: isPublic,
-      createdAt: new Date().toISOString(),
-    };
-    setGroups((prev) => [g, ...prev]);
-    return g;
-  };
-
-  // Shared join logic. Public groups admit immediately; private groups go to
-  // a pending list that an admin must approve.
-  const applyJoin = (g: PrayerGroup): JoinResult => {
-    const memberName = user?.name || 'Guest';
-    if (g.members.includes(memberName)) return 'already';
-    if (g.pendingMembers?.includes(memberName)) return 'pending';
-    if (g.public) {
-      setGroups((prev) =>
-        prev.map((x) => (x.id === g.id ? { ...x, members: [...x.members, memberName] } : x))
-      );
-      return 'joined';
-    }
-    setGroups((prev) =>
-      prev.map((x) =>
-        x.id === g.id
-          ? { ...x, pendingMembers: [...(x.pendingMembers || []), memberName] }
-          : x
-      )
-    );
-    return 'pending';
-  };
-
-  const joinGroup = (inviteCode: string): JoinResult => {
-    const code = inviteCode.trim().toUpperCase();
-    const g = groups.find((x) => x.inviteCode.toUpperCase() === code);
-    if (!g) return 'notfound';
-    return applyJoin(g);
-  };
-
-  // Join directly from the directory (by group id).
-  const requestJoin = (groupId: string): JoinResult => {
-    const g = groups.find((x) => x.id === groupId);
-    if (!g) return 'notfound';
-    return applyJoin(g);
-  };
-
-  // Admins approve / reject join requests on private groups.
-  const approveMember = (groupId: string, memberName: string) => {
-    setGroups((prev) =>
-      prev.map((g) => {
-        if (g.id !== groupId) return g;
-        const pendingMembers = (g.pendingMembers || []).filter((m) => m !== memberName);
-        return { ...g, members: [...g.members, memberName], pendingMembers };
-      })
-    );
-  };
-
-  const rejectMember = (groupId: string, memberName: string) => {
-    setGroups((prev) =>
-      prev.map((g) =>
-        g.id === groupId
-          ? { ...g, pendingMembers: (g.pendingMembers || []).filter((m) => m !== memberName) }
-          : g
-      )
-    );
-  };
-
-  // Toggle a group between public and private.
-  const setGroupPublic = (groupId: string, isPublic: boolean) => {
-    setGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, public: isPublic } : g)));
-  };
-
-  const leaveGroup = (groupId: string) => {
-    const memberName = user?.name || 'Member';
-    setGroups((prev) =>
-      prev.map((g) =>
-        g.id === groupId
-          ? { ...g, members: g.members.filter((m) => m !== memberName), admins: g.admins.filter((a) => a !== myId) }
-          : g
-      )
-    );
-  };
-
-  const deleteGroup = (groupId: string) => {
-    setGroups((prev) => prev.filter((g) => g.id !== groupId));
-    setMessages((prev) => prev.filter((m) => m.groupId !== groupId));
-  };
-
-  const setGroupPrayerTime = (groupId: string, time: string) => {
-    setGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, prayerTime: time } : g)));
-  };
-
-  const setGroupVerse = (groupId: string, verse: string) => {
-    setGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, pinnedVerse: verse } : g)));
-  };
-
-  // "I prayed today" — each member can check in once per day.
-  const togglePrayedToday = (groupId: string) => {
-    const memberKey = user?.name || 'Me';
-    const today = new Date().toDateString();
-    const group = groups.find((g) => g.id === groupId);
-    const currentlyPrayed = group?.prayedToday?.[memberKey] === today;
-    setGroups((prev) =>
-      prev.map((g) => {
-        if (g.id !== groupId) return g;
-        const prayedToday = { ...(g.prayedToday || {}) };
-        if (prayedToday[memberKey] === today) delete prayedToday[memberKey];
-        else prayedToday[memberKey] = today;
-        return { ...g, prayedToday };
-      })
-    );
-    // Marking "prayed" also feeds the global fire streak.
-    if (!currentlyPrayed) markPrayedToday();
-  };
-
-  const promoteMember = (groupId: string, memberName: string) => {
-    setGroups((prev) =>
-      prev.map((g) => {
-        if (g.id !== groupId) return g;
-        if (g.admins.length >= 3) return g;
-        // find a member id by name (best-effort) — for local demo just use name as id
-        return { ...g, admins: [...g.admins, memberName] };
-      })
-    );
-  };
-
-  const removeMember = (groupId: string, memberName: string) => {
-    setGroups((prev) =>
-      prev.map((g) =>
-        g.id === groupId
-          ? { ...g, members: g.members.filter((m) => m !== memberName), admins: g.admins.filter((a) => a !== memberName) }
-          : g
-      )
-    );
-  };
-
-  const sendMessage = (groupId: string, text: string, kind: 'message' | 'alert' = 'message') => {
-    const m: GroupMessage = {
-      id: `msg-${Date.now()}`,
-      groupId,
-      senderName: user?.name || 'Me',
-      senderId: myId,
-      text: text.trim(),
-      kind,
-      createdAt: new Date().toISOString(),
-    };
-    setMessages((prev) => [...prev, m]);
   };
 
   // Remember who signed in, so the sign-in form can pre-fill them next time.
@@ -786,22 +568,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         addSongFiles,
         addSongUrl,
         removeSong,
-        groups,
-        messages,
-        createGroup,
-        joinGroup,
-        requestJoin,
-        approveMember,
-        rejectMember,
-        setGroupPublic,
-        leaveGroup,
-        deleteGroup,
-        setGroupPrayerTime,
-        setGroupVerse,
-        togglePrayedToday,
-        promoteMember,
-        removeMember,
-        sendMessage,
         markPrayedToday,
         signOut,
         deleteAccount,

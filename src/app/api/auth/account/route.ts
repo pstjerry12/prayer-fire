@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
+import { sql } from "drizzle-orm";
 import { users, userActivity, feedback, subscriptions } from "@/db/schema";
 import { verifyToken, AUTH_COOKIE } from "@/lib/auth";
 
@@ -26,6 +27,15 @@ export async function DELETE(request: Request) {
         await db.delete(userActivity).where(eq(userActivity.userId, payload.sub));
         // Only our copy goes. A Google Play subscription keeps billing until it is cancelled in Play.
         await db.delete(subscriptions).where(eq(subscriptions.userId, payload.sub));
+        // Prayer groups: groups this person created go with them (members lose the group); everywhere else
+        // their posts, comments, "I'm praying" marks, check-ins and memberships are removed.
+        const id = payload.sub;
+        await db.execute(sql`delete from groups where created_by = ${id}`);
+        await db.execute(sql`delete from group_posts where author_id = ${id}`);
+        await db.execute(sql`delete from group_comments where author_id = ${id}`);
+        await db.execute(sql`delete from group_praying where user_id = ${id}`);
+        await db.execute(sql`delete from group_checkins where user_id = ${id}`);
+        await db.execute(sql`delete from group_members where user_id = ${id}`);
         await db
           .update(feedback)
           .set({ userId: null, name: null, contact: null })
