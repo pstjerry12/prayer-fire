@@ -4,10 +4,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Users, Plus, ChevronRight, ChevronLeft, Send, Siren, Clock, LogOut, Trash2, ShieldCheck,
   UserPlus, Copy, Check, Pin, Flame, Lock, Globe, X, MessageCircle, HandHeart, Sparkles, Loader2, CloudUpload,
+  Flag, EyeOff, Eye,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useApp } from '@/app/context';
 import { playChime } from '@/lib/clientUtils';
+import { MembersManager, REPORT_REASONS, ReportsQueue } from './GroupModeration';
 import type { DirectoryGroup, GroupComment, GroupDetail, GroupPost, JoinMode, PostKind } from '@/lib/groups';
 import {
   fetchComments, fetchDetail, fetchDirectory, groupAction, markLegacyMoved, readLegacyGroups, type LegacyGroup,
@@ -68,6 +70,10 @@ export default function PrayerGroups() {
   const [openPostId, setOpenPostId] = useState<string | null>(null);
   const [comments, setComments] = useState<GroupComment[]>([]);
   const [commentDraft, setCommentDraft] = useState('');
+
+  // Reporting a post or comment (the reason picker is open for this item)
+  const [reporting, setReporting] = useState<{ postId: string; commentId: string | null } | null>(null);
+  const [otherReason, setOtherReason] = useState('');
 
   // Groups made on this phone before groups moved online
   const [legacy, setLegacy] = useState<LegacyGroup[]>([]);
@@ -236,6 +242,29 @@ export default function PrayerGroups() {
       setCommentDraft('');
       const r = await fetchComments(activeGroupId!, openPostId);
       if (r.ok) setComments(r.data.comments);
+    }
+  };
+
+  const reloadComments = async () => {
+    if (!activeGroupId || !openPostId) return;
+    const r = await fetchComments(activeGroupId, openPostId);
+    if (r.ok) setComments(r.data.comments);
+  };
+
+  /** Runs a moderation/report action, then refreshes the open comments too. */
+  const actAndRefresh = async (body: Record<string, unknown>) => {
+    const r = await act(body);
+    if (r) await reloadComments();
+    return r;
+  };
+
+  const submitReport = async (reason: string) => {
+    if (!reporting || !reason.trim()) return;
+    const r = await actAndRefresh({ action: 'report', postId: reporting.postId, commentId: reporting.commentId, reason });
+    if (r) {
+      setReporting(null);
+      setOtherReason('');
+      flashNotice('Thank you. The group leaders will look at your report.');
     }
   };
 
@@ -443,6 +472,9 @@ export default function PrayerGroups() {
           </div>
         )}
 
+        <ReportsQueue detail={detail} busy={busy} act={act} />
+        <MembersManager detail={detail} busy={busy} act={act} />
+
         {g.pinnedVerse && (
           <div className="bg-acc-soft border border-acc-edge rounded-xl p-3 text-center">
             <p className="text-acc-strong text-xs font-semibold uppercase tracking-wider mb-1">📖 Praying together</p>
@@ -472,43 +504,115 @@ export default function PrayerGroups() {
         <div className="space-y-2">
           {detail.posts.length === 0 ? (
             <p className="text-center text-ink-faint text-xs py-6 bg-card rounded-2xl border border-edge">Nothing here yet. Share the first prayer request!</p>
-          ) : detail.posts.map((p) => (
-            <article key={p.id} className={cn('rounded-2xl border p-3', p.kind === 'alert' ? 'bg-danger-soft border-danger-edge' : 'bg-card border-edge')}>
-              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <span className="text-ink font-bold text-xs">{p.authorName}{p.mine ? ' (you)' : ''}</span>
-                {p.kind === 'alert' && <span className="bg-danger text-white text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Siren className="w-2.5 h-2.5" /> EMERGENCY</span>}
-                {p.kind === 'request' && <span className="bg-acc-soft text-acc-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><HandHeart className="w-2.5 h-2.5" /> PRAYER REQUEST</span>}
-                {p.kind === 'testimony' && <span className="bg-warn-soft text-warn-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Sparkles className="w-2.5 h-2.5" /> TESTIMONY</span>}
-                {p.pinned && <Pin className="w-3 h-3 text-acc" aria-label="Pinned" />}
-                <span className="text-ink-faint text-[0.5625rem] ml-auto">{ago(p.createdAt)}</span>
-              </div>
-              <p className={cn('text-sm whitespace-pre-wrap break-words', p.kind === 'alert' ? 'text-danger-strong font-semibold' : 'text-ink-soft')}>{p.body}</p>
-              <div className="flex gap-2 mt-2">
-                <button onClick={() => act({ action: 'praying', postId: p.id })} disabled={busy}
-                  className={cn('px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 border', p.iAmPraying ? 'bg-acc-soft text-acc-strong border-acc-edge' : 'bg-card-2 text-ink-muted border-edge')}>
-                  <HandHeart className="w-3.5 h-3.5" /> {p.iAmPraying ? "I'm praying ✓" : "I'm praying"} · {p.praying}
-                </button>
-                <button onClick={() => toggleComments(p)} className="px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 border bg-card-2 text-ink-muted border-edge">
-                  <MessageCircle className="w-3.5 h-3.5" /> {p.comments} {p.comments === 1 ? 'comment' : 'comments'}
-                </button>
-              </div>
-              {openPostId === p.id && (
-                <div className="mt-2 space-y-2 border-t border-edge pt-2">
-                  {comments.map((c) => (
-                    <div key={c.id} className="bg-card-2 rounded-lg px-3 py-2">
-                      <p className="text-xs"><span className="font-bold text-ink">{c.authorName}{c.mine ? ' (you)' : ''}</span> <span className="text-ink-faint">· {ago(c.createdAt)}</span></p>
-                      <p className="text-sm text-ink-soft whitespace-pre-wrap break-words">{c.body}</p>
-                    </div>
+          ) : detail.posts.map((p) => {
+            const hidden = p.status === 'hidden';
+            const reportingPost = reporting?.postId === p.id && reporting.commentId === null;
+            const reasonPicker = (
+              <div className="mt-2 bg-card-2 rounded-lg p-2 space-y-1.5" role="group" aria-label="Report reason">
+                <p className="text-[0.6875rem] font-bold text-ink-muted">Why are you reporting this?</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {REPORT_REASONS.filter((r) => r !== 'Other').map((r) => (
+                    <button key={r} onClick={() => submitReport(r)} disabled={busy} className="px-2 py-1 bg-card border border-edge rounded-lg text-[0.6875rem] font-bold text-ink-soft disabled:opacity-60">{r}</button>
                   ))}
-                  <div className="flex gap-2">
-                    <input value={commentDraft} onChange={(e) => setCommentDraft(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendComment()} placeholder="Write a comment..." aria-label="Write a comment" maxLength={1000}
-                      className="flex-1 bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint" />
-                    <button onClick={sendComment} disabled={busy || !commentDraft.trim()} className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold disabled:opacity-60">Send</button>
-                  </div>
                 </div>
-              )}
-            </article>
-          ))}
+                <div className="flex gap-1.5">
+                  <input value={otherReason} onChange={(e) => setOtherReason(e.target.value)} placeholder="Other reason" aria-label="Other reason" maxLength={300}
+                    className="flex-1 bg-card border border-edge-strong rounded-lg px-2 py-1 text-xs text-ink placeholder-ink-faint" />
+                  <button onClick={() => submitReport(otherReason)} disabled={busy || !otherReason.trim()} className="px-2 py-1 bg-danger text-white rounded-lg text-[0.6875rem] font-bold disabled:opacity-60">Report</button>
+                  <button onClick={() => setReporting(null)} className="px-2 py-1 bg-card-3 text-ink-soft rounded-lg text-[0.6875rem] font-bold">Cancel</button>
+                </div>
+              </div>
+            );
+            return (
+              <article key={p.id} className={cn('rounded-2xl border p-3', p.kind === 'alert' ? 'bg-danger-soft border-danger-edge' : 'bg-card border-edge', hidden && 'opacity-75')}>
+                {hidden && (
+                  <p className="text-[0.6875rem] font-semibold text-warn-strong bg-warn-soft rounded-lg px-2 py-1 mb-2">
+                    {detail.canModerate ? 'Hidden from members.' : 'A leader hid this post. Only you and the group leaders can see it.'}
+                  </p>
+                )}
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <span className="text-ink font-bold text-xs">{p.authorName}{p.mine ? ' (you)' : ''}</span>
+                  {p.kind === 'alert' && <span className="bg-danger text-white text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Siren className="w-2.5 h-2.5" /> EMERGENCY</span>}
+                  {p.kind === 'request' && <span className="bg-acc-soft text-acc-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><HandHeart className="w-2.5 h-2.5" /> PRAYER REQUEST</span>}
+                  {p.kind === 'testimony' && <span className="bg-warn-soft text-warn-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Sparkles className="w-2.5 h-2.5" /> TESTIMONY</span>}
+                  {p.pinned && <span className="bg-acc-soft text-acc-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Pin className="w-2.5 h-2.5" /> PINNED</span>}
+                  {detail.canModerate && p.reports > 0 && <span className="bg-danger text-white text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full">{p.reports} {p.reports === 1 ? 'REPORT' : 'REPORTS'}</span>}
+                  <span className="text-ink-faint text-[0.5625rem] ml-auto">{ago(p.createdAt)}</span>
+                </div>
+                <p className={cn('text-sm whitespace-pre-wrap break-words', p.kind === 'alert' ? 'text-danger-strong font-semibold' : 'text-ink-soft')}>{p.body}</p>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <button onClick={() => act({ action: 'praying', postId: p.id })} disabled={busy || hidden}
+                    className={cn('px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 border disabled:opacity-60', p.iAmPraying ? 'bg-acc-soft text-acc-strong border-acc-edge' : 'bg-card-2 text-ink-muted border-edge')}>
+                    <HandHeart className="w-3.5 h-3.5" /> {p.iAmPraying ? "I'm praying ✓" : "I'm praying"} · {p.praying}
+                  </button>
+                  <button onClick={() => toggleComments(p)} className="px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 border bg-card-2 text-ink-muted border-edge">
+                    <MessageCircle className="w-3.5 h-3.5" /> {p.comments} {p.comments === 1 ? 'comment' : 'comments'}
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                  {!p.mine && !p.iReported && (
+                    <button onClick={() => { setReporting({ postId: p.id, commentId: null }); setOtherReason(''); }} className="px-2 py-1 text-ink-faint hover:text-danger rounded-lg text-[0.6875rem] font-bold flex items-center gap-1"><Flag className="w-3 h-3" /> Report</button>
+                  )}
+                  {!p.mine && p.iReported && <span className="px-2 py-1 text-ink-faint text-[0.6875rem] font-bold">Reported ✓</span>}
+                  {p.mine && !detail.canModerate && (
+                    <button disabled={busy} onClick={() => { if (confirm('Delete your post?')) act({ action: 'deletePost', postId: p.id }); }} className="px-2 py-1 text-ink-faint hover:text-danger rounded-lg text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60"><Trash2 className="w-3 h-3" /> Delete</button>
+                  )}
+                  {detail.canModerate && (
+                    <>
+                      {!hidden && (
+                        <button disabled={busy} onClick={() => act({ action: 'pin', postId: p.id, pinned: !p.pinned })} className="px-2 py-1 bg-acc-soft text-acc-strong rounded-lg text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60"><Pin className="w-3 h-3" /> {p.pinned ? 'Unpin' : 'Pin to top'}</button>
+                      )}
+                      <button disabled={busy} onClick={() => act({ action: 'hidePost', postId: p.id, hidden: !hidden })} className="px-2 py-1 bg-warn-soft text-warn-strong rounded-lg text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60">
+                        {hidden ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />} {hidden ? 'Unhide' : 'Hide'}
+                      </button>
+                      <button disabled={busy} onClick={() => { if (confirm('Delete this post for everyone?')) act({ action: 'deletePost', postId: p.id }); }} className="px-2 py-1 bg-danger text-white rounded-lg text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60"><Trash2 className="w-3 h-3" /> Delete</button>
+                    </>
+                  )}
+                </div>
+                {reportingPost && reasonPicker}
+                {openPostId === p.id && (
+                  <div className="mt-2 space-y-2 border-t border-edge pt-2">
+                    {comments.map((c) => {
+                      const cHidden = c.status === 'hidden';
+                      const reportingThis = reporting?.postId === p.id && reporting.commentId === c.id;
+                      return (
+                        <div key={c.id} className={cn('bg-card-2 rounded-lg px-3 py-2', cHidden && 'opacity-75')}>
+                          <p className="text-xs">
+                            <span className="font-bold text-ink">{c.authorName}{c.mine ? ' (you)' : ''}</span> <span className="text-ink-faint">· {ago(c.createdAt)}</span>
+                            {cHidden && <span className="ml-1.5 bg-warn-soft text-warn-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full">{detail.canModerate ? 'HIDDEN' : 'HIDDEN BY A LEADER'}</span>}
+                            {detail.canModerate && c.reports > 0 && <span className="ml-1.5 bg-danger text-white text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full">{c.reports} {c.reports === 1 ? 'REPORT' : 'REPORTS'}</span>}
+                          </p>
+                          <p className="text-sm text-ink-soft whitespace-pre-wrap break-words">{c.body}</p>
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {!c.mine && !c.iReported && (
+                              <button onClick={() => { setReporting({ postId: p.id, commentId: c.id }); setOtherReason(''); }} className="text-ink-faint hover:text-danger text-[0.6875rem] font-bold flex items-center gap-1"><Flag className="w-3 h-3" /> Report</button>
+                            )}
+                            {!c.mine && c.iReported && <span className="text-ink-faint text-[0.6875rem] font-bold">Reported ✓</span>}
+                            {(c.mine || detail.canModerate) && (
+                              <button disabled={busy} onClick={() => { if (confirm('Delete this comment?')) actAndRefresh({ action: 'deleteComment', commentId: c.id }); }} className="text-ink-faint hover:text-danger text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60"><Trash2 className="w-3 h-3" /> Delete</button>
+                            )}
+                            {detail.canModerate && (
+                              <button disabled={busy} onClick={() => actAndRefresh({ action: 'hideComment', commentId: c.id, hidden: !cHidden })} className="text-warn-strong text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60">
+                                {cHidden ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />} {cHidden ? 'Unhide' : 'Hide'}
+                              </button>
+                            )}
+                          </div>
+                          {reportingThis && reasonPicker}
+                        </div>
+                      );
+                    })}
+                    {!hidden && (
+                      <div className="flex gap-2">
+                        <input value={commentDraft} onChange={(e) => setCommentDraft(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendComment()} placeholder="Write a comment..." aria-label="Write a comment" maxLength={1000}
+                          className="flex-1 bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint" />
+                        <button onClick={sendComment} disabled={busy || !commentDraft.trim()} className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold disabled:opacity-60">Send</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </article>
+            );
+          })}
         </div>
       </div>
     );
