@@ -4,13 +4,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Users, Plus, ChevronRight, ChevronLeft, Send, Siren, Clock, LogOut, Trash2, ShieldCheck,
   UserPlus, Copy, Check, Pin, Flame, Lock, Globe, X, MessageCircle, HandHeart, Sparkles, Loader2, CloudUpload,
-  Flag, EyeOff, Eye,
+  Flag, EyeOff, Eye, Star, Search,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useApp } from '@/app/context';
 import { playChime } from '@/lib/clientUtils';
 import { MembersManager, REPORT_REASONS, ReportsQueue } from './GroupModeration';
 import GroupAnalytics from './GroupAnalytics';
+import GroupFeaturing from './GroupFeaturing';
 import type { DirectoryGroup, GroupComment, GroupDetail, GroupPost, JoinMode, PostKind } from '@/lib/groups';
 import {
   fetchComments, fetchDetail, fetchDirectory, groupAction, markLegacyMoved, readLegacyGroups, type LegacyGroup,
@@ -75,6 +76,9 @@ export default function PrayerGroups() {
   // Reporting a post or comment (the reason picker is open for this item)
   const [reporting, setReporting] = useState<{ postId: string; commentId: string | null } | null>(null);
   const [otherReason, setOtherReason] = useState('');
+
+  // Directory search
+  const [search, setSearch] = useState('');
 
   // Groups made on this phone before groups moved online
   const [legacy, setLegacy] = useState<LegacyGroup[]>([]);
@@ -383,7 +387,7 @@ export default function PrayerGroups() {
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-11 h-11 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold flex-shrink-0">{g.name.charAt(0).toUpperCase()}</div>
               <div className="min-w-0">
-                <h2 className="font-bold text-ink truncate">{g.name}</h2>
+                <h2 className="font-bold text-ink truncate flex items-center gap-1.5">{g.name}{g.featured && <span className="bg-warn-soft text-warn-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shrink-0"><Star className="w-2.5 h-2.5" /> FEATURED</span>}</h2>
                 <p className="text-ink-muted text-xs truncate">{g.description || 'No description'}</p>
               </div>
             </div>
@@ -476,6 +480,7 @@ export default function PrayerGroups() {
         <ReportsQueue detail={detail} busy={busy} act={act} />
         <MembersManager detail={detail} busy={busy} act={act} />
         {isLeaderOfGroup && detail.canModerate && <GroupAnalytics groupId={g.id} />}
+        <GroupFeaturing detail={detail} busy={busy} act={act} />
 
         {g.pinnedVerse && (
           <div className="bg-acc-soft border border-acc-edge rounded-xl p-3 text-center">
@@ -648,27 +653,33 @@ export default function PrayerGroups() {
         </div>
       )}
 
-      <div>
-        <h3 className="font-serif-heading font-bold text-ink">Browse Prayer Teams</h3>
-        <p className="text-ink-muted text-xs mt-0.5 mb-2">Join an open team instantly, or ask to join an approval-only team.</p>
-      </div>
+      {(directory ?? []).length > 0 && (
+        <label className="relative block">
+          <span className="sr-only">Search groups</span>
+          <Search className="w-4 h-4 text-ink-faint absolute left-3 top-1/2 -translate-y-1/2" />
+          <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search groups" aria-label="Search groups"
+            className="w-full bg-card border border-edge-strong rounded-xl pl-9 pr-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+        </label>
+      )}
 
-      {directory === null && !loadError ? (
-        <p className="text-ink-muted text-sm flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading teams...</p>
-      ) : (directory ?? []).length === 0 ? (
-        <div className="bg-card rounded-2xl border border-edge p-8 text-center">
-          <Users className="w-10 h-10 text-ink-ghost mx-auto mb-2" />
-          <p className="text-ink-muted text-sm">No teams yet</p>
-          <p className="text-ink-faint text-xs mt-1">{isLeader ? 'Create the first prayer group for your church or prayer team.' : 'A Prayer Fire Leader can create the first group, or join one with an invite code.'}</p>
-        </div>
-      ) : (
-        (directory ?? []).map((g) => (
-          <div key={g.id} className="bg-card border border-edge rounded-2xl p-4 transition-all hover:border-acc-edge">
+      {(() => {
+        const all = directory ?? [];
+        const term = search.trim().toLowerCase();
+        // Featured groups always come first (the database already sorts them that way; this keeps it true after filtering).
+        const shown = all
+          .filter((g) => !term || g.name.toLowerCase().includes(term) || g.description.toLowerCase().includes(term))
+          .sort((a, b) => Number(b.featured) - Number(a.featured));
+        const featuredList = shown.filter((g) => g.featured);
+        const others = shown.filter((g) => !g.featured);
+
+        const card = (g: DirectoryGroup) => (
+          <div key={g.id} className={cn('bg-card border rounded-2xl p-4 transition-all hover:border-acc-edge', g.featured ? 'border-warn-edge' : 'border-edge')}>
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold flex-shrink-0">{g.name.charAt(0).toUpperCase()}</div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-ink font-bold text-sm truncate">{g.name}</h3>
+                  {g.featured && <span className="bg-warn-soft text-warn-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0"><Star className="w-2.5 h-2.5" /> FEATURED</span>}
                   <span className={cn('text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0', g.joinMode === 'open' ? 'bg-acc-soft text-acc-strong' : 'bg-warn-soft text-warn-strong')}>
                     {g.joinMode === 'open' ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
                     {g.joinMode === 'open' ? 'Open' : 'Approval'}
@@ -693,8 +704,40 @@ export default function PrayerGroups() {
               )}
             </div>
           </div>
-        ))
-      )}
+        );
+
+        if (directory === null && !loadError) {
+          return <p className="text-ink-muted text-sm flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading teams...</p>;
+        }
+        if (all.length === 0) {
+          return (
+            <div className="bg-card rounded-2xl border border-edge p-8 text-center">
+              <Users className="w-10 h-10 text-ink-ghost mx-auto mb-2" />
+              <p className="text-ink-muted text-sm">No teams yet</p>
+              <p className="text-ink-faint text-xs mt-1">{isLeader ? 'Create the first prayer group for your church or prayer team.' : 'A Prayer Fire Leader can create the first group, or join one with an invite code.'}</p>
+            </div>
+          );
+        }
+        if (shown.length === 0) return <p className="text-ink-muted text-sm text-center py-6">No groups match &ldquo;{search}&rdquo;.</p>;
+        return (
+          <>
+            {!term && featuredList.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="font-serif-heading font-bold text-ink flex items-center gap-1.5"><Star className="w-4 h-4 text-warn-strong" /> Featured Groups</h3>
+                {featuredList.map(card)}
+              </div>
+            )}
+            <div className="space-y-2">
+              <div>
+                <h3 className="font-serif-heading font-bold text-ink">{term ? 'Search results' : 'Browse Prayer Teams'}</h3>
+                <p className="text-ink-muted text-xs mt-0.5">{term ? `${shown.length} ${shown.length === 1 ? 'group' : 'groups'} found, featured groups first.` : 'Join an open team instantly, or ask to join an approval-only team.'}</p>
+              </div>
+              {(term ? shown : others).map(card)}
+              {!term && others.length === 0 && <p className="text-ink-faint text-xs">That is every group for now.</p>}
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }

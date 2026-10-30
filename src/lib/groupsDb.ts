@@ -43,6 +43,9 @@ const MESSAGES: Record<string, { status: number; message: string }> = {
   too_many_pins: { status: 400, message: "You can pin up to 3 posts. Unpin one first." },
   bad_reason: { status: 400, message: "Tell us briefly why you are reporting this." },
   bad_action: { status: 400, message: "Unknown action." },
+  already_featured: { status: 400, message: "This group is already featured." },
+  request_pending: { status: 400, message: "You already asked to be featured. We will review it soon." },
+  request_cooldown: { status: 400, message: "Your last request was declined. You can ask again after 7 days." },
   bad_body: { status: 400, message: "Write something (up to 2,000 characters; comments up to 1,000)." },
 };
 

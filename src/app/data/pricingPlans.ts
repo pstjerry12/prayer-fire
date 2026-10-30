@@ -136,6 +136,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       'Create & manage prayer groups',
       'Moderation tools: review reports, hide or delete posts, pin posts, remove or block members, appoint co-leaders',
       "Group analytics: members, new members, prayer requests, testimonies, I'm praying counts and your busiest days",
+      'Featured groups: ask to have your group shown first in the groups list with a Featured badge',
     ],
   },
 ];

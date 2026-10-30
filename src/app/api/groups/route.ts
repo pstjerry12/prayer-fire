@@ -109,6 +109,12 @@ export async function POST(request: Request) {
           await G.resolveReport(q, str(b.reportId, 80), action);
           return { ok: true };
         }
+        case "requestFeaturing":
+          await G.requestFeaturing(q, groupId, str(b.message, 300));
+          return { ok: true };
+        case "cancelFeaturing":
+          await G.cancelFeaturing(q, groupId);
+          return { ok: true };
         default:
           throw new Error("unknown_action");
       }

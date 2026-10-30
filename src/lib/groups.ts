@@ -18,6 +18,9 @@ export interface DirectoryGroup {
   prayedToday: number;
   myStatus: "active" | "pending" | "removed" | "blocked" | null;
   myRole: GroupRole | null;
+  /** Featured right now (switched off by itself after its end date). */
+  featured: boolean;
+  featuredUntil: string | null;
 }
 
 export interface GroupMember {
@@ -60,8 +63,20 @@ export interface ReportItem {
   reasons: string[];
 }
 
+/** Where a leader's request to have the group featured stands. Only the group's leader gets this. */
+export interface FeaturingInfo {
+  state: "none" | "pending" | "featured" | "rejected";
+  /** featured: when it ends (null = no end date) */
+  until: string | null;
+  /** rejected: the admin's note, and when the leader may ask again */
+  note: string | null;
+  retryAfter: string | null;
+  canRequest: boolean;
+}
+
 export interface GroupDetail {
-  group: { id: string; name: string; description: string; joinMode: JoinMode; prayerTime: string | null; pinnedVerse: string | null; createdAt: string };
+  group: { id: string; name: string; description: string; joinMode: JoinMode; prayerTime: string | null; pinnedVerse: string | null; createdAt: string; featured: boolean };
+  featuring: FeaturingInfo | null;
   myRole: GroupRole;
   /** Only leaders and co-leaders get the invite code. */
   inviteCode: string | null;
@@ -100,11 +115,13 @@ export async function listDirectory(q: Q): Promise<DirectoryGroup[]> {
     prayedToday: Number(r.prayed_today),
     myStatus: (r.my_status as DirectoryGroup["myStatus"]) ?? null,
     myRole: (r.my_role as GroupRole | null) ?? null,
+    featured: r.featured === true,
+    featuredUntil: r.featured_until ? new Date(r.featured_until as string).toISOString() : null,
   }));
 }
 
 export async function getGroupDetail(q: Q, groupId: string): Promise<GroupDetail | null> {
-  const [group] = await q<Row>("select id, name, description, join_mode, prayer_time, pinned_verse, created_at from groups where id = $1", [groupId]);
+  const [group] = await q<Row>("select id, name, description, join_mode, prayer_time, pinned_verse, created_at, (featured and (featured_until is null or featured_until > now())) as featured_active, featured_until from groups where id = $1", [groupId]);
   if (!group) return null; // not a member (or no such group): the database shows nothing
   const [me] = await q<Row>("select role from group_members where group_id = $1 and user_id = app_uid() and status = 'active'", [groupId]);
   if (!me) return null;
@@ -127,6 +144,7 @@ export async function getGroupDetail(q: Q, groupId: string): Promise<GroupDetail
     [groupId]
   );
   const reports = canModerate ? await listReports(q, groupId) : [];
+  const featuring = me.role === "leader" ? await getFeaturing(q, groupId, group, canModerate) : null;
   const [checkins] = await q<Row>(
     "select count(*)::int as n, coalesce(bool_or(user_id = app_uid()), false) as mine from group_checkins where group_id = $1 and day = (now() at time zone 'Africa/Lagos')::date",
     [groupId]
@@ -140,7 +158,9 @@ export async function getGroupDetail(q: Q, groupId: string): Promise<GroupDetail
       prayerTime: (group.prayer_time as string | null) ?? null,
       pinnedVerse: (group.pinned_verse as string | null) ?? null,
       createdAt: new Date(group.created_at as string).toISOString(),
+      featured: group.featured_active === true,
     },
+    featuring,
     myRole: me.role as GroupRole,
     inviteCode: invite ? String(invite.code) : null,
     canModerate,
@@ -170,6 +190,25 @@ export async function getGroupDetail(q: Q, groupId: string): Promise<GroupDetail
     prayedToday: Number(checkins?.n ?? 0),
     iPrayedToday: checkins?.mine === true,
   };
+}
+
+async function getFeaturing(q: Q, groupId: string, group: Row, hasLeaderPlan: boolean): Promise<FeaturingInfo> {
+  const [last] = await q<Row>(
+    "select status, decision_note, decided_at from group_feature_requests where group_id = $1 order by created_at desc limit 1",
+    [groupId]
+  );
+  const base = { until: null as string | null, note: null as string | null, retryAfter: null as string | null };
+  if (group.featured_active === true) {
+    return { ...base, state: "featured", until: group.featured_until ? new Date(group.featured_until as string).toISOString() : null, canRequest: false };
+  }
+  if (last?.status === "pending") return { ...base, state: "pending", canRequest: false };
+  if (last?.status === "rejected" && last.decided_at) {
+    const retryAt = new Date(last.decided_at as string).getTime() + 7 * 86_400_000;
+    if (retryAt > Date.now()) {
+      return { ...base, state: "rejected", note: (last.decision_note as string | null) ?? null, retryAfter: new Date(retryAt).toISOString(), canRequest: false };
+    }
+  }
+  return { ...base, state: "none", canRequest: hasLeaderPlan };
 }
 
 export async function listComments(q: Q, postId: string): Promise<GroupComment[]> {
@@ -292,3 +331,8 @@ export async function getAnalytics(q: Q, groupId: string): Promise<GroupAnalytic
   const [row] = await q<Row>("select app_group_analytics($1) as r", [groupId]);
   return row.r as GroupAnalytics;
 }
+
+// ── Featured groups: the leader's side (only asking; the admin decides) ───────
+
+export const requestFeaturing = (q: Q, groupId: string, message: string) => q("select app_request_featuring($1, $2)", [groupId, message]);
+export const cancelFeaturing = (q: Q, groupId: string) => q("select app_cancel_featuring($1)", [groupId]);
