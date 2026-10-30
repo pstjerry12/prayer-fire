@@ -6,6 +6,10 @@
 //   pricing.list      read every subscription, base plan and regional price from Google Play
 //   pricing.preview   show what a price change would do (old price, new price, increase or decrease)
 //   pricing.update    change one regional price in Google Play, confirm it saved, log it
+//   offers.list       list the promotional offers on every base plan (draft, active, inactive)
+//   offers.create     create a promotional offer as a DRAFT (nobody sees it yet)
+//   offers.activate   make a draft or inactive offer available to new subscribers
+//   offers.deactivate stop offering it to new subscribers (people who have it keep it)
 //   defer.preview     count the subscribers whose billing could be deferred
 //   defer.run         push each eligible subscriber's next billing date forward (through RevenueCat)
 //
@@ -21,9 +25,13 @@ import {
   migratePricesBody,
   parsePriceInput,
   planDefer,
+  planOffer,
   planPriceUpdate,
   readPrice,
+  summarizeOffer,
   summarizeSubscription,
+  validateOfferSpec,
+  type OfferSpec,
   type PlaySubscription,
   type SubscriberRow,
 } from "./pricing.ts";
@@ -192,6 +200,74 @@ async function pricingUpdate(body: Record<string, unknown>, admin: Admin) {
   }
 }
 
+// ── Promotional offers ───────────────────────────────────────────────────────
+
+function offerTarget(body: Record<string, unknown>) {
+  if (!SUBSCRIPTION_IDS.includes(String(body.productId))) throw new Error("Unknown subscription.");
+  const basePlanId = String(body.basePlanId ?? "");
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(basePlanId)) throw new Error("Unknown base plan.");
+  return { productId: String(body.productId), basePlanId };
+}
+
+async function logAction(action: string, admin: Admin, details: Record<string, unknown>, result: string) {
+  await db().from("billing_actions").insert({ id: crypto.randomUUID(), admin_user_id: admin.id ?? null, admin_email: admin.email ?? null, action, details, result });
+}
+
+async function offersList() {
+  const offers = [];
+  const problems: string[] = [];
+  for (const productId of SUBSCRIPTION_IDS) {
+    try {
+      const sub = await getSubscription(productId);
+      for (const bp of sub.basePlans ?? []) {
+        const res = (await play(`/applications/${PACKAGE}/subscriptions/${productId}/basePlans/${bp.basePlanId}/offers?pageSize=100`)) as { subscriptionOffers?: Record<string, unknown>[] };
+        for (const offer of res.subscriptionOffers ?? []) offers.push(summarizeOffer({ ...offer, productId, basePlanId: bp.basePlanId }));
+      }
+    } catch (err) {
+      problems.push(`${productId}: ${(err as Error).message}`);
+    }
+  }
+  return { offers, problems };
+}
+
+async function offersCreate(body: Record<string, unknown>, admin: Admin) {
+  const { productId, basePlanId } = offerTarget(body);
+  const spec = { offerId: String(body.offerId ?? ""), kind: body.kind, percentOff: Number(body.percentOff), periods: Number(body.periods), days: Number(body.days) } as OfferSpec;
+  validateOfferSpec(spec);
+  const regionsVersion = Deno.env.get("GOOGLE_PLAY_REGIONS_VERSION") ?? "2022/02";
+  const details = { productId, basePlanId, offerId: spec.offerId, kind: spec.kind, percentOff: spec.percentOff, periods: spec.periods, days: spec.days };
+  try {
+    const sub = await getSubscription(productId);
+    const basePlan = (sub.basePlans ?? []).find((b) => b.basePlanId === basePlanId);
+    if (!basePlan) throw new Error(`Base plan "${basePlanId}" was not found in ${productId}.`);
+    const offerBody = planOffer(PACKAGE, productId, basePlan, spec);
+    const created = (await play(
+      `/applications/${PACKAGE}/subscriptions/${productId}/basePlans/${basePlanId}/offers?offerId=${encodeURIComponent(spec.offerId)}&regionsVersion.version=${encodeURIComponent(regionsVersion)}`,
+      { method: "POST", body: offerBody }
+    )) as Record<string, unknown>;
+    await logAction("offer_create", admin, details, "success");
+    return { ok: true, offer: summarizeOffer({ ...created, productId, basePlanId }) };
+  } catch (err) {
+    await logAction("offer_create", admin, { ...details, error: (err as Error).message }, "error");
+    throw err;
+  }
+}
+
+async function offersSetState(body: Record<string, unknown>, admin: Admin, state: "activate" | "deactivate") {
+  const { productId, basePlanId } = offerTarget(body);
+  const offerId = String(body.offerId ?? "");
+  if (!/^[a-z0-9][a-z0-9-]{0,39}$/.test(offerId)) throw new Error("Unknown offer.");
+  const details = { productId, basePlanId, offerId };
+  try {
+    const offer = (await play(`/applications/${PACKAGE}/subscriptions/${productId}/basePlans/${basePlanId}/offers/${offerId}:${state}`, { method: "POST", body: {} })) as Record<string, unknown>;
+    await logAction(`offer_${state}`, admin, details, "success");
+    return { ok: true, offer: summarizeOffer({ ...offer, productId, basePlanId }) };
+  } catch (err) {
+    await logAction(`offer_${state}`, admin, { ...details, error: (err as Error).message }, "error");
+    throw err;
+  }
+}
+
 async function loadSubscribers(): Promise<SubscriberRow[]> {
   const { data, error } = await db().from("subscriptions").select("user_id,entitlement,product_id,store,status,environment,expires_at,will_renew");
   if (error) throw new Error(`Could not read subscribers: ${error.message}`);
@@ -214,14 +290,21 @@ async function deferRun(body: Record<string, unknown>, admin: Admin) {
   let done = 0;
   for (const t of targets) {
     try {
-      const res = await fetch(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(t.userId)}/subscriptions/${encodeURIComponent(t.productId)}/defer`, {
+      // RevenueCat wants the Google subscription id only (partner_sub), and works out the new end date itself.
+      const res = await fetch(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(t.userId)}/subscriptions/${encodeURIComponent(t.subscriptionId)}/defer`, {
         method: "POST",
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ expiry_time_ms: t.newExpiryMs }),
+        body: JSON.stringify({ extend_by_days: days }),
       });
       if (!res.ok) throw new Error(`RevenueCat said ${res.status}: ${(await res.text()).slice(0, 200)}`);
-      // Keep our own copy in step; the RevenueCat webhook will confirm it a moment later.
-      await supabase.from("subscriptions").update({ expires_at: new Date(t.newExpiryMs).toISOString(), updated_at: new Date().toISOString() }).eq("user_id", t.userId).eq("entitlement", t.entitlement);
+      // RevenueCat sends no webhook for a deferral, so keep our own copy in step from its answer.
+      const answer = (await res.json().catch(() => null)) as { subscriber?: { entitlements?: Record<string, { expires_date?: string | null }> } } | null;
+      const newEnd = answer?.subscriber?.entitlements?.[t.entitlement]?.expires_date;
+      await supabase
+        .from("subscriptions")
+        .update({ expires_at: newEnd ? new Date(newEnd).toISOString() : new Date(t.newExpiryMs).toISOString(), updated_at: new Date().toISOString() })
+        .eq("user_id", t.userId)
+        .eq("entitlement", t.entitlement);
       done++;
     } catch (err) {
       failed.push({ userId: t.userId, error: (err as Error).message });
@@ -260,6 +343,14 @@ Deno.serve(async (req) => {
         return json(await pricingPreview(body));
       case "pricing.update":
         return json(await pricingUpdate(body, admin));
+      case "offers.list":
+        return json(await offersList());
+      case "offers.create":
+        return json(await offersCreate(body, admin));
+      case "offers.activate":
+        return json(await offersSetState(body, admin, "activate"));
+      case "offers.deactivate":
+        return json(await offersSetState(body, admin, "deactivate"));
       case "defer.preview":
         return json(await deferPreview(body));
       case "defer.run":

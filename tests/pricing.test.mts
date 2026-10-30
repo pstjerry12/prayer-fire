@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import {
   moneyToMicros, microsToMoney, parsePriceInput, summarizeSubscription, planPriceUpdate, readPrice, migratePricesBody,
-  planDefer, direction, OTHER_USD, MAX_PRICE_MICROS,
+  planDefer, direction, OTHER_USD, MAX_PRICE_MICROS, planOffer, summarizeOffer, validateOfferSpec,
 } from "../supabase/functions/billing-admin/pricing.ts";
 
 // money <-> micros, exactly
@@ -95,8 +95,45 @@ const rows = [
 const d = planDefer(rows, 30, now, false);
 assert.deepEqual(d.targets.map((t) => t.userId), ["a"]);
 assert.equal(d.skipped, 6);
+assert.equal(d.targets[0].subscriptionId, "partner_sub"); // RevenueCat wants the subscription id only
+assert.equal(d.targets[0].productId, "partner_sub:partner-monthly");
 assert.equal(d.targets[0].newExpiryMs, Date.parse("2026-12-01T00:00:00Z") + 30 * 86_400_000);
 assert.deepEqual(planDefer(rows, 30, now, true).targets.map((t) => t.userId), ["a", "c"]);
 for (const bad of [0, -1, 1.5, 366, NaN]) assert.throws(() => planDefer(rows, bad, now, false), /whole number/);
+
+// ── Promotional offers ──
+const PKG = "com.prayerfireaction.prayerfire";
+const monthly = sub.basePlans[0];
+const disc = planOffer(PKG, "partner_sub", monthly, { offerId: "welcome-50", kind: "discount", percentOff: 50, periods: 1 });
+assert.equal(disc.offerId, "welcome-50");
+assert.equal(disc.basePlanId, "partner-monthly");
+assert.equal(disc.phases.length, 1);
+assert.equal(disc.phases[0].duration, "P1M"); // the base plan's own billing period
+assert.equal(disc.phases[0].recurrenceCount, 1);
+assert.deepEqual(disc.phases[0].regionalConfigs, [{ regionCode: "NG", relativeDiscount: 0.5 }, { regionCode: "US", relativeDiscount: 0.5 }]);
+assert.deepEqual(disc.phases[0].otherRegionsConfig, { relativeDiscount: 0.5 });
+assert.deepEqual(disc.regionalConfigs, [{ regionCode: "NG", newSubscriberAvailability: true }, { regionCode: "US", newSubscriberAvailability: true }]);
+assert.deepEqual(disc.targeting, { acquisitionRule: { scope: { thisSubscription: {} } } }); // new customers only
+// the phase has exactly one entry for each region the offer covers
+assert.deepEqual(disc.phases[0].regionalConfigs.map((r) => r.regionCode), disc.regionalConfigs.map((r) => r.regionCode));
+const trialOffer = planOffer(PKG, "partner_sub", monthly, { offerId: "trial-7", kind: "trial", days: 7 });
+assert.equal(trialOffer.phases[0].duration, "P7D");
+assert.deepEqual(trialOffer.phases[0].regionalConfigs[0], { regionCode: "NG", free: {} });
+assert.deepEqual(trialOffer.phases[0].otherRegionsConfig, { free: {} });
+assert.equal(planOffer(PKG, "partner_sub", sub.basePlans[1], { offerId: "y", kind: "discount", percentOff: 20, periods: 1 }).phases[0].duration, "P1Y");
+// the base plan is never changed
+assert.equal(JSON.stringify(sub), before);
+// bad offers give plain errors
+for (const bad of ["", "Welcome", "has space", "-start", "x".repeat(41)]) assert.throws(() => validateOfferSpec({ offerId: bad, kind: "trial", days: 7 }), /lowercase/, bad);
+assert.throws(() => validateOfferSpec({ offerId: "a", kind: "discount", percentOff: 0, periods: 1 }), /1 to 99/);
+assert.throws(() => validateOfferSpec({ offerId: "a", kind: "discount", percentOff: 100, periods: 1 }), /1 to 99/);
+assert.throws(() => validateOfferSpec({ offerId: "a", kind: "discount", percentOff: 50, periods: 13 }), /1 to 12/);
+assert.throws(() => validateOfferSpec({ offerId: "a", kind: "trial", days: 0 }), /1 to 60/);
+assert.throws(() => planOffer(PKG, "partner_sub", { basePlanId: "empty" }, { offerId: "a", kind: "trial", days: 7 }), /no priced countries/);
+assert.throws(() => planOffer(PKG, "partner_sub", { basePlanId: "x", regionalConfigs: [{ regionCode: "NG", price: { currencyCode: "NGN", units: "1" } }] }, { offerId: "a", kind: "discount", percentOff: 10, periods: 1 }), /no billing period/);
+// readable summaries
+assert.equal(summarizeOffer({ offerId: "welcome-50", basePlanId: "partner-monthly", productId: "partner_sub", state: "DRAFT", phases: disc.phases }).description, "50% off for 1 x P1M");
+assert.equal(summarizeOffer({ offerId: "t", phases: trialOffer.phases, state: "ACTIVE" }).description, "Free for P7D");
+assert.equal(summarizeOffer({ offerId: "t" }).description, "No phases");
 
 console.log("pricing rules: all checks passed");

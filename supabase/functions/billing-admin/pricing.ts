@@ -204,8 +204,11 @@ const DAY_MS = 86_400_000;
 export interface DeferTarget {
   userId: string;
   entitlement: string;
+  /** What RevenueCat's defer call wants: the Google subscription id only (partner_sub), not partner_sub:partner-monthly. */
+  subscriptionId: string;
   productId: string;
   currentExpiryMs: number;
+  /** Where our own copy expects the end date to land (RevenueCat's answer replaces it). */
   newExpiryMs: number;
 }
 
@@ -228,7 +231,106 @@ export function planDefer(rows: SubscriberRow[], days: number, now: Date, includ
       skipped++;
       continue;
     }
-    targets.push({ userId: r.user_id, entitlement: r.entitlement, productId: r.product_id as string, currentExpiryMs: expiry, newExpiryMs: expiry + days * DAY_MS });
+    const productId = r.product_id as string;
+    targets.push({ userId: r.user_id, entitlement: r.entitlement, subscriptionId: productId.split(":")[0], productId, currentExpiryMs: expiry, newExpiryMs: expiry + days * DAY_MS });
   }
   return { targets, skipped };
+}
+
+// ── Promotional offers ────────────────────────────────────────────────────────
+
+export interface OfferSpec {
+  offerId: string;
+  kind: "discount" | "trial";
+  /** discount: whole percent off, 1 to 99 */
+  percentOff?: number;
+  /** discount: how many billing periods the discount lasts, 1 to 12 */
+  periods?: number;
+  /** trial: free days, 1 to 60 */
+  days?: number;
+}
+
+export const OFFER_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,39}$/;
+
+export function validateOfferSpec(spec: OfferSpec): void {
+  if (!OFFER_ID_PATTERN.test(spec.offerId)) throw new Error("The offer name may only use lowercase letters, numbers and hyphens (for example welcome-50-off), up to 40 characters.");
+  if (spec.kind === "discount") {
+    if (!Number.isInteger(spec.percentOff) || (spec.percentOff as number) < 1 || (spec.percentOff as number) > 99) throw new Error("The discount must be a whole percent from 1 to 99.");
+    if (!Number.isInteger(spec.periods) || (spec.periods as number) < 1 || (spec.periods as number) > 12) throw new Error("The discount can last from 1 to 12 billing periods.");
+  } else if (spec.kind === "trial") {
+    if (!Number.isInteger(spec.days) || (spec.days as number) < 1 || (spec.days as number) > 60) throw new Error("A free trial can be from 1 to 60 days.");
+  } else {
+    throw new Error("Unknown offer type.");
+  }
+}
+
+/**
+ * The body for monetization.subscriptions.basePlans.offers.create. Google creates it as a DRAFT: nobody
+ * sees it until it is activated. It is aimed at NEW customers of this subscription only (acquisition rule),
+ * in every country where the base plan has a price. The shape follows Google's published SubscriptionOffer.
+ */
+export function planOffer(packageName: string, productId: string, basePlan: BasePlan, spec: OfferSpec) {
+  validateOfferSpec(spec);
+  const regions = (basePlan.regionalConfigs ?? []).filter((r) => r.price).map((r) => r.regionCode);
+  if (regions.length === 0) throw new Error(`${basePlan.basePlanId} has no priced countries yet, so an offer cannot be made.`);
+  const period = basePlan.autoRenewingBasePlanType?.billingPeriodDuration;
+
+  let phase;
+  if (spec.kind === "trial") {
+    phase = {
+      recurrenceCount: 1,
+      duration: `P${spec.days}D`,
+      regionalConfigs: regions.map((regionCode) => ({ regionCode, free: {} })),
+      otherRegionsConfig: { free: {} },
+    };
+  } else {
+    if (!period) throw new Error(`${basePlan.basePlanId} has no billing period, so a discount cannot be made.`);
+    const relativeDiscount = Number(((spec.percentOff as number) / 100).toFixed(2));
+    phase = {
+      recurrenceCount: spec.periods as number,
+      duration: period,
+      regionalConfigs: regions.map((regionCode) => ({ regionCode, relativeDiscount })),
+      otherRegionsConfig: { relativeDiscount },
+    };
+  }
+
+  return {
+    packageName,
+    productId,
+    basePlanId: basePlan.basePlanId,
+    offerId: spec.offerId,
+    phases: [phase],
+    targeting: { acquisitionRule: { scope: { thisSubscription: {} } } },
+    regionalConfigs: regions.map((regionCode) => ({ regionCode, newSubscriberAvailability: true })),
+    otherRegionsConfig: { otherRegionsNewSubscriberAvailability: true },
+  };
+}
+
+export interface OfferSummary {
+  productId: string;
+  basePlanId: string;
+  offerId: string;
+  state: string;
+  description: string;
+}
+
+/** One line a person can read: "50% off for 1 x P1M" / "Free for P7D". */
+export function summarizeOffer(offer: Record<string, unknown>): OfferSummary {
+  const phases = (offer.phases as { recurrenceCount?: number; duration?: string; regionalConfigs?: Record<string, unknown>[] }[] | undefined) ?? [];
+  const text = phases
+    .map((ph) => {
+      const first = ph.regionalConfigs?.[0] ?? {};
+      if ("free" in first) return `Free for ${ph.duration}`;
+      if (typeof first.relativeDiscount === "number") return `${Math.round(first.relativeDiscount * 100)}% off for ${ph.recurrenceCount} x ${ph.duration}`;
+      if ("absoluteDiscount" in first) return `Discounted for ${ph.recurrenceCount} x ${ph.duration}`;
+      return `Special price for ${ph.recurrenceCount} x ${ph.duration}`;
+    })
+    .join(", then ");
+  return {
+    productId: String(offer.productId ?? ""),
+    basePlanId: String(offer.basePlanId ?? ""),
+    offerId: String(offer.offerId ?? ""),
+    state: String(offer.state ?? "STATE_UNSPECIFIED"),
+    description: text || "No phases",
+  };
 }

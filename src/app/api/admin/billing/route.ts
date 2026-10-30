@@ -9,7 +9,7 @@ export const maxDuration = 60;
  * service account. The role check happens here (the account must have role "admin" in the database);
  * the Edge Function only answers calls that carry the shared secret, and nothing in the browser ever sees it.
  */
-const ALLOWED = new Set(["pricing.list", "pricing.preview", "pricing.update", "defer.preview", "defer.run"]);
+const ALLOWED = new Set(["pricing.list", "pricing.preview", "pricing.update", "offers.list", "offers.create", "offers.activate", "offers.deactivate", "defer.preview", "defer.run"]);
 const DEFAULT_FUNCTIONS_URL = "https://ebhlmjryezzxtoymoetn.supabase.co/functions/v1";
 
 export async function POST(request: Request) {

@@ -10,6 +10,7 @@ interface ProductSummary { productId: string; basePlans: BasePlanSummary[]; erro
 interface Preview { productId: string; basePlanId: string; regionCode: string; currencyCode: string; oldPriceMicros: string; newPriceMicros: string; direction: 'increase' | 'decrease' | 'same' }
 interface PriceLog { id: string; adminEmail: string | null; productId: string; basePlanId: string; regionCode: string; currencyCode: string; oldPriceMicros: string | null; newPriceMicros: string; appliedToExisting: boolean; result: string; errorMessage: string | null; createdAt: string }
 interface ActionLog { id: string; adminEmail: string | null; action: string; details: Record<string, unknown> | null; result: string; createdAt: string }
+interface OfferRow { productId: string; basePlanId: string; offerId: string; state: string; description: string }
 interface FreeSettings { enabled: boolean; start: string | null; end: string | null; existing: 'keep' | 'defer' }
 
 const MAIN_REGIONS = ['NG', 'US', 'OTHER_USD', 'OTHER_EUR'];
@@ -18,7 +19,12 @@ const PRODUCT_NAMES: Record<string, string> = { partner_sub: 'Partner', leader_s
 
 function money(micros: string | null, currency: string): string {
   if (micros === null) return '-';
-  const value = Number(BigInt(micros)) / 1_000_000;
+  let value: number;
+  try {
+    value = Number(BigInt(micros)) / 1_000_000;
+  } catch {
+    return '-';
+  }
   try {
     return new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: 2 }).format(value);
   } catch {
@@ -65,7 +71,7 @@ export default function AdminPricing() {
   const [priceInput, setPriceInput] = useState('');
   const [preview, setPreview] = useState<Preview | null>(null);
   const [applyExisting, setApplyExisting] = useState(false);
-  const [busy, setBusy] = useState<null | 'load' | 'preview' | 'apply' | 'free' | 'deferPreview' | 'deferRun'>(null);
+  const [busy, setBusy] = useState<null | 'load' | 'preview' | 'apply' | 'free' | 'deferPreview' | 'deferRun' | 'offers' | 'offerCreate' | string>(null);
   const [priceMsg, setPriceMsg] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
 
   // ── Free mode ────────────────────────────────────────────────────────
@@ -75,6 +81,11 @@ export default function AdminPricing() {
   const [deferDays, setDeferDays] = useState('30');
   const [includeSandbox, setIncludeSandbox] = useState(false);
   const [deferInfo, setDeferInfo] = useState<string | null>(null);
+
+  // ── Offers ───────────────────────────────────────────────────────────
+  const [offers, setOffers] = useState<OfferRow[] | null>(null);
+  const [offerMsg, setOfferMsg] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
+  const [offerForm, setOfferForm] = useState({ plan: '', offerId: '', kind: 'discount' as 'discount' | 'trial', percentOff: '50', periods: '1', days: '7' });
 
   // ── Log ───────────────────────────────────────────────────────────────
   const [prices, setPrices] = useState<PriceLog[]>([]);
@@ -105,13 +116,26 @@ export default function AdminPricing() {
     setActions(data.actions);
   }, []);
 
+  const loadOffers = useCallback(async () => {
+    setBusy('offers');
+    const r = await billing<{ offers: OfferRow[]; problems: string[] }>({ action: 'offers.list' });
+    if (r.ok) {
+      setOffers(r.data.offers);
+      if (r.data.problems.length) setOfferMsg({ kind: 'error', text: r.data.problems.join(' ') });
+    } else {
+      setOfferMsg({ kind: 'error', text: r.error });
+    }
+    setBusy(null);
+  }, []);
+
   useEffect(() => {
     // Initial load of everything on this screen.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPrices();
     loadFree();
     loadLog();
-  }, [loadPrices, loadFree, loadLog]);
+    loadOffers();
+  }, [loadPrices, loadFree, loadLog, loadOffers]);
 
   const currentRow = useMemo(() => {
     if (!editing || !products) return null;
@@ -194,8 +218,45 @@ export default function AdminPricing() {
     setBusy('deferRun');
     setDeferInfo(null);
     const r = await billing<{ done: number; skipped: number; failed: { userId: string; error: string }[] }>({ action: 'defer.run', days: Number(deferDays), includeSandbox, confirm: true });
-    setDeferInfo(r.ok ? `Done: ${r.data.done} deferred, ${r.data.failed.length} failed, ${r.data.skipped} skipped.${r.data.failed.length ? ` First error: ${r.data.failed[0].error}` : ''}` : r.error);
+    setDeferInfo(r.ok ? `Done: ${r.data.done} deferred, ${r.data.failed.length} failed, ${r.data.skipped} skipped.${r.data.failed.length ? ` The ${r.data.failed.length} that failed will STILL BE CHARGED. First error: ${r.data.failed[0].error}` : ''}` : r.error);
     loadLog();
+    setBusy(null);
+  }
+
+  const planChoices = useMemo(
+    () => (products ?? []).flatMap((p) => p.basePlans.map((b) => ({ value: `${p.productId}|${b.basePlanId}`, label: `${PRODUCT_NAMES[p.productId] ?? p.productId} · ${b.basePlanId}` }))),
+    [products]
+  );
+  const chosenPlan = offerForm.plan || planChoices[0]?.value || '';
+
+  async function createOffer() {
+    const [productId, basePlanId] = chosenPlan.split('|');
+    if (!productId || !basePlanId) return;
+    setBusy('offerCreate');
+    setOfferMsg(null);
+    const r = await billing<{ ok: true; offer: OfferRow }>({
+      action: 'offers.create', productId, basePlanId, offerId: offerForm.offerId.trim(), kind: offerForm.kind,
+      percentOff: Number(offerForm.percentOff), periods: Number(offerForm.periods), days: Number(offerForm.days),
+    });
+    if (r.ok) {
+      setOfferMsg({ kind: 'ok', text: `Draft offer "${r.data.offer.offerId}" created (${r.data.offer.description}). Nobody sees it until you activate it.` });
+      setOfferForm({ ...offerForm, offerId: '' });
+      await Promise.all([loadOffers(), loadLog()]);
+    } else {
+      setOfferMsg({ kind: 'error', text: r.error });
+      loadLog();
+    }
+    setBusy(null);
+  }
+
+  async function setOfferState(o: OfferRow, action: 'offers.activate' | 'offers.deactivate') {
+    const activating = action === 'offers.activate';
+    if (!confirm(activating ? `Activate "${o.offerId}" now?\n\n${o.description}\n\nNew subscribers will start getting this offer.` : `Deactivate "${o.offerId}"?\n\nNew subscribers will stop getting it. People who already have it keep it.`)) return;
+    setBusy(`offer:${o.offerId}`);
+    setOfferMsg(null);
+    const r = await billing<{ ok: true }>({ action, productId: o.productId, basePlanId: o.basePlanId, offerId: o.offerId });
+    setOfferMsg(r.ok ? { kind: 'ok', text: `"${o.offerId}" is now ${activating ? 'active' : 'inactive'}.` } : { kind: 'error', text: r.error });
+    await Promise.all([loadOffers(), loadLog()]);
     setBusy(null);
   }
 
@@ -300,6 +361,14 @@ export default function AdminPricing() {
         <p className={cn('text-sm font-bold rounded-xl p-3', freeNow?.active ? 'bg-acc-soft text-acc-strong' : 'bg-card-2 text-ink-muted')} role="status">
           {freeNow?.active ? `ON now${freeNow.endsAt ? ` until ${new Date(freeNow.endsAt).toLocaleString()}` : ' (no end date)'}` : free.enabled ? 'Switched on, but not active right now (before the start date or after the end date).' : 'OFF'}
         </p>
+        <div className="rounded-xl bg-warn-soft border border-warn-edge p-3 text-xs text-warn-strong leading-relaxed flex gap-2" role="note">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>
+            <strong>Free Premium Mode does not pause anyone&apos;s payments.</strong> {free.existing === 'keep' || !free.enabled
+              ? 'People who already pay for Partner or Leader will still be charged as normal while it is on.'
+              : 'People who already pay will keep being charged until you press "Defer billing now" below, which pushes their next billing date back.'}
+          </span>
+        </div>
         <label className="flex items-center gap-2 text-sm font-bold text-ink">
           <input type="checkbox" checked={free.enabled} onChange={(e) => setFree({ ...free, enabled: e.target.checked })} /> Free Premium Mode on
         </label>
@@ -331,6 +400,7 @@ export default function AdminPricing() {
             <label className="text-xs font-bold text-ink-muted block">Days to defer
               <input value={deferDays} onChange={(e) => { setDeferDays(e.target.value); setDeferInfo(null); }} inputMode="numeric" className={cn(input, 'mt-1 max-w-[8rem]')} />
             </label>
+            <p className="text-xs text-ink-muted leading-relaxed">This uses RevenueCat&apos;s own &ldquo;defer a subscription&rdquo; call, which needs no purchase tokens. If a subscriber cannot be deferred, they are listed as failed and are <strong>still charged</strong>. Try it on a licence tester first (tick the box below) before using it on real subscribers.</p>
             <label className="flex items-center gap-2 text-xs text-ink-soft"><input type="checkbox" checked={includeSandbox} onChange={(e) => setIncludeSandbox(e.target.checked)} /> Include licence testers (for testing only)</label>
             <div className="flex flex-wrap gap-2">
               <button onClick={deferPreview} disabled={busy !== null} className="px-3 py-2 rounded-lg border border-edge-strong text-xs font-bold text-ink-soft hover:bg-card disabled:opacity-60 flex items-center gap-1.5">{busy === 'deferPreview' && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Preview</button>
@@ -342,15 +412,74 @@ export default function AdminPricing() {
       </section>
 
       {/* ── Promotional offers ─────────────────────────────────── */}
-      <section className="bg-card rounded-2xl border border-edge p-5 space-y-2">
-        <h2 className="font-bold text-ink">Promotional offers (for example a cheaper first month)</h2>
-        <p className="text-xs text-ink-muted leading-relaxed">Offers are created in Play Console, not here (Google&apos;s offer rules are too detailed to edit safely from this screen). The app shows an offer automatically once it is active.</p>
-        <ol className="list-decimal list-inside text-xs text-ink-soft space-y-1">
-          <li>Play Console → Monetize with Play → Products → Subscriptions → open Partner or Leader.</li>
-          <li>Open the base plan → <strong>Add offer</strong>.</li>
-          <li>Eligibility: <strong>New customer acquisition</strong>. Add a phase: <strong>Discounted price</strong> (for example 50% off for 1 billing period) or <strong>Free trial</strong>.</li>
-          <li>Save, then <strong>Activate</strong> the offer. Remove it later with <strong>Deactivate</strong>.</li>
-        </ol>
+      <section className="bg-card rounded-2xl border border-edge p-5 space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-bold text-ink">Promotional offers</h2>
+          <button onClick={loadOffers} disabled={busy === 'offers'} className="flex items-center gap-1.5 text-xs font-bold text-acc-strong px-3 py-1.5 rounded-lg border border-edge hover:bg-card-2 disabled:opacity-60">
+            {busy === 'offers' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />} Reload
+          </button>
+        </div>
+        <p className="text-xs text-ink-muted leading-relaxed">
+          Make a cheaper first period or a free trial for <strong>new customers</strong>. A new offer is a <strong>draft</strong>: nobody sees it until you press Activate. When an offer is active, Google Play shows people the best deal they qualify for, and the app displays it automatically.
+        </p>
+
+        <div className="rounded-xl border border-edge bg-card-2 p-4 space-y-3">
+          <p className="text-sm font-bold text-ink">New offer</p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <label className="text-xs font-bold text-ink-muted">Plan
+              <select value={chosenPlan} onChange={(e) => setOfferForm({ ...offerForm, plan: e.target.value })} className={cn(input, 'mt-1')} aria-label="Plan">
+                {planChoices.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+              </select>
+            </label>
+            <label className="text-xs font-bold text-ink-muted">Offer name
+              <input value={offerForm.offerId} onChange={(e) => setOfferForm({ ...offerForm, offerId: e.target.value.toLowerCase() })} placeholder="welcome-50-off" className={cn(input, 'mt-1')} aria-label="Offer name" />
+            </label>
+            <label className="text-xs font-bold text-ink-muted">Type
+              <select value={offerForm.kind} onChange={(e) => setOfferForm({ ...offerForm, kind: e.target.value as 'discount' | 'trial' })} className={cn(input, 'mt-1')} aria-label="Offer type">
+                <option value="discount">Discount for the first billing periods</option>
+                <option value="trial">Free trial</option>
+              </select>
+            </label>
+            {offerForm.kind === 'discount' ? (
+              <div className="grid grid-cols-2 gap-3">
+                <label className="text-xs font-bold text-ink-muted">Percent off
+                  <input value={offerForm.percentOff} onChange={(e) => setOfferForm({ ...offerForm, percentOff: e.target.value })} inputMode="numeric" className={cn(input, 'mt-1')} aria-label="Percent off" />
+                </label>
+                <label className="text-xs font-bold text-ink-muted">Billing periods
+                  <input value={offerForm.periods} onChange={(e) => setOfferForm({ ...offerForm, periods: e.target.value })} inputMode="numeric" className={cn(input, 'mt-1')} aria-label="Billing periods" />
+                </label>
+              </div>
+            ) : (
+              <label className="text-xs font-bold text-ink-muted">Free days
+                <input value={offerForm.days} onChange={(e) => setOfferForm({ ...offerForm, days: e.target.value })} inputMode="numeric" className={cn(input, 'mt-1')} aria-label="Free days" />
+              </label>
+            )}
+          </div>
+          <button onClick={createOffer} disabled={busy !== null || !chosenPlan || !offerForm.offerId.trim()} className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-500 disabled:opacity-60 flex items-center gap-1.5">
+            {busy === 'offerCreate' && <Loader2 className="w-4 h-4 animate-spin" />} Create draft offer
+          </button>
+        </div>
+
+        {offers && offers.length === 0 && <p className="text-sm text-ink-muted">No offers yet.</p>}
+        <ul className="space-y-2">
+          {offers?.map((o) => (
+            <li key={`${o.productId}|${o.basePlanId}|${o.offerId}`} className="rounded-lg bg-card-2 p-3 text-xs text-ink-soft flex items-center justify-between gap-3">
+              <span>
+                <strong className="text-ink">{o.offerId}</strong> <span className="text-ink-faint">({PRODUCT_NAMES[o.productId] ?? o.productId} · {o.basePlanId})</span>
+                <span className="block">{o.description}</span>
+              </span>
+              <span className="flex items-center gap-2 shrink-0">
+                <span className={cn('font-bold', o.state === 'ACTIVE' ? 'text-emerald-600' : 'text-ink-muted')}>{o.state}</span>
+                {o.state !== 'ACTIVE' ? (
+                  <button onClick={() => setOfferState(o, 'offers.activate')} disabled={busy !== null} className="px-2.5 py-1 rounded-md bg-emerald-600 text-white font-bold disabled:opacity-60">Activate</button>
+                ) : (
+                  <button onClick={() => setOfferState(o, 'offers.deactivate')} disabled={busy !== null} className="px-2.5 py-1 rounded-md border border-edge-strong font-bold text-ink-soft disabled:opacity-60">Deactivate</button>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+        {offerMsg && <p role="status" className={cn('text-sm rounded-xl p-3 border', offerMsg.kind === 'ok' ? 'text-emerald-700 bg-acc-soft border-acc-edge' : 'text-danger bg-danger-soft border-danger-edge')}>{offerMsg.text}</p>}
       </section>
 
       {/* ── Log ──────────────────────────────────────────────────── */}
@@ -368,7 +497,7 @@ export default function AdminPricing() {
           ))}
           {actions.map((a) => (
             <li key={a.id} className="text-xs rounded-lg bg-card-2 p-3 text-ink-soft">
-              <strong className="text-ink">{a.action === 'free_mode' ? 'Free Premium Mode' : 'Billing deferred'}</strong> <span className="text-ink-faint">{a.details ? JSON.stringify(a.details) : ''}</span>
+              <strong className="text-ink">{({ free_mode: 'Free Premium Mode', defer_billing: 'Billing deferred', offer_create: 'Offer created (draft)', offer_activate: 'Offer activated', offer_deactivate: 'Offer deactivated' } as Record<string, string>)[a.action] ?? a.action}</strong> <span className="text-ink-faint">{a.details ? JSON.stringify(a.details) : ''}</span>
               <span className={cn('ml-2 font-bold', a.result === 'success' ? 'text-emerald-600' : 'text-warn-strong')}>{a.result}</span>
               <span className="block text-ink-faint mt-0.5">{a.adminEmail ?? 'unknown admin'} · {new Date(a.createdAt).toLocaleString()}</span>
             </li>
