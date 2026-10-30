@@ -24,7 +24,7 @@ function fmtTime(t?: string) {
 
 export default function PrayerGroups() {
   const {
-    groups, messages, user, isPremium, isAndroidApp, setShowAuth, setShowPricing,
+    groups, messages, user, isPremium, isLeader, isAndroidApp, setShowAuth, setShowPricing,
     createGroup, joinGroup, requestJoin, approveMember, rejectMember, setGroupPublic,
     leaveGroup, deleteGroup,
     setGroupPrayerTime, setGroupVerse, togglePrayedToday, sendMessage,
@@ -63,7 +63,7 @@ export default function PrayerGroups() {
   const memberName = user?.name || 'Guest';
 
   const handleCreate = () => {
-    if (!newName.trim()) return;
+    if (!isLeader || !newName.trim()) return; // creating groups is a Leader feature
     const g = createGroup(newName, newDesc, newTime, newPublic);
     setActiveGroupId(g.id);
     setNewName('');
@@ -459,8 +459,11 @@ export default function PrayerGroups() {
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
-        <button onClick={() => setView('create')} className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500">
-          <Plus className="w-4 h-4" /> Create Group
+        <button
+          onClick={() => (isLeader ? setView('create') : setShowPricing(true))}
+          className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500"
+        >
+          <Plus className="w-4 h-4" /> Create Group{!isLeader && <span className="text-[0.625rem] font-bold bg-white/20 rounded-full px-1.5 py-0.5">Leader</span>}
         </button>
         <button onClick={() => setView('join')} className="flex-1 py-2.5 bg-card text-ink-soft border border-edge rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-card-2">
           <UserPlus className="w-4 h-4" /> Join by Code

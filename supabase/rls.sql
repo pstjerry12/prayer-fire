@@ -38,7 +38,9 @@
 -- feedback             | ON  | none          | private tester feedback (contact details)
 -- user_activity        | ON  | none          | which accounts opened the app each day
 -- user_study           | ON  | none          | private per-user bookmarks, highlights and sermon notes backup
--- subscriptions        | ON  | none          | paid Partner subscription state, written by the RevenueCat webhook
+-- subscriptions        | ON  | none          | paid Partner / Leader state, written by the RevenueCat webhook
+-- price_changes        | ON  | none          | log of admin price edits
+-- billing_actions      | ON  | none          | log of admin billing actions (defer, free mode)
 -- testers              | ON  | none          | admin's hand-typed tester list (names, phones)
 --
 -- Total: 11 tables protected by RLS, 4 read-only policies. The seven zero-policy
@@ -63,6 +65,8 @@ ALTER TABLE public.feedback          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_activity     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_study        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.subscriptions     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.price_changes     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.billing_actions   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.testers           ENABLE ROW LEVEL SECURITY;
 
 -- 2. Public, curated, read-only content.

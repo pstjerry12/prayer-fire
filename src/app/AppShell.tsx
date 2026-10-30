@@ -23,6 +23,7 @@ import StudySync from './components/StudySync';
 import VoicePreloader from './components/VoicePreloader';
 import WelcomeSlides from './components/WelcomeSlides';
 import BillingSync from './components/BillingSync';
+import FreeModeBanner from './components/FreeModeBanner';
 import SignInGate, { useSignInRequired } from './components/SignInGate';
 
 function Overlays() {
@@ -140,6 +141,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <GatedNotificationPermission />
       <UpdateBanner />
       <BackButtonExit />
+      <FreeModeBanner />
       <PullToRefresh>{children}</PullToRefresh>
       <SignInGate />
       <Overlays />

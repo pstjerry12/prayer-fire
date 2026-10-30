@@ -11,7 +11,7 @@ import { useApp } from '@/app/context';
 import PlaySubscription from '@/app/components/PlaySubscription';
 
 export default function PartnerPage() {
-  const { isPremium, upgrade, isAndroidApp } = useApp();
+  const { isPremium, upgrade, isAndroidApp, freeMode } = useApp();
   const [currency, setCurrency] = useState<Currency>(getDefaultCurrency);
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
 
@@ -31,8 +31,15 @@ export default function PartnerPage() {
           <p className="text-ink-muted text-sm mt-1">Join the global intercessory community</p>
         </div>
 
-        {isAndroidApp ? (
-          // The Android app sells Partner through Google Play only.
+        {freeMode.active ? (
+          <div className="bg-acc-soft border border-acc-edge rounded-2xl p-6 text-center">
+            <div className="text-4xl mb-3">🎁</div>
+            <h2 className="text-acc-strong font-bold text-lg mb-1">Premium is free for a limited time</h2>
+            <p className="text-ink-muted text-sm">Everything in Prayer Fire Partner and Leader is open to you right now.</p>
+            <Link href="/network" className="inline-block mt-4 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-500">Go to Partner Network →</Link>
+          </div>
+        ) : isAndroidApp ? (
+          // The Android app sells Partner and Leader through Google Play only.
           <PlaySubscription />
         ) : isPremium ? (
           <div className="bg-acc-soft border border-acc-edge rounded-2xl p-6 text-center">
@@ -53,7 +60,7 @@ export default function PartnerPage() {
               </div>
               <div className="flex bg-card-3 rounded-lg p-1">
                 <button onClick={() => setBilling('monthly')} className={cn('px-3 py-1.5 rounded-md text-xs font-semibold transition-all', billing === 'monthly' ? 'bg-emerald-600 text-white' : 'text-ink-muted')}>Monthly</button>
-                <button onClick={() => setBilling('yearly')} className={cn('px-3 py-1.5 rounded-md text-xs font-semibold transition-all', billing === 'yearly' ? 'bg-emerald-600 text-white' : 'text-ink-muted')}>Yearly <span className="text-emerald-300">Save 30%</span></button>
+                <button onClick={() => setBilling('yearly')} className={cn('px-3 py-1.5 rounded-md text-xs font-semibold transition-all', billing === 'yearly' ? 'bg-emerald-600 text-white' : 'text-ink-muted')}>Yearly <span className="text-emerald-300">2 months free</span></button>
               </div>
             </div>
 

@@ -22,7 +22,7 @@ interface Props {
 export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
   const [currency, setCurrency] = useState<Currency>(getDefaultCurrency);
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
-  const { isAndroidApp } = useApp();
+  const { isAndroidApp, freeMode } = useApp();
 
   if (!isOpen) return null;
 
@@ -43,8 +43,16 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
             </button>
           </div>
 
-          {isAndroidApp ? (
-            // The Android app sells Partner through Google Play only.
+          {freeMode.active ? (
+            // Free Premium Mode: nothing to buy while everything is open.
+            <div className="p-8 text-center">
+              <div className="text-4xl mb-3">🎁</div>
+              <h3 className="text-ink font-bold">Premium is free for a limited time</h3>
+              <p className="text-ink-muted text-sm mt-1">Everything in Prayer Fire Partner and Leader is open to you right now. Enjoy!</p>
+              <button onClick={onClose} className="mt-5 px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold">Close</button>
+            </div>
+          ) : isAndroidApp ? (
+            // The Android app sells Partner and Leader through Google Play only.
             <div className="p-5">
               <PlaySubscription />
             </div>
@@ -83,7 +91,7 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
                     billing === 'yearly' ? 'bg-emerald-600 text-white' : 'text-ink-muted'
                   )}
                 >
-                  Yearly <span className="text-emerald-300">Save 30%</span>
+                  Yearly <span className="text-emerald-300">2 months free</span>
                 </button>
               </div>
             </div>

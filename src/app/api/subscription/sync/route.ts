@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getUserIdFromRequest } from "@/lib/auth";
-import { applyUpdate, decideFromSubscriber, expireNow, getSubscription, toSubscriptionInfo } from "@/lib/subscription";
+import { applyUpdate, decideFromSubscriber, expireNow, getSubscriptions, toSubscriptionInfo, TIERS } from "@/lib/subscription";
 
 /**
  * "Check my subscription now." The app calls this right after a purchase or "Restore purchases",
@@ -27,11 +27,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Could not check right now" }, { status: 502 });
     }
     const data = (await res.json()) as { subscriber?: Parameters<typeof decideFromSubscriber>[1] };
-    const update = data.subscriber ? decideFromSubscriber(userId, data.subscriber) : null;
-    if (update) await applyUpdate(update);
-    else await expireNow(userId, new Date());
+    const updates = data.subscriber ? decideFromSubscriber(userId, data.subscriber) : [];
+    for (const update of updates) await applyUpdate(update);
+    // A plan RevenueCat no longer reports is over: switch our copy off too.
+    const reported = new Set(updates.map((u) => u.entitlement));
+    for (const tier of TIERS) {
+      if (!reported.has(tier)) await expireNow(userId, tier, new Date());
+    }
 
-    return NextResponse.json({ subscription: toSubscriptionInfo(await getSubscription(userId)) });
+    return NextResponse.json({ subscription: toSubscriptionInfo(await getSubscriptions(userId)) });
   } catch (err) {
     console.error("subscription sync error", err);
     return NextResponse.json({ error: "Could not check right now" }, { status: 502 });

@@ -48,7 +48,7 @@ export async function POST(request: Request) {
         await applyUpdate(decision.update);
         break;
       case "expire":
-        await expireNow(decision.userId, decision.eventAt);
+        await expireNow(decision.userId, decision.entitlement, decision.eventAt, decision.status);
         break;
       case "transfer":
         await transfer(decision.from, decision.to, decision.eventAt);

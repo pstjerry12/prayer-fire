@@ -148,25 +148,62 @@ export const userStudy = pgTable("user_study", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-// Paid "Prayer Fire Partner" subscription, one row per account. Written ONLY by the
-// RevenueCat webhook (/api/revenuecat/webhook) and the sync route (/api/subscription/sync),
-// which both mirror what Google Play (via RevenueCat) says. The app reads it to unlock features.
-export const subscriptions = pgTable("subscriptions", {
-  userId: text("user_id").primaryKey(), // = users.id = the RevenueCat app user id
-  entitlement: text("entitlement").notNull().default("partner"),
-  productId: text("product_id"), // e.g. prayerfire_partner:monthly
-  store: text("store"), // PLAY_STORE | APP_STORE | STRIPE ...
-  periodType: text("period_type"), // TRIAL | INTRO | NORMAL
-  environment: text("environment").notNull().default("PRODUCTION"), // SANDBOX = a licence tester
-  expiresAt: timestamp("expires_at", { withTimezone: true }), // access lasts until this moment
-  willRenew: boolean("will_renew").notNull().default(true),
-  lastEventAt: timestamp("last_event_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+// Paid subscription state: one row per account per plan (partner / leader). Written ONLY by the
+// RevenueCat webhook (/api/revenuecat/webhook) and the sync route (/api/subscription/sync), which
+// mirror what Google Play (via RevenueCat) says. The app reads it to unlock features.
+// Note: RevenueCat does not hand out Google's purchase token, so we keep Google's order id instead.
+export const subscriptions = pgTable(
+  "subscriptions",
+  {
+    userId: text("user_id").notNull(), // = users.id = the RevenueCat app user id
+    entitlement: text("entitlement").notNull(), // partner | leader
+    productId: text("product_id"), // RevenueCat product id: subscription_id:base_plan_id
+    basePlanId: text("base_plan_id"), // e.g. partner-monthly
+    status: text("status").notNull().default("ACTIVE"), // ACTIVE | IN_GRACE | CANCELED | ON_HOLD | EXPIRED | REFUNDED
+    store: text("store"), // PLAY_STORE | APP_STORE | STRIPE ...
+    storeTransactionId: text("store_transaction_id"), // Google order id (GPA....)
+    periodType: text("period_type"), // TRIAL | INTRO | NORMAL
+    environment: text("environment").notNull().default("PRODUCTION"), // SANDBOX = a licence tester
+    expiresAt: timestamp("expires_at", { withTimezone: true }), // access lasts until this moment
+    willRenew: boolean("will_renew").notNull().default(true),
+    lastEventAt: timestamp("last_event_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.entitlement] })]
+);
+
+// Every price edit made from the admin panel: who, when, old price, new price, and whether Google accepted it.
+export const priceChanges = pgTable("price_changes", {
+  id: text("id").primaryKey(),
+  adminUserId: text("admin_user_id"),
+  adminEmail: text("admin_email"),
+  productId: text("product_id").notNull(), // partner_sub | leader_sub
+  basePlanId: text("base_plan_id").notNull(),
+  regionCode: text("region_code").notNull(), // NG, US, ... or OTHER
+  currencyCode: text("currency_code").notNull(),
+  oldPriceMicros: text("old_price_micros"), // price x 1,000,000 (text: can exceed int range)
+  newPriceMicros: text("new_price_micros").notNull(),
+  appliedToExisting: boolean("applied_to_existing").notNull().default(false),
+  result: text("result").notNull(), // success | error
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Other billing actions taken from the admin panel (deferring billing during free mode, free mode switches).
+export const billingActions = pgTable("billing_actions", {
+  id: text("id").primaryKey(),
+  adminUserId: text("admin_user_id"),
+  adminEmail: text("admin_email"),
+  action: text("action").notNull(), // defer_billing | free_mode
+  details: jsonb("details"),
+  result: text("result").notNull(), // success | partial | error
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type SubscriptionRow = typeof subscriptions.$inferSelect;
+export type PriceChangeRow = typeof priceChanges.$inferSelect;
 export type PartnerRequestRow = typeof partnerRequests.$inferSelect;
 export type DonationRow = typeof donations.$inferSelect;
 export type AnnouncementRow = typeof announcements.$inferSelect;
