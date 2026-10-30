@@ -328,6 +328,7 @@ Light/dark toggle (`pfm_theme`), applied pre-paint.
 - **Product setup (Play Console + RevenueCat):** subscription `prayerfire_partner` with base plans `monthly` and `yearly` (each with a 7-day free-trial offer); RevenueCat entitlement `partner`; offering `default` with packages `$rc_monthly` and `$rc_annual`. Full click-by-click: `docs/PLAY-BILLING-SETUP.md`.
 - **Webhook rules:** a cancelled subscription keeps working until its end date (`expires_at`); only `EXPIRATION` (or an end date in the past) turns Partner off; older/out-of-order events are ignored (`last_event_at`); `SANDBOX` events (licence testers) are stored with `environment = 'SANDBOX'`; anonymous RevenueCat ids are ignored; deleting an account removes its `subscriptions` row but does NOT cancel a Play subscription (tell the person to cancel in Play).
 - **Donations are separate and unchanged:** Flutterwave "Partner With Us" donations unlock nothing (verified again 2026-10-30: nothing in the donation code or webhook touches premium).
+- **Build note:** the app's Kotlin plugin (`android/app/build.gradle`, `kotlin_version`) is **2.2.21** because the RevenueCat Android plugin is compiled with Kotlin 2.2; with the old 2.0.21 the Android build fails with "Module was compiled with an incompatible version of Kotlin".
 - Known limits: web premium is still the client-side trial (bypassable, by design for now); group/message data is still local to the device; server routes do not check the tier yet (the Partner wall POST is not tier-gated server-side).
 
 ### Admin back office (`/admin`) ✅

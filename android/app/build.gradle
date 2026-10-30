@@ -1,9 +1,10 @@
-// Kotlin toolchain for the AlarmEngine plugin (android/app/src/main/kotlin/...).
+// Kotlin toolchain for the AlarmEngine/SpeechEngine plugins (android/app/src/main/kotlin/...).
+// 2.2.x because the RevenueCat plugin is built with Kotlin 2.2 (an older compiler cannot read it).
 // Same self-contained buildscript-classpath pattern @capacitor/local-notifications
 // uses for its own module — the root project doesn't declare Kotlin, so each
 // module that needs it brings its own.
 buildscript {
-    ext.kotlin_version = project.hasProperty('kotlin_version') ? rootProject.ext.kotlin_version : '2.0.21'
+    ext.kotlin_version = project.hasProperty('kotlin_version') ? rootProject.ext.kotlin_version : '2.2.21'
     repositories {
         google()
         mavenCentral()
