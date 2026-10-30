@@ -282,6 +282,63 @@ eq((await pool.query("select count(*)::int n from group_praying where post_id = 
 // the public roles still cannot use the new functions
 eq(await asAnon("select app_remove_member('x','y',true,true)"), "permission denied for function app_remove_member", "anon cannot moderate");
 
+
+// ═════════════════════════ ANALYTICS ═════════════════════════
+await pool.query("update subscriptions set expires_at = now() + interval '30 days', status = 'ACTIVE' where entitlement in ('leader','partner')");
+await pool.query("delete from subscriptions where user_id = 'Q' and entitlement = 'leader'");
+const ag = await as("L", (q) => G.createGroup(q, { name: "Numbers", description: "", joinMode: "open" }));
+for (const u of ["P", "Q", "R1", "R2"]) await as(u, (q) => G.joinGroup(q, ag));
+const at = async (daysAgo: number) => (await pool.query("select (((now() at time zone 'Africa/Lagos')::date - $1::int) + time '12:00') at time zone 'Africa/Lagos' as t", [daysAgo])).rows[0].t as Date;
+await pool.query("update group_members set joined_at = $2 where group_id = $1 and user_id = 'P'", [ag, await at(2)]);
+await pool.query("update group_members set joined_at = $2 where group_id = $1 and user_id = 'Q'", [ag, await at(10)]);
+await pool.query("update group_members set joined_at = $2 where group_id = $1 and user_id = 'R1'", [ag, await at(40)]);
+await pool.query("update group_members set joined_at = $2 where group_id = $1 and user_id = 'R2'", [ag, await at(0)]);
+let n = 0;
+const post = async (kind: string, daysAgo: number, status = "visible", author = "P") => {
+  const id = `an_p${n++}`;
+  await pool.query("insert into group_posts (id, group_id, author_id, author_name, kind, body, status, created_at) values ($1,$2,$3,'Peter Partner',$4,'x',$5,$6)", [id, ag, author, kind, status, await at(daysAgo)]);
+  return id;
+};
+const requests = [await post("request", 0), await post("request", 0), await post("request", 6), await post("request", 7), await post("request", 29), await post("request", 30)];
+await post("testimony", 1); await post("testimony", 20); await post("message", 0);
+const hiddenReq = await post("request", 0, "hidden");
+const pray = async (postId: string, user: string, daysAgo: number) => pool.query("insert into group_praying (post_id, group_id, user_id, created_at) values ($1,$2,$3,$4)", [postId, ag, user, await at(daysAgo)]);
+await pray(requests[0], "P", 0); await pray(requests[0], "Q", 0); await pray(requests[2], "R1", 3); await pray(requests[4], "R2", 25);
+await pray(hiddenReq, "P", 0); // a hidden post's praying is not counted
+await pool.query("insert into group_comments (id, post_id, group_id, author_id, author_name, body, created_at) values ('an_c1',$1,$2,'Q','Quinn Quiet','x',$3)", [requests[0], ag, await at(0)]);
+await pool.query("insert into group_checkins (group_id, user_id, day) values ($1,'P',(now() at time zone 'Africa/Lagos')::date)", [ag]);
+
+const A = await as("L", (q) => G.getAnalytics(q, ag));
+eq(A.members, { total: 5, new7: 2, new30: 3 }, "members: total counts everyone active; new members exclude the leader");
+eq(A.requests, { total: 6, last7: 3, last30: 5 }, "prayer requests: total, 7-day and 30-day windows (hidden ones excluded)");
+eq(A.testimonies, { total: 2, last7: 1, last30: 2 }, "testimonies");
+eq(A.praying, { total: 4, last7: 3, last30: 4 }, "I'm praying taps (taps on hidden posts excluded)");
+eq(A.daily.length, 30, "30 daily buckets");
+const todayRow = A.daily[29];
+eq([todayRow.requests, todayRow.testimonies, todayRow.praying, todayRow.members], [2, 0, 2, 1], "today's bucket");
+eq(todayRow.activity, 7, "activity = 3 posts + 1 comment + 2 praying + 1 check-in");
+eq(A.daily[0].requests, 1, "day -29 is the first bucket");
+eq(A.daily.reduce((s, d) => s + d.requests, 0), 5, "buckets add up to the 30-day total");
+eq(A.topDays[0], { day: A.today, activity: 7 }, "busiest day first");
+eq(A.weekday.length, 7, "seven weekday totals");
+eq(A.weekday.reduce((s, d) => s + d.activity, 0), A.daily.reduce((s, d) => s + d.activity, 0), "weekday totals add up to the daily activity");
+ok(!/Peter|Quinn|Rita|Lydia|"P"|"Q"|R1|R2/.test(JSON.stringify(A)), "analytics carry no member names or ids");
+
+eq(await code(as("P", (q) => G.getAnalytics(q, ag))), "not_allowed", "a member cannot see analytics");
+await as("L", (q) => G.setRole(q, ag, "Q", "co_leader"));
+await pool.query("insert into subscriptions (user_id, entitlement, status, expires_at) values ('Q','leader','ACTIVE',now() + interval '30 days')");
+eq(await code(as("Q", (q) => G.getAnalytics(q, ag))), "not_allowed", "a co-leader (even with a Leader plan) cannot see analytics: leader only");
+eq(await code(as("X", (q) => G.getAnalytics(q, ag))), "not_allowed", "an outsider cannot see analytics");
+eq(await code(as("L2", (q) => G.getAnalytics(q, ag))), "not_allowed", "another group's leader cannot see them");
+await pool.query("insert into app_settings (key,value) values ('free_mode_enabled','true')");
+eq(await code(as("P", (q) => G.getAnalytics(q, ag))), "not_allowed", "Free Premium Mode does not give members analytics");
+ok(await as("L", (q) => G.getAnalytics(q, ag)), "...but the group's leader keeps them in free mode");
+await pool.query("delete from app_settings");
+await pool.query("update subscriptions set expires_at = now() - interval '1 day' where user_id = 'L' and entitlement = 'leader'");
+eq(await code(as("L", (q) => G.getAnalytics(q, ag))), "not_allowed", "a lapsed Leader plan stops analytics");
+await pool.query("update subscriptions set expires_at = now() + interval '30 days' where user_id = 'L'");
+eq(await asAnon("select app_group_analytics('x')"), "permission denied for function app_group_analytics", "anon cannot call analytics");
+
 // ── sign-in missing ─────────────────────────────────────────────────────────
 eq(await code(as("", (q) => G.joinGroup(q, open))), "signin_required", "no user, no access");
 eq(groupError(new Error("leader_required")).status, 403, "friendly error mapping");

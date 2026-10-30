@@ -538,6 +538,77 @@ begin
     where group_id = r.group_id and post_id = r.post_id and coalesce(comment_id, '') = coalesce(r.comment_id, '') and status = 'open';
 end $$;
 
+-- ── Analytics (the group's own leader only) ─────────────────────────────────
+-- Counts and per-day totals for the last 30 days (Africa/Lagos days, today included); the app shows 7 or 30 of them.
+-- It returns NUMBERS ONLY: no member names or ids. "Activity" = posts + comments + "I'm praying" taps + check-ins.
+-- Hidden posts (and what happened on them) are not counted.
+create or replace function app_group_analytics(p_group text)
+returns jsonb language plpgsql stable security definer set search_path = public as
+$$
+declare
+  today date := (now() at time zone 'Africa/Lagos')::date;
+  result jsonb;
+begin
+  if coalesce(app_member_role(p_group), '') <> 'leader' or not app_is_leader() then raise exception 'not_allowed'; end if;
+  with days as (
+    select d::date as day from generate_series(today - 29, today, interval '1 day') d
+  ),
+  posts as (
+    select (created_at at time zone 'Africa/Lagos')::date as day, kind from group_posts where group_id = p_group and status = 'visible'
+  ),
+  comments as (
+    select (c.created_at at time zone 'Africa/Lagos')::date as day
+    from group_comments c join group_posts p on p.id = c.post_id
+    where c.group_id = p_group and c.status = 'visible' and p.status = 'visible'
+  ),
+  prays as (
+    select (r.created_at at time zone 'Africa/Lagos')::date as day
+    from group_praying r join group_posts p on p.id = r.post_id
+    where r.group_id = p_group and p.status = 'visible'
+  ),
+  checks as (select day from group_checkins where group_id = p_group),
+  joins as (
+    select (joined_at at time zone 'Africa/Lagos')::date as day from group_members
+    where group_id = p_group and status = 'active' and role <> 'leader'
+  ),
+  daily as (
+    select d.day,
+      (select count(*) from joins j where j.day = d.day)::int as members,
+      (select count(*) from posts x where x.day = d.day and x.kind = 'request')::int as requests,
+      (select count(*) from posts x where x.day = d.day and x.kind = 'testimony')::int as testimonies,
+      (select count(*) from prays x where x.day = d.day)::int as praying,
+      ((select count(*) from posts x where x.day = d.day) + (select count(*) from comments x where x.day = d.day)
+        + (select count(*) from prays x where x.day = d.day) + (select count(*) from checks x where x.day = d.day))::int as activity
+    from days d
+  )
+  select jsonb_build_object(
+    'today', today,
+    'members', jsonb_build_object(
+      'total', (select count(*) from group_members where group_id = p_group and status = 'active'),
+      'new7', (select count(*) from joins where day > today - 7),
+      'new30', (select count(*) from joins where day > today - 30)),
+    'requests', jsonb_build_object(
+      'total', (select count(*) from posts where kind = 'request'),
+      'last7', (select count(*) from posts where kind = 'request' and day > today - 7),
+      'last30', (select count(*) from posts where kind = 'request' and day > today - 30)),
+    'testimonies', jsonb_build_object(
+      'total', (select count(*) from posts where kind = 'testimony'),
+      'last7', (select count(*) from posts where kind = 'testimony' and day > today - 7),
+      'last30', (select count(*) from posts where kind = 'testimony' and day > today - 30)),
+    'praying', jsonb_build_object(
+      'total', (select count(*) from prays),
+      'last7', (select count(*) from prays where day > today - 7),
+      'last30', (select count(*) from prays where day > today - 30)),
+    'daily', (select jsonb_agg(jsonb_build_object('day', day, 'members', members, 'requests', requests, 'testimonies', testimonies, 'praying', praying, 'activity', activity) order by day) from daily),
+    'weekday', (select jsonb_agg(jsonb_build_object('dow', w.dow, 'activity', coalesce(a.n, 0)) order by w.dow)
+                from generate_series(1, 7) w(dow)
+                left join (select extract(isodow from day)::int as dow, sum(activity)::int as n from daily group by 1) a on a.dow = w.dow),
+    'topDays', (select coalesce(jsonb_agg(jsonb_build_object('day', day, 'activity', activity) order by activity desc, day desc), '[]'::jsonb)
+                from (select day, activity from daily where activity > 0 order by activity desc, day desc limit 3) t)
+  ) into result;
+  return result;
+end $$;
+
 -- Only app_user may call these (Supabase's public anon/authenticated roles may not).
 do $$
 declare f record;

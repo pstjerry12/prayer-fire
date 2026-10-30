@@ -20,7 +20,9 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const id = url.searchParams.get("id");
     const post = url.searchParams.get("post");
+    const analytics = url.searchParams.get("analytics");
 
+    if (id && analytics) return NextResponse.json({ analytics: await runAsUser(pool, userId, (q) => G.getAnalytics(q, id)) });
     if (post) return NextResponse.json({ comments: await runAsUser(pool, userId, (q) => G.listComments(q, post)) });
     if (id) {
       const detail = await runAsUser(pool, userId, (q) => G.getGroupDetail(q, id));

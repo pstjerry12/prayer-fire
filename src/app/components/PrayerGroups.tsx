@@ -10,6 +10,7 @@ import { cn } from '../utils/cn';
 import { useApp } from '@/app/context';
 import { playChime } from '@/lib/clientUtils';
 import { MembersManager, REPORT_REASONS, ReportsQueue } from './GroupModeration';
+import GroupAnalytics from './GroupAnalytics';
 import type { DirectoryGroup, GroupComment, GroupDetail, GroupPost, JoinMode, PostKind } from '@/lib/groups';
 import {
   fetchComments, fetchDetail, fetchDirectory, groupAction, markLegacyMoved, readLegacyGroups, type LegacyGroup,
@@ -474,6 +475,7 @@ export default function PrayerGroups() {
 
         <ReportsQueue detail={detail} busy={busy} act={act} />
         <MembersManager detail={detail} busy={busy} act={act} />
+        {isLeaderOfGroup && detail.canModerate && <GroupAnalytics groupId={g.id} />}
 
         {g.pinnedVerse && (
           <div className="bg-acc-soft border border-acc-edge rounded-xl p-3 text-center">
