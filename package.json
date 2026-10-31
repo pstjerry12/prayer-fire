@@ -10,7 +10,7 @@
     "test": "node --experimental-strip-types tests/subscriptionRules.test.mts && node --experimental-strip-types tests/pricing.test.mts && node --experimental-strip-types tests/groups.test.mts"
   },
   "dependencies": {
-    "@capacitor/android": "^8.5.0",
+    "@capacitor/android": "^8.5.1",
     "@capacitor/app": "^8.1.1",
     "@capacitor/browser": "^8.0.4",
     "@capacitor/cli": "^8.5.0",
@@ -26,7 +26,7 @@
     "drizzle-orm": "0.45.2",
     "jose": "^6.2.8",
     "lucide-react": "^1.31.0",
-    "next": "16.2.11",
+    "next": "16.4.1",
     "pg": "8.20.0",
     "react": "19.2.6",
     "react-dom": "19.2.6"
