@@ -10,7 +10,7 @@ import DonationCard from './components/DonationCard';
 import TestimonyCard from './components/TestimonyCard';
 import AnnouncementBanner from './components/AnnouncementBanner';
 import DailyExaltation from './components/DailyExaltation';
-import VerseOfTheDayCard from './components/VerseOfTheDayCard';
+import HomeFold from './components/HomeFold';
 import { useApp } from './context';
 
 function formatTime(time: string): string {
@@ -41,6 +41,13 @@ export default function HomePage() {
       <Navbar />
 
       <main className="bg-page min-h-screen pb-32 md:pb-16">
+        {/* ── First screen, no scrolling: verse of the day, today's opening prayer, the audio Bible ── */}
+        <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-3 md:pt-8">
+          <div className="md:max-w-2xl md:mx-auto">
+            <HomeFold />
+          </div>
+        </div>
+
         <AnnouncementBanner />
         <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-6 md:pt-10">
           {/* ── Hero ─────────────────────────────── */}
@@ -59,10 +66,7 @@ export default function HomePage() {
             </p>
           </section>
 
-          {/* ── Verse of the Day: Read / Listen ──── */}
-          <div className="mt-5 md:max-w-2xl md:mx-auto">
-            <VerseOfTheDayCard />
-          </div>
+          <div className="mt-5" />
 
           {/* ── Primary actions ──────────────────── */}
           <section className="grid grid-cols-2 gap-3 md:gap-4 md:max-w-2xl md:mx-auto">
@@ -143,23 +147,6 @@ export default function HomePage() {
               <div className="flex-1 min-w-0">
                 <h3 className="text-ink font-bold text-sm md:text-base">Prayer Network</h3>
                 <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">Stand in the gap for others worldwide</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-ink-ghost shrink-0" />
-            </div>
-          </Link>
-
-          {/* ── Holy Bible: read + audio (horizontal) ── */}
-          <Link
-            href="/bible"
-            className="block bg-card rounded-2xl mt-4 p-4 md:p-5 border border-edge shadow-sm hover:border-acc-edge transition-all"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-acc-soft text-acc flex items-center justify-center shrink-0">
-                <BookOpen className="w-5 h-5 md:w-6 md:h-6" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-ink font-bold text-sm md:text-base">Holy Bible &middot; Read &amp; Listen</h3>
-                <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">The full Bible, offline, with audio read-aloud</p>
               </div>
               <ChevronRight className="w-4 h-4 text-ink-ghost shrink-0" />
             </div>
