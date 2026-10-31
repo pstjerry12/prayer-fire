@@ -76,7 +76,7 @@ export default function BibleSearchBar({ translationId, onGoTo }: Props) {
   const showPanel = query.trim().length > 0;
 
   return (
-    <div className="bg-card rounded-2xl border border-edge px-4 py-3">
+    <div className="bg-card rounded-2xl px-4 py-3">
       <form
         onSubmit={(e) => {
           e.preventDefault();

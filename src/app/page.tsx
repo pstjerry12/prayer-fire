@@ -1,9 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  Flame, Sparkles, Users, Music, Globe, BookOpen, Crown, Moon, Sun, Sunrise, ChevronRight,
-} from 'lucide-react';
+import { Flame, Sparkles, Users, Globe, Crown, Clock, ChevronRight } from 'lucide-react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import DonationCard from './components/DonationCard';
@@ -11,39 +9,16 @@ import TestimonyCard from './components/TestimonyCard';
 import AnnouncementBanner from './components/AnnouncementBanner';
 import DailyExaltation from './components/DailyExaltation';
 import HomeFold from './components/HomeFold';
-import { useApp } from './context';
-
-function formatTime(time: string): string {
-  const parts = time.split(':');
-  const h = parseInt(parts[0], 10);
-  const m = parseInt(parts[1] ?? '0', 10);
-  if (Number.isNaN(h) || Number.isNaN(m)) return time;
-  const period = h >= 12 ? 'PM' : 'AM';
-  const hour12 = h % 12 === 0 ? 12 : h % 12;
-  return `${hour12}:${m.toString().padStart(2, '0')} ${period}`;
-}
-
-function watchIcon(id: string) {
-  if (id === 'morning') return <Sunrise className="w-4 h-4" />;
-  if (id === 'noon') return <Sun className="w-4 h-4" />;
-  if (id === 'midnight') return <Moon className="w-4 h-4" />;
-  return <Flame className="w-4 h-4" />;
-}
-
-const RANK: Record<string, number> = { midnight: 0, noon: 1, morning: 2 };
 
 export default function HomePage() {
-  const { appointments } = useApp();
-  const sorted = [...appointments].sort((a, b) => (RANK[a.id] ?? 99) - (RANK[b.id] ?? 99)).slice(0, 3);
-
   return (
     <>
       <Navbar />
 
       <main className="bg-page min-h-screen pb-32 md:pb-16">
-        {/* ── First screen, no scrolling: the Prayer Fire heading, the audio Bible, the verse of the day ── */}
-        <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-3 md:pt-8">
-          {/* ── Hero ─────────────────────────────── */}
+        {/* ── First screen: heading, the two prayer cards, the schedule bar, today's verse, four tiles ── */}
+        <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-4 md:pt-8">
+          {/* ── Header ───────────────────────────── */}
           <section className="text-center">
             <span className="inline-flex items-center gap-1.5 bg-warn-soft text-warn-strong text-xs font-bold px-3 py-1 rounded-full border border-warn-edge">
               <Flame className="w-3.5 h-3.5" /> Pray 3x a Day
@@ -59,60 +34,51 @@ export default function HomePage() {
             </p>
           </section>
 
-          <div className="mt-3 md:mt-5 md:max-w-2xl md:mx-auto">
+          <div className="mt-5 md:max-w-2xl md:mx-auto space-y-4">
+            {/* ── Two prayer cards, side by side ── */}
+            <section className="grid grid-cols-2 gap-3 md:gap-4">
+              <Link
+                href="/workshop"
+                className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-acc-soft-2 p-3.5 text-center active:scale-[0.98] transition-transform"
+              >
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-emerald-600 text-white">
+                  <Flame className="w-5 h-5" />
+                </span>
+                <h3 className="font-bold text-[0.9375rem] leading-tight text-ink">Write Prayer Points</h3>
+                <p className="text-xs font-semibold text-acc-strong">Prayer Workshop</p>
+              </Link>
+
+              <Link
+                href="/startup"
+                className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-card p-3.5 text-center active:scale-[0.98] transition-transform"
+              >
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-acc-soft text-acc">
+                  <Sparkles className="w-5 h-5" />
+                </span>
+                <h3 className="font-bold text-[0.9375rem] leading-tight text-ink">Start-Up Prayer</h3>
+                <p className="text-xs font-semibold text-acc-strong">7-step guided</p>
+              </Link>
+            </section>
+
+            {/* ── Daily schedule: one slim bar that opens the schedule page ── */}
+            <Link
+              href="/schedule"
+              className="flex h-12 items-center gap-3 rounded-2xl bg-warn-soft-2 px-4 text-sm font-bold text-warn-strong active:scale-[0.99] transition-transform"
+            >
+              <Clock className="w-5 h-5" />
+              <span className="flex-1">Set Daily Schedule</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+
+            {/* ── Today's verse + the four tiles ── */}
             <HomeFold />
           </div>
         </div>
 
         <AnnouncementBanner />
-        <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-2 md:pt-8">
-          {/* ── Primary actions: two halves, Write Prayer Point and Start-Up Prayer ── */}
-          <section className="grid grid-cols-2 gap-2 md:gap-4 md:max-w-2xl md:mx-auto">
-            <Link
-              href="/workshop"
-              className="bg-emerald-600 text-white rounded-2xl p-2.5 md:p-7 text-center shadow-sm hover:bg-emerald-500 hover:-translate-y-0.5 transition-all"
-            >
-              <div className="w-7 h-7 md:w-16 md:h-16 rounded-full bg-card/15 flex items-center justify-center mx-auto mb-1 md:mb-2">
-                <Flame className="w-4 h-4 md:w-8 md:h-8" />
-              </div>
-              <h3 className="font-bold text-[0.8125rem] md:text-lg leading-tight">Write Prayer Point</h3>
-              <p className="text-emerald-50 text-[0.625rem] md:text-xs font-semibold mt-0.5 md:mt-1">Prayer Workshop</p>
-            </Link>
-
-            <Link
-              href="/startup"
-              className="bg-card text-ink rounded-2xl p-2.5 md:p-7 text-center border border-acc-edge shadow-sm hover:border-acc hover:-translate-y-0.5 transition-all"
-            >
-              <div className="w-7 h-7 md:w-16 md:h-16 rounded-full bg-acc-soft text-acc flex items-center justify-center mx-auto mb-1 md:mb-2">
-                <Sparkles className="w-4 h-4 md:w-8 md:h-8" />
-              </div>
-              <h3 className="font-bold text-[0.8125rem] md:text-lg leading-tight">Start-Up Prayer</h3>
-              <p className="text-acc text-[0.625rem] md:text-xs font-semibold mt-0.5 md:mt-1">7-step guided</p>
-            </Link>
-          </section>
-
+        <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-4 md:pt-8">
           {/* ── Daily Morning Exaltation (YouTube) ── */}
           <DailyExaltation />
-
-          {/* ── Daily Schedule (horizontal) ───────── */}
-          <Link
-            href="/schedule"
-            className="block bg-card rounded-2xl mt-4 md:mt-6 p-4 md:p-6 border border-edge shadow-sm hover:border-acc-edge transition-all"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-serif-heading font-bold text-ink md:text-lg">Daily Schedule</h3>
-              <ChevronRight className="w-4 h-4 text-ink-ghost" />
-            </div>
-            <div className="grid grid-cols-3 gap-2 md:gap-3">
-              {sorted.map((a) => (
-                <div key={a.id} className="bg-card-2 rounded-xl py-2.5 md:py-4 px-1 text-center border border-edge">
-                  <span className="flex justify-center text-acc mb-1">{watchIcon(a.id)}</span>
-                  <p className="text-ink font-bold text-sm md:text-base leading-none">{formatTime(a.time)}</p>
-                  <p className="text-ink-muted text-[0.5625rem] md:text-xs mt-1 truncate">{a.label}</p>
-                </div>
-              ))}
-            </div>
-          </Link>
 
           {/* ── Prayer Groups (horizontal) ────────── */}
           <Link
