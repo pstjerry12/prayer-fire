@@ -9,6 +9,7 @@ import { pushBackHandler } from '@/lib/backHandlerStack';
 import { BIBLE_BOOKS } from '@/app/data/bibleBooks';
 import { readItems, stopSpeech, type ReadController, type ReaderState } from '@/lib/readAloud';
 import { copyText } from '@/lib/clipboard';
+import { saveLastPlace, touchLastPlace } from '@/lib/bibleLastPlace';
 import { shareVerse } from '@/lib/shareVerse';
 import {
   activeSermon,
@@ -162,6 +163,8 @@ export default function BibleReader() {
     } catch {
       // ignore
     }
+    // Also remember the chapter on the phone itself, for "Continue where you stopped" on the home screen.
+    if (step === 3) touchLastPlace(book, chapter);
   }, [positionLoaded, step, book, chapter]);
 
   const showToast = useCallback((message: string) => {
@@ -316,7 +319,10 @@ export default function BibleReader() {
       onItemStart: (_i, item) => {
         const n = typeof item.id === 'number' ? item.id : 0;
         setReadingVerse(n > 0 ? n : null);
-        if (n > 0) verseRefs.current[n]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (n > 0) {
+          verseRefs.current[n]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          saveLastPlace({ book, chapter, verse: n });
+        }
       },
       onStateChange: setReaderState,
       onEnd: (reason, detail) => {
