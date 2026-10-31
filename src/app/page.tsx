@@ -66,20 +66,28 @@ export default function HomePage() {
 
         <AnnouncementBanner />
         <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-5 md:pt-8">
-          {/* ── Primary action: write a prayer point ─ */}
-          <section className="md:max-w-2xl md:mx-auto">
+          {/* ── Primary actions: two halves, Write Prayer Point and Start-Up Prayer ── */}
+          <section className="grid grid-cols-2 gap-3 md:gap-4 md:max-w-2xl md:mx-auto">
             <Link
               href="/workshop"
-              className="flex items-center gap-3 bg-emerald-600 text-white rounded-2xl p-4 md:p-6 shadow-sm hover:bg-emerald-500 hover:-translate-y-0.5 transition-all"
+              className="bg-emerald-600 text-white rounded-2xl p-4 md:p-7 text-center shadow-sm hover:bg-emerald-500 hover:-translate-y-0.5 transition-all"
             >
-              <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-card/15 flex items-center justify-center shrink-0">
-                <Flame className="w-6 h-6 md:w-7 md:h-7" />
+              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-card/15 flex items-center justify-center mx-auto mb-2">
+                <Flame className="w-6 h-6 md:w-8 md:h-8" />
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-base md:text-lg leading-tight">Write Prayer Point</h3>
-                <p className="text-emerald-50 text-xs font-semibold mt-0.5">Prayer Workshop</p>
+              <h3 className="font-bold text-sm md:text-lg leading-tight">Write Prayer Point</h3>
+              <p className="text-emerald-50 text-[0.6875rem] md:text-xs font-semibold mt-1">Prayer Workshop</p>
+            </Link>
+
+            <Link
+              href="/startup"
+              className="bg-card text-ink rounded-2xl p-4 md:p-7 text-center border border-acc-edge shadow-sm hover:border-acc hover:-translate-y-0.5 transition-all"
+            >
+              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-acc-soft text-acc flex items-center justify-center mx-auto mb-2">
+                <Sparkles className="w-6 h-6 md:w-8 md:h-8" />
               </div>
-              <ChevronRight className="w-4 h-4 text-white/80 shrink-0" />
+              <h3 className="font-bold text-sm md:text-lg leading-tight">Start-Up Prayer</h3>
+              <p className="text-acc text-[0.6875rem] md:text-xs font-semibold mt-1">7-step guided</p>
             </Link>
           </section>
 
@@ -103,23 +111,6 @@ export default function HomePage() {
                   <p className="text-ink-muted text-[0.5625rem] md:text-xs mt-1 truncate">{a.label}</p>
                 </div>
               ))}
-            </div>
-          </Link>
-
-          {/* ── Start-Up Prayer (horizontal; moved down the page at the owner's request) ── */}
-          <Link
-            href="/startup"
-            className="block bg-card rounded-2xl mt-4 p-4 md:p-5 border border-acc-edge shadow-sm hover:border-acc transition-all"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-acc-soft text-acc flex items-center justify-center shrink-0">
-                <Sparkles className="w-5 h-5 md:w-6 md:h-6" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-ink font-bold text-sm md:text-base">Start-Up Prayer</h3>
-                <p className="text-acc text-[0.6875rem] md:text-sm font-semibold mt-0.5">7-step guided prayer</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-ink-ghost shrink-0" />
             </div>
           </Link>
 
