@@ -1,20 +1,28 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Users, Plus, ChevronRight, ChevronLeft, Send, Siren, Clock, BookOpen,
-  LogOut, Trash2, ShieldCheck, UserPlus, Copy, Check, Pin, Flame,
-  Lock, Globe, X,
+  Users, Plus, ChevronRight, ChevronLeft, Send, Siren, Clock, LogOut, Trash2, ShieldCheck,
+  UserPlus, Copy, Check, Pin, Flame, Lock, Globe, X, MessageCircle, HandHeart, Sparkles, Loader2, CloudUpload,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
-import { useApp, SEED_GROUP_ID } from '@/app/context';
+import { useApp } from '@/app/context';
 import { playChime } from '@/lib/clientUtils';
-import type { PrayerGroup } from '@/app/types';
+import type { DirectoryGroup, GroupComment, GroupDetail, GroupPost, JoinMode, PostKind } from '@/lib/groups';
+import {
+  fetchComments, fetchDetail, fetchDirectory, groupAction, markLegacyMoved, readLegacyGroups, type LegacyGroup,
+} from '@/lib/groupsClient';
 
 const TIME_OPTIONS = ['04:00', '05:00', '06:00', '12:00', '15:00', '18:00', '21:00', '00:00'];
 
-function fmtTime(t?: string) {
+const POST_KINDS: { kind: PostKind; label: string; hint: string }[] = [
+  { kind: 'request', label: 'Prayer request', hint: 'Share a need for the group to pray about...' },
+  { kind: 'testimony', label: 'Testimony', hint: 'Share what God has done...' },
+  { kind: 'message', label: 'Message', hint: 'Share a prayer point...' },
+  { kind: 'alert', label: 'Prayer alert', hint: 'Something urgent to pray about now...' },
+];
+
+function fmtTime(t?: string | null) {
   if (!t) return 'Not set';
   const [h, m] = t.split(':').map(Number);
   const period = h >= 12 ? 'PM' : 'AM';
@@ -22,16 +30,23 @@ function fmtTime(t?: string) {
   return `${h12}:${String(m).padStart(2, '0')} ${period}`;
 }
 
+function ago(iso: string) {
+  const mins = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  if (mins < 1440) return `${Math.round(mins / 60)} h ago`;
+  return new Date(iso).toLocaleDateString([], { day: 'numeric', month: 'short' });
+}
+
 export default function PrayerGroups() {
-  const {
-    groups, messages, user, isPremium, isLeader, isAndroidApp, setShowAuth, setShowPricing,
-    createGroup, joinGroup, requestJoin, approveMember, rejectMember, setGroupPublic,
-    leaveGroup, deleteGroup,
-    setGroupPrayerTime, setGroupVerse, togglePrayedToday, sendMessage,
-  } = useApp();
+  const { user, isPremium, isLeader, isAndroidApp, setShowPricing, markPrayedToday } = useApp();
 
   const [view, setView] = useState<'list' | 'detail' | 'create' | 'join'>('list');
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
+  const [directory, setDirectory] = useState<DirectoryGroup[] | null>(null);
+  const [detail, setDetail] = useState<GroupDetail | null>(null);
+  const [loadError, setLoadError] = useState('');
+  const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [notice, setNotice] = useState('');
   const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -40,14 +55,22 @@ export default function PrayerGroups() {
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newTime, setNewTime] = useState('05:00');
-  const [newPublic, setNewPublic] = useState(true);
+  const [newMode, setNewMode] = useState<JoinMode>('open');
+  const [createError, setCreateError] = useState('');
 
   // Join form
   const [joinCode, setJoinCode] = useState('');
   const [joinError, setJoinError] = useState('');
 
-  // Chat
+  // Posting + comments
+  const [postKind, setPostKind] = useState<PostKind>('request');
   const [draft, setDraft] = useState('');
+  const [openPostId, setOpenPostId] = useState<string | null>(null);
+  const [comments, setComments] = useState<GroupComment[]>([]);
+  const [commentDraft, setCommentDraft] = useState('');
+
+  // Groups made on this phone before groups moved online
+  const [legacy, setLegacy] = useState<LegacyGroup[]>([]);
 
   const flashNotice = (msg: string) => {
     setNotice(msg);
@@ -55,102 +78,171 @@ export default function PrayerGroups() {
     noticeTimer.current = setTimeout(() => setNotice(''), 4500);
   };
 
-  const activeGroup = groups.find((g) => g.id === activeGroupId) || null;
-  const groupMessages = activeGroupId
-    ? messages.filter((m) => m.groupId === activeGroupId).sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-    : [];
+  const loadDirectory = useCallback(async () => {
+    const r = await fetchDirectory();
+    if (r.ok) {
+      setDirectory(r.data.groups);
+      setLoadError('');
+    } else {
+      setLoadError(r.error);
+    }
+  }, []);
 
-  const memberName = user?.name || 'Guest';
+  const loadDetail = useCallback(async (id: string) => {
+    const r = await fetchDetail(id);
+    if (r.ok) {
+      setDetail(r.data.detail);
+      setLoadError('');
+    } else if (r.status === 404) {
+      setDetail(null);
+      setView('list');
+    } else {
+      setLoadError(r.error);
+    }
+  }, []);
 
-  const handleCreate = () => {
-    if (!isLeader || !newName.trim()) return; // creating groups is a Leader feature
-    const g = createGroup(newName, newDesc, newTime, newPublic);
-    setActiveGroupId(g.id);
-    setNewName('');
-    setNewDesc('');
-    setNewPublic(true);
+  // Directory on open; the open group refreshes every 20 seconds so members see each other's posts.
+  useEffect(() => {
+    if (!isPremium || !user) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLegacy(readLegacyGroups({ id: user.id, name: user.name, email: user.email }));
+    loadDirectory();
+  }, [isPremium, user, loadDirectory]);
+
+  useEffect(() => {
+    if (view !== 'detail' || !activeGroupId) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadDetail(activeGroupId);
+    const t = setInterval(() => loadDetail(activeGroupId), 20000);
+    return () => clearInterval(t);
+  }, [view, activeGroupId, loadDetail]);
+
+  const openGroup = (id: string) => {
+    setActiveGroupId(id);
+    setDetail(null);
+    setOpenPostId(null);
     setView('detail');
-    playChime();
   };
 
-  const handleJoin = () => {
-    const result = joinGroup(joinCode);
-    if (result === 'notfound') {
-      setJoinError('No group found with that code.');
+  const handleCreate = async () => {
+    if (!isLeader || !newName.trim() || busy) return;
+    setBusy(true);
+    setCreateError('');
+    const r = await groupAction<{ id: string }>({ action: 'create', name: newName, description: newDesc, joinMode: newMode, prayerTime: newTime });
+    setBusy(false);
+    if (!r.ok) {
+      setCreateError(r.error);
       return;
     }
+    setNewName('');
+    setNewDesc('');
+    setNewMode('open');
+    playChime();
+    await loadDirectory();
+    openGroup(r.data.id);
+  };
+
+  const outcomeMessage = (outcome: string, name?: string) =>
+    outcome === 'joined' ? `You joined ${name ?? 'the group'}!`
+      : outcome === 'pending' ? 'Request sent! The group leader will approve you.'
+        : outcome === 'already' ? 'You are already in this group.'
+          : outcome === 'blocked' ? 'You cannot join this group.'
+            : 'No group found.';
+
+  const handleJoinCode = async () => {
+    if (!joinCode.trim() || busy) return;
+    setBusy(true);
+    const r = await groupAction<{ outcome: string }>({ action: 'joinByCode', code: joinCode });
+    setBusy(false);
+    if (!r.ok) return setJoinError(r.error);
+    if (r.data.outcome === 'notfound') return setJoinError('No group found with that code.');
     setJoinCode('');
     setJoinError('');
     setView('list');
-    flashNotice(
-      result === 'pending'
-        ? 'Request sent! The group admin will approve you shortly.'
-        : result === 'already'
-          ? 'You are already in this group.'
-          : 'You joined the group!'
-    );
-    playChime();
+    flashNotice(outcomeMessage(r.data.outcome));
+    if (r.data.outcome === 'joined') playChime();
+    loadDirectory();
   };
 
-  const handleRequestJoin = (g: PrayerGroup) => {
-    const result = requestJoin(g.id);
-    flashNotice(
-      result === 'joined'
-        ? `You joined ${g.name}!`
-        : result === 'pending'
-          ? `Request sent to ${g.name}. The admin will approve you.`
-          : result === 'already'
-            ? 'You are already in this group.'
-            : 'Group not found.'
-    );
-    if (result === 'joined') playChime();
+  const handleRequestJoin = async (g: DirectoryGroup) => {
+    if (busy) return;
+    setBusy(true);
+    const r = await groupAction<{ outcome: string }>({ action: 'join', groupId: g.id });
+    setBusy(false);
+    flashNotice(r.ok ? outcomeMessage(r.data.outcome, g.name) : r.error);
+    if (r.ok && r.data.outcome === 'joined') playChime();
+    loadDirectory();
   };
 
-  const copyCode = async (g: PrayerGroup) => {
+  const moveOnline = async (g: LegacyGroup) => {
+    if (busy) return;
+    setBusy(true);
+    const r = await groupAction<{ id: string }>({
+      action: 'create', name: g.name, description: g.description, joinMode: g.public ? 'open' : 'approval', prayerTime: g.prayerTime ?? '', pinnedVerse: g.pinnedVerse ?? '',
+    });
+    setBusy(false);
+    if (!r.ok) return flashNotice(r.error);
+    markLegacyMoved(g.id);
+    setLegacy((prev) => prev.filter((x) => x.id !== g.id));
+    flashNotice(`"${g.name}" is now online. Share its invite code so members can join again.`);
+    loadDirectory();
+  };
+
+  const copyCode = async (code: string) => {
     try {
-      await navigator.clipboard.writeText(g.inviteCode);
+      await navigator.clipboard.writeText(code);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // ignore
+      /* ignore */
     }
   };
 
-  const isGroupAdmin = (g: PrayerGroup) =>
-    g.admins.includes(user?.id || '') ||
-    g.admins.includes(user?.name || '') ||
-    g.admins.includes(user?.email || '');
-  const isInGroup = (g: PrayerGroup) => g.members.includes(memberName) || isGroupAdmin(g);
-  const isPending = (g: PrayerGroup) => (g.pendingMembers || []).includes(memberName);
+  const act = async (body: Record<string, unknown>, after?: () => void) => {
+    if (busy) return null;
+    setBusy(true);
+    const r = await groupAction<Record<string, unknown>>(body);
+    setBusy(false);
+    if (!r.ok) {
+      flashNotice(r.error);
+      return null;
+    }
+    if (activeGroupId) await loadDetail(activeGroupId);
+    after?.();
+    return r.data;
+  };
 
-  const isAdmin = activeGroup ? isGroupAdmin(activeGroup) : false;
-  const isMember = activeGroup ? activeGroup.members.includes(memberName) : false;
-
-  // "I prayed today" tracker
-  const todayStr = new Date().toDateString();
-  const memberKey = memberName;
-
-  // Official team first, then newest.
-  const sortedGroups = [...groups].sort((a, b) => {
-    if (a.id === SEED_GROUP_ID) return -1;
-    if (b.id === SEED_GROUP_ID) return 1;
-    return b.createdAt.localeCompare(a.createdAt);
-  });
-  const prayedTodayCount = activeGroup
-    ? Object.values(activeGroup.prayedToday || {}).filter((d) => d === todayStr).length
-    : 0;
-  const iPrayedToday = activeGroup
-    ? (activeGroup.prayedToday || {})[memberKey] === todayStr
-    : false;
-
-  const prayedCount = (g: PrayerGroup) =>
-    Object.values(g.prayedToday || {}).filter((d) => d === todayStr).length;
-
-  const handleSend = (kind: 'message' | 'alert') => {
+  const handleSend = async () => {
     if (!activeGroupId || !draft.trim()) return;
-    sendMessage(activeGroupId, draft, kind);
-    setDraft('');
-    if (kind === 'alert') playChime();
+    const sent = await act({ action: 'post', groupId: activeGroupId, kind: postKind, body: draft });
+    if (sent) {
+      setDraft('');
+      if (postKind === 'alert') playChime();
+    }
+  };
+
+  const toggleComments = async (p: GroupPost) => {
+    if (openPostId === p.id) return setOpenPostId(null);
+    setOpenPostId(p.id);
+    setCommentDraft('');
+    const r = await fetchComments(activeGroupId!, p.id);
+    setComments(r.ok ? r.data.comments : []);
+  };
+
+  const sendComment = async () => {
+    if (!openPostId || !commentDraft.trim()) return;
+    const sent = await act({ action: 'comment', postId: openPostId, body: commentDraft });
+    if (sent) {
+      setCommentDraft('');
+      const r = await fetchComments(activeGroupId!, openPostId);
+      if (r.ok) setComments(r.data.comments);
+    }
+  };
+
+  const toggleCheckin = async () => {
+    if (!activeGroupId) return;
+    const res = await act({ action: 'checkin', groupId: activeGroupId });
+    if (res && res.on === true) markPrayedToday(); // also feeds the global fire streak
   };
 
   // ── Premium gate ──────────────────────────────────────────────
@@ -162,20 +254,16 @@ export default function PrayerGroups() {
         </div>
         <h2 className="font-serif-heading text-xl font-bold text-ink mb-2">Prayer Fire Partner</h2>
         <p className="text-ink-muted text-sm leading-relaxed mb-5">
-          Create WhatsApp-style prayer groups for your church or prayer team, send emergency
-          prayer alerts, and set a time to pray together. Upgrade to unlock the full
-          intercessory community.
+          Join prayer groups for your church or prayer team, share prayer requests and testimonies, send emergency
+          prayer alerts, and pray together. Upgrade to unlock the full intercessory community.
         </p>
         <ul className="text-left text-ink-soft text-xs space-y-1.5 max-w-xs mx-auto mb-5">
-          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc mt-0.5 flex-shrink-0" /> Prayer groups with 3 admins + members</li>
+          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc mt-0.5 flex-shrink-0" /> Join prayer groups and pray together</li>
+          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc mt-0.5 flex-shrink-0" /> Prayer requests, testimonies and comments</li>
           <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc mt-0.5 flex-shrink-0" /> Emergency prayer alerts</li>
-          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc mt-0.5 flex-shrink-0" /> Group prayer time + pinned verses</li>
           <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc mt-0.5 flex-shrink-0" /> Voice-to-text prayer writing</li>
         </ul>
-        <button
-          onClick={() => setShowPricing(true)}
-          className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500"
-        >
+        <button onClick={() => setShowPricing(true)} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500">
           {isAndroidApp ? 'See Prayer Fire Partner' : 'Start 7-Day Free Trial'}
         </button>
       </div>
@@ -190,24 +278,12 @@ export default function PrayerGroups() {
           <ChevronLeft className="w-4 h-4" /> Back
         </button>
         <h2 className="font-serif-heading text-lg font-bold text-ink">Create a Prayer Group</h2>
-        <input
-          type="text"
-          placeholder="Group name (e.g. Redeemed Church Prayer Team)"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
-        />
-        <textarea
-          placeholder="Description (what does this group pray for?)"
-          value={newDesc}
-          onChange={(e) => setNewDesc(e.target.value)}
-          rows={3}
-          className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
-        />
+        <input type="text" placeholder="Group name (e.g. Redeemed Church Prayer Team)" value={newName} onChange={(e) => setNewName(e.target.value)} aria-label="Group name"
+          className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+        <textarea placeholder="Description (what does this group pray for?)" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} rows={3} aria-label="Group description"
+          className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
         <div>
-          <label className="block text-xs font-semibold text-ink-muted mb-1.5 flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5" /> Group prayer time (pray together)
-          </label>
+          <label className="block text-xs font-semibold text-ink-muted mb-1.5 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Group prayer time (pray together)</label>
           <select value={newTime} onChange={(e) => setNewTime(e.target.value)} className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink focus:outline-none">
             {TIME_OPTIONS.map((t) => <option key={t} value={t}>{fmtTime(t)}</option>)}
           </select>
@@ -215,186 +291,151 @@ export default function PrayerGroups() {
         <div>
           <label className="block text-xs font-semibold text-ink-muted mb-1.5">Who can join?</label>
           <div className="grid grid-cols-2 gap-2">
-            <button type="button" onClick={() => setNewPublic(true)} className={cn('py-2.5 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-all', newPublic ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
-              <Globe className="w-4 h-4" /> Public
+            <button type="button" onClick={() => setNewMode('open')} className={cn('py-2.5 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-all', newMode === 'open' ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
+              <Globe className="w-4 h-4" /> Open
             </button>
-            <button type="button" onClick={() => setNewPublic(false)} className={cn('py-2.5 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-all', !newPublic ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
-              <Lock className="w-4 h-4" /> Private
+            <button type="button" onClick={() => setNewMode('approval')} className={cn('py-2.5 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-all', newMode === 'approval' ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
+              <Lock className="w-4 h-4" /> Approval only
             </button>
           </div>
-          <p className="text-[0.6875rem] text-ink-muted mt-1.5">
-            {newPublic ? 'Anyone can join instantly.' : 'Only people you approve can join.'}
-          </p>
+          <p className="text-[0.6875rem] text-ink-muted mt-1.5">{newMode === 'open' ? 'Anyone with Prayer Fire Partner can join instantly.' : 'Only people you approve can join.'}</p>
         </div>
-        <button onClick={handleCreate} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 flex items-center justify-center gap-2">
-          <Plus className="w-4 h-4" /> Create Group
+        {createError && <p role="alert" className="text-danger text-xs">{createError}</p>}
+        <button onClick={handleCreate} disabled={busy || !newName.trim()} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 disabled:opacity-60 flex items-center justify-center gap-2">
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Create Group
         </button>
       </div>
     );
   }
 
-  // ── Join ──────────────────────────────────────────────────────
+  // ── Join by code ──────────────────────────────────────────────
   if (view === 'join') {
     return (
       <div className="space-y-4">
-        <button onClick={() => setView('list')} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc">
-          <ChevronLeft className="w-4 h-4" /> Back
-        </button>
+        <button onClick={() => setView('list')} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc"><ChevronLeft className="w-4 h-4" /> Back</button>
         <h2 className="font-serif-heading text-lg font-bold text-ink">Join a Group</h2>
-        <p className="text-ink-muted text-sm">Enter the invite code shared by the group admin.</p>
-        <input
-          type="text"
-          placeholder="Invite code (e.g. AB12CD)"
-          value={joinCode}
+        <p className="text-ink-muted text-sm">Enter the invite code shared by the group leader.</p>
+        <input type="text" placeholder="Invite code (e.g. AB12CD)" value={joinCode} aria-label="Invite code"
           onChange={(e) => { setJoinCode(e.target.value.toUpperCase()); setJoinError(''); }}
-          className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
-        />
-        {joinError && <p className="text-danger text-xs">{joinError}</p>}
-        <button onClick={handleJoin} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 flex items-center justify-center gap-2">
+          className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+        {joinError && <p role="alert" className="text-danger text-xs">{joinError}</p>}
+        <button onClick={handleJoinCode} disabled={busy} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 disabled:opacity-60 flex items-center justify-center gap-2">
           <UserPlus className="w-4 h-4" /> Join Group
         </button>
       </div>
     );
   }
 
-  // ── Detail (chat) ─────────────────────────────────────────────
-  if (view === 'detail' && activeGroup) {
+  // ── Detail ────────────────────────────────────────────────────
+  if (view === 'detail') {
+    if (!detail) {
+      return (
+        <div className="space-y-3">
+          <button onClick={() => setView('list')} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc"><ChevronLeft className="w-4 h-4" /> Groups</button>
+          {loadError ? <p role="alert" className="text-danger text-sm">{loadError}</p> : <p className="text-ink-muted text-sm flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Opening group...</p>}
+        </div>
+      );
+    }
+    const g = detail.group;
+    const isLeaderOfGroup = detail.myRole === 'leader';
+    const pending = detail.members.filter((m) => m.status === 'pending');
+    const active = detail.members.filter((m) => m.status === 'active');
+    const kindInfo = POST_KINDS.find((k) => k.kind === postKind)!;
+
     return (
       <div className="space-y-3">
-        <button onClick={() => setView('list')} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc">
-          <ChevronLeft className="w-4 h-4" /> Groups
-        </button>
+        <button onClick={() => { setView('list'); loadDirectory(); }} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc"><ChevronLeft className="w-4 h-4" /> Groups</button>
 
-        {/* Header */}
+        {notice && <div role="status" className="bg-acc-soft border border-acc-edge rounded-xl px-3 py-2 text-xs font-semibold text-acc-strong">{notice}</div>}
+
         <div className="bg-card rounded-2xl border border-edge p-4">
           <div className="flex items-start justify-between gap-3 mb-2">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-11 h-11 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold flex-shrink-0">
-                {activeGroup.name.charAt(0).toUpperCase()}
-              </div>
+              <div className="w-11 h-11 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold flex-shrink-0">{g.name.charAt(0).toUpperCase()}</div>
               <div className="min-w-0">
-                <h2 className="font-bold text-ink truncate">{activeGroup.name}</h2>
-                <p className="text-ink-muted text-xs truncate">{activeGroup.description || 'No description'}</p>
+                <h2 className="font-bold text-ink truncate">{g.name}</h2>
+                <p className="text-ink-muted text-xs truncate">{g.description || 'No description'}</p>
               </div>
             </div>
             <div className="flex gap-1 flex-shrink-0">
-              <button onClick={() => copyCode(activeGroup)} className="p-2 text-ink-muted hover:text-acc" title="Copy invite code">
-                {copied ? <Check className="w-4 h-4 text-acc" /> : <Copy className="w-4 h-4" />}
-              </button>
-              {isAdmin ? (
-                <button onClick={() => { deleteGroup(activeGroup.id); setView('list'); }} className="p-2 text-ink-muted hover:text-danger" title="Delete group">
-                  <Trash2 className="w-4 h-4" />
+              {detail.inviteCode && (
+                <button onClick={() => copyCode(detail.inviteCode!)} className="p-2 text-ink-muted hover:text-acc" title="Copy invite code" aria-label="Copy invite code">
+                  {copied ? <Check className="w-4 h-4 text-acc" /> : <Copy className="w-4 h-4" />}
                 </button>
+              )}
+              {isLeaderOfGroup ? (
+                <button
+                  onClick={async () => { if (!confirm('Delete this group for everyone? Its posts and members are removed.')) return; const r = await act({ action: 'delete', groupId: g.id }); if (r) { setView('list'); loadDirectory(); } }}
+                  className="p-2 text-ink-muted hover:text-danger" title="Delete group" aria-label="Delete group"><Trash2 className="w-4 h-4" /></button>
               ) : (
-                <button onClick={() => { leaveGroup(activeGroup.id); setView('list'); }} className="p-2 text-ink-muted hover:text-danger" title="Leave group">
-                  <LogOut className="w-4 h-4" />
-                </button>
+                <button
+                  onClick={async () => { const r = await act({ action: 'leave', groupId: g.id }); if (r) { setView('list'); loadDirectory(); } }}
+                  className="p-2 text-ink-muted hover:text-danger" title="Leave group" aria-label="Leave group"><LogOut className="w-4 h-4" /></button>
               )}
             </div>
           </div>
-
-          {/* Info chips */}
           <div className="flex flex-wrap gap-2 text-[0.6875rem]">
-            <span className="bg-acc-soft text-acc-strong px-2 py-1 rounded-full flex items-center gap-1">
-              <Users className="w-3 h-3" /> {activeGroup.members.length} members
-            </span>
-            <span className="bg-warn-soft text-warn-strong px-2 py-1 rounded-full flex items-center gap-1">
-              <Clock className="w-3 h-3" /> Pray at {fmtTime(activeGroup.prayerTime)}
-            </span>
-            <span className="bg-acc-soft text-acc-strong px-2 py-1 rounded-full flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3" /> {activeGroup.admins.length} admins
-            </span>
-            <span className={cn('px-2 py-1 rounded-full flex items-center gap-1', prayedTodayCount > 0 ? 'bg-warn-soft text-warn-strong' : 'bg-card-2 text-ink-muted')}>
-              <Flame className="w-3 h-3" /> {prayedTodayCount} prayed today
-            </span>
+            <span className="bg-acc-soft text-acc-strong px-2 py-1 rounded-full flex items-center gap-1"><Users className="w-3 h-3" /> {active.length} members</span>
+            <span className="bg-warn-soft text-warn-strong px-2 py-1 rounded-full flex items-center gap-1"><Clock className="w-3 h-3" /> Pray at {fmtTime(g.prayerTime)}</span>
+            <span className="bg-card-2 text-ink-muted px-2 py-1 rounded-full flex items-center gap-1">{g.joinMode === 'open' ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />} {g.joinMode === 'open' ? 'Open' : 'Approval only'}</span>
+            <span className={cn('px-2 py-1 rounded-full flex items-center gap-1', detail.prayedToday > 0 ? 'bg-warn-soft text-warn-strong' : 'bg-card-2 text-ink-muted')}><Flame className="w-3 h-3" /> {detail.prayedToday} prayed today</span>
           </div>
-
-          {/* Invite code (admins) */}
-          {isAdmin && (
-            <button onClick={() => copyCode(activeGroup)} className="mt-3 w-full text-left bg-card-2 rounded-lg px-3 py-2 flex items-center justify-between">
+          {detail.inviteCode && (
+            <button onClick={() => copyCode(detail.inviteCode!)} className="mt-3 w-full text-left bg-card-2 rounded-lg px-3 py-2 flex items-center justify-between">
               <span className="text-ink-muted text-xs">Invite code</span>
-              <span className="text-ink font-bold tracking-widest">{activeGroup.inviteCode}</span>
+              <span className="text-ink font-bold tracking-widest">{detail.inviteCode}</span>
             </button>
           )}
         </div>
 
-        {/* I prayed today */}
-        {isMember && (
-          <button
-            onClick={() => togglePrayedToday(activeGroup.id)}
-            className={cn(
-              'w-full rounded-2xl border p-3 flex items-center justify-center gap-2 font-bold text-sm transition-all',
-              iPrayedToday
-                ? 'bg-acc-soft border-acc-edge text-acc-strong'
-                : 'bg-card border-edge text-ink-muted hover:border-warn-edge'
-            )}
-          >
-            <Flame className={cn('w-4 h-4', iPrayedToday && 'animate-flicker')} />
-            {iPrayedToday ? 'I prayed today ✓' : 'Mark: I prayed today'}
-            {prayedTodayCount > 0 && (
-              <span className={cn('text-[0.625rem] px-1.5 py-0.5 rounded-full', iPrayedToday ? 'bg-acc text-white' : 'bg-card-2 text-ink-muted')}>
-                {prayedTodayCount}
-              </span>
-            )}
-          </button>
-        )}
+        <button onClick={toggleCheckin} disabled={busy}
+          className={cn('w-full rounded-2xl border p-3 flex items-center justify-center gap-2 font-bold text-sm transition-all', detail.iPrayedToday ? 'bg-acc-soft border-acc-edge text-acc-strong' : 'bg-card border-edge text-ink-muted hover:border-warn-edge')}>
+          <Flame className={cn('w-4 h-4', detail.iPrayedToday && 'animate-flicker')} />
+          {detail.iPrayedToday ? 'I prayed today ✓' : 'Mark: I prayed today'}
+        </button>
 
-        {/* Pinned verse + prayer time (admin controls) */}
-        {isAdmin && (
+        {/* Leader / co-leader controls */}
+        {detail.canModerate && (
           <div className="bg-card rounded-2xl border border-edge p-3 space-y-2">
             <div>
-              <label className="text-[0.625rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1">
-                <Pin className="w-3 h-3" /> Pinned verse
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Psalm 133:1"
-                defaultValue={activeGroup.pinnedVerse}
-                onBlur={(e) => setGroupVerse(activeGroup.id, e.target.value)}
-                className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint"
-              />
+              <label className="text-[0.625rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1"><Pin className="w-3 h-3" /> Pinned verse</label>
+              <input type="text" placeholder="e.g. Psalm 133:1" defaultValue={g.pinnedVerse ?? ''} aria-label="Pinned verse"
+                onBlur={(e) => { if (e.target.value !== (g.pinnedVerse ?? '')) act({ action: 'update', groupId: g.id, joinMode: g.joinMode, prayerTime: g.prayerTime ?? '', pinnedVerse: e.target.value }); }}
+                className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint" />
             </div>
             <div>
-              <label className="text-[0.625rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1">
-                <Clock className="w-3 h-3" /> Group prayer time
-              </label>
-              <select value={activeGroup.prayerTime || ''} onChange={(e) => setGroupPrayerTime(activeGroup.id, e.target.value)} className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink">
+              <label className="text-[0.625rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1"><Clock className="w-3 h-3" /> Group prayer time</label>
+              <select value={g.prayerTime || ''} aria-label="Group prayer time"
+                onChange={(e) => act({ action: 'update', groupId: g.id, joinMode: g.joinMode, prayerTime: e.target.value, pinnedVerse: g.pinnedVerse ?? '' })}
+                className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink">
+                {!g.prayerTime && <option value="">Not set</option>}
                 {TIME_OPTIONS.map((t) => <option key={t} value={t}>{fmtTime(t)}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-[0.625rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1">
-                <Lock className="w-3 h-3" /> Who can join
-              </label>
+              <label className="text-[0.625rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1"><ShieldCheck className="w-3 h-3" /> Who can join</label>
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => setGroupPublic(activeGroup.id, true)} className={cn('py-2 rounded-lg border-2 text-xs font-bold flex items-center justify-center gap-1', activeGroup.public ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
-                  <Globe className="w-3.5 h-3.5" /> Public
-                </button>
-                <button onClick={() => setGroupPublic(activeGroup.id, false)} className={cn('py-2 rounded-lg border-2 text-xs font-bold flex items-center justify-center gap-1', !activeGroup.public ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
-                  <Lock className="w-3.5 h-3.5" /> Private
-                </button>
+                {(['open', 'approval'] as const).map((m) => (
+                  <button key={m} onClick={() => g.joinMode !== m && act({ action: 'update', groupId: g.id, joinMode: m, prayerTime: g.prayerTime ?? '', pinnedVerse: g.pinnedVerse ?? '' })}
+                    className={cn('py-2 rounded-lg border-2 text-xs font-bold flex items-center justify-center gap-1', g.joinMode === m ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
+                    {m === 'open' ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />} {m === 'open' ? 'Open' : 'Approval only'}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         )}
 
-        {/* Pending join requests (admin) */}
-        {isAdmin && (activeGroup.pendingMembers?.length ?? 0) > 0 && (
+        {detail.canModerate && pending.length > 0 && (
           <div className="bg-card rounded-2xl border border-warn-edge p-3">
-            <label className="text-[0.625rem] font-bold uppercase tracking-wider text-warn-strong flex items-center gap-1 mb-2">
-              <UserPlus className="w-3 h-3" /> Pending requests
-            </label>
+            <p className="text-[0.625rem] font-bold uppercase tracking-wider text-warn-strong flex items-center gap-1 mb-2"><UserPlus className="w-3 h-3" /> Join requests</p>
             <div className="space-y-2">
-              {activeGroup.pendingMembers!.map((m) => (
-                <div key={m} className="flex items-center justify-between gap-2 bg-card-2 rounded-lg px-3 py-2">
-                  <span className="text-sm font-semibold text-ink truncate">{m}</span>
+              {pending.map((m) => (
+                <div key={m.userId} className="flex items-center justify-between gap-2 bg-card-2 rounded-lg px-3 py-2">
+                  <span className="text-sm font-semibold text-ink truncate">{m.displayName}</span>
                   <div className="flex gap-1.5 shrink-0">
-                    <button onClick={() => approveMember(activeGroup.id, m)} className="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-emerald-500">
-                      <Check className="w-3.5 h-3.5" /> Approve
-                    </button>
-                    <button onClick={() => rejectMember(activeGroup.id, m)} className="px-2.5 py-1.5 bg-card-3 text-ink-soft rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-card">
-                      <X className="w-3.5 h-3.5" /> Decline
-                    </button>
+                    <button onClick={() => act({ action: 'decide', groupId: g.id, userId: m.userId, approve: true })} className="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-emerald-500"><Check className="w-3.5 h-3.5" /> Approve</button>
+                    <button onClick={() => act({ action: 'decide', groupId: g.id, userId: m.userId, approve: false })} className="px-2.5 py-1.5 bg-card-3 text-ink-soft rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-card"><X className="w-3.5 h-3.5" /> Decline</button>
                   </div>
                 </div>
               ))}
@@ -402,67 +443,82 @@ export default function PrayerGroups() {
           </div>
         )}
 
-        {/* Pinned verse display */}
-        {activeGroup.pinnedVerse && (
+        {g.pinnedVerse && (
           <div className="bg-acc-soft border border-acc-edge rounded-xl p-3 text-center">
             <p className="text-acc-strong text-xs font-semibold uppercase tracking-wider mb-1">📖 Praying together</p>
-            <p className="text-ink-soft text-sm italic">{activeGroup.pinnedVerse}</p>
+            <p className="text-ink-soft text-sm italic">{g.pinnedVerse}</p>
           </div>
         )}
 
-        {/* Chat messages */}
-        <div className="bg-card rounded-2xl border border-edge p-3 space-y-2 max-h-72 overflow-y-auto">
-          {groupMessages.length === 0 ? (
-            <p className="text-center text-ink-faint text-xs py-6">No messages yet. Start praying together!</p>
-          ) : (
-            groupMessages.map((m) => (
-              <div key={m.id} className={cn('rounded-xl p-3', m.kind === 'alert' ? 'bg-danger-soft border border-danger-edge' : 'bg-card-2')}>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-ink font-bold text-xs">{m.senderName}</span>
-                  {m.kind === 'alert' && (
-                    <span className="bg-danger text-white text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
-                      <Siren className="w-2.5 h-2.5" /> EMERGENCY
-                    </span>
-                  )}
-                </div>
-                <p className={cn('text-sm', m.kind === 'alert' ? 'text-danger-strong font-semibold' : 'text-ink-soft')}>{m.text}</p>
-                <p className="text-ink-faint text-[0.5625rem] mt-1">{new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-              </div>
-            ))
-          )}
+        {/* Composer */}
+        <div className="bg-card rounded-2xl border border-edge p-3 space-y-2">
+          <div className="flex flex-wrap gap-1.5">
+            {POST_KINDS.map((k) => (
+              <button key={k.kind} onClick={() => setPostKind(k.kind)}
+                className={cn('px-2.5 py-1 rounded-full text-[0.6875rem] font-bold border', postKind === k.kind ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-card-2 text-ink-muted border-edge')}>
+                {k.label}
+              </button>
+            ))}
+          </div>
+          <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2} placeholder={kindInfo.hint} aria-label="Write a post" maxLength={2000}
+            className="w-full bg-card border border-edge-strong rounded-xl px-4 py-2.5 text-sm text-ink placeholder-ink-faint resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+          <button onClick={handleSend} disabled={busy || !draft.trim()}
+            className={cn('w-full py-2 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 disabled:opacity-60', postKind === 'alert' ? 'bg-danger hover:bg-red-500' : 'bg-emerald-600 hover:bg-emerald-500')}>
+            {postKind === 'alert' ? <Siren className="w-4 h-4" /> : <Send className="w-4 h-4" />} Post {kindInfo.label.toLowerCase()}
+          </button>
         </div>
 
-        {/* Composer */}
-        <div className="bg-card rounded-2xl border border-edge p-3">
-          <input
-            type="text"
-            placeholder="Share a prayer point..."
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend('message')}
-            className="w-full bg-card border border-edge-strong rounded-xl px-4 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
-          />
-          <div className="flex gap-2 mt-2">
-            <button onClick={() => handleSend('message')} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500">
-              <Send className="w-4 h-4" /> Send
-            </button>
-            <button onClick={() => handleSend('alert')} className="flex-1 py-2 bg-danger text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-red-500">
-              <Siren className="w-4 h-4" /> Prayer Alert
-            </button>
-          </div>
+        {/* Feed */}
+        <div className="space-y-2">
+          {detail.posts.length === 0 ? (
+            <p className="text-center text-ink-faint text-xs py-6 bg-card rounded-2xl border border-edge">Nothing here yet. Share the first prayer request!</p>
+          ) : detail.posts.map((p) => (
+            <article key={p.id} className={cn('rounded-2xl border p-3', p.kind === 'alert' ? 'bg-danger-soft border-danger-edge' : 'bg-card border-edge')}>
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span className="text-ink font-bold text-xs">{p.authorName}{p.mine ? ' (you)' : ''}</span>
+                {p.kind === 'alert' && <span className="bg-danger text-white text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Siren className="w-2.5 h-2.5" /> EMERGENCY</span>}
+                {p.kind === 'request' && <span className="bg-acc-soft text-acc-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><HandHeart className="w-2.5 h-2.5" /> PRAYER REQUEST</span>}
+                {p.kind === 'testimony' && <span className="bg-warn-soft text-warn-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Sparkles className="w-2.5 h-2.5" /> TESTIMONY</span>}
+                {p.pinned && <Pin className="w-3 h-3 text-acc" aria-label="Pinned" />}
+                <span className="text-ink-faint text-[0.5625rem] ml-auto">{ago(p.createdAt)}</span>
+              </div>
+              <p className={cn('text-sm whitespace-pre-wrap break-words', p.kind === 'alert' ? 'text-danger-strong font-semibold' : 'text-ink-soft')}>{p.body}</p>
+              <div className="flex gap-2 mt-2">
+                <button onClick={() => act({ action: 'praying', postId: p.id })} disabled={busy}
+                  className={cn('px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 border', p.iAmPraying ? 'bg-acc-soft text-acc-strong border-acc-edge' : 'bg-card-2 text-ink-muted border-edge')}>
+                  <HandHeart className="w-3.5 h-3.5" /> {p.iAmPraying ? "I'm praying ✓" : "I'm praying"} · {p.praying}
+                </button>
+                <button onClick={() => toggleComments(p)} className="px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 border bg-card-2 text-ink-muted border-edge">
+                  <MessageCircle className="w-3.5 h-3.5" /> {p.comments} {p.comments === 1 ? 'comment' : 'comments'}
+                </button>
+              </div>
+              {openPostId === p.id && (
+                <div className="mt-2 space-y-2 border-t border-edge pt-2">
+                  {comments.map((c) => (
+                    <div key={c.id} className="bg-card-2 rounded-lg px-3 py-2">
+                      <p className="text-xs"><span className="font-bold text-ink">{c.authorName}{c.mine ? ' (you)' : ''}</span> <span className="text-ink-faint">· {ago(c.createdAt)}</span></p>
+                      <p className="text-sm text-ink-soft whitespace-pre-wrap break-words">{c.body}</p>
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <input value={commentDraft} onChange={(e) => setCommentDraft(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendComment()} placeholder="Write a comment..." aria-label="Write a comment" maxLength={1000}
+                      className="flex-1 bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint" />
+                    <button onClick={sendComment} disabled={busy || !commentDraft.trim()} className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold disabled:opacity-60">Send</button>
+                  </div>
+                </div>
+              )}
+            </article>
+          ))}
         </div>
       </div>
     );
   }
 
-  // ── List (team directory) ────────────────────────────────────
+  // ── List (directory) ─────────────────────────────────────────
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
-        <button
-          onClick={() => (isLeader ? setView('create') : setShowPricing(true))}
-          className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500"
-        >
+        <button onClick={() => (isLeader ? setView('create') : setShowPricing(true))} className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500">
           <Plus className="w-4 h-4" /> Create Group{!isLeader && <span className="text-[0.625rem] font-bold bg-white/20 rounded-full px-1.5 py-0.5">Leader</span>}
         </button>
         <button onClick={() => setView('join')} className="flex-1 py-2.5 bg-card text-ink-soft border border-edge rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-card-2">
@@ -470,62 +526,63 @@ export default function PrayerGroups() {
         </button>
       </div>
 
-      {notice && (
-        <div className="bg-acc-soft border border-acc-edge rounded-xl px-3 py-2 text-xs font-semibold text-acc-strong flex items-center gap-1.5 animate-pop">
-          <Check className="w-3.5 h-3.5 shrink-0" /> {notice}
+      {notice && <div role="status" className="bg-acc-soft border border-acc-edge rounded-xl px-3 py-2 text-xs font-semibold text-acc-strong flex items-center gap-1.5"><Check className="w-3.5 h-3.5 shrink-0" /> {notice}</div>}
+      {loadError && <p role="alert" className="text-danger text-xs">{loadError}</p>}
+
+      {isLeader && legacy.length > 0 && (
+        <div className="bg-warn-soft border border-warn-edge rounded-2xl p-3 space-y-2">
+          <p className="text-warn-strong text-xs font-bold flex items-center gap-1.5"><CloudUpload className="w-3.5 h-3.5" /> Groups saved only on this phone</p>
+          <p className="text-warn-strong text-xs leading-relaxed">Groups now live online so every member sees the same group. Move yours online (name, description, prayer time and join setting). Old chat messages stay on this phone, and members rejoin with the new invite code.</p>
+          {legacy.map((g) => (
+            <div key={g.id} className="flex items-center justify-between gap-2 bg-card rounded-lg px-3 py-2">
+              <span className="text-sm font-semibold text-ink truncate">{g.name}</span>
+              <button onClick={() => moveOnline(g)} disabled={busy} className="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold shrink-0 disabled:opacity-60">Move online</button>
+            </div>
+          ))}
         </div>
       )}
 
       <div>
         <h3 className="font-serif-heading font-bold text-ink">Browse Prayer Teams</h3>
-        <p className="text-ink-muted text-xs mt-0.5 mb-2">
-          Join any public team instantly, or request to join a private team.
-        </p>
+        <p className="text-ink-muted text-xs mt-0.5 mb-2">Join an open team instantly, or ask to join an approval-only team.</p>
       </div>
 
-      {sortedGroups.length === 0 ? (
+      {directory === null && !loadError ? (
+        <p className="text-ink-muted text-sm flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading teams...</p>
+      ) : (directory ?? []).length === 0 ? (
         <div className="bg-card rounded-2xl border border-edge p-8 text-center">
           <Users className="w-10 h-10 text-ink-ghost mx-auto mb-2" />
           <p className="text-ink-muted text-sm">No teams yet</p>
-          <p className="text-ink-faint text-xs mt-1">Create your first prayer group for your church or prayer team.</p>
+          <p className="text-ink-faint text-xs mt-1">{isLeader ? 'Create the first prayer group for your church or prayer team.' : 'A Prayer Fire Leader can create the first group, or join one with an invite code.'}</p>
         </div>
       ) : (
-        sortedGroups.map((g) => (
+        (directory ?? []).map((g) => (
           <div key={g.id} className="bg-card border border-edge rounded-2xl p-4 transition-all hover:border-acc-edge">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold flex-shrink-0">
-                {g.name.charAt(0).toUpperCase()}
-              </div>
+              <div className="w-11 h-11 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold flex-shrink-0">{g.name.charAt(0).toUpperCase()}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="text-ink font-bold text-sm truncate">{g.name}</h3>
-                  <span className={cn('text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0', g.public ? 'bg-acc-soft text-acc-strong' : 'bg-warn-soft text-warn-strong')}>
-                    {g.public ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
-                    {g.public ? 'Public' : 'Private'}
+                  <span className={cn('text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0', g.joinMode === 'open' ? 'bg-acc-soft text-acc-strong' : 'bg-warn-soft text-warn-strong')}>
+                    {g.joinMode === 'open' ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
+                    {g.joinMode === 'open' ? 'Open' : 'Approval'}
                   </span>
                 </div>
                 <p className="text-ink-muted text-xs truncate">{g.description || 'No description'}</p>
                 <div className="flex gap-2 mt-1">
-                  <span className="text-acc-strong text-[0.625rem] font-semibold flex items-center gap-0.5"><Users className="w-3 h-3" /> {g.members.length}</span>
+                  <span className="text-acc-strong text-[0.625rem] font-semibold flex items-center gap-0.5"><Users className="w-3 h-3" /> {g.memberCount}</span>
                   <span className="text-warn-strong text-[0.625rem] font-semibold flex items-center gap-0.5"><Clock className="w-3 h-3" /> {fmtTime(g.prayerTime)}</span>
-                  {prayedCount(g) > 0 && (
-                    <span className="text-warn-strong text-[0.625rem] font-semibold flex items-center gap-0.5"><Flame className="w-3 h-3" /> {prayedCount(g)}</span>
-                  )}
+                  {g.prayedToday > 0 && <span className="text-warn-strong text-[0.625rem] font-semibold flex items-center gap-0.5"><Flame className="w-3 h-3" /> {g.prayedToday}</span>}
                 </div>
               </div>
-
-              {isInGroup(g) ? (
-                <button onClick={() => { setActiveGroupId(g.id); setView('detail'); }} className="px-3 py-2 bg-acc-soft text-acc-strong rounded-lg text-xs font-bold flex items-center gap-1 flex-shrink-0 hover:bg-acc-soft/70">
-                  Open <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              ) : isPending(g) ? (
-                <span className="px-3 py-2 bg-card-2 text-ink-muted rounded-lg text-xs font-bold flex items-center gap-1 flex-shrink-0">
-                  <Clock className="w-3.5 h-3.5" /> Requested
-                </span>
-              ) : (
-                <button onClick={() => handleRequestJoin(g)} className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 flex-shrink-0 hover:bg-emerald-500">
-                  {g.public ? <UserPlus className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
-                  {g.public ? 'Join' : 'Request'}
+              {g.myStatus === 'active' ? (
+                <button onClick={() => openGroup(g.id)} className="px-3 py-2 bg-acc-soft text-acc-strong rounded-lg text-xs font-bold flex items-center gap-1 flex-shrink-0 hover:bg-acc-soft/70">Open <ChevronRight className="w-3.5 h-3.5" /></button>
+              ) : g.myStatus === 'pending' ? (
+                <span className="px-3 py-2 bg-card-2 text-ink-muted rounded-lg text-xs font-bold flex items-center gap-1 flex-shrink-0"><Clock className="w-3.5 h-3.5" /> Requested</span>
+              ) : g.myStatus === 'blocked' ? null : (
+                <button onClick={() => handleRequestJoin(g)} disabled={busy} className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 flex-shrink-0 hover:bg-emerald-500 disabled:opacity-60">
+                  {g.joinMode === 'open' ? <UserPlus className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                  {g.joinMode === 'open' ? 'Join' : 'Request'}
                 </button>
               )}
             </div>

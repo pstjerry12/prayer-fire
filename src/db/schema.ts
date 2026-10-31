@@ -200,6 +200,83 @@ export const billingActions = pgTable("billing_actions", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── Shared prayer groups ─────────────────────────────────────────────────────
+// Created and protected by supabase/groups.sql (Row Level Security + the restricted `app_user` role, see that
+// file). They are declared here so `drizzle-kit push` knows they exist and does not drop them. After any push,
+// re-run supabase/groups.sql.
+export const groups = pgTable("groups", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull().default(""),
+  joinMode: text("join_mode").notNull().default("open"), // open | approval
+  prayerTime: text("prayer_time"),
+  pinnedVerse: text("pinned_verse"),
+  createdBy: text("created_by").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const groupInvites = pgTable("group_invites", {
+  groupId: text("group_id").primaryKey(),
+  code: text("code").notNull().unique(),
+});
+
+export const groupMembers = pgTable(
+  "group_members",
+  {
+    groupId: text("group_id").notNull(),
+    userId: text("user_id").notNull(),
+    role: text("role").notNull().default("member"), // leader | co_leader | member
+    status: text("status").notNull().default("active"), // active | pending | removed | blocked
+    displayName: text("display_name").notNull(),
+    joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.groupId, t.userId] })]
+);
+
+export const groupPosts = pgTable("group_posts", {
+  id: text("id").primaryKey(),
+  groupId: text("group_id").notNull(),
+  authorId: text("author_id").notNull(),
+  authorName: text("author_name").notNull(),
+  kind: text("kind").notNull(), // message | alert | request | testimony
+  body: text("body").notNull(),
+  pinned: boolean("pinned").notNull().default(false),
+  status: text("status").notNull().default("visible"), // visible | hidden
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const groupComments = pgTable("group_comments", {
+  id: text("id").primaryKey(),
+  postId: text("post_id").notNull(),
+  groupId: text("group_id").notNull(),
+  authorId: text("author_id").notNull(),
+  authorName: text("author_name").notNull(),
+  body: text("body").notNull(),
+  status: text("status").notNull().default("visible"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const groupPraying = pgTable(
+  "group_praying",
+  {
+    postId: text("post_id").notNull(),
+    groupId: text("group_id").notNull(),
+    userId: text("user_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.postId, t.userId] })]
+);
+
+export const groupCheckins = pgTable(
+  "group_checkins",
+  {
+    groupId: text("group_id").notNull(),
+    userId: text("user_id").notNull(),
+    day: date("day").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.groupId, t.userId, t.day] })]
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type SubscriptionRow = typeof subscriptions.$inferSelect;

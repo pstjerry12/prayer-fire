@@ -33,7 +33,7 @@ function watchIcon(id: string) {
 const RANK: Record<string, number> = { midnight: 0, noon: 1, morning: 2 };
 
 export default function HomePage() {
-  const { appointments, groups } = useApp();
+  const { appointments } = useApp();
   const sorted = [...appointments].sort((a, b) => (RANK[a.id] ?? 99) - (RANK[b.id] ?? 99)).slice(0, 3);
 
   return (
@@ -126,7 +126,7 @@ export default function HomePage() {
               <div className="flex-1 min-w-0">
                 <h3 className="text-ink font-bold text-sm md:text-base">Prayer Groups</h3>
                 <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">
-                  Pray together in teams{groups.length > 0 ? ` · ${groups.length} teams` : ''}
+                  Pray together in teams
                 </p>
               </div>
               <ChevronRight className="w-4 h-4 text-ink-ghost shrink-0" />
