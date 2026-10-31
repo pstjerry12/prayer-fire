@@ -1,4 +1,4 @@
-import type { DirectoryGroup, GroupComment, GroupDetail } from "@/lib/groups";
+import type { DirectoryGroup, GroupAnalytics, GroupComment, GroupDetail } from "@/lib/groups";
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: string; status: number };
 
@@ -17,6 +17,8 @@ export const fetchDirectory = () => call<{ groups: DirectoryGroup[] }>("/api/gro
 export const fetchDetail = (id: string) => call<{ detail: GroupDetail }>(`/api/groups?id=${encodeURIComponent(id)}`);
 export const fetchComments = (groupId: string, postId: string) =>
   call<{ comments: GroupComment[] }>(`/api/groups?id=${encodeURIComponent(groupId)}&post=${encodeURIComponent(postId)}`);
+
+export const fetchAnalytics = (groupId: string) => call<{ analytics: GroupAnalytics }>(`/api/groups?id=${encodeURIComponent(groupId)}&analytics=1`);
 
 export const groupAction = <T = { ok: true }>(body: Record<string, unknown>) =>
   call<T>("/api/groups", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });

@@ -255,3 +255,40 @@ export const deleteComment = (q: Q, commentId: string) => q("select app_delete_c
 export const pinPost = (q: Q, postId: string, pinned: boolean) => q("select app_pin_post($1, $2)", [postId, pinned]);
 export const report = (q: Q, postId: string, commentId: string | null, reason: string) => q("select app_report($1, $2, $3)", [postId, commentId, reason]);
 export const resolveReport = (q: Q, reportId: string, action: "dismiss" | "hide" | "delete") => q("select app_resolve_report($1, $2)", [reportId, action]);
+
+// ── Analytics (the group's own leader only; numbers, never member details) ───
+
+export interface AnalyticsDay {
+  /** YYYY-MM-DD (Africa/Lagos day) */
+  day: string;
+  members: number;
+  requests: number;
+  testimonies: number;
+  praying: number;
+  /** posts + comments + "I'm praying" taps + check-ins */
+  activity: number;
+}
+
+export interface CountWindows {
+  total: number;
+  last7: number;
+  last30: number;
+}
+
+export interface GroupAnalytics {
+  today: string;
+  members: { total: number; new7: number; new30: number };
+  requests: CountWindows;
+  testimonies: CountWindows;
+  praying: CountWindows;
+  /** The last 30 days, oldest first. The app charts the last 7 or all 30. */
+  daily: AnalyticsDay[];
+  /** Activity by weekday over the last 30 days: dow 1 = Monday ... 7 = Sunday. */
+  weekday: { dow: number; activity: number }[];
+  topDays: { day: string; activity: number }[];
+}
+
+export async function getAnalytics(q: Q, groupId: string): Promise<GroupAnalytics> {
+  const [row] = await q<Row>("select app_group_analytics($1) as r", [groupId]);
+  return row.r as GroupAnalytics;
+}
