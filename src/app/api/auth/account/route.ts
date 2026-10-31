@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { users, userActivity, feedback } from "@/db/schema";
+import { users, userActivity, feedback, subscriptions } from "@/db/schema";
 import { verifyToken, AUTH_COOKIE } from "@/lib/auth";
 
 export async function DELETE(request: Request) {
@@ -24,6 +24,8 @@ export async function DELETE(request: Request) {
         // personal details from any feedback they sent (the message itself stays
         // as anonymous product feedback).
         await db.delete(userActivity).where(eq(userActivity.userId, payload.sub));
+        // Only our copy goes. A Google Play subscription keeps billing until it is cancelled in Play.
+        await db.delete(subscriptions).where(eq(subscriptions.userId, payload.sub));
         await db
           .update(feedback)
           .set({ userId: null, name: null, contact: null })

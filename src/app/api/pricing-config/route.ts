@@ -14,9 +14,9 @@ export async function GET() {
 
   const map: Record<string, number> = {
     price_partner_monthly: 2.99,
-    price_partner_yearly: 23.99,
-    price_leader_monthly: 9.99,
-    price_leader_yearly: 89.99,
+    price_partner_yearly: 29.99,
+    price_leader_monthly: 5.99,
+    price_leader_yearly: 59.99,
   };
 
   for (const key of keys) {

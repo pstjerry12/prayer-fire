@@ -20,6 +20,8 @@ import type {
   PrayerGroup,
   GroupMessage,
   JoinResult,
+  SubscriptionInfo,
+  FreeModeInfo,
 } from '@/app/types';
 import { DEFAULT_INTERCESSORY_CATEGORIES } from '@/app/data/bibleVerses';
 import { getDefaultCurrency, type Currency } from '@/app/data/pricingPlans';
@@ -28,6 +30,7 @@ import { getStoredUser, checkSession, clearSession, apiLogout, apiDeleteAccount,
 import { saveSongBlob, deleteSongBlob } from '@/lib/audioStore';
 import { listenAuthDeepLink, closeInAppBrowser } from '@/lib/capacitorAlarm';
 import { applyTextScale, getStoredTextScale } from '@/lib/textScale';
+import { useAndroidApp } from '@/lib/useAndroidApp';
 import { LATEST_RELEASE, WHATS_NEW_SEEN_KEY } from './data/whatsNew';
 
 // useNativeAlarm defaults to true so every user gets the loud, full-screen
@@ -99,8 +102,23 @@ interface AppContextValue {
   appointments: PrayerAppointment[];
   setAppointments: Dispatch<SetStateAction<PrayerAppointment[]>>;
   streak: number;
+  /**
+   * Partner features are unlocked: the paid subscription (from the server), or Free Premium Mode (set by
+   * the admin), or, on the WEB only, the free 7-day trial kept on the device (the Android app uses Google Play's own trial).
+   */
   isPremium: boolean;
+  /** Leader features (creating and managing prayer groups): a Leader subscription, or Free Premium Mode. */
+  isLeader: boolean;
+  /** "Premium is free for a limited time" is on for everyone right now. */
+  freeMode: FreeModeInfo;
+  /** Sets the on-device free-trial flag (web only; ignored in the Android app). */
   setIsPremium: Dispatch<SetStateAction<boolean>>;
+  /** The paid Prayer Fire Partner subscription, as the server reports it (null = none). */
+  subscription: SubscriptionInfo | null;
+  /** Asks the server again and updates `subscription`; returns the new value. */
+  refreshSubscription: () => Promise<SubscriptionInfo | null>;
+  /** True only inside the Android app. */
+  isAndroidApp: boolean;
   currency: Currency;
   setCurrency: Dispatch<SetStateAction<Currency>>;
   user: AuthUser | null;
@@ -197,7 +215,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem('upp_streak_count');
     return stored ? parseInt(stored) : 0;
   });
-  const [isPremium, setIsPremium] = useState(() => {
+  const [localPremium, setLocalPremium] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('upp_is_premium') === 'true';
   });
@@ -207,6 +225,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return stored || getDefaultCurrency();
   });
   const [user, setUser] = useState<AuthUser | null>(() => getStoredUser());
+  const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null);
+  const [freeMode, setFreeMode] = useState<FreeModeInfo>({ active: false, endsAt: null });
+  const androidApp = useAndroidApp();
+  const isPremium = freeMode.active || subscription !== null || (!androidApp && localPremium);
+  const isLeader = freeMode.active || subscription?.tier === 'leader';
   const [authChecked, setAuthChecked] = useState(false);
   const authEpochRef = useRef(0); // bumps on every sign-out, to discard stale session checks
   const [showAuth, setShowAuth] = useState(false);
@@ -478,6 +501,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       if (check.status === 'ok') {
         setUser(check.user);
+        setSubscription(check.subscription);
+        setFreeMode(check.freeMode);
       } else if (check.status === 'invalid' && stored) {
         // The server says this session has expired (or the account is gone):
         // drop it so the sign-in wall asks again instead of leaving a
@@ -485,6 +510,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         // the stored session.
         clearSession();
         setUser(null);
+        setSubscription(null);
+        setFreeMode({ active: false, endsAt: null });
       }
       setAuthChecked(true);
     })();
@@ -517,10 +544,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
           cache: 'no-store',
           headers: { Authorization: `Bearer ${token}` },
         });
-        const data = (await res.json()) as { user: AuthUser | null };
+        const data = (await res.json()) as { user: AuthUser | null; subscription?: SubscriptionInfo | null; freeMode?: FreeModeInfo };
         if (data.user) {
           storeSession(token, data.user);
           setUser(data.user);
+          setSubscription(data.subscription ?? null);
+          setFreeMode(data.freeMode ?? { active: false, endsAt: null });
         }
       } catch {
         // ignore
@@ -572,8 +601,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('upp_prayer_appointments', JSON.stringify(appointments));
   }, [appointments]);
   useEffect(() => {
-    localStorage.setItem('upp_is_premium', isPremium.toString());
-  }, [isPremium]);
+    localStorage.setItem('upp_is_premium', localPremium.toString());
+  }, [localPremium]);
   useEffect(() => {
     localStorage.setItem('preferred_currency', currency);
   }, [currency]);
@@ -618,6 +647,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     authEpochRef.current += 1;
     await apiLogout();
     setUser(null);
+    setSubscription(null);
+    setFreeMode({ active: false, endsAt: null });
   };
 
   const deleteAccount = () => {
@@ -652,12 +683,47 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!started) return;
     const elapsedDays = (Date.now() - new Date(started).getTime()) / 86400000;
     if (elapsedDays >= TRIAL_DAYS) {
-      setIsPremium(false);
+      setLocalPremium(false);
       localStorage.removeItem(TRIAL_KEY);
     }
   }, []);
 
+  const refreshSubscription = async (): Promise<SubscriptionInfo | null> => {
+    const check = await checkSession();
+    if (check.status === 'ok') {
+      setSubscription(check.subscription);
+      setFreeMode(check.freeMode);
+      return check.subscription;
+    }
+    return null;
+  };
+
+  // A subscription can end (or be renewed) while the app stays open in the background:
+  // ask the server again when the person comes back to the app, at most every 10 minutes.
+  const lastSubCheck = useRef(0);
+  useEffect(() => {
+    if (!user) return;
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      if (Date.now() - lastSubCheck.current < 10 * 60 * 1000) return;
+      lastSubCheck.current = Date.now();
+      checkSession().then((check) => {
+        if (check.status === 'ok') {
+          setSubscription(check.subscription);
+          setFreeMode(check.freeMode);
+        }
+      });
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [user]);
+
   const upgrade = () => {
+    // In the Android app the only way to subscribe is Google Play: open the subscription screen.
+    if (androidApp) {
+      setShowPricing(true);
+      return;
+    }
     const confirmUpgrade = confirm(
       `Start your 7-Day Free Trial\n\n` +
       `Enjoy the full Prayer Fire Partner experience FREE for 7 days. ` +
@@ -665,7 +731,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       `Click OK to start your free trial.`
     );
     if (confirmUpgrade) {
-      setIsPremium(true);
+      setLocalPremium(true);
       localStorage.setItem(TRIAL_KEY, new Date().toISOString());
       alert('🎉 Your 7-day free trial has started! Enjoy full access.');
     }
@@ -686,7 +752,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAppointments,
         streak,
         isPremium,
-        setIsPremium,
+        isLeader,
+        freeMode,
+        setIsPremium: setLocalPremium,
+        subscription,
+        refreshSubscription,
+        isAndroidApp: androidApp,
         currency,
         setCurrency,
         user,

@@ -8,6 +8,31 @@ export interface AuthUser {
   role: string;
 }
 
+/** Which paid plan a person is on. Leader includes everything in Partner. */
+export type SubscriptionTier = "partner" | "leader";
+
+/** Where a subscription stands, as Google Play (through RevenueCat) reports it. */
+export type SubscriptionStatus = "ACTIVE" | "IN_GRACE" | "CANCELED" | "ON_HOLD" | "EXPIRED" | "REFUNDED";
+
+/** The paid Prayer Fire subscription, as the server reports it (null = none). */
+export interface SubscriptionInfo {
+  tier: SubscriptionTier;
+  status: SubscriptionStatus;
+  expiresAt: string | null;
+  willRenew: boolean;
+  store: string | null;
+  productId: string | null; // e.g. partner_sub:partner-monthly
+  basePlanId: string | null; // e.g. partner-monthly
+  isTrial: boolean;
+  sandbox: boolean;
+}
+
+/** "Premium is free for a limited time": set by the admin; all premium features open while active. */
+export interface FreeModeInfo {
+  active: boolean;
+  endsAt: string | null;
+}
+
 export interface WorshipSong {
   id: string;
   name: string;

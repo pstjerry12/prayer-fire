@@ -6,6 +6,8 @@ import { users, userActivity } from "@/db/schema";
 import { verifyToken, AUTH_COOKIE } from "@/lib/auth";
 import { toAuthUser } from "@/lib/user";
 import { promoteAdminIfMatches } from "@/lib/adminBootstrap";
+import { getSubscriptions, toSubscriptionInfo } from "@/lib/subscription";
+import { getFreeMode } from "@/lib/freeMode";
 
 export async function GET(request: Request) {
   try {
@@ -56,7 +58,23 @@ export async function GET(request: Request) {
         ? "admin"
         : await promoteAdminIfMatches(rows[0].id, rows[0].email);
 
-    return NextResponse.json({ user: { ...toAuthUser(rows[0]), role } });
+    // The paid Partner subscription (null when there is none, or it has ended).
+    let subscription = null;
+    try {
+      subscription = toSubscriptionInfo(await getSubscriptions(rows[0].id));
+    } catch (err) {
+      console.error("subscription lookup error (ignored)", err);
+    }
+
+    // "Premium is free for a limited time" (admin switch); off when anything goes wrong.
+    let freeMode = { active: false, endsAt: null as string | null };
+    try {
+      freeMode = await getFreeMode();
+    } catch (err) {
+      console.error("free mode lookup error (ignored)", err);
+    }
+
+    return NextResponse.json({ user: { ...toAuthUser(rows[0]), role }, subscription, freeMode });
   } catch (err) {
     console.error("me error", err);
     // 503 (not a "signed out" answer) so a database hiccup never signs anyone out.

@@ -1,4 +1,4 @@
-import type { AuthUser } from "@/app/types";
+import type { AuthUser, FreeModeInfo, SubscriptionInfo } from "@/app/types";
 
 export type { AuthUser };
 
@@ -128,7 +128,7 @@ export async function apiDeleteAccount(): Promise<void> {
 }
 
 export type SessionCheck =
-  | { status: "ok"; user: AuthUser }
+  | { status: "ok"; user: AuthUser; subscription: SubscriptionInfo | null; freeMode: FreeModeInfo }
   | { status: "invalid" } // the server answered: this session is expired or the account is gone
   | { status: "error" }; // offline / server hiccup — keep whatever we had
 
@@ -147,8 +147,10 @@ export async function checkSession(): Promise<SessionCheck> {
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
     if (!res.ok) return { status: "error" };
-    const data = (await res.json()) as { user: AuthUser | null };
-    return data.user ? { status: "ok", user: data.user } : { status: "invalid" };
+    const data = (await res.json()) as { user: AuthUser | null; subscription?: SubscriptionInfo | null; freeMode?: FreeModeInfo };
+    return data.user
+      ? { status: "ok", user: data.user, subscription: data.subscription ?? null, freeMode: data.freeMode ?? { active: false, endsAt: null } }
+      : { status: "invalid" };
   } catch {
     return { status: "error" };
   }

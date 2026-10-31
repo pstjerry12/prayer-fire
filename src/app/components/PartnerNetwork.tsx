@@ -7,7 +7,7 @@ import { useApp } from '@/app/context';
 import { playChime } from '@/lib/clientUtils';
 
 export default function PartnerNetwork() {
-  const { partnerRequests, setPartnerRequests, isPremium } = useApp();
+  const { partnerRequests, setPartnerRequests, isPremium, isAndroidApp } = useApp();
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
@@ -65,12 +65,12 @@ export default function PartnerNetwork() {
               <li className="flex items-start gap-2"><Check className="w-3 h-3 text-acc mt-0.5 flex-shrink-0" /><span>Join approved prayer groups</span></li>
               <li className="flex items-start gap-2"><Check className="w-3 h-3 text-acc mt-0.5 flex-shrink-0" /><span>Submit & pray for partner requests</span></li>
               <li className="flex items-start gap-2"><Check className="w-3 h-3 text-acc mt-0.5 flex-shrink-0" /><span>Global prayer alerts & reminders</span></li>
-              <li className="flex items-start gap-2"><Check className="w-3 h-3 text-acc mt-0.5 flex-shrink-0" /><span>Create & manage groups (admin role)</span></li>
+              <li className="flex items-start gap-2"><Check className="w-3 h-3 text-acc mt-0.5 flex-shrink-0" /><span>Pray together in prayer groups</span></li>
             </ul>
             <Link href="/partner" className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500 flex items-center justify-center gap-2">
               <Crown className="w-4 h-4" /> Upgrade to Prayer Fire Partner
             </Link>
-            <p className="text-ink-muted text-[0.625rem]">7-day free trial • then choose a plan</p>
+            <p className="text-ink-muted text-[0.625rem]">{isAndroidApp ? 'Subscribe securely with Google Play' : '7-day free trial • then choose a plan'}</p>
           </div>
         </div>
       )}
