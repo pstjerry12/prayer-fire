@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import pg from "pg";
 import { runAsUser, groupError } from "../src/lib/groupsDb.ts";
 import * as G from "../src/lib/groups.ts";
+import * as F from "../src/lib/featuredAdmin.ts";
 
 const url = process.env.GROUPS_TEST_DATABASE_URL;
 if (!url) {
@@ -338,6 +339,98 @@ await pool.query("update subscriptions set expires_at = now() - interval '1 day'
 eq(await code(as("L", (q) => G.getAnalytics(q, ag))), "not_allowed", "a lapsed Leader plan stops analytics");
 await pool.query("update subscriptions set expires_at = now() + interval '30 days' where user_id = 'L'");
 eq(await asAnon("select app_group_analytics('x')"), "permission denied for function app_group_analytics", "anon cannot call analytics");
+
+
+// ═════════════════════════ FEATURED GROUPS ═════════════════════════
+await pool.query("update subscriptions set expires_at = now() + interval '30 days', status = 'ACTIVE'");
+await pool.query("delete from subscriptions where user_id = 'Q' and entitlement = 'leader'");
+const fg1 = await as("L", (q) => G.createGroup(q, { name: "Featured candidate", description: "", joinMode: "open" }));
+await as("P", (q) => G.joinGroup(q, fg1));
+await as("Q", (q) => G.joinGroup(q, fg1));
+await as("L", (q) => G.setRole(q, fg1, "Q", "co_leader"));
+const fd = (u: string, id: string) => as(u, (q) => G.getGroupDetail(q, id)).then((d) => d!);
+
+// who may ask
+eq(await code(as("P", (q) => G.requestFeaturing(q, fg1, "pick us"))), "not_allowed", "a member cannot request featuring");
+eq(await code(as("Q", (q) => G.requestFeaturing(q, fg1, "pick us"))), "not_allowed", "a co-leader cannot request featuring");
+eq((await fd("P", fg1)).featuring, null, "members get no featuring panel");
+eq((await fd("L", fg1)).featuring?.state, "none", "the leader starts with no request");
+ok((await fd("L", fg1)).featuring?.canRequest, "...and may request");
+await as("L", (q) => G.requestFeaturing(q, fg1, "A growing prayer team"));
+const pend = (await fd("L", fg1)).featuring!;
+ok(pend.state === "pending" && !pend.canRequest, "after asking: pending, cannot ask twice");
+eq(await code(as("L", (q) => G.requestFeaturing(q, fg1, "again"))), "request_pending", "no second pending request");
+eq((await as("P", (q) => q("select * from group_feature_requests"))).length, 0, "members cannot read requests");
+eq((await as("L", (q) => q("select * from group_feature_requests"))).length, 1, "the leader reads their own request");
+eq((await as("L2", (q) => q("select * from group_feature_requests"))).length, 0, "another leader cannot read it");
+
+// leaders cannot feature themselves
+eq(await code(as("L", (q) => q("update groups set featured = true where id = $1", [fg1]))), "permission denied for table groups", "a leader cannot set featured directly");
+eq(await code(as("L", (q) => q("insert into group_feature_requests (id, group_id, requested_by) values ('x',$1,'L')", [fg1]))), "permission denied for table group_feature_requests", "no direct writes to requests");
+
+// admin sees it
+let list = await F.listFeatured(pool);
+ok(list.pending.length === 1 && list.pending[0].groupName === "Featured candidate" && list.pending[0].leaderName === "Lydia Leader" && list.pending[0].members === 3 && list.pending[0].message === "A growing prayer team", "admin sees the request with leader, members and message");
+
+// cancel
+await as("L", (q) => G.cancelFeaturing(q, fg1));
+eq((await fd("L", fg1)).featuring?.state, "none", "cancelled request is gone");
+eq((await F.listFeatured(pool)).pending.length, 0, "...and leaves the admin's list");
+eq(await code(as("P", (q) => G.cancelFeaturing(q, fg1))), "not_allowed", "a member cannot cancel");
+
+// approve (no end date) and ordering
+const newer = await as("L2", (q) => G.createGroup(q, { name: "Newer group", description: "", joinMode: "open" }));
+await as("L", (q) => G.requestFeaturing(q, fg1, ""));
+const reqId = (await F.listFeatured(pool)).pending[0].id;
+await F.approveRequest(pool, reqId, "admin1", null);
+let dir = await as("P", G.listDirectory);
+eq(dir.find((g) => g.id === fg1)?.featured, true, "featured group is flagged in the directory");
+eq(dir[0].id, fg1, "featured groups come first, even when older");
+ok(dir.some((g) => g.id === newer && !g.featured), "other groups are not featured");
+eq((await fd("P", fg1)).group.featured, true, "members see the featured flag on the group");
+const lf = (await fd("L", fg1)).featuring!;
+ok(lf.state === "featured" && lf.until === null && !lf.canRequest, "the leader sees it is featured with no end date");
+eq(await code(as("L", (q) => G.requestFeaturing(q, fg1, "again"))), "already_featured", "an already featured group cannot ask again");
+eq(await code(F.approveRequest(pool, reqId, "admin1", null)), "That request was already handled or no longer exists.", "a request cannot be approved twice");
+
+// end dates
+for (const bad of ["not a date", "2020-01-01T00:00:00Z"]) { let msg = ""; try { F.parseEnd(bad); } catch (e) { msg = (e as Error).message; } ok(/not valid|future/.test(msg), `end date "${bad}" is refused`); }
+eq(F.parseEnd(""), null, "empty end date = no end date");
+const soon = new Date(Date.now() + 3 * 86_400_000);
+await F.setFeaturedEnd(pool, fg1, soon);
+eq((await F.listFeatured(pool)).featured[0].until, soon.toISOString(), "admin set an end date");
+eq((await fd("L", fg1)).featuring?.until, soon.toISOString(), "the leader sees the end date");
+await pool.query("update groups set featured_until = now() - interval '1 minute' where id = $1", [fg1]);
+dir = await as("P", G.listDirectory);
+eq(dir.find((g) => g.id === fg1)?.featured, false, "after the end date it switches itself off");
+ok(dir[0].id !== fg1 || dir.length === 1, "...and loses its place at the top");
+eq((await F.listFeatured(pool)).featured[0].active, false, "admin sees it as ended");
+eq((await fd("L", fg1)).featuring?.state, "none", "the leader may ask again once it has ended");
+await F.setFeaturedEnd(pool, fg1, null);
+eq((await as("P", G.listDirectory)).find((g) => g.id === fg1)?.featured, true, "admin can renew it (no end date)");
+
+// remove
+await F.removeFeatured(pool, fg1);
+eq((await as("P", G.listDirectory)).find((g) => g.id === fg1)?.featured, false, "admin removed it");
+eq((await F.listFeatured(pool)).featured.length, 0, "...and it leaves the featured list");
+
+// reject with a note and the 7-day wait
+await as("L", (q) => G.requestFeaturing(q, fg1, "please"));
+await F.rejectRequest(pool, (await F.listFeatured(pool)).pending[0].id, "admin1", "Grow a little first");
+const rj = (await fd("L", fg1)).featuring!;
+ok(rj.state === "rejected" && rj.note === "Grow a little first" && !rj.canRequest && !!rj.retryAfter, "the leader sees the decline and the note");
+eq(await code(as("L", (q) => G.requestFeaturing(q, fg1, "again"))), "request_cooldown", "cannot ask again within 7 days");
+await pool.query("update group_feature_requests set decided_at = now() - interval '8 days' where group_id = $1", [fg1]);
+ok((await fd("L", fg1)).featuring?.canRequest, "after 7 days the leader may ask again");
+eq(await code(F.rejectRequest(pool, "nope", "admin1", "")), "That request was already handled or no longer exists.", "rejecting an unknown request is refused");
+
+// plan rules
+await as("L", (q) => G.requestFeaturing(q, fg1, "second try"));
+await as("L", (q) => G.cancelFeaturing(q, fg1));
+await pool.query("update subscriptions set expires_at = now() - interval '1 day' where user_id = 'L' and entitlement = 'leader'");
+eq(await code(as("L", (q) => G.requestFeaturing(q, fg1, "x"))), "not_allowed", "a lapsed Leader plan cannot request");
+await pool.query("update subscriptions set expires_at = now() + interval '30 days' where user_id = 'L'");
+eq(await asAnon("select app_request_featuring('x','y')"), "permission denied for function app_request_featuring", "anon cannot request featuring");
 
 // ── sign-in missing ─────────────────────────────────────────────────────────
 eq(await code(as("", (q) => G.joinGroup(q, open))), "signin_required", "no user, no access");

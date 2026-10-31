@@ -39,6 +39,11 @@ create table if not exists groups (
   created_at timestamptz not null default now()
 );
 
+-- Featured groups (set only by the app's admin, see the Featured groups section below).
+alter table groups add column if not exists featured boolean not null default false;
+alter table groups add column if not exists featured_at timestamptz;
+alter table groups add column if not exists featured_until timestamptz; -- null = no end date
+
 -- Invite codes live apart from the group so only leaders/co-leaders can read them.
 create table if not exists group_invites (
   group_id text primary key references groups(id) on delete cascade,
@@ -196,19 +201,25 @@ grant select on groups, group_invites, group_members, group_posts, group_comment
 
 -- ── Writes: one function per action, each checks the caller ──────────────────
 
-create or replace function app_group_directory()
+-- Featured groups come first. "Featured" is worked out from the dates every time, so an end date switches it off by itself.
+drop function if exists app_group_directory();
+create function app_group_directory()
 returns table (id text, name text, description text, join_mode text, prayer_time text, created_at timestamptz,
-               member_count int, prayed_today int, my_status text, my_role text)
+               member_count int, prayed_today int, my_status text, my_role text, featured boolean, featured_until timestamptz)
 language sql stable security definer set search_path = public as
 $$
   select g.id, g.name, g.description, g.join_mode, g.prayer_time, g.created_at,
     (select count(*)::int from group_members m where m.group_id = g.id and m.status = 'active'),
     (select count(*)::int from group_checkins c where c.group_id = g.id and c.day = (now() at time zone 'Africa/Lagos')::date),
     (select m.status from group_members m where m.group_id = g.id and m.user_id = app_uid()),
-    (select m.role from group_members m where m.group_id = g.id and m.user_id = app_uid())
+    (select m.role from group_members m where m.group_id = g.id and m.user_id = app_uid()),
+    (g.featured and (g.featured_until is null or g.featured_until > now())),
+    case when g.featured and (g.featured_until is null or g.featured_until > now()) then g.featured_until end
   from groups g
   where app_is_premium()
-  order by g.created_at desc
+  order by (g.featured and (g.featured_until is null or g.featured_until > now())) desc,
+           case when g.featured and (g.featured_until is null or g.featured_until > now()) then g.featured_at end desc nulls last,
+           g.created_at desc
 $$;
 
 create or replace function app_create_group(p_name text, p_description text, p_join_mode text, p_prayer_time text, p_pinned_verse text)
@@ -607,6 +618,48 @@ begin
                 from (select day, activity from daily where activity > 0 order by activity desc, day desc limit 3) t)
   ) into result;
   return result;
+end $$;
+
+-- ── Featured groups ──────────────────────────────────────────────────────────
+-- A leader can only ASK to be featured. Approving, removing and end dates are done by the app's admin from the admin
+-- panel (the owner connection); app_user has no write access to the featured columns.
+
+create table if not exists group_feature_requests (
+  id text primary key,
+  group_id text not null references groups(id) on delete cascade,
+  requested_by text not null,
+  message text not null default '' check (length(message) <= 300),
+  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected', 'cancelled')),
+  decision_note text check (decision_note is null or length(decision_note) <= 200),
+  created_at timestamptz not null default now(),
+  decided_at timestamptz,
+  decided_by text
+);
+create unique index if not exists group_feature_one_pending on group_feature_requests (group_id) where status = 'pending';
+alter table group_feature_requests enable row level security;
+drop policy if exists group_feature_requests_read on group_feature_requests;
+create policy group_feature_requests_read on group_feature_requests for select to app_user using (coalesce(app_member_role(group_id), '') = 'leader');
+revoke all on group_feature_requests from app_user;
+grant select on group_feature_requests to app_user;
+
+create or replace function app_request_featuring(p_group text, p_message text)
+returns void language plpgsql security definer set search_path = public as
+$$
+begin
+  if coalesce(app_member_role(p_group), '') <> 'leader' or not app_is_leader() then raise exception 'not_allowed'; end if;
+  if exists (select 1 from groups where id = p_group and featured and (featured_until is null or featured_until > now())) then raise exception 'already_featured'; end if;
+  if exists (select 1 from group_feature_requests where group_id = p_group and status = 'pending') then raise exception 'request_pending'; end if;
+  if exists (select 1 from group_feature_requests where group_id = p_group and status = 'rejected' and decided_at > now() - interval '7 days') then raise exception 'request_cooldown'; end if;
+  insert into group_feature_requests (id, group_id, requested_by, message)
+    values ('f_' || replace(gen_random_uuid()::text, '-', ''), p_group, app_uid(), left(btrim(coalesce(p_message, '')), 300));
+end $$;
+
+create or replace function app_cancel_featuring(p_group text)
+returns void language plpgsql security definer set search_path = public as
+$$
+begin
+  if coalesce(app_member_role(p_group), '') <> 'leader' then raise exception 'not_allowed'; end if;
+  update group_feature_requests set status = 'cancelled', decided_at = now() where group_id = p_group and status = 'pending';
 end $$;
 
 -- Only app_user may call these (Supabase's public anon/authenticated roles may not).
