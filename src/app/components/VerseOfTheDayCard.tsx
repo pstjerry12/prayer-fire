@@ -24,8 +24,10 @@ const TAB_KEY = 'pfm_bible_tab';
  * Today's verse (the same one as the daily pop-up) in the chosen translation, with a
  * "Read" button (opens its chapter in the Bible) and a "Listen" button (reads it aloud).
  * `showRead={false}` is for the Bible page itself, where the reader is already on screen.
+ * `compact` is the home screen's version: the verse (up to 3 lines) with just a small play button, and the
+ * play/stop control stays on the card (no floating player), so it takes very little height.
  */
-export default function VerseOfTheDayCard({ showRead = true }: { showRead?: boolean }) {
+export default function VerseOfTheDayCard({ showRead = true, compact = false }: { showRead?: boolean; compact?: boolean }) {
   const router = useRouter();
   const reader = useReadAloud();
   const verse = useMemo(() => KJV_BIBLE_VERSES[dayOfYear(new Date()) % KJV_BIBLE_VERSES.length], []);
@@ -77,6 +79,33 @@ export default function VerseOfTheDayCard({ showRead = true }: { showRead?: bool
     router.push('/bible');
   }
 
+  const toggleListen = () => (reader.reading ? reader.stop() : reader.start([{ id: 'votd', text: `${verse.reference}. ${text}` }]));
+
+  if (compact) {
+    return (
+      <section className="rounded-2xl border border-warn-edge bg-gradient-to-br from-warn-soft to-acc-soft pl-3 pr-1.5 pt-1.5 pb-2.5 shadow-sm" aria-label="Verse of the Day">
+        <div className="flex items-center justify-between">
+          <p className="flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-wider text-warn-strong">
+            <Sparkles className="w-3.5 h-3.5" /> Verse of the Day
+          </p>
+          <button
+            onClick={toggleListen}
+            aria-label={reader.reading ? 'Stop listening to the verse of the day' : 'Listen to the verse of the day'}
+            className={cn('grid h-11 w-11 place-items-center rounded-full text-white active:scale-95', reader.reading ? 'bg-ink' : 'bg-emerald-600 hover:bg-emerald-500')}
+          >
+            {reader.reading ? <Square className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
+          </button>
+        </div>
+        <button onClick={open} className="block w-full text-left -mt-1 pr-1.5">
+          <p className="font-serif-heading text-sm leading-snug text-ink italic line-clamp-3">&ldquo;{text}&rdquo;</p>
+          <p className="mt-1 text-xs font-bold text-acc-strong">
+            {verse.reference} <span className="text-ink-muted font-medium">· {shown}</span>
+          </p>
+        </button>
+      </section>
+    );
+  }
+
   return (
     <section className="mb-5 rounded-2xl border border-warn-edge bg-gradient-to-br from-warn-soft to-acc-soft p-4 shadow-sm">
       <p className="flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-wider text-warn-strong mb-2">
@@ -98,7 +127,7 @@ export default function VerseOfTheDayCard({ showRead = true }: { showRead?: bool
           </button>
         )}
         <button
-          onClick={() => (reader.reading ? reader.stop() : reader.start([{ id: 'votd', text: `${verse.reference}. ${text}` }]))}
+          onClick={toggleListen}
           aria-label={reader.reading ? 'Stop listening' : 'Listen to the verse of the day'}
           className={cn(
             'flex-1 flex items-center justify-center gap-1.5 h-11 rounded-xl text-white text-sm font-bold active:scale-95',

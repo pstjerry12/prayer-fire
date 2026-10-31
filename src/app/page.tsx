@@ -10,7 +10,7 @@ import DonationCard from './components/DonationCard';
 import TestimonyCard from './components/TestimonyCard';
 import AnnouncementBanner from './components/AnnouncementBanner';
 import DailyExaltation from './components/DailyExaltation';
-import VerseOfTheDayCard from './components/VerseOfTheDayCard';
+import HomeFold from './components/HomeFold';
 import { useApp } from './context';
 
 function formatTime(time: string): string {
@@ -41,14 +41,14 @@ export default function HomePage() {
       <Navbar />
 
       <main className="bg-page min-h-screen pb-32 md:pb-16">
-        <AnnouncementBanner />
-        <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-6 md:pt-10">
+        {/* ── First screen, no scrolling: the Prayer Fire heading, the audio Bible, the verse of the day ── */}
+        <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-3 md:pt-8">
           {/* ── Hero ─────────────────────────────── */}
           <section className="text-center">
             <span className="inline-flex items-center gap-1.5 bg-warn-soft text-warn-strong text-xs font-bold px-3 py-1 rounded-full border border-warn-edge">
               <Flame className="w-3.5 h-3.5" /> Pray 3x a Day
             </span>
-            <h1 className="font-serif-heading text-3xl md:text-5xl font-bold text-ink mt-3">
+            <h1 className="font-serif-heading text-3xl md:text-5xl font-bold text-ink mt-2">
               Prayer Fire
             </h1>
             <p className="text-base md:text-xl bg-gradient-to-r from-[var(--acc-strong)] via-[var(--acc)] to-[var(--acc-strong)] bg-clip-text text-transparent font-serif-heading font-semibold mt-1">
@@ -59,33 +59,35 @@ export default function HomePage() {
             </p>
           </section>
 
-          {/* ── Verse of the Day: Read / Listen ──── */}
-          <div className="mt-5 md:max-w-2xl md:mx-auto">
-            <VerseOfTheDayCard />
+          <div className="mt-3 md:mt-5 md:max-w-2xl md:mx-auto">
+            <HomeFold />
           </div>
+        </div>
 
-          {/* ── Primary actions ──────────────────── */}
-          <section className="grid grid-cols-2 gap-3 md:gap-4 md:max-w-2xl md:mx-auto">
+        <AnnouncementBanner />
+        <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-2 md:pt-8">
+          {/* ── Primary actions: two halves, Write Prayer Point and Start-Up Prayer ── */}
+          <section className="grid grid-cols-2 gap-2 md:gap-4 md:max-w-2xl md:mx-auto">
             <Link
               href="/workshop"
-              className="bg-emerald-600 text-white rounded-2xl p-4 md:p-7 text-center shadow-sm hover:bg-emerald-500 hover:-translate-y-0.5 transition-all"
+              className="bg-emerald-600 text-white rounded-2xl p-2.5 md:p-7 text-center shadow-sm hover:bg-emerald-500 hover:-translate-y-0.5 transition-all"
             >
-              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-card/15 flex items-center justify-center mx-auto mb-2">
-                <Flame className="w-6 h-6 md:w-8 md:h-8" />
+              <div className="w-7 h-7 md:w-16 md:h-16 rounded-full bg-card/15 flex items-center justify-center mx-auto mb-1 md:mb-2">
+                <Flame className="w-4 h-4 md:w-8 md:h-8" />
               </div>
-              <h3 className="font-bold text-sm md:text-lg leading-tight">Write Prayer Point</h3>
-              <p className="text-emerald-50 text-[0.6875rem] md:text-xs font-semibold mt-1">Prayer Workshop</p>
+              <h3 className="font-bold text-[0.8125rem] md:text-lg leading-tight">Write Prayer Point</h3>
+              <p className="text-emerald-50 text-[0.625rem] md:text-xs font-semibold mt-0.5 md:mt-1">Prayer Workshop</p>
             </Link>
 
             <Link
               href="/startup"
-              className="bg-card text-ink rounded-2xl p-4 md:p-7 text-center border border-acc-edge shadow-sm hover:border-acc hover:-translate-y-0.5 transition-all"
+              className="bg-card text-ink rounded-2xl p-2.5 md:p-7 text-center border border-acc-edge shadow-sm hover:border-acc hover:-translate-y-0.5 transition-all"
             >
-              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-acc-soft text-acc flex items-center justify-center mx-auto mb-2">
-                <Sparkles className="w-6 h-6 md:w-8 md:h-8" />
+              <div className="w-7 h-7 md:w-16 md:h-16 rounded-full bg-acc-soft text-acc flex items-center justify-center mx-auto mb-1 md:mb-2">
+                <Sparkles className="w-4 h-4 md:w-8 md:h-8" />
               </div>
-              <h3 className="font-bold text-sm md:text-lg leading-tight">Start-Up Prayer</h3>
-              <p className="text-acc text-[0.6875rem] md:text-xs font-semibold mt-1">7-step guided</p>
+              <h3 className="font-bold text-[0.8125rem] md:text-lg leading-tight">Start-Up Prayer</h3>
+              <p className="text-acc text-[0.625rem] md:text-xs font-semibold mt-0.5 md:mt-1">7-step guided</p>
             </Link>
           </section>
 
@@ -143,23 +145,6 @@ export default function HomePage() {
               <div className="flex-1 min-w-0">
                 <h3 className="text-ink font-bold text-sm md:text-base">Prayer Network</h3>
                 <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">Stand in the gap for others worldwide</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-ink-ghost shrink-0" />
-            </div>
-          </Link>
-
-          {/* ── Holy Bible: read + audio (horizontal) ── */}
-          <Link
-            href="/bible"
-            className="block bg-card rounded-2xl mt-4 p-4 md:p-5 border border-edge shadow-sm hover:border-acc-edge transition-all"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-acc-soft text-acc flex items-center justify-center shrink-0">
-                <BookOpen className="w-5 h-5 md:w-6 md:h-6" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-ink font-bold text-sm md:text-base">Holy Bible &middot; Read &amp; Listen</h3>
-                <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">The full Bible, offline, with audio read-aloud</p>
               </div>
               <ChevronRight className="w-4 h-4 text-ink-ghost shrink-0" />
             </div>
