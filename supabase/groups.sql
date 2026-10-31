@@ -98,6 +98,23 @@ create table if not exists group_checkins (
   primary key (group_id, user_id, day)
 );
 
+-- A member's report of a post or comment, for the leaders' moderation queue. Reports go when their target goes.
+create table if not exists group_reports (
+  id text primary key,
+  group_id text not null references groups(id) on delete cascade,
+  post_id text not null references group_posts(id) on delete cascade,
+  comment_id text references group_comments(id) on delete cascade,
+  reporter_id text not null,
+  reason text not null check (length(reason) between 1 and 300),
+  status text not null default 'open' check (status in ('open', 'dismissed', 'actioned')),
+  created_at timestamptz not null default now(),
+  resolved_by text,
+  resolved_at timestamptz
+);
+-- One report per person per post or comment.
+create unique index if not exists group_reports_once on group_reports (reporter_id, post_id, coalesce(comment_id, ''));
+create index if not exists group_reports_open_idx on group_reports (group_id, status);
+
 alter table groups enable row level security;
 alter table group_invites enable row level security;
 alter table group_members enable row level security;
@@ -105,6 +122,7 @@ alter table group_posts enable row level security;
 alter table group_comments enable row level security;
 alter table group_praying enable row level security;
 alter table group_checkins enable row level security;
+alter table group_reports enable row level security;
 
 -- ── Who is asking, and what do they have? ────────────────────────────────────
 
@@ -150,37 +168,31 @@ $$ select coalesce(app_member_role(gid) in ('leader', 'co_leader'), false) and a
 
 -- ── Read policies (app_user can only read what these allow) ──────────────────
 
-do $$
-begin
-  if not exists (select 1 from pg_policies where tablename = 'groups' and policyname = 'groups_read') then
-    create policy groups_read on groups for select to app_user using (app_is_member(id) or created_by = app_uid());
-  end if;
-  if not exists (select 1 from pg_policies where tablename = 'group_invites' and policyname = 'group_invites_read') then
-    create policy group_invites_read on group_invites for select to app_user using (app_is_mod(group_id));
-  end if;
-  if not exists (select 1 from pg_policies where tablename = 'group_members' and policyname = 'group_members_read') then
-    create policy group_members_read on group_members for select to app_user
-      using (user_id = app_uid() or app_is_mod(group_id) or (status = 'active' and app_is_member(group_id)));
-  end if;
-  if not exists (select 1 from pg_policies where tablename = 'group_posts' and policyname = 'group_posts_read') then
-    create policy group_posts_read on group_posts for select to app_user
-      using (app_is_member(group_id) and (status = 'visible' or app_is_mod(group_id)));
-  end if;
-  if not exists (select 1 from pg_policies where tablename = 'group_comments' and policyname = 'group_comments_read') then
-    create policy group_comments_read on group_comments for select to app_user
-      using (app_is_member(group_id) and (status = 'visible' or app_is_mod(group_id)));
-  end if;
-  if not exists (select 1 from pg_policies where tablename = 'group_praying' and policyname = 'group_praying_read') then
-    create policy group_praying_read on group_praying for select to app_user using (app_is_member(group_id));
-  end if;
-  if not exists (select 1 from pg_policies where tablename = 'group_checkins' and policyname = 'group_checkins_read') then
-    create policy group_checkins_read on group_checkins for select to app_user using (app_is_member(group_id));
-  end if;
-end $$;
+drop policy if exists groups_read on groups;
+create policy groups_read on groups for select to app_user using (app_is_member(id) or created_by = app_uid());
+drop policy if exists group_invites_read on group_invites;
+create policy group_invites_read on group_invites for select to app_user using (app_is_mod(group_id));
+drop policy if exists group_members_read on group_members;
+create policy group_members_read on group_members for select to app_user
+  using (user_id = app_uid() or app_is_mod(group_id) or (status = 'active' and app_is_member(group_id)));
+-- Hidden posts/comments stay visible to leaders and to their own author (who is told a leader hid it).
+drop policy if exists group_posts_read on group_posts;
+create policy group_posts_read on group_posts for select to app_user
+  using (app_is_member(group_id) and (status = 'visible' or app_is_mod(group_id) or author_id = app_uid()));
+drop policy if exists group_comments_read on group_comments;
+create policy group_comments_read on group_comments for select to app_user
+  using (app_is_member(group_id) and (status = 'visible' or app_is_mod(group_id) or author_id = app_uid()));
+drop policy if exists group_praying_read on group_praying;
+create policy group_praying_read on group_praying for select to app_user using (app_is_member(group_id));
+drop policy if exists group_checkins_read on group_checkins;
+create policy group_checkins_read on group_checkins for select to app_user using (app_is_member(group_id));
+-- Leaders/co-leaders read the reports of their group (the app never shows who reported); a member sees only their own.
+drop policy if exists group_reports_read on group_reports;
+create policy group_reports_read on group_reports for select to app_user using (app_is_mod(group_id) or reporter_id = app_uid());
 
 -- app_user may only read tables; every write goes through the functions below.
-revoke all on groups, group_invites, group_members, group_posts, group_comments, group_praying, group_checkins from app_user;
-grant select on groups, group_invites, group_members, group_posts, group_comments, group_praying, group_checkins to app_user;
+revoke all on groups, group_invites, group_members, group_posts, group_comments, group_praying, group_checkins, group_reports from app_user;
+grant select on groups, group_invites, group_members, group_posts, group_comments, group_praying, group_checkins, group_reports to app_user;
 
 -- ── Writes: one function per action, each checks the caller ──────────────────
 
@@ -369,6 +381,161 @@ begin
   end if;
   insert into group_checkins (group_id, user_id, day) values (p_group, app_uid(), d);
   return true;
+end $$;
+
+-- ── Moderation ───────────────────────────────────────────────────────────────
+
+-- Helper: a person's role in a group regardless of premium (used to rank leader above co-leader above member).
+create or replace function app_post_group(p_post text) returns text language sql stable security definer set search_path = public as
+$$ select group_id from group_posts where id = p_post $$;
+
+-- Remove (or block) a member. Leader: anyone but themselves. Co-leader: ordinary members only.
+-- Removed people may ask to join again; blocked people cannot. Optionally hides their posts and comments.
+create or replace function app_remove_member(p_group text, p_user text, p_block boolean, p_hide_posts boolean)
+returns void language plpgsql security definer set search_path = public as
+$$
+declare mine text; theirs text;
+begin
+  if not app_is_mod(p_group) then raise exception 'not_allowed'; end if;
+  if p_user = app_uid() then raise exception 'cannot_target_self'; end if;
+  mine := app_member_role(p_group);
+  select role into theirs from group_members where group_id = p_group and user_id = p_user;
+  if theirs is null then return; end if;
+  if theirs = 'leader' or (mine = 'co_leader' and theirs <> 'member') then raise exception 'not_allowed'; end if;
+  if p_hide_posts then
+    update group_posts set status = 'hidden' where group_id = p_group and author_id = p_user;
+    update group_comments set status = 'hidden' where group_id = p_group and author_id = p_user;
+  end if;
+  if p_block then
+    update group_members set status = 'blocked', role = 'member' where group_id = p_group and user_id = p_user;
+  else
+    delete from group_members where group_id = p_group and user_id = p_user;
+  end if;
+end $$;
+
+create or replace function app_unblock_member(p_group text, p_user text)
+returns void language plpgsql security definer set search_path = public as
+$$
+begin
+  if not app_is_mod(p_group) then raise exception 'not_allowed'; end if;
+  delete from group_members where group_id = p_group and user_id = p_user and status = 'blocked';
+end $$;
+
+-- Only the group's leader appoints or removes co-leaders (at most 3).
+create or replace function app_set_role(p_group text, p_user text, p_role text)
+returns void language plpgsql security definer set search_path = public as
+$$
+begin
+  if coalesce(app_member_role(p_group), '') <> 'leader' or not app_is_leader() then raise exception 'not_allowed'; end if;
+  if p_role not in ('co_leader', 'member') then raise exception 'bad_role'; end if;
+  if p_user = app_uid() then raise exception 'cannot_target_self'; end if;
+  if not exists (select 1 from group_members where group_id = p_group and user_id = p_user and status = 'active' and role <> 'leader') then
+    raise exception 'not_allowed';
+  end if;
+  if p_role = 'co_leader' and (select count(*) from group_members where group_id = p_group and role = 'co_leader' and user_id <> p_user) >= 3 then
+    raise exception 'too_many_coleaders';
+  end if;
+  update group_members set role = p_role where group_id = p_group and user_id = p_user;
+end $$;
+
+-- Hide a post (or bring it back). Hidden posts disappear for members; the author and leaders still see them.
+create or replace function app_set_post_hidden(p_post text, p_hidden boolean)
+returns void language plpgsql security definer set search_path = public as
+$$
+declare gid text := app_post_group(p_post);
+begin
+  if gid is null or not app_is_mod(gid) then raise exception 'not_allowed'; end if;
+  update group_posts set status = case when p_hidden then 'hidden' else 'visible' end, pinned = pinned and not p_hidden where id = p_post;
+end $$;
+
+create or replace function app_set_comment_hidden(p_comment text, p_hidden boolean)
+returns void language plpgsql security definer set search_path = public as
+$$
+declare gid text;
+begin
+  select group_id into gid from group_comments where id = p_comment;
+  if gid is null or not app_is_mod(gid) then raise exception 'not_allowed'; end if;
+  update group_comments set status = case when p_hidden then 'hidden' else 'visible' end where id = p_comment;
+end $$;
+
+-- Delete a post: its author may delete their own; leaders may delete any.
+create or replace function app_delete_post(p_post text)
+returns void language plpgsql security definer set search_path = public as
+$$
+declare gid text; author text;
+begin
+  select group_id, author_id into gid, author from group_posts where id = p_post;
+  if gid is null then return; end if;
+  if not (app_is_mod(gid) or (author = app_uid() and app_is_member(gid))) then raise exception 'not_allowed'; end if;
+  delete from group_posts where id = p_post;
+end $$;
+
+create or replace function app_delete_comment(p_comment text)
+returns void language plpgsql security definer set search_path = public as
+$$
+declare gid text; author text;
+begin
+  select group_id, author_id into gid, author from group_comments where id = p_comment;
+  if gid is null then return; end if;
+  if not (app_is_mod(gid) or (author = app_uid() and app_is_member(gid))) then raise exception 'not_allowed'; end if;
+  delete from group_comments where id = p_comment;
+end $$;
+
+-- Pin a post to the top of the group (at most 3 pinned, only visible posts).
+create or replace function app_pin_post(p_post text, p_pinned boolean)
+returns void language plpgsql security definer set search_path = public as
+$$
+declare gid text := app_post_group(p_post);
+begin
+  if gid is null or not app_is_mod(gid) then raise exception 'not_allowed'; end if;
+  if p_pinned then
+    if not exists (select 1 from group_posts where id = p_post and status = 'visible') then raise exception 'not_allowed'; end if;
+    if (select count(*) from group_posts where group_id = gid and pinned and id <> p_post) >= 3 then raise exception 'too_many_pins'; end if;
+  end if;
+  update group_posts set pinned = p_pinned where id = p_post;
+end $$;
+
+-- A member reports a post or comment (not their own). One report per person per item.
+create or replace function app_report(p_post text, p_comment text, p_reason text)
+returns void language plpgsql security definer set search_path = public as
+$$
+declare gid text := app_post_group(p_post); author text; c_post text;
+begin
+  if gid is null or not app_is_member(gid) then raise exception 'not_allowed'; end if;
+  p_reason := btrim(coalesce(p_reason, ''));
+  if length(p_reason) < 1 or length(p_reason) > 300 then raise exception 'bad_reason'; end if;
+  if p_comment is not null and p_comment <> '' then
+    select author_id, post_id into author, c_post from group_comments where id = p_comment and group_id = gid;
+    if author is null or c_post <> p_post then raise exception 'not_allowed'; end if;
+  else
+    p_comment := null;
+    select author_id into author from group_posts where id = p_post;
+  end if;
+  if author = app_uid() then raise exception 'cannot_target_self'; end if;
+  insert into group_reports (id, group_id, post_id, comment_id, reporter_id, reason)
+    values ('r_' || replace(gen_random_uuid()::text, '-', ''), gid, p_post, p_comment, app_uid(), p_reason)
+  on conflict do nothing;
+end $$;
+
+-- Close a report: dismiss it, or hide / delete what was reported. Every open report on the same item is closed together.
+create or replace function app_resolve_report(p_report text, p_action text)
+returns void language plpgsql security definer set search_path = public as
+$$
+declare r group_reports%rowtype;
+begin
+  select * into r from group_reports where id = p_report;
+  if not found or not app_is_mod(r.group_id) then raise exception 'not_allowed'; end if;
+  if p_action not in ('dismiss', 'hide', 'delete') then raise exception 'bad_action'; end if;
+  if p_action = 'hide' then
+    if r.comment_id is not null then update group_comments set status = 'hidden' where id = r.comment_id;
+    else update group_posts set status = 'hidden', pinned = false where id = r.post_id; end if;
+  elsif p_action = 'delete' then
+    if r.comment_id is not null then delete from group_comments where id = r.comment_id;
+    else delete from group_posts where id = r.post_id; end if;
+  end if;
+  -- (a delete removes the reports with their target; for dismiss/hide close all open reports on the same item)
+  update group_reports set status = case when p_action = 'dismiss' then 'dismissed' else 'actioned' end, resolved_by = app_uid(), resolved_at = now()
+    where group_id = r.group_id and post_id = r.post_id and coalesce(comment_id, '') = coalesce(r.comment_id, '') and status = 'open';
 end $$;
 
 -- Only app_user may call these (Supabase's public anon/authenticated roles may not).

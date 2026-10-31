@@ -134,6 +134,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       'Everything in Prayer Fire Partner',
       'Create & manage prayer groups',
+      'Moderation tools: review reports, hide or delete posts, pin posts, remove or block members, appoint co-leaders',
     ],
   },
 ];

@@ -37,6 +37,12 @@ const MESSAGES: Record<string, { status: number; message: string }> = {
   bad_name: { status: 400, message: "Give the group a name of 2 to 80 characters." },
   bad_join_mode: { status: 400, message: "Choose open or approval-only." },
   bad_kind: { status: 400, message: "Unknown post type." },
+  cannot_target_self: { status: 400, message: "You cannot do that to yourself." },
+  bad_role: { status: 400, message: "Unknown role." },
+  too_many_coleaders: { status: 400, message: "A group can have up to 3 co-leaders." },
+  too_many_pins: { status: 400, message: "You can pin up to 3 posts. Unpin one first." },
+  bad_reason: { status: 400, message: "Tell us briefly why you are reporting this." },
+  bad_action: { status: 400, message: "Unknown action." },
   bad_body: { status: 400, message: "Write something (up to 2,000 characters; comments up to 1,000)." },
 };
 

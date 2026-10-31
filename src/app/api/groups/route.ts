@@ -75,6 +75,38 @@ export async function POST(request: Request) {
           return { on: await G.togglePraying(q, str(b.postId, 80)) };
         case "checkin":
           return { on: await G.toggleCheckin(q, groupId) };
+        case "removeMember":
+          await G.removeMember(q, groupId, str(b.userId, 80), b.block === true, b.hidePosts === true);
+          return { ok: true };
+        case "unblock":
+          await G.unblockMember(q, groupId, str(b.userId, 80));
+          return { ok: true };
+        case "setRole":
+          await G.setRole(q, groupId, str(b.userId, 80), b.role === "co_leader" ? "co_leader" : "member");
+          return { ok: true };
+        case "hidePost":
+          await G.setPostHidden(q, str(b.postId, 80), b.hidden === true);
+          return { ok: true };
+        case "hideComment":
+          await G.setCommentHidden(q, str(b.commentId, 80), b.hidden === true);
+          return { ok: true };
+        case "deletePost":
+          await G.deletePost(q, str(b.postId, 80));
+          return { ok: true };
+        case "deleteComment":
+          await G.deleteComment(q, str(b.commentId, 80));
+          return { ok: true };
+        case "pin":
+          await G.pinPost(q, str(b.postId, 80), b.pinned === true);
+          return { ok: true };
+        case "report":
+          await G.report(q, str(b.postId, 80), str(b.commentId, 80) || null, str(b.reason, 300));
+          return { ok: true };
+        case "resolveReport": {
+          const action = b.resolution === "hide" || b.resolution === "delete" ? b.resolution : "dismiss";
+          await G.resolveReport(q, str(b.reportId, 80), action);
+          return { ok: true };
+        }
         default:
           throw new Error("unknown_action");
       }

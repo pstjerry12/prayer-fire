@@ -26,6 +26,7 @@ export interface GroupMember {
   displayName: string;
   role: GroupRole;
   status: "active" | "pending" | "removed" | "blocked";
+  mine: boolean;
 }
 
 export interface GroupPost {
@@ -39,6 +40,24 @@ export interface GroupPost {
   praying: number;
   iAmPraying: boolean;
   comments: number;
+  /** "hidden": a leader hid it. Only leaders and the author still see it. */
+  status: "visible" | "hidden";
+  /** Open reports (leaders only; members always see 0). */
+  reports: number;
+  iReported: boolean;
+}
+
+export interface ReportItem {
+  /** Any one report id of this item: resolving it closes all open reports on the same item. */
+  id: string;
+  targetType: "post" | "comment";
+  postId: string;
+  commentId: string | null;
+  text: string;
+  authorName: string;
+  hidden: boolean;
+  count: number;
+  reasons: string[];
 }
 
 export interface GroupDetail {
@@ -49,6 +68,8 @@ export interface GroupDetail {
   canModerate: boolean;
   members: GroupMember[];
   posts: GroupPost[];
+  /** Open reports, only for leaders and co-leaders. */
+  reports: ReportItem[];
   prayedToday: number;
   iPrayedToday: boolean;
 }
@@ -59,6 +80,9 @@ export interface GroupComment {
   mine: boolean;
   body: string;
   createdAt: string;
+  status: "visible" | "hidden";
+  reports: number;
+  iReported: boolean;
 }
 
 type Row = Record<string, unknown>;
@@ -87,18 +111,22 @@ export async function getGroupDetail(q: Q, groupId: string): Promise<GroupDetail
   const [invite] = await q<Row>("select code from group_invites where group_id = $1", [groupId]); // only moderators can read it
   const canModerate = !!invite;
   const members = await q<Row>(
-    "select user_id, display_name, role, status from group_members where group_id = $1 order by (role = 'leader') desc, (role = 'co_leader') desc, joined_at",
+    "select user_id, user_id = app_uid() as mine, display_name, role, status from group_members where group_id = $1 order by (role = 'leader') desc, (role = 'co_leader') desc, joined_at",
     [groupId]
   );
   const posts = await q<Row>(
     `select p.id, p.author_name, p.author_id = app_uid() as mine, p.kind, p.body, p.pinned, p.created_at,
        (select count(*) from group_praying r where r.post_id = p.id)::int as praying,
        exists (select 1 from group_praying r where r.post_id = p.id and r.user_id = app_uid()) as i_am_praying,
-       (select count(*) from group_comments c where c.post_id = p.id)::int as comments
+       (select count(*) from group_comments c where c.post_id = p.id and (c.status = 'visible' or app_is_mod(p.group_id)))::int as comments,
+       p.status,
+       (select count(*) from group_reports r where r.post_id = p.id and r.comment_id is null and r.status = 'open' and app_is_mod(p.group_id))::int as reports,
+       exists (select 1 from group_reports r where r.post_id = p.id and r.comment_id is null and r.reporter_id = app_uid()) as i_reported
      from group_posts p where p.group_id = $1
      order by p.pinned desc, p.created_at desc limit 100`,
     [groupId]
   );
+  const reports = canModerate ? await listReports(q, groupId) : [];
   const [checkins] = await q<Row>(
     "select count(*)::int as n, coalesce(bool_or(user_id = app_uid()), false) as mine from group_checkins where group_id = $1 and day = (now() at time zone 'Africa/Lagos')::date",
     [groupId]
@@ -121,6 +149,7 @@ export async function getGroupDetail(q: Q, groupId: string): Promise<GroupDetail
       displayName: String(m.display_name),
       role: m.role as GroupRole,
       status: m.status as GroupMember["status"],
+      mine: m.mine === true,
     })),
     posts: posts.map((p) => ({
       id: String(p.id),
@@ -133,7 +162,11 @@ export async function getGroupDetail(q: Q, groupId: string): Promise<GroupDetail
       praying: Number(p.praying),
       iAmPraying: p.i_am_praying === true,
       comments: Number(p.comments),
+      status: p.status === "hidden" ? "hidden" : "visible",
+      reports: Number(p.reports),
+      iReported: p.i_reported === true,
     })),
+    reports,
     prayedToday: Number(checkins?.n ?? 0),
     iPrayedToday: checkins?.mine === true,
   };
@@ -141,10 +174,54 @@ export async function getGroupDetail(q: Q, groupId: string): Promise<GroupDetail
 
 export async function listComments(q: Q, postId: string): Promise<GroupComment[]> {
   const rows = await q<Row>(
-    "select id, author_name, author_id = app_uid() as mine, body, created_at from group_comments where post_id = $1 order by created_at",
+    `select c.id, c.author_name, c.author_id = app_uid() as mine, c.body, c.created_at, c.status,
+       (select count(*) from group_reports r where r.comment_id = c.id and r.status = 'open' and app_is_mod(c.group_id))::int as reports,
+       exists (select 1 from group_reports r where r.comment_id = c.id and r.reporter_id = app_uid()) as i_reported
+     from group_comments c where c.post_id = $1 order by c.created_at`,
     [postId]
   );
-  return rows.map((c) => ({ id: String(c.id), authorName: String(c.author_name), mine: c.mine === true, body: String(c.body), createdAt: new Date(c.created_at as string).toISOString() }));
+  return rows.map((c) => ({
+    id: String(c.id), authorName: String(c.author_name), mine: c.mine === true, body: String(c.body), createdAt: new Date(c.created_at as string).toISOString(),
+    status: c.status === "hidden" ? ("hidden" as const) : ("visible" as const), reports: Number(c.reports), iReported: c.i_reported === true,
+  }));
+}
+
+/** The moderation queue: open reports grouped by the post or comment they are about (reporters are never shown). */
+export async function listReports(q: Q, groupId: string): Promise<ReportItem[]> {
+  const rows = await q<Row>(
+    `select r.id, r.post_id, r.comment_id, r.reason, r.created_at,
+       p.body as post_body, p.author_name as post_author, p.status as post_status,
+       c.body as comment_body, c.author_name as comment_author, c.status as comment_status
+     from group_reports r
+     join group_posts p on p.id = r.post_id
+     left join group_comments c on c.id = r.comment_id
+     where r.group_id = $1 and r.status = 'open'
+     order by r.created_at`,
+    [groupId]
+  );
+  const items = new Map<string, ReportItem>();
+  for (const r of rows) {
+    const key = `${r.post_id}|${r.comment_id ?? ""}`;
+    const isComment = r.comment_id !== null && r.comment_id !== undefined;
+    const existing = items.get(key);
+    if (existing) {
+      existing.count++;
+      existing.reasons.push(String(r.reason));
+      continue;
+    }
+    items.set(key, {
+      id: String(r.id),
+      targetType: isComment ? "comment" : "post",
+      postId: String(r.post_id),
+      commentId: isComment ? String(r.comment_id) : null,
+      text: String(isComment ? r.comment_body : r.post_body),
+      authorName: String(isComment ? r.comment_author : r.post_author),
+      hidden: (isComment ? r.comment_status : r.post_status) === "hidden",
+      count: 1,
+      reasons: [String(r.reason)],
+    });
+  }
+  return [...items.values()].sort((a, b) => b.count - a.count);
 }
 
 // ── Actions: each is one database function that checks the caller itself ─────
@@ -164,3 +241,17 @@ export const addPost = (q: Q, groupId: string, kind: PostKind, body: string) => 
 export const addComment = (q: Q, postId: string, body: string) => one<string>(q, "select app_add_comment($1, $2) as r", [postId, body]);
 export const togglePraying = (q: Q, postId: string) => one<boolean>(q, "select app_toggle_praying($1) as r", [postId]);
 export const toggleCheckin = (q: Q, groupId: string) => one<boolean>(q, "select app_toggle_checkin($1) as r", [groupId]);
+
+// ── Moderation ───────────────────────────────────────────────────────────────
+
+export const removeMember = (q: Q, groupId: string, userId: string, block: boolean, hidePosts: boolean) =>
+  q("select app_remove_member($1, $2, $3, $4)", [groupId, userId, block, hidePosts]);
+export const unblockMember = (q: Q, groupId: string, userId: string) => q("select app_unblock_member($1, $2)", [groupId, userId]);
+export const setRole = (q: Q, groupId: string, userId: string, role: "co_leader" | "member") => q("select app_set_role($1, $2, $3)", [groupId, userId, role]);
+export const setPostHidden = (q: Q, postId: string, hidden: boolean) => q("select app_set_post_hidden($1, $2)", [postId, hidden]);
+export const setCommentHidden = (q: Q, commentId: string, hidden: boolean) => q("select app_set_comment_hidden($1, $2)", [commentId, hidden]);
+export const deletePost = (q: Q, postId: string) => q("select app_delete_post($1)", [postId]);
+export const deleteComment = (q: Q, commentId: string) => q("select app_delete_comment($1)", [commentId]);
+export const pinPost = (q: Q, postId: string, pinned: boolean) => q("select app_pin_post($1, $2)", [postId, pinned]);
+export const report = (q: Q, postId: string, commentId: string | null, reason: string) => q("select app_report($1, $2, $3)", [postId, commentId, reason]);
+export const resolveReport = (q: Q, reportId: string, action: "dismiss" | "hide" | "delete") => q("select app_resolve_report($1, $2)", [reportId, action]);
