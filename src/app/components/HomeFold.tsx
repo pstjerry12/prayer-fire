@@ -3,7 +3,7 @@ import { BookOpen, NotebookPen, ScrollText } from 'lucide-react';
 import VerseOfTheDayCard from './VerseOfTheDayCard';
 import HomeAudioBibleCard from './HomeAudioBibleCard';
 
-const TILE = 'flex min-h-[3.75rem] items-center gap-3 rounded-2xl bg-card-2 p-3 active:scale-[0.98] transition-transform';
+const TILE = 'flex min-h-[3.75rem] items-center gap-3 rounded-2xl bg-acc-soft-2 p-3 active:scale-[0.98] transition-transform';
 const ICON = 'grid h-9 w-9 shrink-0 place-items-center rounded-full bg-card text-acc';
 
 /**

@@ -62,22 +62,22 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo (left) */}
         <Link href="/" className="flex items-center gap-3 min-w-0">
-          <div className="w-11 h-11 rounded-full bg-danger-soft ring-1 ring-red-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="w-11 h-11 rounded-full bg-acc-soft-2 ring-1 ring-acc-edge flex items-center justify-center overflow-hidden flex-shrink-0">
             <img src="/logo.png" alt="Prayer Fire" className="w-full h-full object-cover" />
           </div>
           <div className="min-w-0">
             <h1 className="font-serif-heading text-base font-bold text-ink leading-tight truncate">Prayer Fire</h1>
             <p className="text-[0.625rem] text-ink-muted hidden sm:block">A Cure For Prayerlessness</p>
-            <p className="text-[0.625rem] text-danger font-semibold italic leading-tight hidden sm:block">Praying like Daniel</p>
+            <p className="text-[0.625rem] text-ink-muted font-semibold italic leading-tight hidden sm:block">Praying like Daniel</p>
           </div>
         </Link>
 
         {/* Right controls */}
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Streak */}
-          <div className="flex items-center gap-1 bg-warn-soft px-2 py-1 rounded-full border border-warn-edge">
-            <Flame className="w-4 h-4 text-warn" />
-            <span className="text-warn-strong font-bold text-sm">{streak}</span>
+          <div className="flex items-center gap-1 bg-acc-soft-2 px-2 py-1 rounded-full">
+            <Flame className="w-4 h-4 text-acc-strong" />
+            <span className="text-acc-strong font-bold text-sm">{streak}</span>
           </div>
 
           {/* Theme toggle */}
@@ -86,7 +86,7 @@ export default function Navbar() {
             className="p-2 hover:bg-card-3 rounded-full transition-colors"
             title={theme === 'dark' ? 'Switch to light mode' : 'Switch to night mode'}
           >
-            {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-ink-muted" />}
+            {theme === 'dark' ? <Sun className="w-5 h-5 text-acc" /> : <Moon className="w-5 h-5 text-ink-muted" />}
           </button>
 
           {/* 3-dots profile button */}

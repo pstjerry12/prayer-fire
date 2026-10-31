@@ -23,7 +23,7 @@ export default function CollapsibleToggle({ label, open, onToggle, children, max
       <button
         onClick={onToggle}
         aria-expanded={open}
-        className="w-full py-2.5 rounded-xl font-bold text-sm text-[#ff6a00] bg-transparent border border-[#ff6a00]/40 hover:bg-[#ff6a00]/5 transition-colors flex items-center justify-center gap-2"
+        className="w-full py-2.5 rounded-xl font-bold text-sm text-acc bg-transparent border border-acc/40 hover:bg-acc-soft transition-colors flex items-center justify-center gap-2"
       >
         {label}
         <ChevronDown className={cn('w-4 h-4 transition-transform duration-300', open && 'rotate-180')} />

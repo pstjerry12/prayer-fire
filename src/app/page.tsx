@@ -20,7 +20,7 @@ export default function HomePage() {
         <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-4 md:pt-8">
           {/* ── Header ───────────────────────────── */}
           <section className="text-center">
-            <span className="inline-flex items-center gap-1.5 bg-warn-soft text-warn-strong text-xs font-bold px-3 py-1 rounded-full border border-warn-edge">
+            <span className="inline-flex items-center gap-1.5 bg-acc-soft-2 text-acc-strong text-xs font-bold px-3 py-1 rounded-full">
               <Flame className="w-3.5 h-3.5" /> Pray 3x a Day
             </span>
             <h1 className="font-serif-heading text-3xl md:text-5xl font-bold text-ink mt-2">
@@ -29,7 +29,7 @@ export default function HomePage() {
             <p className="text-base md:text-xl bg-gradient-to-r from-[var(--acc-strong)] via-[var(--acc)] to-[var(--acc-strong)] bg-clip-text text-transparent font-serif-heading font-semibold mt-1">
               Write it. Speak it. Pray it. Trust God.
             </p>
-            <p className="text-danger font-semibold italic text-xs md:text-sm mt-1">
+            <p className="text-ink-muted font-semibold italic text-xs md:text-sm mt-1">
               Praying like Daniel — a cure for prayerlessness
             </p>
           </section>
@@ -63,7 +63,7 @@ export default function HomePage() {
             {/* ── Daily schedule: one slim bar that opens the schedule page ── */}
             <Link
               href="/schedule"
-              className="flex h-12 items-center gap-3 rounded-2xl bg-warn-soft-2 px-4 text-sm font-bold text-warn-strong active:scale-[0.99] transition-transform"
+              className="flex h-12 items-center gap-3 rounded-2xl bg-acc-soft-2 px-4 text-sm font-bold text-acc-strong active:scale-[0.99] transition-transform"
             >
               <Clock className="w-5 h-5" />
               <span className="flex-1">Set Daily Schedule</span>

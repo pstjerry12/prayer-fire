@@ -125,7 +125,7 @@ export default function TestimonyCard() {
                       onChange={(e) => { setText(e.target.value); setSubmitError(''); }}
                       placeholder="Since I started the midnight prayer schedule, I've noticed..."
                       rows={4}
-                      className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint mb-3 focus:outline-none focus:ring-2 focus:ring-[#ff6a00]/40 focus:border-[#ff6a00] resize-none"
+                      className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint mb-3 focus:outline-none focus:ring-2 focus:ring-acc/40 focus:border-acc resize-none"
                     />
 
                     {!isAnonymous && (
@@ -136,7 +136,7 @@ export default function TestimonyCard() {
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           placeholder="Your name"
-                          className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint mb-3 focus:outline-none focus:ring-2 focus:ring-[#ff6a00]/40 focus:border-[#ff6a00]"
+                          className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint mb-3 focus:outline-none focus:ring-2 focus:ring-acc/40 focus:border-acc"
                         />
                       </>
                     )}
@@ -147,7 +147,7 @@ export default function TestimonyCard() {
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       placeholder="City, Country"
-                      className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint mb-3 focus:outline-none focus:ring-2 focus:ring-[#ff6a00]/40 focus:border-[#ff6a00]"
+                      className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint mb-3 focus:outline-none focus:ring-2 focus:ring-acc/40 focus:border-acc"
                     />
 
                     <label className="flex items-center gap-2 mb-4 cursor-pointer">
@@ -155,7 +155,7 @@ export default function TestimonyCard() {
                         type="checkbox"
                         checked={isAnonymous}
                         onChange={(e) => setIsAnonymous(e.target.checked)}
-                        className="w-4 h-4 accent-[#ff6a00]"
+                        className="w-4 h-4 accent-acc"
                       />
                       <span className="text-sm text-ink-soft">Post anonymously</span>
                     </label>
@@ -169,7 +169,7 @@ export default function TestimonyCard() {
                     <button
                       onClick={handleSubmit}
                       disabled={submitting}
-                      className="w-full py-3.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#ff6a00] to-[#ff3d00] hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
+                      className="w-full py-3.5 rounded-xl font-bold text-sm text-white bg-acc hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
                     >
                       {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className="w-4 h-4" />}
                       {submitting ? 'Submitting…' : 'Submit Testimony'}

@@ -656,7 +656,7 @@ export default function AdminPage() {
             )}
 
             {/* Flutterwave — PASTE YOUR KEY HERE */}
-            <div className="bg-card border-2 rounded-2xl p-5" style={{ borderColor: dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? '#059669' : '#d97706' }}>
+            <div className="bg-card border-2 rounded-2xl p-5" style={{ borderColor: dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? 'var(--acc)' : 'var(--ink-muted)' }}>
               <div className="flex items-center gap-2 mb-3">
                 <Key className="w-5 h-5 text-text-fire" />
                 <h2 className="font-bold text-ink text-lg">💳 Flutterwave Key</h2>
@@ -667,17 +667,17 @@ export default function AdminPage() {
               </div>
 
               {dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? (
-                <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-4 mb-3">
-                  <p className="text-emerald-700 dark:text-emerald-300 font-semibold text-sm">✅ Flutterwave is LIVE — donations are working!</p>
-                  <p className="text-emerald-600 dark:text-emerald-400 text-xs mt-1">Public key: <code className="bg-emerald-100 dark:bg-emerald-900 px-1 rounded">{dbSettings.flutterwave_public_key}</code></p>
+                <div className="bg-emerald-50 rounded-xl p-4 mb-3">
+                  <p className="text-emerald-700 font-semibold text-sm">✅ Flutterwave is LIVE — donations are working!</p>
+                  <p className="text-emerald-600 text-xs mt-1">Public key: <code className="bg-emerald-100 px-1 rounded">{dbSettings.flutterwave_public_key}</code></p>
                 </div>
               ) : dbSettings.flutterwave_public_key ? (
-                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-3">
-                  <p className="text-amber-700 dark:text-amber-300 font-semibold text-sm">🧪 TEST mode — donations work but no real money moves. Paste your live key (starts with <code>FLWPUBK-</code>) below when you&apos;re done testing.</p>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-3">
+                  <p className="text-amber-700 font-semibold text-sm">🧪 TEST mode — donations work but no real money moves. Paste your live key (starts with <code>FLWPUBK-</code>) below when you&apos;re done testing.</p>
                 </div>
               ) : (
-                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-3">
-                  <p className="text-amber-700 dark:text-amber-300 font-semibold text-sm">⏳ Donations show "Coming Soon" — paste a test key below to try it, then swap in your live key when ready</p>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-3">
+                  <p className="text-amber-700 font-semibold text-sm">⏳ Donations show "Coming Soon" — paste a test key below to try it, then swap in your live key when ready</p>
                 </div>
               )}
 
@@ -710,7 +710,7 @@ export default function AdminPage() {
                     if (Object.keys(updates).length > 0) saveSettings(updates);
                   }}
                   disabled={settingsSaving}
-                  className="w-full py-2.5 bg-gradient-to-r from-[#ff6a00] to-[#ff3d00] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 disabled:opacity-50"
+                  className="w-full py-2.5 bg-acc text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save Flutterwave Keys'}
                 </button>
@@ -736,7 +736,7 @@ export default function AdminPage() {
                 </p>
               </div>
 
-              <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 mb-3">
+              <div className="bg-amber-50 rounded-xl p-3 mb-3">
                 <p className="font-bold text-ink text-sm mb-1">👑 Prayer Fire Partner</p>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -752,7 +752,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 mb-3">
+              <div className="bg-red-50 rounded-xl p-3 mb-3">
                 <p className="font-bold text-ink text-sm mb-1">🔥 Fire Partner Leader</p>
                 <div className="grid grid-cols-2 gap-2">
                   <div>

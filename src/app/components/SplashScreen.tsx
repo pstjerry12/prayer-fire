@@ -88,13 +88,13 @@ export default function SplashScreen() {
       <div className="w-56 mt-8">
         <div className="h-1.5 bg-card-3 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-[#ff6a00] to-[#ff3d00] transition-all duration-100 ease-linear"
+            className="h-full bg-acc transition-all duration-100 ease-linear"
             style={{ width: `${progress}%` }}
           />
         </div>
         <div className="flex items-center justify-between mt-2">
           <span className="text-ink-muted text-[0.6875rem] flex items-center gap-1">
-            <Flame className="w-3 h-3 text-[#ff6a00]" />
+            <Flame className="w-3 h-3 text-acc" />
             {BOOT_MESSAGES[messageIndex]}
           </span>
           <span className="text-ink-muted text-[0.6875rem] font-bold tabular-nums">{Math.round(progress)}%</span>
