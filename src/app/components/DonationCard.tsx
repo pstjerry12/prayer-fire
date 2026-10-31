@@ -35,8 +35,8 @@ export default function DonationCard() {
       <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
         <div className="p-5 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <HandHeart className="w-5 h-5 text-[#ff6a00]" />
-            <span className="text-[#ff6a00] text-xs font-bold uppercase tracking-wider">Support Prayer Fire</span>
+            <HandHeart className="w-5 h-5 text-acc" />
+            <span className="text-acc text-xs font-bold uppercase tracking-wider">Support Prayer Fire</span>
           </div>
           <div className="text-4xl mb-3">💝</div>
           <h3 className="font-serif-heading text-lg font-bold text-ink mb-2">
@@ -164,7 +164,7 @@ export default function DonationCard() {
         <button
           onClick={() => { setExpanded((v) => !v); setError(''); }}
           aria-expanded={expanded}
-          className="w-full py-2.5 rounded-xl font-bold text-sm text-[#ff6a00] bg-transparent border border-[#ff6a00]/40 hover:bg-[#ff6a00]/5 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-2.5 rounded-xl font-bold text-sm text-acc bg-transparent border border-acc/40 hover:bg-acc-soft transition-colors flex items-center justify-center gap-2"
         >
           Support
           <ChevronDown className={cn('w-4 h-4 transition-transform duration-300', expanded && 'rotate-180')} />
@@ -186,7 +186,7 @@ export default function DonationCard() {
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value as GiveCurrency)}
-            className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink mb-3 focus:outline-none focus:ring-2 focus:ring-[#ff6a00]/40 focus:border-[#ff6a00]"
+            className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink mb-3 focus:outline-none focus:ring-2 focus:ring-acc/40 focus:border-acc"
           >
             <option value="NGN">NGN — Naira</option>
             <option value="USD">USD — Dollar</option>
@@ -206,7 +206,7 @@ export default function DonationCard() {
               setAmount(val);
               setError('');
             }}
-            className="w-full bg-card border border-edge-strong rounded-lg px-3 py-3 text-base font-bold text-ink placeholder-ink-faint mb-4 focus:outline-none focus:ring-2 focus:ring-[#ff6a00]/40 focus:border-[#ff6a00]"
+            className="w-full bg-card border border-edge-strong rounded-lg px-3 py-3 text-base font-bold text-ink placeholder-ink-faint mb-4 focus:outline-none focus:ring-2 focus:ring-acc/40 focus:border-acc"
           />
 
           {/* Error */}
@@ -220,7 +220,7 @@ export default function DonationCard() {
           <button
             onClick={handleDonate}
             disabled={paying}
-            className="w-full py-3.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#ff6a00] to-[#ff3d00] hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
+            className="w-full py-3.5 rounded-xl font-bold text-sm text-white bg-acc hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
           >
             {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className="w-4 h-4" />}
             {paying ? 'Opening payment…' : 'Continue'}

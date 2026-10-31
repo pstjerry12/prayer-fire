@@ -255,10 +255,10 @@ export default function StartUpPrayer() {
       <div className="flex justify-center mb-6">
         <div className="relative w-32 h-32">
           <svg className="w-full h-full -rotate-90">
-            <circle cx="64" cy="64" r="58" fill="none" stroke="#e2e8f0" strokeWidth="8" />
+            <circle cx="64" cy="64" r="58" fill="none" className="stroke-acc-soft-2" strokeWidth="8" />
             <circle
               cx="64" cy="64" r="58" fill="none"
-              stroke={step <= 4 ? '#059669' : step <= 6 ? '#475569' : '#dc2626'}
+              stroke={step <= 4 ? 'var(--acc)' : step <= 6 ? 'var(--ink-muted)' : 'var(--ink)'}
               strokeWidth="8" strokeLinecap="round"
               strokeDasharray={364} strokeDashoffset={364 - (364 * progress) / 100}
               className="transition-all duration-1000"

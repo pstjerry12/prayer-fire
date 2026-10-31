@@ -387,7 +387,7 @@ export default function UserManualPage() {
         </div>
 
         {/* ====== PRAYER FIRE PARTNER ====== */}
-        <div className="bg-gradient-to-b from-amber-50 to-card dark:from-amber-950/20 dark:to-card rounded-2xl border-2 border-amber-300 dark:border-amber-700 p-6 mb-8">
+        <div className="bg-gradient-to-b from-amber-50 to-card rounded-2xl border-2 border-amber-300 p-6 mb-8">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-4xl">👑</span>
             <div>
@@ -439,19 +439,19 @@ export default function UserManualPage() {
             </div>
           </div>
 
-          <div className="bg-amber-100 dark:bg-amber-900/30 rounded-xl p-4">
-            <p className="font-bold text-amber-800 dark:text-amber-300 mb-1">💎 The Spiritual Benefit:</p>
-            <p className="text-amber-700 dark:text-amber-400 text-sm leading-relaxed mb-2">
+          <div className="bg-amber-100 rounded-xl p-4">
+            <p className="font-bold text-amber-800 mb-1">💎 The Spiritual Benefit:</p>
+            <p className="text-amber-700 text-sm leading-relaxed mb-2">
               Prayer Fire Partner moves you from &quot;I pray for myself&quot; to <strong>&quot;I pray for the world.&quot;</strong> This is intercession. This is standing in the gap. This is what separates a Christian who prays from a <strong>prayer warrior</strong>.
             </p>
-            <p className="text-amber-600 dark:text-amber-500 text-sm italic">
+            <p className="text-amber-600 text-sm italic">
               &quot;I exhort therefore… that intercessions be made for all men.&quot; — 1 Timothy 2:1
             </p>
           </div>
         </div>
 
         {/* ====== FIRE PARTNER LEADER ====== */}
-        <div className="bg-gradient-to-b from-red-50 to-card dark:from-red-950/20 dark:to-card rounded-2xl border-2 border-red-300 dark:border-red-700 p-6 mb-8">
+        <div className="bg-gradient-to-b from-red-50 to-card rounded-2xl border-2 border-red-300 p-6 mb-8">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-4xl">🔥</span>
             <div>
@@ -503,12 +503,12 @@ export default function UserManualPage() {
             </div>
           </div>
 
-          <div className="bg-red-100 dark:bg-red-900/30 rounded-xl p-4">
-            <p className="font-bold text-red-800 dark:text-red-300 mb-1">💎 The Spiritual Benefit:</p>
-            <p className="text-red-700 dark:text-red-400 text-sm leading-relaxed mb-2">
+          <div className="bg-red-100 rounded-xl p-4">
+            <p className="font-bold text-red-800 mb-1">💎 The Spiritual Benefit:</p>
+            <p className="text-red-700 text-sm leading-relaxed mb-2">
               Fire Partner Leader equips you to do what <strong>Nehemiah did</strong> — build a team, set watchmen, and rebuild the walls of prayer in your generation. You are no longer just praying. You are <strong>mobilizing prayer</strong>.
             </p>
-            <p className="text-red-600 dark:text-red-500 text-sm italic">
+            <p className="text-red-600 text-sm italic">
               &quot;I sought for a man… that should stand in the gap before me for the land…&quot; — Ezekiel 22:30
             </p>
           </div>

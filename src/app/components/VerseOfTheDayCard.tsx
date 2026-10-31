@@ -84,7 +84,7 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
     return (
       <section className="rounded-2xl bg-card p-3.5" aria-label="Verse of the Day">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-          <p className="flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-wider text-warn-strong">
+          <p className="flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-wider text-acc-strong">
             <Sparkles className="w-3.5 h-3.5" /> Verse of the Day
           </p>
           <p className="text-xs font-bold text-acc-strong">
@@ -123,7 +123,7 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
 
   return (
     <section className="mb-5 rounded-2xl border border-warn-edge bg-gradient-to-br from-warn-soft to-acc-soft p-4 shadow-sm">
-      <p className="flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-wider text-warn-strong mb-2">
+      <p className="flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-wider text-acc mb-2">
         <Sparkles className="w-3.5 h-3.5" /> Verse of the Day
       </p>
       <button onClick={open} className="block w-full text-left">

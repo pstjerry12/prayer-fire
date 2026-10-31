@@ -32,7 +32,22 @@
     ui-serif, Georgia, Cambria, "Book Antiqua", serif;
 }
 
-/* Semantic color tokens — swap between light and dark via the `.dark` class. */
+/* ─────────────────────────────────────────────────────────────────────────────
+   COLOUR PALETTE — the ONLY place colours are defined.
+   Prayer Fire uses five colours (plus white). Change them here and the whole app follows.
+
+     Green   #059669  buttons, icons, active tab, links, accents
+     Soft    #D1FAE5  card backgrounds, chips, highlighted tiles, pills
+     Black   #111827  titles and body text
+     Grey    #6B7280  secondary text only
+     White   #FFFFFF / off-white #F9FAFB  backgrounds
+
+   Write new screens with the semantic classes (bg-page, bg-card, bg-acc, bg-acc-soft-2, text-ink, text-ink-muted,
+   text-acc ...). Tailwind's built-in colour names (bg-blue-500, text-red-600, ...) are remapped below onto the same
+   palette, so even those can never introduce another colour. The only colours outside it are the Google "G" logo,
+   the flame logo image and the user-chosen verse highlight colours.
+   ───────────────────────────────────────────────────────────────────────────── */
+
 @theme inline {
   --color-page: var(--page);
   --color-card: var(--card);
@@ -46,89 +61,349 @@
   --color-edge: var(--edge);
   --color-edge-strong: var(--edge-strong);
   --color-acc: var(--acc);
+  --color-acc-hover: var(--acc-hover);
   --color-acc-strong: var(--acc-strong);
   --color-acc-soft: var(--acc-soft);
   --color-acc-soft-2: var(--acc-soft-2);
   --color-acc-edge: var(--acc-edge);
+  /* "danger" = errors and destructive actions: black on off-white with a grey outline (no red in the palette). */
   --color-danger: var(--danger);
   --color-danger-strong: var(--danger-strong);
   --color-danger-soft: var(--danger-soft);
   --color-danger-soft-2: var(--danger-soft-2);
   --color-danger-edge: var(--danger-edge);
+  /* "warn" is kept so older screens still compile; it is now simply the green family. */
   --color-warn: var(--warn);
   --color-warn-strong: var(--warn-strong);
   --color-warn-soft: var(--warn-soft);
   --color-warn-soft-2: var(--warn-soft-2);
   --color-warn-edge: var(--warn-edge);
+
+  /* Every coloured family (green, emerald, teal, blue, indigo, purple, pink, orange, amber, yellow...) -> the green family */
+  --color-orange-50: var(--acc-soft);
+  --color-orange-100: var(--acc-soft-2);
+  --color-orange-200: var(--acc-edge);
+  --color-orange-300: var(--acc-edge);
+  --color-orange-400: var(--acc);
+  --color-orange-500: var(--acc-hover);
+  --color-orange-600: var(--acc);
+  --color-orange-700: var(--acc-strong);
+  --color-orange-800: var(--ink);
+  --color-orange-900: var(--ink);
+  --color-orange-950: var(--ink);
+  --color-amber-50: var(--acc-soft);
+  --color-amber-100: var(--acc-soft-2);
+  --color-amber-200: var(--acc-edge);
+  --color-amber-300: var(--acc-edge);
+  --color-amber-400: var(--acc);
+  --color-amber-500: var(--acc-hover);
+  --color-amber-600: var(--acc);
+  --color-amber-700: var(--acc-strong);
+  --color-amber-800: var(--ink);
+  --color-amber-900: var(--ink);
+  --color-amber-950: var(--ink);
+  --color-yellow-50: var(--acc-soft);
+  --color-yellow-100: var(--acc-soft-2);
+  --color-yellow-200: var(--acc-edge);
+  --color-yellow-300: var(--acc-edge);
+  --color-yellow-400: var(--acc);
+  --color-yellow-500: var(--acc-hover);
+  --color-yellow-600: var(--acc);
+  --color-yellow-700: var(--acc-strong);
+  --color-yellow-800: var(--ink);
+  --color-yellow-900: var(--ink);
+  --color-yellow-950: var(--ink);
+  --color-lime-50: var(--acc-soft);
+  --color-lime-100: var(--acc-soft-2);
+  --color-lime-200: var(--acc-edge);
+  --color-lime-300: var(--acc-edge);
+  --color-lime-400: var(--acc);
+  --color-lime-500: var(--acc-hover);
+  --color-lime-600: var(--acc);
+  --color-lime-700: var(--acc-strong);
+  --color-lime-800: var(--ink);
+  --color-lime-900: var(--ink);
+  --color-lime-950: var(--ink);
+  --color-green-50: var(--acc-soft);
+  --color-green-100: var(--acc-soft-2);
+  --color-green-200: var(--acc-edge);
+  --color-green-300: var(--acc-edge);
+  --color-green-400: var(--acc);
+  --color-green-500: var(--acc-hover);
+  --color-green-600: var(--acc);
+  --color-green-700: var(--acc-strong);
+  --color-green-800: var(--ink);
+  --color-green-900: var(--ink);
+  --color-green-950: var(--ink);
+  --color-emerald-50: var(--acc-soft);
+  --color-emerald-100: var(--acc-soft-2);
+  --color-emerald-200: var(--acc-edge);
+  --color-emerald-300: var(--acc-edge);
+  --color-emerald-400: var(--acc);
+  --color-emerald-500: var(--acc-hover);
+  --color-emerald-600: var(--acc);
+  --color-emerald-700: var(--acc-strong);
+  --color-emerald-800: var(--ink);
+  --color-emerald-900: var(--ink);
+  --color-emerald-950: var(--ink);
+  --color-teal-50: var(--acc-soft);
+  --color-teal-100: var(--acc-soft-2);
+  --color-teal-200: var(--acc-edge);
+  --color-teal-300: var(--acc-edge);
+  --color-teal-400: var(--acc);
+  --color-teal-500: var(--acc-hover);
+  --color-teal-600: var(--acc);
+  --color-teal-700: var(--acc-strong);
+  --color-teal-800: var(--ink);
+  --color-teal-900: var(--ink);
+  --color-teal-950: var(--ink);
+  --color-cyan-50: var(--acc-soft);
+  --color-cyan-100: var(--acc-soft-2);
+  --color-cyan-200: var(--acc-edge);
+  --color-cyan-300: var(--acc-edge);
+  --color-cyan-400: var(--acc);
+  --color-cyan-500: var(--acc-hover);
+  --color-cyan-600: var(--acc);
+  --color-cyan-700: var(--acc-strong);
+  --color-cyan-800: var(--ink);
+  --color-cyan-900: var(--ink);
+  --color-cyan-950: var(--ink);
+  --color-sky-50: var(--acc-soft);
+  --color-sky-100: var(--acc-soft-2);
+  --color-sky-200: var(--acc-edge);
+  --color-sky-300: var(--acc-edge);
+  --color-sky-400: var(--acc);
+  --color-sky-500: var(--acc-hover);
+  --color-sky-600: var(--acc);
+  --color-sky-700: var(--acc-strong);
+  --color-sky-800: var(--ink);
+  --color-sky-900: var(--ink);
+  --color-sky-950: var(--ink);
+  --color-blue-50: var(--acc-soft);
+  --color-blue-100: var(--acc-soft-2);
+  --color-blue-200: var(--acc-edge);
+  --color-blue-300: var(--acc-edge);
+  --color-blue-400: var(--acc);
+  --color-blue-500: var(--acc-hover);
+  --color-blue-600: var(--acc);
+  --color-blue-700: var(--acc-strong);
+  --color-blue-800: var(--ink);
+  --color-blue-900: var(--ink);
+  --color-blue-950: var(--ink);
+  --color-indigo-50: var(--acc-soft);
+  --color-indigo-100: var(--acc-soft-2);
+  --color-indigo-200: var(--acc-edge);
+  --color-indigo-300: var(--acc-edge);
+  --color-indigo-400: var(--acc);
+  --color-indigo-500: var(--acc-hover);
+  --color-indigo-600: var(--acc);
+  --color-indigo-700: var(--acc-strong);
+  --color-indigo-800: var(--ink);
+  --color-indigo-900: var(--ink);
+  --color-indigo-950: var(--ink);
+  --color-violet-50: var(--acc-soft);
+  --color-violet-100: var(--acc-soft-2);
+  --color-violet-200: var(--acc-edge);
+  --color-violet-300: var(--acc-edge);
+  --color-violet-400: var(--acc);
+  --color-violet-500: var(--acc-hover);
+  --color-violet-600: var(--acc);
+  --color-violet-700: var(--acc-strong);
+  --color-violet-800: var(--ink);
+  --color-violet-900: var(--ink);
+  --color-violet-950: var(--ink);
+  --color-purple-50: var(--acc-soft);
+  --color-purple-100: var(--acc-soft-2);
+  --color-purple-200: var(--acc-edge);
+  --color-purple-300: var(--acc-edge);
+  --color-purple-400: var(--acc);
+  --color-purple-500: var(--acc-hover);
+  --color-purple-600: var(--acc);
+  --color-purple-700: var(--acc-strong);
+  --color-purple-800: var(--ink);
+  --color-purple-900: var(--ink);
+  --color-purple-950: var(--ink);
+  --color-fuchsia-50: var(--acc-soft);
+  --color-fuchsia-100: var(--acc-soft-2);
+  --color-fuchsia-200: var(--acc-edge);
+  --color-fuchsia-300: var(--acc-edge);
+  --color-fuchsia-400: var(--acc);
+  --color-fuchsia-500: var(--acc-hover);
+  --color-fuchsia-600: var(--acc);
+  --color-fuchsia-700: var(--acc-strong);
+  --color-fuchsia-800: var(--ink);
+  --color-fuchsia-900: var(--ink);
+  --color-fuchsia-950: var(--ink);
+  --color-pink-50: var(--acc-soft);
+  --color-pink-100: var(--acc-soft-2);
+  --color-pink-200: var(--acc-edge);
+  --color-pink-300: var(--acc-edge);
+  --color-pink-400: var(--acc);
+  --color-pink-500: var(--acc-hover);
+  --color-pink-600: var(--acc);
+  --color-pink-700: var(--acc-strong);
+  --color-pink-800: var(--ink);
+  --color-pink-900: var(--ink);
+  --color-pink-950: var(--ink);
+  /* Red and rose (errors, delete) -> black text on off-white, grey outline */
+  --color-red-50: var(--danger-soft);
+  --color-red-100: var(--danger-soft);
+  --color-red-200: var(--danger-edge);
+  --color-red-300: var(--danger-edge);
+  --color-red-400: var(--danger);
+  --color-red-500: var(--danger);
+  --color-red-600: var(--danger);
+  --color-red-700: var(--danger);
+  --color-red-800: var(--ink);
+  --color-red-900: var(--ink);
+  --color-red-950: var(--ink);
+  --color-rose-50: var(--danger-soft);
+  --color-rose-100: var(--danger-soft);
+  --color-rose-200: var(--danger-edge);
+  --color-rose-300: var(--danger-edge);
+  --color-rose-400: var(--danger);
+  --color-rose-500: var(--danger);
+  --color-rose-600: var(--danger);
+  --color-rose-700: var(--danger);
+  --color-rose-800: var(--ink);
+  --color-rose-900: var(--ink);
+  --color-rose-950: var(--ink);
+  /* Greys -> the palette greys */
+  --color-slate-50: var(--card-2);
+  --color-slate-100: var(--card-3);
+  --color-slate-200: var(--edge);
+  --color-slate-300: var(--edge);
+  --color-slate-400: var(--ink-muted);
+  --color-slate-500: var(--ink-muted);
+  --color-slate-600: var(--ink-muted);
+  --color-slate-700: var(--ink);
+  --color-slate-800: var(--ink);
+  --color-slate-900: var(--ink);
+  --color-slate-950: var(--ink);
+  --color-gray-50: var(--card-2);
+  --color-gray-100: var(--card-3);
+  --color-gray-200: var(--edge);
+  --color-gray-300: var(--edge);
+  --color-gray-400: var(--ink-muted);
+  --color-gray-500: var(--ink-muted);
+  --color-gray-600: var(--ink-muted);
+  --color-gray-700: var(--ink);
+  --color-gray-800: var(--ink);
+  --color-gray-900: var(--ink);
+  --color-gray-950: var(--ink);
+  --color-zinc-50: var(--card-2);
+  --color-zinc-100: var(--card-3);
+  --color-zinc-200: var(--edge);
+  --color-zinc-300: var(--edge);
+  --color-zinc-400: var(--ink-muted);
+  --color-zinc-500: var(--ink-muted);
+  --color-zinc-600: var(--ink-muted);
+  --color-zinc-700: var(--ink);
+  --color-zinc-800: var(--ink);
+  --color-zinc-900: var(--ink);
+  --color-zinc-950: var(--ink);
+  --color-neutral-50: var(--card-2);
+  --color-neutral-100: var(--card-3);
+  --color-neutral-200: var(--edge);
+  --color-neutral-300: var(--edge);
+  --color-neutral-400: var(--ink-muted);
+  --color-neutral-500: var(--ink-muted);
+  --color-neutral-600: var(--ink-muted);
+  --color-neutral-700: var(--ink);
+  --color-neutral-800: var(--ink);
+  --color-neutral-900: var(--ink);
+  --color-neutral-950: var(--ink);
+  --color-stone-50: var(--card-2);
+  --color-stone-100: var(--card-3);
+  --color-stone-200: var(--edge);
+  --color-stone-300: var(--edge);
+  --color-stone-400: var(--ink-muted);
+  --color-stone-500: var(--ink-muted);
+  --color-stone-600: var(--ink-muted);
+  --color-stone-700: var(--ink);
+  --color-stone-800: var(--ink);
+  --color-stone-900: var(--ink);
+  --color-stone-950: var(--ink);
 }
 
 :root {
-  /* Light — warm ivory */
-  --page: #faf7f2;
-  --card: #ffffff;
-  --card-2: #f5f5f4;
-  --card-3: #e7e5e4;
-  --ink: #1f2937;
-  --ink-soft: #334155;
-  --ink-muted: #64748b;
-  --ink-faint: #94a3b8;
-  --ink-ghost: #cbd5e1;
-  --edge: #e7e5e4;
-  --edge-strong: #d6d3d1;
-  --acc: #059669;
-  --acc-strong: #047857;
-  --acc-soft: #ecfdf5;
-  --acc-soft-2: #d1fae5;
-  --acc-edge: #a7f3d0;
-  --danger: #dc2626;
-  --danger-strong: #b91c1c;
-  --danger-soft: #fef2f2;
-  --danger-soft-2: #fee2e2;
-  --danger-edge: #fecaca;
-  --warn: #d97706;
-  --warn-strong: #b45309;
-  --warn-soft: #fffbeb;
-  --warn-soft-2: #fef3c7;
-  --warn-edge: #fde68a;
+  /* The palette */
+  --palette-green: #059669;
+  --palette-green-soft: #d1fae5;
+  --palette-black: #111827;
+  --palette-grey: #6b7280;
+  --palette-white: #ffffff;
+  --palette-offwhite: #f9fafb;
 
-  /* Verse highlight colours (translucent so they read on light and dark pages) */
+  /* Light mode */
+  --page: var(--palette-offwhite);
+  --card: var(--palette-white);
+  --card-2: var(--palette-offwhite);
+  --card-3: var(--palette-green-soft);
+  --ink: var(--palette-black);
+  --ink-soft: var(--palette-black);
+  --ink-muted: var(--palette-grey);
+  --ink-faint: var(--palette-grey);
+  --ink-ghost: var(--palette-grey);
+  --edge: var(--palette-green-soft);
+  --edge-strong: var(--palette-grey);
+  --acc: var(--palette-green);
+  --acc-hover: var(--palette-green);
+  --acc-strong: var(--palette-green);
+  --acc-soft: var(--palette-green-soft);
+  --acc-soft-2: var(--palette-green-soft);
+  --acc-edge: var(--palette-green-soft);
+  --danger: var(--palette-black);
+  --danger-strong: var(--palette-black);
+  --danger-soft: var(--palette-offwhite);
+  --danger-soft-2: var(--palette-offwhite);
+  --danger-edge: var(--palette-grey);
+  --warn: var(--palette-green);
+  --warn-strong: var(--palette-green);
+  --warn-soft: var(--palette-green-soft);
+  --warn-soft-2: var(--palette-green-soft);
+  --warn-edge: var(--palette-green-soft);
+
+  /* Verse highlight colours: the colours people choose for highlighting a verse. They are content, not interface
+     colours, so they keep their own hues (translucent so they read on light and dark pages). */
   --hl-bookmark: rgba(250, 204, 21, 0.4);
   --hl-orange: rgba(251, 146, 60, 0.4);
   --hl-green: rgba(74, 222, 128, 0.36);
   --hl-blue: rgba(96, 165, 250, 0.4);
   --hl-pink: rgba(244, 114, 182, 0.4);
   --hl-purple: rgba(168, 139, 250, 0.4);
-  --hl-reading: rgba(251, 146, 60, 0.28);
+  --hl-reading: rgba(5, 150, 105, 0.28);
 }
 
 .dark {
-  /* Dark — deep "midnight watch" navy */
-  --page: #0a1628;
-  --card: #0f1f3a;
-  --card-2: #14243f;
-  --card-3: #1b2c49;
-  --ink: #f1f5f9;
-  --ink-soft: #e2e8f0;
-  --ink-muted: #b6c2d4;
-  --ink-faint: #8b9bb4;
-  --ink-ghost: #64748b;
-  --edge: #1e2b45;
-  --edge-strong: #2c3d5c;
-  --acc: #34d399;
-  --acc-strong: #6ee7b7;
-  --acc-soft: rgba(16, 185, 129, 0.12);
-  --acc-soft-2: rgba(16, 185, 129, 0.2);
-  --acc-edge: rgba(52, 211, 153, 0.35);
-  --danger: #f87171;
-  --danger-strong: #fca5a5;
-  --danger-soft: rgba(239, 68, 68, 0.12);
-  --danger-soft-2: rgba(239, 68, 68, 0.2);
-  --danger-edge: rgba(248, 113, 113, 0.35);
-  --warn: #fbbf24;
-  --warn-strong: #fcd34d;
-  --warn-soft: rgba(245, 158, 11, 0.12);
-  --warn-soft-2: rgba(245, 158, 11, 0.2);
-  --warn-edge: rgba(251, 191, 36, 0.35);
+  /* Dark mode: the same greens on a near-black background. Surfaces are the black with a little soft green mixed in. */
+  --page: var(--palette-black);
+  --card: color-mix(in srgb, var(--palette-black) 93%, var(--palette-green-soft));
+  --card-2: color-mix(in srgb, var(--palette-black) 87%, var(--palette-green-soft));
+  --card-3: color-mix(in srgb, var(--palette-black) 80%, var(--palette-green-soft));
+  --ink: var(--palette-offwhite);
+  --ink-soft: var(--palette-offwhite);
+  --ink-muted: color-mix(in srgb, var(--palette-offwhite) 55%, var(--palette-grey));
+  --ink-faint: color-mix(in srgb, var(--palette-offwhite) 55%, var(--palette-grey));
+  --ink-ghost: var(--palette-grey);
+  --edge: color-mix(in srgb, var(--palette-black) 84%, var(--palette-green-soft));
+  --edge-strong: color-mix(in srgb, var(--palette-black) 60%, var(--palette-grey));
+  --acc: var(--palette-green);
+  --acc-hover: var(--palette-green);
+  --acc-strong: var(--palette-green-soft);
+  --acc-soft: color-mix(in srgb, var(--palette-black) 88%, var(--palette-green));
+  --acc-soft-2: color-mix(in srgb, var(--palette-black) 78%, var(--palette-green));
+  --acc-edge: color-mix(in srgb, var(--palette-black) 62%, var(--palette-green));
+  --danger: var(--palette-offwhite);
+  --danger-strong: var(--palette-offwhite);
+  --danger-soft: color-mix(in srgb, var(--palette-black) 87%, var(--palette-grey));
+  --danger-soft-2: color-mix(in srgb, var(--palette-black) 80%, var(--palette-grey));
+  --danger-edge: var(--palette-grey);
+  --warn: var(--palette-green);
+  --warn-strong: var(--palette-green-soft);
+  --warn-soft: color-mix(in srgb, var(--palette-black) 88%, var(--palette-green));
+  --warn-soft-2: color-mix(in srgb, var(--palette-black) 78%, var(--palette-green));
+  --warn-edge: color-mix(in srgb, var(--palette-black) 62%, var(--palette-green));
 }
 
 /* Respect device notches / safe areas. */
@@ -169,7 +444,7 @@ h3,
 /* Thin, subtle scrollbars. */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(120, 113, 108, 0.35) transparent;
+  scrollbar-color: rgba(107, 114, 128, 0.35) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -178,6 +453,6 @@ h3,
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: rgba(120, 113, 108, 0.35);
+  background-color: rgba(107, 114, 128, 0.35);
   border-radius: 9999px;
 }
