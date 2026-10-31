@@ -65,29 +65,29 @@ export default function HomePage() {
         </div>
 
         <AnnouncementBanner />
-        <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-5 md:pt-8">
+        <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-2 md:pt-8">
           {/* ── Primary actions: two halves, Write Prayer Point and Start-Up Prayer ── */}
-          <section className="grid grid-cols-2 gap-3 md:gap-4 md:max-w-2xl md:mx-auto">
+          <section className="grid grid-cols-2 gap-2 md:gap-4 md:max-w-2xl md:mx-auto">
             <Link
               href="/workshop"
-              className="bg-emerald-600 text-white rounded-2xl p-4 md:p-7 text-center shadow-sm hover:bg-emerald-500 hover:-translate-y-0.5 transition-all"
+              className="bg-emerald-600 text-white rounded-2xl p-2.5 md:p-7 text-center shadow-sm hover:bg-emerald-500 hover:-translate-y-0.5 transition-all"
             >
-              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-card/15 flex items-center justify-center mx-auto mb-2">
-                <Flame className="w-6 h-6 md:w-8 md:h-8" />
+              <div className="w-7 h-7 md:w-16 md:h-16 rounded-full bg-card/15 flex items-center justify-center mx-auto mb-1 md:mb-2">
+                <Flame className="w-4 h-4 md:w-8 md:h-8" />
               </div>
-              <h3 className="font-bold text-sm md:text-lg leading-tight">Write Prayer Point</h3>
-              <p className="text-emerald-50 text-[0.6875rem] md:text-xs font-semibold mt-1">Prayer Workshop</p>
+              <h3 className="font-bold text-[0.8125rem] md:text-lg leading-tight">Write Prayer Point</h3>
+              <p className="text-emerald-50 text-[0.625rem] md:text-xs font-semibold mt-0.5 md:mt-1">Prayer Workshop</p>
             </Link>
 
             <Link
               href="/startup"
-              className="bg-card text-ink rounded-2xl p-4 md:p-7 text-center border border-acc-edge shadow-sm hover:border-acc hover:-translate-y-0.5 transition-all"
+              className="bg-card text-ink rounded-2xl p-2.5 md:p-7 text-center border border-acc-edge shadow-sm hover:border-acc hover:-translate-y-0.5 transition-all"
             >
-              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-acc-soft text-acc flex items-center justify-center mx-auto mb-2">
-                <Sparkles className="w-6 h-6 md:w-8 md:h-8" />
+              <div className="w-7 h-7 md:w-16 md:h-16 rounded-full bg-acc-soft text-acc flex items-center justify-center mx-auto mb-1 md:mb-2">
+                <Sparkles className="w-4 h-4 md:w-8 md:h-8" />
               </div>
-              <h3 className="font-bold text-sm md:text-lg leading-tight">Start-Up Prayer</h3>
-              <p className="text-acc text-[0.6875rem] md:text-xs font-semibold mt-1">7-step guided</p>
+              <h3 className="font-bold text-[0.8125rem] md:text-lg leading-tight">Start-Up Prayer</h3>
+              <p className="text-acc text-[0.625rem] md:text-xs font-semibold mt-0.5 md:mt-1">7-step guided</p>
             </Link>
           </section>
 
