@@ -41,21 +41,14 @@ export default function HomePage() {
       <Navbar />
 
       <main className="bg-page min-h-screen pb-32 md:pb-16">
-        {/* ── First screen, no scrolling: verse of the day, today's opening prayer, the audio Bible ── */}
+        {/* ── First screen, no scrolling: the Prayer Fire heading, the audio Bible, the verse of the day ── */}
         <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-3 md:pt-8">
-          <div className="md:max-w-2xl md:mx-auto">
-            <HomeFold />
-          </div>
-        </div>
-
-        <AnnouncementBanner />
-        <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-6 md:pt-10">
           {/* ── Hero ─────────────────────────────── */}
           <section className="text-center">
             <span className="inline-flex items-center gap-1.5 bg-warn-soft text-warn-strong text-xs font-bold px-3 py-1 rounded-full border border-warn-edge">
               <Flame className="w-3.5 h-3.5" /> Pray 3x a Day
             </span>
-            <h1 className="font-serif-heading text-3xl md:text-5xl font-bold text-ink mt-3">
+            <h1 className="font-serif-heading text-3xl md:text-5xl font-bold text-ink mt-2">
               Prayer Fire
             </h1>
             <p className="text-base md:text-xl bg-gradient-to-r from-[var(--acc-strong)] via-[var(--acc)] to-[var(--acc-strong)] bg-clip-text text-transparent font-serif-heading font-semibold mt-1">
@@ -66,8 +59,13 @@ export default function HomePage() {
             </p>
           </section>
 
-          <div className="mt-5" />
+          <div className="mt-3 md:mt-5 md:max-w-2xl md:mx-auto">
+            <HomeFold />
+          </div>
+        </div>
 
+        <AnnouncementBanner />
+        <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-5 md:pt-8">
           {/* ── Primary actions ──────────────────── */}
           <section className="grid grid-cols-2 gap-3 md:gap-4 md:max-w-2xl md:mx-auto">
             <Link
