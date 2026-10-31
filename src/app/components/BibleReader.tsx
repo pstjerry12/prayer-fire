@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  BookOpen, ChevronLeft, Volume2, Square, Play, Loader2, BookMarked, ListOrdered, AlertTriangle, ChevronDown, Bookmark as BookmarkIcon, BookOpenText, X, Minus, Plus,
+  BookOpen, ChevronLeft, Volume2, Square, Play, Loader2, BookMarked, ListOrdered, AlertTriangle, Bookmark as BookmarkIcon, BookOpenText, X, Minus, Plus,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { pushBackHandler } from '@/lib/backHandlerStack';
@@ -395,21 +395,26 @@ export default function BibleReader() {
       {/* ── Search & quick jump ──────────────────────────────────── */}
       <BibleSearchBar translationId={translationId} onGoTo={goTo} />
 
-      {/* ── Translation picker ───────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-3 bg-card rounded-2xl border border-edge px-4 py-3">
-        <span className="text-xs font-semibold text-ink-muted">Translation</span>
-        <div className="relative min-w-0">
-          <select
-            value={translationId}
-            onChange={(e) => changeTranslation(e.target.value as TranslationId)}
-            className="appearance-none bg-card-2 border border-edge-strong rounded-lg pl-3 pr-8 py-2 max-w-full truncate text-sm font-bold text-acc-strong cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
-          >
-            {BIBLE_TRANSLATIONS.map((t) => (
-              <option key={t.id} value={t.id}>{t.shortName} — {t.name}</option>
-            ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-faint" />
-        </div>
+      {/* ── Translation: one chip each, the chosen one filled green ── */}
+      <div role="radiogroup" aria-label="Bible translation" className="flex gap-2">
+        {BIBLE_TRANSLATIONS.map((t) => {
+          const chosen = t.id === translationId;
+          return (
+            <button
+              key={t.id}
+              role="radio"
+              aria-checked={chosen}
+              aria-label={t.name}
+              onClick={() => changeTranslation(t.id)}
+              className={cn(
+                'h-11 min-w-[4.5rem] rounded-full px-5 text-sm font-bold transition-colors active:scale-95',
+                chosen ? 'bg-emerald-600 text-white' : 'bg-card-2 text-ink-muted hover:text-acc-strong'
+              )}
+            >
+              {t.shortName}
+            </button>
+          );
+        })}
       </div>
 
       {/* ── Step indicator ───────────────────────────────────────── */}
@@ -435,7 +440,7 @@ export default function BibleReader() {
 
       {/* ── PAGE 1: Choose a book ────────────────────────────────── */}
       {step === 1 && (
-        <div className="bg-card rounded-2xl border border-edge p-5">
+        <div className="bg-card rounded-2xl p-5">
           <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-ink-muted mb-3 flex items-center gap-1">
             <BookMarked className="w-3.5 h-3.5" /> Choose a book
           </p>
@@ -472,7 +477,7 @@ export default function BibleReader() {
 
       {/* ── PAGE 2: Chapters by numbers ──────────────────────────── */}
       {step === 2 && (
-        <div className="bg-card rounded-2xl border border-edge p-5">
+        <div className="bg-card rounded-2xl p-5">
           <div className="flex items-center justify-between mb-3">
             <button onClick={() => setStep(1)} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc">
               <ChevronLeft className="w-4 h-4" /> Books
@@ -500,7 +505,7 @@ export default function BibleReader() {
       {step === 3 && (
         <div className="space-y-4">
           {/* Verses as numbers */}
-          <div className="bg-card rounded-2xl border border-edge p-5">
+          <div className="bg-card rounded-2xl p-5">
             <div className="flex items-center justify-between mb-3">
               <button onClick={() => setStep(2)} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc">
                 <ChevronLeft className="w-4 h-4" /> Chapters
@@ -531,7 +536,7 @@ export default function BibleReader() {
           </div>
 
           {/* Reading pane */}
-          <div className="bg-card rounded-2xl border border-edge p-5">
+          <div className="bg-card rounded-2xl p-5">
             <div className="flex items-center justify-between gap-2 border-b border-edge pb-3 mb-3">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="grid h-9 w-9 place-items-center rounded-lg bg-acc-soft text-acc shrink-0">

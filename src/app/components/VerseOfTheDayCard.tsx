@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BookOpen, Play, Sparkles, Square } from 'lucide-react';
+import { BookOpen, ChevronDown, Play, Sparkles, Square } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { KJV_BIBLE_VERSES } from '@/app/data/bibleVerses';
 import { loadTranslation, getChapter } from '@/lib/bible/loadTranslation';
@@ -18,14 +18,13 @@ function dayOfYear(date: Date): number {
 
 // Same keys the Bible reader uses to remember where it was (see BibleReader / bible page).
 const POSITION_KEY = 'pfm_bible_position';
-const TAB_KEY = 'pfm_bible_tab';
 
 /**
  * Today's verse (the same one as the daily pop-up) in the chosen translation, with a
  * "Read" button (opens its chapter in the Bible) and a "Listen" button (reads it aloud).
  * `showRead={false}` is for the Bible page itself, where the reader is already on screen.
- * `compact` is the home screen's version: the verse (up to 3 lines) with just a small play button, and the
- * play/stop control stays on the card (no floating player), so it takes very little height.
+ * `compact` is the home screen's version: the verse on two lines (tap to read it all) and a full-width Listen button;
+ * the play/stop control stays on the card (no floating player).
  */
 export default function VerseOfTheDayCard({ showRead = true, compact = false }: { showRead?: boolean; compact?: boolean }) {
   const router = useRouter();
@@ -35,6 +34,7 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
 
   const [translationId, setTranslationId] = useState<TranslationId>(DEFAULT_TRANSLATION);
   const [loaded, setLoaded] = useState<{ id: TranslationId; text: string } | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     // The saved translation is only readable on the client, after mount.
@@ -72,7 +72,6 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
     if (!parsed?.chapter) return;
     try {
       sessionStorage.setItem(POSITION_KEY, JSON.stringify({ step: 3, book: parsed.book.name, chapter: parsed.chapter, verse: parsed.verse ?? undefined }));
-      sessionStorage.setItem(TAB_KEY, 'read');
     } catch {
       // ignore: the Bible then simply opens at its last place
     }
@@ -83,24 +82,40 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
 
   if (compact) {
     return (
-      <section className="rounded-2xl border border-warn-edge bg-gradient-to-br from-warn-soft to-acc-soft pl-3 pr-1.5 pt-1.5 pb-2.5 shadow-sm" aria-label="Verse of the Day">
-        <div className="flex items-center justify-between">
+      <section className="rounded-2xl bg-card p-3.5" aria-label="Verse of the Day">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
           <p className="flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-wider text-warn-strong">
             <Sparkles className="w-3.5 h-3.5" /> Verse of the Day
           </p>
-          <button
-            onClick={toggleListen}
-            aria-label={reader.reading ? 'Stop listening to the verse of the day' : 'Listen to the verse of the day'}
-            className={cn('grid h-11 w-11 place-items-center rounded-full text-white active:scale-95', reader.reading ? 'bg-ink' : 'bg-emerald-600 hover:bg-emerald-500')}
-          >
-            {reader.reading ? <Square className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
-          </button>
-        </div>
-        <button onClick={open} className="block w-full text-left -mt-1 pr-1.5">
-          <p className="font-serif-heading text-sm leading-snug text-ink italic line-clamp-3">&ldquo;{text}&rdquo;</p>
-          <p className="mt-1 text-xs font-bold text-acc-strong">
+          <p className="text-xs font-bold text-acc-strong">
             {verse.reference} <span className="text-ink-muted font-medium">· {shown}</span>
           </p>
+        </div>
+        {/* Two lines to keep the first screen calm; tap the verse to read all of it. */}
+        <button
+          onClick={() => setExpanded((e) => !e)}
+          aria-expanded={expanded}
+          aria-label={expanded ? 'Show less of the verse' : 'Show the whole verse'}
+          className="mt-1.5 flex w-full items-start gap-2 text-left"
+        >
+          <p className={cn('flex-1 font-serif-heading text-sm leading-relaxed text-ink italic', !expanded && 'line-clamp-2')}>&ldquo;{text}&rdquo;</p>
+          <ChevronDown className={cn('mt-1 h-4 w-4 shrink-0 text-ink-faint transition-transform', expanded && 'rotate-180')} />
+        </button>
+        {expanded && (
+          <button onClick={open} className="mt-1 text-xs font-bold text-acc-strong">
+            Open this verse &rsaquo;
+          </button>
+        )}
+        <button
+          onClick={toggleListen}
+          aria-label={reader.reading ? 'Stop listening to the verse of the day' : 'Listen to the verse of the day'}
+          className={cn(
+            'mt-2.5 flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-bold text-white active:scale-[0.98]',
+            reader.reading ? 'bg-ink text-page' : 'bg-emerald-600 hover:bg-emerald-500'
+          )}
+        >
+          {reader.reading ? <Square className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
+          {reader.reading ? 'Stop' : 'Listen'}
         </button>
       </section>
     );
