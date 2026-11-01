@@ -82,12 +82,12 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
 
   if (compact) {
     return (
-      <section className="rounded-2xl bg-card p-3.5" aria-label="Verse of the Day">
+      <section className="rounded-2xl bg-card border border-edge p-3.5" aria-label="Verse of the Day">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
           <p className="flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-wider text-acc-strong">
             <Sparkles className="w-3.5 h-3.5" /> Verse of the Day
           </p>
-          <p className="text-xs font-bold text-acc-strong">
+          <p className="text-xs font-bold text-heading">
             {verse.reference} <span className="text-ink-muted font-medium">· {shown}</span>
           </p>
         </div>
@@ -110,8 +110,8 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
           onClick={toggleListen}
           aria-label={reader.reading ? 'Stop listening to the verse of the day' : 'Listen to the verse of the day'}
           className={cn(
-            'mt-2.5 flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-bold text-white active:scale-[0.98]',
-            reader.reading ? 'bg-ink text-page' : 'bg-emerald-600 hover:bg-emerald-500'
+            'mt-2.5 flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-bold active:scale-[0.98]',
+            reader.reading ? 'bg-ink text-page' : 'bg-acc hover:bg-acc-hover text-on-acc'
           )}
         >
           {reader.reading ? <Square className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
@@ -122,8 +122,8 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
   }
 
   return (
-    <section className="mb-5 rounded-2xl border border-warn-edge bg-gradient-to-br from-warn-soft to-acc-soft p-4 shadow-sm">
-      <p className="flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-wider text-acc mb-2">
+    <section className="mb-5 rounded-2xl border border-acc-edge bg-gradient-to-br from-acc-soft to-acc-soft p-4 shadow-sm">
+      <p className="flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-wider text-acc-strong mb-2">
         <Sparkles className="w-3.5 h-3.5" /> Verse of the Day
       </p>
       <button onClick={open} className="block w-full text-left">
@@ -145,8 +145,8 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
           onClick={toggleListen}
           aria-label={reader.reading ? 'Stop listening' : 'Listen to the verse of the day'}
           className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 h-11 rounded-xl text-white text-sm font-bold active:scale-95',
-            reader.reading ? 'bg-ink' : 'bg-emerald-600 hover:bg-emerald-500'
+            'flex-1 flex items-center justify-center gap-1.5 h-11 rounded-xl text-sm font-bold active:scale-95',
+            reader.reading ? 'bg-ink text-page' : 'bg-acc hover:bg-acc-hover text-on-acc'
           )}
         >
           {reader.reading ? <Square className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}

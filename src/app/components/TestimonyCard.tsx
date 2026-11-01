@@ -169,7 +169,7 @@ export default function TestimonyCard() {
                     <button
                       onClick={handleSubmit}
                       disabled={submitting}
-                      className="w-full py-3.5 rounded-xl font-bold text-sm text-white bg-acc hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
+                      className="w-full py-3.5 rounded-xl font-bold text-sm text-on-acc bg-acc hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
                     >
                       {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className="w-4 h-4" />}
                       {submitting ? 'Submitting…' : 'Submit Testimony'}

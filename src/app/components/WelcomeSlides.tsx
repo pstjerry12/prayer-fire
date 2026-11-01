@@ -76,7 +76,7 @@ export default function WelcomeSlides() {
             </button>
           </div>
           <div className="px-6 pb-6 text-center">
-            <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-acc-soft text-acc">
+            <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-acc-soft text-acc-strong">
               <Icon className="w-10 h-10" />
             </div>
             <h2 className="mt-4 font-serif-heading text-2xl font-bold text-ink">{slide.title}</h2>
@@ -90,7 +90,7 @@ export default function WelcomeSlides() {
 
             {last ? (
               <div className="mt-5 space-y-2">
-                <button onClick={() => finish(true)} className="w-full h-12 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 active:scale-95">
+                <button onClick={() => finish(true)} className="w-full h-12 rounded-xl bg-acc text-on-acc font-bold hover:bg-acc-hover active:scale-95">
                   Open the Bible
                 </button>
                 <button onClick={() => finish(false)} className="w-full h-10 text-sm font-bold text-acc-strong hover:underline">
@@ -98,7 +98,7 @@ export default function WelcomeSlides() {
                 </button>
               </div>
             ) : (
-              <button onClick={() => setIndex(index + 1)} className="mt-5 w-full h-12 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 active:scale-95">
+              <button onClick={() => setIndex(index + 1)} className="mt-5 w-full h-12 rounded-xl bg-acc text-on-acc font-bold hover:bg-acc-hover active:scale-95">
                 Next
               </button>
             )}

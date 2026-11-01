@@ -91,7 +91,7 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
         <div className="bg-card rounded-3xl w-full max-w-md border border-edge shadow-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-edge flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MessageSquareHeart className="w-5 h-5 text-acc" />
+              <MessageSquareHeart className="w-5 h-5 text-acc-strong" />
               <h2 className="font-bold text-ink">Send Feedback</h2>
             </div>
             <button onClick={onClose} aria-label="Close" className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
@@ -101,7 +101,7 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
 
           {sent ? (
             <div className="p-6 text-center space-y-3">
-              <CheckCircle2 className="w-12 h-12 text-acc mx-auto" />
+              <CheckCircle2 className="w-12 h-12 text-acc-strong mx-auto" />
               <h3 className="font-serif-heading text-lg font-bold text-ink">Thank you!</h3>
               <p className="text-ink-muted text-sm leading-relaxed">
                 Your feedback has reached the Prayer Fire team. We read every message and use it to improve the app.
@@ -115,7 +115,7 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
                 </button>
                 <button
                   onClick={onClose}
-                  className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500"
+                  className="flex-1 py-3 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover"
                 >
                   Done
                 </button>
@@ -157,7 +157,7 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
                   onChange={(e) => { setMessage(e.target.value.slice(0, MAX_MESSAGE)); setError(''); }}
                   placeholder={current.placeholder}
                   rows={5}
-                  className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 resize-y"
+                  className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 resize-y"
                 />
                 <p className="text-right text-ink-faint text-[0.625rem] mt-0.5">{message.length}/{MAX_MESSAGE}</p>
               </div>
@@ -171,7 +171,7 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
                     id="feedback-name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                    className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
                   />
                 </div>
                 <div>
@@ -182,7 +182,7 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
                     id="feedback-contact"
                     value={contact}
                     onChange={(e) => setContact(e.target.value)}
-                    className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                    className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
                   />
                 </div>
               </div>
@@ -196,7 +196,7 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
               <button
                 onClick={handleSend}
                 disabled={sending}
-                className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500 disabled:opacity-60 flex items-center justify-center gap-2"
+                className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 {sending ? 'Sending…' : 'Send Feedback'}

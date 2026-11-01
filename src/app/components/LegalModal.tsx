@@ -19,7 +19,7 @@ export default function LegalModal({ isOpen, title, sections, onClose }: Props) 
         <div className="bg-card rounded-3xl w-full max-w-md border border-edge shadow-2xl overflow-hidden">
           <div className="p-5 border-b border-edge flex items-center justify-between sticky top-0 bg-card z-10">
             <div className="flex items-center gap-2">
-              <ScrollText className="w-5 h-5 text-acc" />
+              <ScrollText className="w-5 h-5 text-acc-strong" />
               <h2 className="font-serif-heading text-lg font-bold text-ink">{title}</h2>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
@@ -43,7 +43,7 @@ export default function LegalModal({ isOpen, title, sections, onClose }: Props) 
 
             <button
               onClick={onClose}
-              className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500"
+              className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover"
             >
               I Understand
             </button>

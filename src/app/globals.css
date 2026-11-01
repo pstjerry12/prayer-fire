@@ -33,21 +33,42 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   COLOUR PALETTE — the ONLY place colours are defined.
-   Prayer Fire uses five colours (plus white). Change them here and the whole app follows.
+   COLOUR PALETTE "Midnight and Ember" — the ONLY place colours are defined.
 
-     Green   #059669  buttons, icons, active tab, links, accents
-     Soft    #D1FAE5  card backgrounds, chips, highlighted tiles, pills
-     Black   #111827  titles and body text
-     Grey    #6B7280  secondary text only
-     White   #FFFFFF / off-white #F9FAFB  backgrounds
+     Navy   #14213D  header, bottom-nav active item, headings        (about 30% of the screen)
+     Cream  #FBF7F0  app background                                   (about 60%)
+     Ember  #E8772E  action buttons ONLY: Listen, Start Prayer, Save  (about 10%)
+     Ink / muted     body text #1A1A1A / secondary text #5F5E5A
 
-   Write new screens with the semantic classes (bg-page, bg-card, bg-acc, bg-acc-soft-2, text-ink, text-ink-muted,
-   text-acc ...). Tailwind's built-in colour names (bg-blue-500, text-red-600, ...) are remapped below onto the same
-   palette, so even those can never introduce another colour. The only colours outside it are the Google "G" logo,
-   the flame logo image and the user-chosen verse highlight colours.
+   Write new screens with the semantic classes (bg-page, bg-card, bg-acc, bg-acc-soft, text-ink, text-ink-muted,
+   text-acc-strong, border-edge ...) or the palette names (bg-navy, text-ember-dark, bg-ember-tint ...). Tailwind's
+   built-in colour names (bg-blue-500, text-red-600, ...) are remapped at the bottom of the theme block onto the same
+   palette, so they can never introduce another colour. The colours outside it are the Google "G" logo, the flame logo
+   image and the user-chosen verse highlight colours.
+
+   ACCESSIBILITY (WCAG AA, checked with numbers): white on #E8772E is only 2.95:1, so buttons use navy text (--on-acc,
+   5.4:1; set it to #FFFFFF to switch back). #C25E1C is 4.3:1 on white, so SMALL ember text uses --ember-text #A8500F
+   (5.5:1 on white, 4.7:1 on the tint); #C25E1C stays for icons, large text and pressed states.
    ───────────────────────────────────────────────────────────────────────────── */
 
+/* The palette itself (static: always emitted as CSS variables, and each one is also a Tailwind colour). */
+@theme static {
+  --color-navy: #14213d;
+  --color-navy-soft: #24345a;
+  --color-ember: #e8772e;
+  --color-ember-dark: #c25e1c;
+  --color-ember-text: #a8500f;
+  --color-ember-tint: #fcebdd;
+  --color-ember-light: #f0a06a;
+  --color-cream: #fbf7f0;
+  --color-night: #0e1628;
+  --color-night-card: #1a2540;
+  --color-night-border: #2c3a5c;
+  --color-night-ink: #f3eee4;
+  --color-night-muted: #a9a79f;
+}
+
+/* Semantic tokens: these switch between light and dark through the `.dark` class. */
 @theme inline {
   --color-page: var(--page);
   --color-card: var(--card);
@@ -58,34 +79,40 @@
   --color-ink-muted: var(--ink-muted);
   --color-ink-faint: var(--ink-faint);
   --color-ink-ghost: var(--ink-ghost);
+  --color-muted: var(--ink-muted);
   --color-edge: var(--edge);
+  --color-border: var(--edge);
   --color-edge-strong: var(--edge-strong);
+  --color-heading: var(--heading);
+  /* "acc" = the accent. acc = ember FILL (buttons), on-acc = text on that fill, acc-strong = accent TEXT and icons,
+     acc-soft / acc-soft-2 = the ember tint, acc-edge = a tinted outline, acc-hover = pressed/hover. */
   --color-acc: var(--acc);
+  --color-on-acc: var(--on-acc);
   --color-acc-hover: var(--acc-hover);
   --color-acc-strong: var(--acc-strong);
   --color-acc-soft: var(--acc-soft);
   --color-acc-soft-2: var(--acc-soft-2);
   --color-acc-edge: var(--acc-edge);
-  /* "danger" = errors and destructive actions: black on off-white with a grey outline (no red in the palette). */
+  /* "danger" = errors and destructive actions: ink on cream with a muted outline (the palette has no red). */
   --color-danger: var(--danger);
   --color-danger-strong: var(--danger-strong);
   --color-danger-soft: var(--danger-soft);
   --color-danger-soft-2: var(--danger-soft-2);
   --color-danger-edge: var(--danger-edge);
-  /* "warn" is kept so older screens still compile; it is now simply the green family. */
+  /* "warn" is kept so older screens still compile; it is now simply the ember family. */
   --color-warn: var(--warn);
   --color-warn-strong: var(--warn-strong);
   --color-warn-soft: var(--warn-soft);
   --color-warn-soft-2: var(--warn-soft-2);
   --color-warn-edge: var(--warn-edge);
 
-  /* Every coloured family (green, emerald, teal, blue, indigo, purple, pink, orange, amber, yellow...) -> the green family */
+  /* Every Tailwind colour family (green, emerald, teal, blue, indigo, purple, pink, orange, amber, yellow...) -> the ember family */
   --color-orange-50: var(--acc-soft);
   --color-orange-100: var(--acc-soft-2);
   --color-orange-200: var(--acc-edge);
   --color-orange-300: var(--acc-edge);
   --color-orange-400: var(--acc);
-  --color-orange-500: var(--acc-hover);
+  --color-orange-500: var(--acc);
   --color-orange-600: var(--acc);
   --color-orange-700: var(--acc-strong);
   --color-orange-800: var(--ink);
@@ -96,7 +123,7 @@
   --color-amber-200: var(--acc-edge);
   --color-amber-300: var(--acc-edge);
   --color-amber-400: var(--acc);
-  --color-amber-500: var(--acc-hover);
+  --color-amber-500: var(--acc);
   --color-amber-600: var(--acc);
   --color-amber-700: var(--acc-strong);
   --color-amber-800: var(--ink);
@@ -107,7 +134,7 @@
   --color-yellow-200: var(--acc-edge);
   --color-yellow-300: var(--acc-edge);
   --color-yellow-400: var(--acc);
-  --color-yellow-500: var(--acc-hover);
+  --color-yellow-500: var(--acc);
   --color-yellow-600: var(--acc);
   --color-yellow-700: var(--acc-strong);
   --color-yellow-800: var(--ink);
@@ -118,7 +145,7 @@
   --color-lime-200: var(--acc-edge);
   --color-lime-300: var(--acc-edge);
   --color-lime-400: var(--acc);
-  --color-lime-500: var(--acc-hover);
+  --color-lime-500: var(--acc);
   --color-lime-600: var(--acc);
   --color-lime-700: var(--acc-strong);
   --color-lime-800: var(--ink);
@@ -129,7 +156,7 @@
   --color-green-200: var(--acc-edge);
   --color-green-300: var(--acc-edge);
   --color-green-400: var(--acc);
-  --color-green-500: var(--acc-hover);
+  --color-green-500: var(--acc);
   --color-green-600: var(--acc);
   --color-green-700: var(--acc-strong);
   --color-green-800: var(--ink);
@@ -140,7 +167,7 @@
   --color-emerald-200: var(--acc-edge);
   --color-emerald-300: var(--acc-edge);
   --color-emerald-400: var(--acc);
-  --color-emerald-500: var(--acc-hover);
+  --color-emerald-500: var(--acc);
   --color-emerald-600: var(--acc);
   --color-emerald-700: var(--acc-strong);
   --color-emerald-800: var(--ink);
@@ -151,7 +178,7 @@
   --color-teal-200: var(--acc-edge);
   --color-teal-300: var(--acc-edge);
   --color-teal-400: var(--acc);
-  --color-teal-500: var(--acc-hover);
+  --color-teal-500: var(--acc);
   --color-teal-600: var(--acc);
   --color-teal-700: var(--acc-strong);
   --color-teal-800: var(--ink);
@@ -162,7 +189,7 @@
   --color-cyan-200: var(--acc-edge);
   --color-cyan-300: var(--acc-edge);
   --color-cyan-400: var(--acc);
-  --color-cyan-500: var(--acc-hover);
+  --color-cyan-500: var(--acc);
   --color-cyan-600: var(--acc);
   --color-cyan-700: var(--acc-strong);
   --color-cyan-800: var(--ink);
@@ -173,7 +200,7 @@
   --color-sky-200: var(--acc-edge);
   --color-sky-300: var(--acc-edge);
   --color-sky-400: var(--acc);
-  --color-sky-500: var(--acc-hover);
+  --color-sky-500: var(--acc);
   --color-sky-600: var(--acc);
   --color-sky-700: var(--acc-strong);
   --color-sky-800: var(--ink);
@@ -184,7 +211,7 @@
   --color-blue-200: var(--acc-edge);
   --color-blue-300: var(--acc-edge);
   --color-blue-400: var(--acc);
-  --color-blue-500: var(--acc-hover);
+  --color-blue-500: var(--acc);
   --color-blue-600: var(--acc);
   --color-blue-700: var(--acc-strong);
   --color-blue-800: var(--ink);
@@ -195,7 +222,7 @@
   --color-indigo-200: var(--acc-edge);
   --color-indigo-300: var(--acc-edge);
   --color-indigo-400: var(--acc);
-  --color-indigo-500: var(--acc-hover);
+  --color-indigo-500: var(--acc);
   --color-indigo-600: var(--acc);
   --color-indigo-700: var(--acc-strong);
   --color-indigo-800: var(--ink);
@@ -206,7 +233,7 @@
   --color-violet-200: var(--acc-edge);
   --color-violet-300: var(--acc-edge);
   --color-violet-400: var(--acc);
-  --color-violet-500: var(--acc-hover);
+  --color-violet-500: var(--acc);
   --color-violet-600: var(--acc);
   --color-violet-700: var(--acc-strong);
   --color-violet-800: var(--ink);
@@ -217,7 +244,7 @@
   --color-purple-200: var(--acc-edge);
   --color-purple-300: var(--acc-edge);
   --color-purple-400: var(--acc);
-  --color-purple-500: var(--acc-hover);
+  --color-purple-500: var(--acc);
   --color-purple-600: var(--acc);
   --color-purple-700: var(--acc-strong);
   --color-purple-800: var(--ink);
@@ -228,7 +255,7 @@
   --color-fuchsia-200: var(--acc-edge);
   --color-fuchsia-300: var(--acc-edge);
   --color-fuchsia-400: var(--acc);
-  --color-fuchsia-500: var(--acc-hover);
+  --color-fuchsia-500: var(--acc);
   --color-fuchsia-600: var(--acc);
   --color-fuchsia-700: var(--acc-strong);
   --color-fuchsia-800: var(--ink);
@@ -239,13 +266,13 @@
   --color-pink-200: var(--acc-edge);
   --color-pink-300: var(--acc-edge);
   --color-pink-400: var(--acc);
-  --color-pink-500: var(--acc-hover);
+  --color-pink-500: var(--acc);
   --color-pink-600: var(--acc);
   --color-pink-700: var(--acc-strong);
   --color-pink-800: var(--ink);
   --color-pink-900: var(--ink);
   --color-pink-950: var(--ink);
-  /* Red and rose (errors, delete) -> black text on off-white, grey outline */
+  /* Red and rose (errors, delete) -> ink on cream with a muted outline */
   --color-red-50: var(--danger-soft);
   --color-red-100: var(--danger-soft);
   --color-red-200: var(--danger-edge);
@@ -268,7 +295,7 @@
   --color-rose-800: var(--ink);
   --color-rose-900: var(--ink);
   --color-rose-950: var(--ink);
-  /* Greys -> the palette greys */
+  /* Greys -> the palette neutrals */
   --color-slate-50: var(--card-2);
   --color-slate-100: var(--card-3);
   --color-slate-200: var(--edge);
@@ -327,83 +354,89 @@
 }
 
 :root {
-  /* The palette */
-  --palette-green: #059669;
-  --palette-green-soft: #d1fae5;
-  --palette-black: #111827;
-  --palette-grey: #6b7280;
-  --palette-white: #ffffff;
-  --palette-offwhite: #f9fafb;
-
   /* Light mode */
-  --page: var(--palette-offwhite);
-  --card: var(--palette-white);
-  --card-2: var(--palette-offwhite);
-  --card-3: var(--palette-green-soft);
-  --ink: var(--palette-black);
-  --ink-soft: var(--palette-black);
-  --ink-muted: var(--palette-grey);
-  --ink-faint: var(--palette-grey);
-  --ink-ghost: var(--palette-grey);
-  --edge: var(--palette-green-soft);
-  --edge-strong: var(--palette-grey);
-  --acc: var(--palette-green);
-  --acc-hover: var(--palette-green);
-  --acc-strong: var(--palette-green);
-  --acc-soft: var(--palette-green-soft);
-  --acc-soft-2: var(--palette-green-soft);
-  --acc-edge: var(--palette-green-soft);
-  --danger: var(--palette-black);
-  --danger-strong: var(--palette-black);
-  --danger-soft: var(--palette-offwhite);
-  --danger-soft-2: var(--palette-offwhite);
-  --danger-edge: var(--palette-grey);
-  --warn: var(--palette-green);
-  --warn-strong: var(--palette-green);
-  --warn-soft: var(--palette-green-soft);
-  --warn-soft-2: var(--palette-green-soft);
-  --warn-edge: var(--palette-green-soft);
+  --page: var(--color-cream);
+  --card: #ffffff;
+  --card-2: var(--color-cream);
+  --card-3: #e6dfd2;
+  --ink: #1a1a1a;
+  --ink-soft: #1a1a1a;
+  --ink-muted: #5f5e5a;
+  --ink-faint: #5f5e5a;
+  --ink-ghost: #5f5e5a;
+  --heading: var(--color-navy);
+  --edge: #e6dfd2;
+  --edge-strong: color-mix(in srgb, #e6dfd2 40%, #5f5e5a);
+  --acc: var(--color-ember);
+  --on-acc: var(--color-navy);
+  --acc-hover: var(--color-ember-dark);
+  --acc-strong: var(--color-ember-text);
+  --acc-soft: var(--color-ember-tint);
+  --acc-soft-2: var(--color-ember-tint);
+  --acc-edge: color-mix(in srgb, var(--color-ember) 30%, var(--color-ember-tint));
+  --danger: #1a1a1a;
+  --danger-strong: #1a1a1a;
+  --danger-soft: var(--color-cream);
+  --danger-soft-2: var(--color-cream);
+  --danger-edge: #5f5e5a;
+  --warn: var(--color-ember);
+  --warn-strong: var(--color-ember-text);
+  --warn-soft: var(--color-ember-tint);
+  --warn-soft-2: var(--color-ember-tint);
+  --warn-edge: color-mix(in srgb, var(--color-ember) 30%, var(--color-ember-tint));
 
   /* Verse highlight colours: the colours people choose for highlighting a verse. They are content, not interface
-     colours, so they keep their own hues (translucent so they read on light and dark pages). */
+     colours, so they keep their own hues (translucent so they read on light and dark pages). The reading highlight
+     (the verse being read aloud) is the ember tint. */
   --hl-bookmark: rgba(250, 204, 21, 0.4);
   --hl-orange: rgba(251, 146, 60, 0.4);
   --hl-green: rgba(74, 222, 128, 0.36);
   --hl-blue: rgba(96, 165, 250, 0.4);
   --hl-pink: rgba(244, 114, 182, 0.4);
   --hl-purple: rgba(168, 139, 250, 0.4);
-  --hl-reading: rgba(5, 150, 105, 0.28);
+  --hl-reading: rgba(232, 119, 46, 0.26);
 }
 
 .dark {
-  /* Dark mode: the same greens on a near-black background. Surfaces are the black with a little soft green mixed in. */
-  --page: var(--palette-black);
-  --card: color-mix(in srgb, var(--palette-black) 93%, var(--palette-green-soft));
-  --card-2: color-mix(in srgb, var(--palette-black) 87%, var(--palette-green-soft));
-  --card-3: color-mix(in srgb, var(--palette-black) 80%, var(--palette-green-soft));
-  --ink: var(--palette-offwhite);
-  --ink-soft: var(--palette-offwhite);
-  --ink-muted: color-mix(in srgb, var(--palette-offwhite) 55%, var(--palette-grey));
-  --ink-faint: color-mix(in srgb, var(--palette-offwhite) 55%, var(--palette-grey));
-  --ink-ghost: var(--palette-grey);
-  --edge: color-mix(in srgb, var(--palette-black) 84%, var(--palette-green-soft));
-  --edge-strong: color-mix(in srgb, var(--palette-black) 60%, var(--palette-grey));
-  --acc: var(--palette-green);
-  --acc-hover: var(--palette-green);
-  --acc-strong: var(--palette-green-soft);
-  --acc-soft: color-mix(in srgb, var(--palette-black) 88%, var(--palette-green));
-  --acc-soft-2: color-mix(in srgb, var(--palette-black) 78%, var(--palette-green));
-  --acc-edge: color-mix(in srgb, var(--palette-black) 62%, var(--palette-green));
-  --danger: var(--palette-offwhite);
-  --danger-strong: var(--palette-offwhite);
-  --danger-soft: color-mix(in srgb, var(--palette-black) 87%, var(--palette-grey));
-  --danger-soft-2: color-mix(in srgb, var(--palette-black) 80%, var(--palette-grey));
-  --danger-edge: var(--palette-grey);
-  --warn: var(--palette-green);
-  --warn-strong: var(--palette-green-soft);
-  --warn-soft: color-mix(in srgb, var(--palette-black) 88%, var(--palette-green));
-  --warn-soft-2: color-mix(in srgb, var(--palette-black) 78%, var(--palette-green));
-  --warn-edge: color-mix(in srgb, var(--palette-black) 62%, var(--palette-green));
+  /* Dark mode: deep midnight, ember stays ember. */
+  --page: var(--color-night);
+  --card: var(--color-night-card);
+  --card-2: color-mix(in srgb, var(--color-night-card) 72%, var(--color-night-border));
+  --card-3: var(--color-night-border);
+  --ink: var(--color-night-ink);
+  --ink-soft: var(--color-night-ink);
+  --ink-muted: var(--color-night-muted);
+  --ink-faint: var(--color-night-muted);
+  --ink-ghost: var(--color-night-muted);
+  --heading: var(--color-night-ink);
+  --edge: var(--color-night-border);
+  --edge-strong: color-mix(in srgb, var(--color-night-border) 45%, var(--color-night-muted));
+  --acc: var(--color-ember);
+  --on-acc: var(--color-navy);
+  --acc-hover: var(--color-ember-dark);
+  --acc-strong: var(--color-ember-light);
+  --acc-soft: color-mix(in srgb, var(--color-night-card) 86%, var(--color-ember));
+  --acc-soft-2: color-mix(in srgb, var(--color-night-card) 78%, var(--color-ember));
+  --acc-edge: color-mix(in srgb, var(--color-night-card) 60%, var(--color-ember));
+  --danger: var(--color-night-ink);
+  --danger-strong: var(--color-night-ink);
+  --danger-soft: color-mix(in srgb, var(--color-night-card) 80%, var(--color-night-border));
+  --danger-soft-2: color-mix(in srgb, var(--color-night-card) 80%, var(--color-night-border));
+  --danger-edge: var(--color-night-muted);
+  --warn: var(--color-ember);
+  --warn-strong: var(--color-ember-light);
+  --warn-soft: color-mix(in srgb, var(--color-night-card) 86%, var(--color-ember));
+  --warn-soft-2: color-mix(in srgb, var(--color-night-card) 78%, var(--color-ember));
+  --warn-edge: color-mix(in srgb, var(--color-night-card) 60%, var(--color-ember));
+}
+
+/* Real headings (h1 to h4) are navy in light mode (and the light text colour in dark mode) wherever they use the normal text colour.
+   Body text that merely uses the serif font, such as the verse of the day, stays ink. */
+h1.text-ink,
+h2.text-ink,
+h3.text-ink,
+h4.text-ink {
+  color: var(--heading);
 }
 
 /* Respect device notches / safe areas. */
@@ -444,7 +477,7 @@ h3,
 /* Thin, subtle scrollbars. */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(107, 114, 128, 0.35) transparent;
+  scrollbar-color: rgba(95, 94, 90, 0.35) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -453,6 +486,6 @@ h3,
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: rgba(107, 114, 128, 0.35);
+  background-color: rgba(95, 94, 90, 0.35);
   border-radius: 9999px;
 }

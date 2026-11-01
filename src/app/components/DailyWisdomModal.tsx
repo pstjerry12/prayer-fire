@@ -24,7 +24,7 @@ export default function DailyWisdomModal({ isOpen, onClose }: Props) {
       <div className="bg-card rounded-3xl w-full max-w-md border border-edge shadow-2xl overflow-hidden">
         <div className={`px-5 py-4 border-b border-edge flex items-center justify-between`}>
           <div className="flex items-center gap-2">
-            <BookHeart className="w-5 h-5 text-acc" />
+            <BookHeart className="w-5 h-5 text-acc-strong" />
             <h2 className="font-bold text-ink">Wisdom of the Day</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
@@ -51,7 +51,7 @@ export default function DailyWisdomModal({ isOpen, onClose }: Props) {
           <p className="text-ink-muted text-xs text-center italic">{chapter.subtitle}</p>
           <button
             onClick={onClose}
-            className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 transition-all"
+            className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover transition-all"
           >
             Continue 🙏
           </button>

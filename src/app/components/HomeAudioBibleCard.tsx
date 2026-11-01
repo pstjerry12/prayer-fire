@@ -102,14 +102,14 @@ export default function HomeAudioBibleCard() {
               ? state === 'playing' ? 'Pause the Bible reading' : 'Resume the Bible reading'
               : place ? `Audio Bible, continue ${placeLabel(current)}` : 'Audio Bible, start listening'
           }
-          className="flex h-full min-h-[3.75rem] w-full items-center gap-3 rounded-2xl bg-acc p-3 text-left active:scale-[0.98] transition-transform"
+          className="flex h-full min-h-[3.75rem] w-full items-center gap-3 rounded-2xl bg-card border border-edge p-3 text-left active:scale-[0.98] transition-transform"
         >
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-card text-acc">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-acc text-on-acc">
             {state === 'playing' ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current ml-0.5" />}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[0.9375rem] font-bold leading-tight text-white">{title}</span>
-            <span className="block truncate text-xs font-semibold text-white/90">{detail}</span>
+            <span className="block text-[0.9375rem] font-bold leading-tight text-heading">{title}</span>
+            <span className="block truncate text-xs font-semibold text-ink-muted">{detail}</span>
           </span>
         </button>
         {reading && (

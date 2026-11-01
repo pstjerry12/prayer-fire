@@ -48,10 +48,10 @@ function EntryCard({ sermonId, entry, index, onOpen }: { sermonId: string; entry
               rows={note ? Math.min(6, Math.max(2, Math.ceil(note.length / 40))) : 2}
               maxLength={5000}
               placeholder="Your note on this verse…"
-              className="mt-2 w-full bg-card-2 border border-edge rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 resize-none"
+              className="mt-2 w-full bg-card-2 border border-edge rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 resize-none"
             />
           ) : (
-            <button onClick={() => setEditing(true)} className="mt-2 flex items-center gap-1 text-xs font-bold text-acc hover:underline">
+            <button onClick={() => setEditing(true)} className="mt-2 flex items-center gap-1 text-xs font-bold text-acc-strong hover:underline">
               <Pencil className="w-3 h-3" /> Add a note
             </button>
           )}
@@ -91,14 +91,14 @@ export default function SermonPage() {
     <>
       <Navbar />
       <main className="max-w-2xl mx-auto px-4 py-6 pb-28 md:pb-10">
-        <button onClick={() => router.back()} className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-acc mb-4">
+        <button onClick={() => router.back()} className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-acc-strong mb-4">
           <ChevronLeft className="w-4 h-4" /> Sermon Notes
         </button>
 
         {!visible ? (
           <div className="bg-card rounded-2xl border border-edge p-8 text-center">
             <p className="text-ink-muted text-sm">That sermon could not be found.</p>
-            <button onClick={() => router.push('/study')} className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold">
+            <button onClick={() => router.push('/study')} className="mt-4 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">
               Open My Study
             </button>
           </div>
@@ -112,7 +112,7 @@ export default function SermonPage() {
                     onBlur={(e) => updateSermon(visible.id, { title: e.target.value.trim() || 'Untitled sermon' })}
                     maxLength={200}
                     aria-label="Sermon title"
-                    className="w-full bg-card border border-edge-strong rounded-xl px-3 py-2 text-lg font-bold text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                    className="w-full bg-card border border-edge-strong rounded-xl px-3 py-2 text-lg font-bold text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
                   />
                   <input
                     defaultValue={visible.preacher}
@@ -120,16 +120,16 @@ export default function SermonPage() {
                     maxLength={200}
                     placeholder="Preacher"
                     aria-label="Preacher"
-                    className="w-full bg-card border border-edge-strong rounded-xl px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                    className="w-full bg-card border border-edge-strong rounded-xl px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
                   />
                   <input
                     type="date"
                     defaultValue={visible.date}
                     onBlur={(e) => e.target.value && updateSermon(visible.id, { date: e.target.value })}
                     aria-label="Date"
-                    className="w-full bg-card border border-edge-strong rounded-xl px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                    className="w-full bg-card border border-edge-strong rounded-xl px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
                   />
-                  <button onClick={() => setEditingMeta(false)} className="flex items-center gap-1 text-xs font-bold text-acc">
+                  <button onClick={() => setEditingMeta(false)} className="flex items-center gap-1 text-xs font-bold text-acc-strong">
                     <Check className="w-3.5 h-3.5" /> Done
                   </button>
                 </div>
@@ -151,14 +151,14 @@ export default function SermonPage() {
                 onClick={() => setActiveSermon(active ? null : visible.id)}
                 className={cn(
                   'flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold',
-                  active ? 'bg-warn-soft border border-warn-edge text-warn-strong' : 'bg-emerald-600 text-white'
+                  active ? 'bg-acc-soft border border-acc-edge text-acc-strong' : 'bg-acc text-on-acc'
                 )}
               >
                 {active ? <X className="w-4 h-4" /> : <Check className="w-4 h-4" />}
                 {active ? 'End session' : 'Use as active session'}
               </button>
               <button onClick={handleCopy} disabled={entries.length === 0} className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-card-2 text-ink-soft text-xs font-bold hover:bg-card-3 disabled:opacity-50">
-                {copied ? <Check className="w-4 h-4 text-acc" /> : <Copy className="w-4 h-4" />}
+                {copied ? <Check className="w-4 h-4 text-acc-strong" /> : <Copy className="w-4 h-4" />}
                 {copied ? 'Copied' : 'Copy list'}
               </button>
               {canShare && (
@@ -173,7 +173,7 @@ export default function SermonPage() {
             </div>
 
             {active && (
-              <p className="mb-4 rounded-lg bg-warn-soft border border-warn-edge px-3 py-2 text-xs text-ink-soft">
+              <p className="mb-4 rounded-lg bg-acc-soft border border-acc-edge px-3 py-2 text-xs text-ink-soft">
                 This is your active session. In the Bible, hold a verse and choose <strong>Add to Sermon Notes</strong> to save it here.
               </p>
             )}

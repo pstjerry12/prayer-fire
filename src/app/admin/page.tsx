@@ -56,8 +56,8 @@ interface FeedbackItem {
 
 const FEEDBACK_EMOJI: Record<string, string> = { bug: '🐞', idea: '💡', praise: '🙏', other: '💬' };
 const FEEDBACK_STATUS: { id: string; label: string; cls: string }[] = [
-  { id: 'new', label: 'New', cls: 'bg-amber-100 text-amber-700' },
-  { id: 'planned', label: 'Planned', cls: 'bg-blue-100 text-blue-700' },
+  { id: 'new', label: 'New', cls: 'bg-acc-soft-2 text-acc-strong' },
+  { id: 'planned', label: 'Planned', cls: 'bg-acc-soft-2 text-acc-strong' },
   { id: 'done', label: 'Done', cls: 'bg-acc-soft-2 text-acc-strong' },
 ];
 
@@ -253,14 +253,14 @@ export default function AdminPage() {
     return `${isNaira ? '₦' : '$'}${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
   };
 
-  if (checking) return (<div className="min-h-screen bg-page flex items-center justify-center"><Loader2 className="w-8 h-8 text-acc animate-spin" /></div>);
+  if (checking) return (<div className="min-h-screen bg-page flex items-center justify-center"><Loader2 className="w-8 h-8 text-acc-strong animate-spin" /></div>);
   if (!isAdmin) return (
     <div className="min-h-screen bg-page flex items-center justify-center px-4">
       <div className="bg-card border border-edge rounded-2xl p-8 text-center max-w-sm">
         <ShieldCheck className="w-12 h-12 text-danger mx-auto mb-3" />
         <h1 className="font-serif-heading text-xl font-bold text-ink mb-2">Access Denied</h1>
         <p className="text-ink-muted text-sm mb-5">You must be signed in as an administrator.</p>
-        <Link href="/" className="inline-block px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-500">Back to Home</Link>
+        <Link href="/" className="inline-block px-4 py-2 bg-acc text-on-acc rounded-xl text-sm font-bold hover:bg-acc-hover">Back to Home</Link>
       </div>
     </div>
   );
@@ -307,14 +307,14 @@ export default function AdminPage() {
             const Icon = t.icon;
             return (
               <button key={t.id} onClick={() => setTab(t.id)}
-                className={cn('flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all', tab === t.id ? 'bg-emerald-600 text-white' : 'bg-card text-ink-muted border border-edge hover:bg-card-2')}>
+                className={cn('flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all', tab === t.id ? 'bg-acc text-on-acc' : 'bg-card text-ink-muted border border-edge hover:bg-card-2')}>
                 <Icon className="w-4 h-4" /> {t.label}
               </button>
             );
           })}
         </div>
 
-        {loading && <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 text-acc animate-spin" /></div>}
+        {loading && <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 text-acc-strong animate-spin" /></div>}
 
         {/* ══════ OVERVIEW ══════ */}
         {tab === 'overview' && stats && (
@@ -335,7 +335,7 @@ export default function AdminPage() {
               <h3 className="font-bold text-ink mb-3">⚡ Quick Actions</h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <button onClick={() => setTab('announcements')} className="flex flex-col items-center gap-1 p-3 rounded-xl bg-bg-card-2 hover:bg-bg-acc-soft transition text-sm">
-                  <Megaphone size={20} className="text-text-warn" /> Broadcast
+                  <Megaphone size={20} className="text-acc-strong" /> Broadcast
                 </button>
                 <button onClick={() => setTab('events')} className="flex flex-col items-center gap-1 p-3 rounded-xl bg-bg-card-2 hover:bg-bg-acc-soft transition text-sm">
                   <CalendarDays size={20} className="text-text-acc" /> New Event
@@ -358,7 +358,7 @@ export default function AdminPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
                 <input type="text" placeholder="Search users by name, email or phone..." value={userSearch} onChange={(e) => setUserSearch(e.target.value)}
-                  className="w-full bg-page border border-edge-strong rounded-lg pl-10 pr-4 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                  className="w-full bg-page border border-edge-strong rounded-lg pl-10 pr-4 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
               </div>
             </div>
             <div className="divide-y divide-edge">
@@ -368,13 +368,13 @@ export default function AdminPage() {
                     <p className="text-ink font-semibold text-sm truncate">{u.name || 'Anonymous'}</p>
                     <p className="text-ink-muted text-xs truncate">{u.email || (u.phone ? `${u.countryCode ?? ''} ${u.phone}` : '—')}</p>
                   </div>
-                  <span className={cn('text-[0.625rem] font-bold px-2 py-0.5 rounded-full flex-shrink-0', u.role === 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-card-2 text-ink-muted')}>
+                  <span className={cn('text-[0.625rem] font-bold px-2 py-0.5 rounded-full flex-shrink-0', u.role === 'admin' ? 'bg-acc-soft-2 text-acc-strong' : 'bg-card-2 text-ink-muted')}>
                     {u.role === 'admin' ? 'ADMIN' : 'USER'}
                   </span>
                   {u.role === 'admin' ? (
-                    <button onClick={() => setUserRole(u.id, 'user')} className="p-2 text-ink-faint hover:text-warn" title="Remove admin"><UserMinus className="w-4 h-4" /></button>
+                    <button onClick={() => setUserRole(u.id, 'user')} className="p-2 text-ink-faint hover:text-acc-strong" title="Remove admin"><UserMinus className="w-4 h-4" /></button>
                   ) : (
-                    <button onClick={() => setUserRole(u.id, 'admin')} className="p-2 text-ink-faint hover:text-acc" title="Promote to admin"><Crown className="w-4 h-4" /></button>
+                    <button onClick={() => setUserRole(u.id, 'admin')} className="p-2 text-ink-faint hover:text-acc-strong" title="Promote to admin"><Crown className="w-4 h-4" /></button>
                   )}
                   <button onClick={() => deleteUser(u.id)} className="p-2 text-ink-faint hover:text-danger" title="Delete user"><Trash2 className="w-4 h-4" /></button>
                 </div>
@@ -394,7 +394,7 @@ export default function AdminPage() {
                     <p className="text-ink font-bold text-sm">{r.name}</p>
                     <p className="text-ink-muted text-xs">{r.location || 'Unknown location'} · {r.prayers} prayers</p>
                   </div>
-                  <span className={cn('text-[0.625rem] font-bold px-2 py-0.5 rounded-full flex-shrink-0', r.approved ? 'bg-acc-soft-2 text-acc-strong' : 'bg-amber-100 text-amber-700')}>
+                  <span className={cn('text-[0.625rem] font-bold px-2 py-0.5 rounded-full flex-shrink-0', r.approved ? 'bg-acc-soft-2 text-acc-strong' : 'bg-acc-soft-2 text-acc-strong')}>
                     {r.approved ? 'APPROVED' : 'PENDING'}
                   </span>
                 </div>
@@ -403,7 +403,7 @@ export default function AdminPage() {
                   {r.approved ? (
                     <button onClick={() => approveRequest(r.id, false)} className="flex items-center gap-1 px-3 py-1.5 bg-card-2 text-ink-soft rounded-lg text-xs font-semibold hover:bg-card-3"><X className="w-3 h-3" /> Unapprove</button>
                   ) : (
-                    <button onClick={() => approveRequest(r.id, true)} className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-500"><Check className="w-3 h-3" /> Approve</button>
+                    <button onClick={() => approveRequest(r.id, true)} className="flex items-center gap-1 px-3 py-1.5 bg-acc text-on-acc rounded-lg text-xs font-bold hover:bg-acc-hover"><Check className="w-3 h-3" /> Approve</button>
                   )}
                   <button onClick={() => deleteRequest(r.id)} className="flex items-center gap-1 px-3 py-1.5 text-danger rounded-lg text-xs font-semibold hover:bg-danger-soft"><Trash2 className="w-3 h-3" /> Delete</button>
                 </div>
@@ -419,7 +419,7 @@ export default function AdminPage() {
             <div className="grid grid-cols-2 gap-1.5 bg-card-2 border border-edge rounded-xl p-1" role="tablist" aria-label="Feedback view">
               {([['messages', '💬 Messages'], ['activity', '📅 Daily activity']] as const).map(([id, label]) => (
                 <button key={id} role="tab" aria-selected={feedbackView === id} onClick={() => setFeedbackView(id)}
-                  className={cn('py-2 rounded-lg text-sm font-semibold transition-all', feedbackView === id ? 'bg-emerald-600 text-white shadow-sm' : 'text-ink-muted hover:bg-card-3')}>
+                  className={cn('py-2 rounded-lg text-sm font-semibold transition-all', feedbackView === id ? 'bg-acc text-on-acc shadow-sm' : 'text-ink-muted hover:bg-card-3')}>
                   {label}
                 </button>
               ))}
@@ -435,7 +435,7 @@ export default function AdminPage() {
               </div>
               <button onClick={copyFeedbackLog} disabled={feedbackItems.length === 0}
                 className="shrink-0 flex items-center gap-1.5 px-3 py-2 bg-card-2 border border-edge rounded-lg text-xs font-semibold text-ink-soft hover:bg-card-3 disabled:opacity-50">
-                {feedbackCopied ? <Check className="w-3.5 h-3.5 text-acc" /> : <Copy className="w-3.5 h-3.5" />} {feedbackCopied ? 'Copied' : 'Copy log'}
+                {feedbackCopied ? <Check className="w-3.5 h-3.5 text-acc-strong" /> : <Copy className="w-3.5 h-3.5" />} {feedbackCopied ? 'Copied' : 'Copy log'}
               </button>
             </div>
             <div className="bg-card border border-edge rounded-2xl overflow-hidden divide-y divide-edge">
@@ -462,7 +462,7 @@ export default function AdminPage() {
                     <div className="flex flex-wrap gap-1.5">
                       {FEEDBACK_STATUS.map((st) => (
                         <button key={st.id} onClick={() => updateFeedback(f.id, { status: st.id })}
-                          className={cn('px-2.5 py-1 rounded-full text-xs font-semibold border', f.status === st.id ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-card border-edge text-ink-muted hover:bg-card-2')}>
+                          className={cn('px-2.5 py-1 rounded-full text-xs font-semibold border', f.status === st.id ? 'bg-acc text-on-acc border-acc' : 'bg-card border-edge text-ink-muted hover:bg-card-2')}>
                           {st.label}
                         </button>
                       ))}
@@ -470,9 +470,9 @@ export default function AdminPage() {
                     <div className="flex gap-2">
                       <input type="text" placeholder="What did we do? e.g. Fixed in build 13" value={draft}
                         onChange={(e) => setResolutionDrafts((d) => ({ ...d, [f.id]: e.target.value }))}
-                        className="flex-1 min-w-0 bg-page border border-edge-strong rounded-lg px-3 py-1.5 text-xs text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                        className="flex-1 min-w-0 bg-page border border-edge-strong rounded-lg px-3 py-1.5 text-xs text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                       <button onClick={() => updateFeedback(f.id, { resolution: draft })} disabled={draft === (f.resolution ?? '')}
-                        className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold disabled:opacity-40">
+                        className="px-3 py-1.5 bg-acc text-on-acc rounded-lg text-xs font-bold disabled:opacity-40">
                         Save
                       </button>
                     </div>
@@ -490,15 +490,15 @@ export default function AdminPage() {
           <div className="space-y-4">
             {/* Add testimony */}
             <div className="bg-card border border-edge rounded-2xl p-5">
-              <h2 className="font-bold text-ink mb-3 flex items-center gap-2"><Plus className="w-4 h-4 text-acc" /> Add Testimony</h2>
+              <h2 className="font-bold text-ink mb-3 flex items-center gap-2"><Plus className="w-4 h-4 text-acc-strong" /> Add Testimony</h2>
               <div className="grid grid-cols-2 gap-2 mb-2">
-                <input type="text" placeholder="Name" value={testName} onChange={(e) => setTestName(e.target.value)} className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
-                <input type="text" placeholder="Location (optional)" value={testLoc} onChange={(e) => setTestLoc(e.target.value)} className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                <input type="text" placeholder="Name" value={testName} onChange={(e) => setTestName(e.target.value)} className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
+                <input type="text" placeholder="Location (optional)" value={testLoc} onChange={(e) => setTestLoc(e.target.value)} className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
               </div>
               <textarea placeholder="Their testimony..." value={testBody} onChange={(e) => setTestBody(e.target.value)} rows={3}
-                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 resize-none mb-3" />
+                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 resize-none mb-3" />
               <button onClick={addTestimonial} disabled={testSending || !testName.trim() || !testBody.trim()}
-                className="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50">
+                className="w-full py-2.5 bg-acc text-on-acc rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-acc-hover disabled:opacity-50">
                 {testSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Add & Approve
               </button>
             </div>
@@ -512,13 +512,13 @@ export default function AdminPage() {
                       <div className="flex items-center gap-2 mb-1">
                         <p className="text-ink font-semibold text-sm">{t.isAnonymous || !t.name ? 'Anonymous' : t.name}</p>
                         <span className="text-ink-muted text-xs">{t.location}</span>
-                        <span className={cn('text-[0.625rem] font-bold px-2 py-0.5 rounded-full', t.approved ? 'bg-acc-soft-2 text-acc-strong' : 'bg-amber-100 text-amber-700')}>
+                        <span className={cn('text-[0.625rem] font-bold px-2 py-0.5 rounded-full', t.approved ? 'bg-acc-soft-2 text-acc-strong' : 'bg-acc-soft-2 text-acc-strong')}>
                           {t.approved ? 'VISIBLE' : 'HIDDEN'}
                         </span>
                       </div>
                       <p className="text-ink-soft text-xs">{t.testimony}</p>
                     </div>
-                    <button onClick={() => approveTestimonial(t.id, !t.approved)} className={cn('p-2 rounded-lg', t.approved ? 'text-ink-faint hover:text-warn' : 'text-ink-faint hover:text-acc')} title={t.approved ? 'Hide' : 'Approve'}>
+                    <button onClick={() => approveTestimonial(t.id, !t.approved)} className={cn('p-2 rounded-lg', t.approved ? 'text-ink-faint hover:text-acc-strong' : 'text-ink-faint hover:text-acc-strong')} title={t.approved ? 'Hide' : 'Approve'}>
                       {t.approved ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                     <button onClick={() => deleteTestimonial(t.id)} className="p-2 text-ink-faint hover:text-danger" title="Delete"><Trash2 className="w-4 h-4" /></button>
@@ -560,19 +560,19 @@ export default function AdminPage() {
           <div className="space-y-4">
             <div className="bg-card border border-edge rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-3">
-                <span className="grid h-9 w-9 place-items-center rounded-lg bg-warn-soft text-warn"><Megaphone className="w-4 h-4" /></span>
+                <span className="grid h-9 w-9 place-items-center rounded-lg bg-acc-soft text-acc-strong"><Megaphone className="w-4 h-4" /></span>
                 <div>
                   <h2 className="font-bold text-ink">Broadcast to All Users</h2>
                   <p className="text-xs text-ink-muted">Appears on every user&apos;s home page</p>
                 </div>
               </div>
               <input type="text" placeholder="Title (e.g. 🔥 Global Prayer Conference)" value={annTitle} onChange={(e) => setAnnTitle(e.target.value)}
-                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 mb-2" />
+                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 mb-2" />
               <textarea placeholder="Message to the community…" value={annBody} onChange={(e) => setAnnBody(e.target.value)} rows={3}
-                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 resize-none mb-3" />
+                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 resize-none mb-3" />
               {annMsg && <p className="text-xs font-semibold text-acc-strong mb-2">{annMsg}</p>}
               <button onClick={sendAnnouncement} disabled={annSending}
-                className="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50">
+                className="w-full py-2.5 bg-acc text-on-acc rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-acc-hover disabled:opacity-50">
                 {annSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} {annSending ? 'Sending…' : 'Broadcast to Everyone'}
               </button>
             </div>
@@ -601,25 +601,25 @@ export default function AdminPage() {
             <div className="bg-card border border-edge rounded-2xl p-5">
               <h2 className="font-bold text-ink mb-3 flex items-center gap-2"><Flame className="w-4 h-4 text-text-fire" /> Announce Global Prayer Event</h2>
               <input type="text" placeholder="Event title (e.g. 🔥 21-Day Global Prayer Challenge)" value={evTitle} onChange={(e) => setEvTitle(e.target.value)}
-                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 mb-2" />
+                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 mb-2" />
               <textarea placeholder="Description (optional)" value={evDesc} onChange={(e) => setEvDesc(e.target.value)} rows={2}
-                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 resize-none mb-2" />
+                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 resize-none mb-2" />
               <div className="grid grid-cols-2 gap-2 mb-2">
                 <div>
                   <label className="text-xs font-semibold text-ink-muted mb-1 block">Date</label>
                   <input type="date" value={evDate} onChange={(e) => setEvDate(e.target.value)}
-                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-ink-muted mb-1 block">Time</label>
                   <input type="text" placeholder="e.g. 4:00 AM WAT" value={evTime} onChange={(e) => setEvTime(e.target.value)}
-                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                 </div>
               </div>
               <input type="url" placeholder="Link (Zoom/YouTube — optional)" value={evLink} onChange={(e) => setEvLink(e.target.value)}
-                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 mb-3" />
+                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 mb-3" />
               <button onClick={addEvent} disabled={evSending || !evTitle.trim() || !evDate}
-                className="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50">
+                className="w-full py-2.5 bg-acc text-on-acc rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-acc-hover disabled:opacity-50">
                 {evSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Add Event
               </button>
             </div>
@@ -650,7 +650,7 @@ export default function AdminPage() {
         {tab === 'settings' && settings && (
           <div className="space-y-4">
             {settingsMsg && (
-              <div className={cn('rounded-xl p-3 text-sm font-semibold text-center', settingsMsg.startsWith('✅') ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700')}>
+              <div className={cn('rounded-xl p-3 text-sm font-semibold text-center', settingsMsg.startsWith('✅') ? 'bg-acc-soft text-acc-strong' : 'bg-danger-soft text-danger')}>
                 {settingsMsg}
               </div>
             )}
@@ -661,23 +661,23 @@ export default function AdminPage() {
                 <Key className="w-5 h-5 text-text-fire" />
                 <h2 className="font-bold text-ink text-lg">💳 Flutterwave Key</h2>
                 <span className={cn('text-[0.625rem] font-bold px-2 py-0.5 rounded-full ml-auto',
-                  dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')}>
+                  dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? 'bg-acc-soft-2 text-acc-strong' : 'bg-acc-soft-2 text-acc-strong')}>
                   {dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? 'LIVE' : dbSettings.flutterwave_public_key ? 'TEST' : 'NOT SET'}
                 </span>
               </div>
 
               {dbSettings.flutterwave_public_key?.startsWith('FLWPUBK-') ? (
-                <div className="bg-emerald-50 rounded-xl p-4 mb-3">
-                  <p className="text-emerald-700 font-semibold text-sm">✅ Flutterwave is LIVE — donations are working!</p>
-                  <p className="text-emerald-600 text-xs mt-1">Public key: <code className="bg-emerald-100 px-1 rounded">{dbSettings.flutterwave_public_key}</code></p>
+                <div className="bg-acc-soft rounded-xl p-4 mb-3">
+                  <p className="text-acc-strong font-semibold text-sm">✅ Flutterwave is LIVE — donations are working!</p>
+                  <p className="text-acc-strong text-xs mt-1">Public key: <code className="bg-acc-soft-2 px-1 rounded">{dbSettings.flutterwave_public_key}</code></p>
                 </div>
               ) : dbSettings.flutterwave_public_key ? (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-3">
-                  <p className="text-amber-700 font-semibold text-sm">🧪 TEST mode — donations work but no real money moves. Paste your live key (starts with <code>FLWPUBK-</code>) below when you&apos;re done testing.</p>
+                <div className="bg-acc-soft border border-acc-edge rounded-xl p-4 mb-3">
+                  <p className="text-acc-strong font-semibold text-sm">🧪 TEST mode — donations work but no real money moves. Paste your live key (starts with <code>FLWPUBK-</code>) below when you&apos;re done testing.</p>
                 </div>
               ) : (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-3">
-                  <p className="text-amber-700 font-semibold text-sm">⏳ Donations show "Coming Soon" — paste a test key below to try it, then swap in your live key when ready</p>
+                <div className="bg-acc-soft border border-acc-edge rounded-xl p-4 mb-3">
+                  <p className="text-acc-strong font-semibold text-sm">⏳ Donations show "Coming Soon" — paste a test key below to try it, then swap in your live key when ready</p>
                 </div>
               )}
 
@@ -689,7 +689,7 @@ export default function AdminPage() {
                     placeholder="FLWPUBK_TEST-...or FLWPUBK-...paste your public key here..."
                     value={flutterwavePublicInput}
                     onChange={(e) => setFlutterwavePublicInput(e.target.value)}
-                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink font-mono placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink font-mono placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
                   />
                 </div>
                 <div>
@@ -699,7 +699,7 @@ export default function AdminPage() {
                     placeholder="FLWSECK_TEST-...or FLWSECK-...paste your secret key here..."
                     value={flutterwaveSecretInput}
                     onChange={(e) => setFlutterwaveSecretInput(e.target.value)}
-                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink font-mono placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink font-mono placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
                   />
                 </div>
                 <button
@@ -710,7 +710,7 @@ export default function AdminPage() {
                     if (Object.keys(updates).length > 0) saveSettings(updates);
                   }}
                   disabled={settingsSaving}
-                  className="w-full py-2.5 bg-acc text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 disabled:opacity-50"
+                  className="w-full py-2.5 bg-acc text-on-acc rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save Flutterwave Keys'}
                 </button>
@@ -726,7 +726,7 @@ export default function AdminPage() {
             {/* Pricing — EDIT HERE */}
             <div className="bg-card border border-edge rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-3">
-                <DollarSign className="w-5 h-5 text-text-warn" />
+                <DollarSign className="w-5 h-5 text-acc-strong" />
                 <h2 className="font-bold text-ink text-lg">💰 Edit Pricing</h2>
               </div>
 
@@ -736,34 +736,34 @@ export default function AdminPage() {
                 </p>
               </div>
 
-              <div className="bg-amber-50 rounded-xl p-3 mb-3">
+              <div className="bg-acc-soft rounded-xl p-3 mb-3">
                 <p className="font-bold text-ink text-sm mb-1">👑 Prayer Fire Partner</p>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-xs font-semibold text-ink-muted block mb-1">Monthly (USD)</label>
                     <input type="number" step="0.01" value={pricePartnerMonthly} onChange={(e) => setPricePartnerMonthly(e.target.value)}
-                      className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                      className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-ink-muted block mb-1">Yearly (USD)</label>
                     <input type="number" step="0.01" value={pricePartnerYearly} onChange={(e) => setPricePartnerYearly(e.target.value)}
-                      className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                      className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                   </div>
                 </div>
               </div>
 
-              <div className="bg-red-50 rounded-xl p-3 mb-3">
+              <div className="bg-danger-soft rounded-xl p-3 mb-3">
                 <p className="font-bold text-ink text-sm mb-1">🔥 Fire Partner Leader</p>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-xs font-semibold text-ink-muted block mb-1">Monthly (USD)</label>
                     <input type="number" step="0.01" value={priceLeaderMonthly} onChange={(e) => setPriceLeaderMonthly(e.target.value)}
-                      className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                      className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-ink-muted block mb-1">3Yearly (USD)</label>
                     <input type="number" step="0.01" value={priceLeaderYearly} onChange={(e) => setPriceLeaderYearly(e.target.value)}
-                      className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                      className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                   </div>
                 </div>
               </div>
@@ -776,7 +776,7 @@ export default function AdminPage() {
                   price_leader_yearly: priceLeaderYearly,
                 })}
                 disabled={settingsSaving}
-                className="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
+                className="w-full py-2.5 bg-acc text-on-acc rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-acc-hover disabled:opacity-50"
               >
                 <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save Prices'}
               </button>
@@ -785,7 +785,7 @@ export default function AdminPage() {
             {/* Social Links — Follow Us */}
             <div className="bg-card border border-edge rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-3">
-                <LinkIcon className="w-5 h-5 text-acc" />
+                <LinkIcon className="w-5 h-5 text-acc-strong" />
                 <h2 className="font-bold text-ink text-lg">🔗 Follow Us — Social Links</h2>
               </div>
 
@@ -799,27 +799,27 @@ export default function AdminPage() {
                 <div>
                   <label className="text-xs font-semibold text-ink-muted block mb-1">YouTube channel URL</label>
                   <input type="url" placeholder="https://youtube.com/@yourchannel" value={socialYoutube} onChange={(e) => setSocialYoutube(e.target.value)}
-                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-ink-muted block mb-1">Facebook page URL</label>
                   <input type="url" placeholder="https://facebook.com/yourpage" value={socialFacebook} onChange={(e) => setSocialFacebook(e.target.value)}
-                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-ink-muted block mb-1">Instagram profile URL</label>
                   <input type="url" placeholder="https://instagram.com/yourprofile" value={socialInstagram} onChange={(e) => setSocialInstagram(e.target.value)}
-                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-ink-muted block mb-1">WhatsApp chat link (for counseling / prayer requests)</label>
                   <input type="url" placeholder="https://wa.me/2348012345678" value={socialWhatsapp} onChange={(e) => setSocialWhatsapp(e.target.value)}
-                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-ink-muted block mb-1">TikTok profile URL</label>
                   <input type="url" placeholder="https://tiktok.com/@yourprofile" value={socialTiktok} onChange={(e) => setSocialTiktok(e.target.value)}
-                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                 </div>
               </div>
 
@@ -832,7 +832,7 @@ export default function AdminPage() {
                   social_tiktok: socialTiktok,
                 })}
                 disabled={settingsSaving}
-                className="w-full mt-3 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
+                className="w-full mt-3 py-2.5 bg-acc text-on-acc rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-acc-hover disabled:opacity-50"
               >
                 <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save Social Links'}
               </button>
@@ -855,17 +855,17 @@ export default function AdminPage() {
                 <div>
                   <label className="text-xs font-semibold text-ink-muted block mb-1">YouTube video / livestream URL</label>
                   <input type="url" placeholder="https://youtube.com/watch?v=..." value={dailyYoutubeUrl} onChange={(e) => setDailyYoutubeUrl(e.target.value)}
-                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-ink-muted block mb-1">Topic / title</label>
                   <input type="text" placeholder="Breaking Every Chain — Morning Exaltation" value={dailyYoutubeTitle} onChange={(e) => setDailyYoutubeTitle(e.target.value)}
-                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-ink-muted block mb-1">Subtitle (optional)</label>
                   <input type="text" placeholder="Special Prayer Session" value={dailyYoutubeSubtitle} onChange={(e) => setDailyYoutubeSubtitle(e.target.value)}
-                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                    className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
                 </div>
               </div>
 
@@ -889,7 +889,7 @@ export default function AdminPage() {
                   daily_youtube_subtitle: dailyYoutubeSubtitle,
                 })}
                 disabled={settingsSaving}
-                className="w-full mt-3 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
+                className="w-full mt-3 py-2.5 bg-acc text-on-acc rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-acc-hover disabled:opacity-50"
               >
                 <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save Daily Video'}
               </button>
@@ -910,17 +910,17 @@ export default function AdminPage() {
 
               <label className="text-xs font-semibold text-ink-muted block mb-1">Latest Android version code on the Play Store</label>
               <input type="number" inputMode="numeric" min={1} placeholder="e.g. 16" value={androidLatestBuild} onChange={(e) => setAndroidLatestBuild(e.target.value.replace(/[^0-9]/g, ''))}
-                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
 
               <label className="text-xs font-semibold text-ink-muted block mt-3 mb-1">What&apos;s new (optional, shown in the popup)</label>
               <textarea rows={3} maxLength={300} placeholder="e.g. 500 prayer verses, easier sign-in, and bug fixes." value={androidUpdateMessage} onChange={(e) => setAndroidUpdateMessage(e.target.value)}
-                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40 resize-none" />
+                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40 resize-none" />
               <p className="text-[0.6875rem] text-ink-faint mt-1 text-right">{androidUpdateMessage.length}/300</p>
 
               <button
                 onClick={() => saveSettings({ android_latest_build: androidLatestBuild, android_update_message: androidUpdateMessage })}
                 disabled={settingsSaving}
-                className="w-full mt-3 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
+                className="w-full mt-3 py-2.5 bg-acc text-on-acc rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-acc-hover disabled:opacity-50"
               >
                 <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save'}
               </button>
@@ -941,12 +941,12 @@ export default function AdminPage() {
 
               <label className="text-xs font-semibold text-ink-muted block mb-1">Sign out after (minutes of inactivity, 0 = off)</label>
               <input type="number" inputMode="numeric" min={0} max={1440} placeholder="0 (off)" value={idleLockMinutes} onChange={(e) => setIdleLockMinutes(e.target.value.replace(/[^0-9]/g, ''))}
-                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                className="w-full bg-page border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
 
               <button
                 onClick={() => saveSettings({ idle_lock_minutes: idleLockMinutes })}
                 disabled={settingsSaving}
-                className="w-full mt-3 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500 disabled:opacity-50"
+                className="w-full mt-3 py-2.5 bg-acc text-on-acc rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-acc-hover disabled:opacity-50"
               >
                 <Save className="w-4 h-4" /> {settingsSaving ? 'Saving...' : 'Save'}
               </button>
@@ -966,7 +966,7 @@ export default function AdminPage() {
                     <span className="text-sm text-ink-soft">{item.label}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-ink-muted">{item.detail}</span>
-                      <span className={cn('text-xs font-bold', item.ok ? 'text-emerald-600' : 'text-amber-600')}>{item.ok ? '✅' : '⚠️'}</span>
+                      <span className={cn('text-xs font-bold', item.ok ? 'text-acc-strong' : 'text-acc-strong')}>{item.ok ? '✅' : '⚠️'}</span>
                     </div>
                   </div>
                 ))}
@@ -980,7 +980,7 @@ export default function AdminPage() {
 }
 
 function StatCard({ label, value, sub, icon, color }: { label: string; value: string; sub?: string; icon: React.ReactNode; color?: string }) {
-  const bg = color === 'amber' ? 'bg-amber-100 text-amber-600' : color === 'blue' ? 'bg-blue-100 text-blue-600' : color === 'emerald' ? 'bg-emerald-100 text-emerald-600' : 'bg-acc-soft text-acc';
+  const bg = color === 'amber' ? 'bg-acc-soft-2 text-acc-strong' : color === 'blue' ? 'bg-acc-soft-2 text-acc-strong' : color === 'emerald' ? 'bg-acc-soft-2 text-acc-strong' : 'bg-acc-soft text-acc-strong';
   return (
     <div className="bg-card border border-edge rounded-2xl p-4">
       <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center mb-2', bg)}>{icon}</div>

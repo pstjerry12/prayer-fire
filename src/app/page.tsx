@@ -26,7 +26,7 @@ export default function HomePage() {
             <h1 className="font-serif-heading text-3xl md:text-5xl font-bold text-ink mt-2">
               Prayer Fire
             </h1>
-            <p className="text-base md:text-xl bg-gradient-to-r from-[var(--acc-strong)] via-[var(--acc)] to-[var(--acc-strong)] bg-clip-text text-transparent font-serif-heading font-semibold mt-1">
+            <p className="text-base md:text-xl text-acc-strong font-serif-heading font-semibold mt-1">
               Write it. Speak it. Pray it. Trust God.
             </p>
             <p className="text-ink-muted font-semibold italic text-xs md:text-sm mt-1">
@@ -39,35 +39,37 @@ export default function HomePage() {
             <section className="grid grid-cols-2 gap-3 md:gap-4">
               <Link
                 href="/workshop"
-                className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-acc-soft-2 p-3.5 text-center active:scale-[0.98] transition-transform"
+                className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-card border border-edge p-3.5 text-center active:scale-[0.98] transition-transform"
               >
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-emerald-600 text-white">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-ember-tint text-ember-dark">
                   <Flame className="w-5 h-5" />
                 </span>
                 <h3 className="font-bold text-[0.9375rem] leading-tight text-ink">Write Prayer Points</h3>
-                <p className="text-xs font-semibold text-acc-strong">Prayer Workshop</p>
+                <p className="text-xs font-semibold text-ink-muted">Prayer Workshop</p>
               </Link>
 
               <Link
                 href="/startup"
-                className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-card p-3.5 text-center active:scale-[0.98] transition-transform"
+                className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-card border border-edge p-3.5 text-center active:scale-[0.98] transition-transform"
               >
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-acc-soft text-acc">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-ember-tint text-ember-dark">
                   <Sparkles className="w-5 h-5" />
                 </span>
                 <h3 className="font-bold text-[0.9375rem] leading-tight text-ink">Start-Up Prayer</h3>
-                <p className="text-xs font-semibold text-acc-strong">7-step guided</p>
+                <p className="text-xs font-semibold text-ink-muted">7-step guided</p>
               </Link>
             </section>
 
             {/* ── Daily schedule: one slim bar that opens the schedule page ── */}
             <Link
               href="/schedule"
-              className="flex h-12 items-center gap-3 rounded-2xl bg-acc-soft-2 px-4 text-sm font-bold text-acc-strong active:scale-[0.99] transition-transform"
+              className="flex h-12 items-center gap-3 rounded-2xl bg-card border border-edge px-3 text-sm font-bold text-ink active:scale-[0.99] transition-transform"
             >
-              <Clock className="w-5 h-5" />
-              <span className="flex-1">Set Daily Schedule</span>
-              <ChevronRight className="w-4 h-4" />
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ember-tint text-ember-dark">
+                <Clock className="w-5 h-5" />
+              </span>
+              <span className="flex-1 text-heading">Set Daily Schedule</span>
+              <ChevronRight className="w-4 h-4 text-ink-muted" />
             </Link>
 
             {/* ── Today's verse + the four tiles ── */}
@@ -86,7 +88,7 @@ export default function HomePage() {
             className="block bg-card rounded-2xl mt-4 p-4 md:p-5 border border-edge shadow-sm hover:border-acc-edge transition-all"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-acc-soft text-acc flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-acc-soft text-acc-strong flex items-center justify-center shrink-0">
                 <Users className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div className="flex-1 min-w-0">
@@ -105,7 +107,7 @@ export default function HomePage() {
             className="block bg-card rounded-2xl mt-4 p-4 md:p-5 border border-edge shadow-sm hover:border-acc-edge transition-all"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-acc-soft text-acc flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-acc-soft text-acc-strong flex items-center justify-center shrink-0">
                 <Globe className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div className="flex-1 min-w-0">
@@ -123,7 +125,7 @@ export default function HomePage() {
             href="/manual"
             className="flex items-center gap-3 mt-4 bg-card border border-edge rounded-2xl p-4 md:p-6 shadow-sm hover:border-acc transition-all"
           >
-            <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg bg-acc-soft text-acc flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg bg-acc-soft text-acc-strong flex items-center justify-center flex-shrink-0">
               <span className="text-xl md:text-2xl">📖</span>
             </div>
             <div className="flex-1 min-w-0">
@@ -136,16 +138,16 @@ export default function HomePage() {
           {/* ── Premium banner ───────────────────── */}
           <Link
             href="/partner"
-            className="flex items-center gap-3 mt-4 bg-gradient-to-r from-[var(--warn-soft)] to-[var(--card)] border border-warn-edge rounded-2xl p-4 md:p-6 shadow-sm hover:border-warn transition-all"
+            className="flex items-center gap-3 mt-4 bg-gradient-to-r from-[var(--acc-soft)] to-[var(--card)] border border-acc-edge rounded-2xl p-4 md:p-6 shadow-sm hover:border-acc transition-all"
           >
-            <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg bg-warn-soft-2 text-warn flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg bg-acc-soft-2 text-acc-strong flex items-center justify-center flex-shrink-0">
               <Crown className="w-5 h-5 md:w-7 md:h-7" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-ink font-bold text-sm md:text-base">Become a Prayer Fire Partner</p>
               <p className="text-ink-muted text-[0.6875rem] md:text-sm">Unlock the full intercessory community</p>
             </div>
-            <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-warn" />
+            <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-acc-strong" />
           </Link>
 
           <div className="mt-4">

@@ -94,17 +94,17 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   const strengthLabel = ['', 'Weak', 'Fair', 'Strong', 'Very Strong'][strength];
   const strengthColor = [
     '',
-    'bg-red-500',
-    'bg-amber-500',
-    'bg-emerald-500',
-    'bg-emerald-600',
+    'bg-danger',
+    'bg-acc',
+    'bg-acc',
+    'bg-acc',
   ][strength];
   const strengthTextColor = [
     '',
-    'text-red-500',
-    'text-amber-600',
-    'text-emerald-600',
-    'text-emerald-700',
+    'text-danger',
+    'text-acc-strong',
+    'text-acc-strong',
+    'text-acc-strong',
   ][strength];
 
   const switchMode = (m: Mode) => {
@@ -189,7 +189,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
           {/* Header */}
           <div className="p-5 border-b border-edge flex items-start justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-danger-soft ring-1 ring-red-200 flex items-center justify-center overflow-hidden">
+              <div className="w-11 h-11 rounded-full bg-danger-soft ring-1 ring-danger-edge flex items-center justify-center overflow-hidden">
                 <img src="/logo.png" alt="Prayer Fire" className="w-full h-full object-cover" />
               </div>
               <div>
@@ -215,7 +215,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
               className={cn(
                 'py-3 text-sm font-bold transition-all border-b-2',
                 mode === 'login'
-                  ? 'text-acc border-emerald-600'
+                  ? 'text-acc-strong border-acc'
                   : 'text-ink-faint border-transparent hover:text-ink-muted'
               )}
             >
@@ -226,7 +226,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
               className={cn(
                 'py-3 text-sm font-bold transition-all border-b-2',
                 mode === 'register'
-                  ? 'text-acc border-emerald-600'
+                  ? 'text-acc-strong border-acc'
                   : 'text-ink-faint border-transparent hover:text-ink-muted'
               )}
             >
@@ -248,7 +248,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 <button
                   type="button"
                   onClick={() => setOtherAccount(true)}
-                  className="text-acc text-xs font-semibold hover:underline"
+                  className="text-acc-strong text-xs font-semibold hover:underline"
                 >
                   Use a different account
                 </button>
@@ -282,7 +282,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     placeholder="Email or phone number"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
+                    className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
                   />
                 </div>
                 <div className="relative">
@@ -293,7 +293,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     autoFocus={!!identifier}
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
-                    className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-11 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
+                    className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-11 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
                   />
                   <button
                     type="button"
@@ -306,14 +306,14 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                   Sign In
                 </button>
                 <p className="text-center text-ink-muted text-xs">
                   No account?{' '}
-                  <button type="button" onClick={() => switchMode('register')} className="text-acc font-semibold hover:text-emerald-500">
+                  <button type="button" onClick={() => switchMode('register')} className="text-acc-strong font-semibold hover:text-acc-strong">
                     Create one
                   </button>
                 </p>
@@ -327,7 +327,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     placeholder="Full name (optional)"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
+                    className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
                   />
                 </div>
                 <div className="relative">
@@ -337,7 +337,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     placeholder="Email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
+                    className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
                   />
                 </div>
                 <div className="flex gap-2">
@@ -349,7 +349,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                         const c = COUNTRY_CODES.find((cc) => cc.code === e.target.value);
                         if (c) setCountry(c);
                       }}
-                      className="bg-card border border-edge-strong rounded-xl pl-10 pr-2 py-3 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 appearance-none cursor-pointer"
+                      className="bg-card border border-edge-strong rounded-xl pl-10 pr-2 py-3 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover appearance-none cursor-pointer"
                       title={country.name}
                     >
                       {COUNTRY_CODES.map((c) => (
@@ -364,7 +364,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     placeholder="Phone number (optional)"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="flex-1 min-w-0 bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
+                    className="flex-1 min-w-0 bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
                   />
                 </div>
                 <div className="relative">
@@ -374,7 +374,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     placeholder="Password (min. 6 characters)"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-11 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
+                    className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-11 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
                   />
                   <button
                     type="button"
@@ -412,7 +412,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     placeholder="Confirm password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
+                    className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
                   />
                 </div>
 
@@ -423,10 +423,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     onClick={() => setIsHuman(!isHuman)}
                     className={cn(
                       'mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 transition-all',
-                      isHuman ? 'bg-emerald-600 border-emerald-600' : 'border-edge-strong bg-card'
+                      isHuman ? 'bg-acc border-acc' : 'border-edge-strong bg-card'
                     )}
                   >
-                    {isHuman && <Check className="w-3.5 h-3.5 text-white" />}
+                    {isHuman && <Check className="w-3.5 h-3.5 text-on-acc" />}
                   </button>
                   <span className="text-ink-muted text-xs leading-relaxed">
                     I confirm I am human. My prayer points are private and protected.
@@ -440,18 +440,18 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     onClick={() => setAgreedTerms(!agreedTerms)}
                     className={cn(
                       'mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 transition-all',
-                      agreedTerms ? 'bg-emerald-600 border-emerald-600' : 'border-edge-strong bg-card'
+                      agreedTerms ? 'bg-acc border-acc' : 'border-edge-strong bg-card'
                     )}
                   >
-                    {agreedTerms && <Check className="w-3.5 h-3.5 text-white" />}
+                    {agreedTerms && <Check className="w-3.5 h-3.5 text-on-acc" />}
                   </button>
                   <span className="text-ink-muted text-xs leading-relaxed">
                     I agree to the{' '}
-                    <button type="button" onClick={() => setLegalDoc('terms')} className="text-acc font-semibold hover:underline">
+                    <button type="button" onClick={() => setLegalDoc('terms')} className="text-acc-strong font-semibold hover:underline">
                       Terms of Service
                     </button>{' '}
                     and{' '}
-                    <button type="button" onClick={() => setLegalDoc('privacy')} className="text-acc font-semibold hover:underline">
+                    <button type="button" onClick={() => setLegalDoc('privacy')} className="text-acc-strong font-semibold hover:underline">
                       Privacy Policy
                     </button>
                     .
@@ -461,7 +461,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                   Create Account

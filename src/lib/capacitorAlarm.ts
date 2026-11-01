@@ -602,7 +602,7 @@ export async function openAppNotificationSettings(): Promise<boolean> {
 export async function openInAppBrowser(url: string): Promise<boolean> {
   try {
     const { Browser } = await import('@capacitor/browser');
-    await Browser.open({ url, toolbarColor: '#059669' });
+    await Browser.open({ url, toolbarColor: '#14213D' });
     return true;
   } catch {
     return false;

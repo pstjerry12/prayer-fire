@@ -101,7 +101,7 @@ export default function VersePage() {
       <main className="max-w-2xl mx-auto px-4 py-6 pb-28 md:pb-10">
         <button
           onClick={() => router.back()}
-          className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-acc mb-4"
+          className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-acc-strong mb-4"
         >
           <ChevronLeft className="w-4 h-4" /> {book ? `${book.name} ${chapter}` : 'Back'}
         </button>
@@ -109,7 +109,7 @@ export default function VersePage() {
         {!book || !Number.isFinite(chapter) || !Number.isFinite(verseNumber) || state === 'missing' ? (
           <div className="bg-card rounded-2xl border border-edge p-8 text-center">
             <p className="text-ink-muted text-sm">That verse could not be found.</p>
-            <button onClick={() => router.push('/bible')} className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold">
+            <button onClick={() => router.push('/bible')} className="mt-4 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">
               Open the Bible
             </button>
           </div>
@@ -126,7 +126,7 @@ export default function VersePage() {
                 aria-label={saved ? 'Remove bookmark' : 'Bookmark this verse'}
                 className={cn(
                   'shrink-0 p-2.5 rounded-xl border transition-all active:scale-95',
-                  saved ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-card-2 text-ink-soft border-edge hover:bg-card-3'
+                  saved ? 'bg-acc text-on-acc border-acc' : 'bg-card-2 text-ink-soft border-edge hover:bg-card-3'
                 )}
               >
                 <BookmarkIcon className={cn('w-5 h-5', saved && 'fill-current')} />
@@ -144,7 +144,7 @@ export default function VersePage() {
             </div>
 
             {reader.problem && (
-              <p className="mx-5 mb-3 rounded-lg bg-warn-soft border border-warn-edge px-3 py-2 text-xs text-ink-soft">
+              <p className="mx-5 mb-3 rounded-lg bg-acc-soft border border-acc-edge px-3 py-2 text-xs text-ink-soft">
                 Read aloud couldn&apos;t start on this device. Check that a text-to-speech voice is installed and your media volume is up.
                 <span className="block mt-1 text-[0.6875rem] text-ink-muted break-words">Details: {reader.problemDetail ?? 'no voice available'}</span>
               </p>
@@ -156,7 +156,7 @@ export default function VersePage() {
                 disabled={state !== 'ready'}
                 className={cn(
                   'flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold disabled:opacity-50',
-                  reader.reading ? 'bg-emerald-600 text-white' : 'bg-card-2 text-ink-soft hover:bg-card-3'
+                  reader.reading ? 'bg-acc text-on-acc' : 'bg-card-2 text-ink-soft hover:bg-card-3'
                 )}
               >
                 {reader.reading ? <Square className="w-4 h-4 fill-current" /> : <Volume2 className="w-4 h-4" />}
@@ -167,7 +167,7 @@ export default function VersePage() {
                 disabled={state !== 'ready'}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-card-2 text-ink-soft text-xs font-bold hover:bg-card-3 disabled:opacity-50"
               >
-                {copied ? <Check className="w-4 h-4 text-acc" /> : <Copy className="w-4 h-4" />}
+                {copied ? <Check className="w-4 h-4 text-acc-strong" /> : <Copy className="w-4 h-4" />}
                 {copied ? 'Copied' : 'Copy'}
               </button>
               {canShare && (

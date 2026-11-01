@@ -46,7 +46,7 @@ function saveReminded(today: string, ids: Set<string>) {
 }
 
 const inputCls =
-  'w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40';
+  'w-full bg-page border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40';
 
 export default function AdminDailyActivity() {
   const [data, setData] = useState<ActivityData | null>(null);
@@ -143,7 +143,7 @@ export default function AdminDailyActivity() {
   if (!data) {
     return (
       <div className="bg-card border border-edge rounded-2xl p-8 text-center text-ink-muted text-sm">
-        {error ? error : <Loader2 className="w-5 h-5 animate-spin mx-auto text-acc" />}
+        {error ? error : <Loader2 className="w-5 h-5 animate-spin mx-auto text-acc-strong" />}
       </div>
     );
   }
@@ -175,7 +175,7 @@ export default function AdminDailyActivity() {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => markReminded(rkey)}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-500"
+              className="flex items-center gap-1 px-2.5 py-1.5 bg-acc text-on-acc rounded-lg text-xs font-bold hover:bg-acc-hover"
               title="Send a WhatsApp reminder"
             >
               <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
@@ -191,7 +191,7 @@ export default function AdminDailyActivity() {
               <Mail className="w-3.5 h-3.5" />
             </a>
           )}
-          {done && <span className="text-acc text-xs font-bold px-1" title="You sent a reminder today">✓ Reminded</span>}
+          {done && <span className="text-acc-strong text-xs font-bold px-1" title="You sent a reminder today">✓ Reminded</span>}
           {onRemove && (
             <button onClick={onRemove} className="ml-auto p-1.5 text-ink-faint hover:text-danger" title="Remove from list">
               <Trash2 className="w-4 h-4" />
@@ -213,7 +213,7 @@ export default function AdminDailyActivity() {
           <div className="text-center min-w-0">
             <p className="font-bold text-ink text-sm">{dayLabel(data.day, data.today)}</p>
             {!isToday && (
-              <button onClick={() => setDay(null)} className="text-acc text-xs font-semibold hover:underline">Back to today</button>
+              <button onClick={() => setDay(null)} className="text-acc-strong text-xs font-semibold hover:underline">Back to today</button>
             )}
           </div>
           <button
@@ -231,8 +231,8 @@ export default function AdminDailyActivity() {
             <p className="text-acc-strong font-bold text-xl">{data.active.length}</p>
             <p className="text-ink-muted text-[0.6875rem]">Opened the app</p>
           </div>
-          <div className="bg-warn-soft rounded-xl py-2.5">
-            <p className="text-warn font-bold text-xl">{data.inactive.length}</p>
+          <div className="bg-acc-soft rounded-xl py-2.5">
+            <p className="text-acc-strong font-bold text-xl">{data.inactive.length}</p>
             <p className="text-ink-muted text-[0.6875rem]">Did not open</p>
           </div>
           <div className="bg-card-2 rounded-xl py-2.5">
@@ -253,7 +253,7 @@ export default function AdminDailyActivity() {
               >
                 <span className="text-[0.5625rem] text-ink-faint leading-none mb-0.5">{h.count || ''}</span>
                 <span
-                  className={cn('w-full rounded-t', h.day === data.day ? 'bg-emerald-600' : 'bg-acc-soft-2 group-hover:bg-emerald-300')}
+                  className={cn('w-full rounded-t', h.day === data.day ? 'bg-acc' : 'bg-acc-soft-2 group-hover:bg-acc-edge')}
                   style={{ height: `${Math.max(h.count ? 6 : 2, (h.count / maxCount) * 36)}px` }}
                 />
               </button>
@@ -273,7 +273,7 @@ export default function AdminDailyActivity() {
         <textarea value={template} onChange={(e) => setTemplate(e.target.value)} rows={4} className={cn(inputCls, 'resize-y')} />
         <div className="flex items-center justify-between gap-2">
           <p className="text-ink-faint text-[0.6875rem]">{'{name}'} becomes each person&apos;s first name.</p>
-          <button onClick={saveTemplate} className="shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-500">
+          <button onClick={saveTemplate} className="shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 bg-acc text-on-acc rounded-lg text-xs font-bold hover:bg-acc-hover">
             {templateSaved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />} {templateSaved ? 'Saved' : 'Save'}
           </button>
         </div>
@@ -297,7 +297,7 @@ export default function AdminDailyActivity() {
                 disabled={b.n === 0}
                 className="flex items-center gap-1 px-2.5 py-1.5 bg-card-2 border border-edge rounded-lg text-xs font-semibold text-ink-soft hover:bg-card-3 disabled:opacity-40"
               >
-                {copied === b.id ? <Check className="w-3 h-3 text-acc" /> : <Copy className="w-3 h-3" />} {b.label}
+                {copied === b.id ? <Check className="w-3 h-3 text-acc-strong" /> : <Copy className="w-3 h-3" />} {b.label}
               </button>
             ))}
           </div>
@@ -343,7 +343,7 @@ export default function AdminDailyActivity() {
             <button
               onClick={addRoster}
               disabled={rosterBusy || !rosterText.trim()}
-              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-500 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-2 bg-acc text-on-acc rounded-lg text-xs font-bold hover:bg-acc-hover disabled:opacity-50"
             >
               {rosterBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserPlus className="w-3.5 h-3.5" />} Add to list
             </button>

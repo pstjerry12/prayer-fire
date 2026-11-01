@@ -30,7 +30,7 @@ function Bars({ data, label, short }: { data: { key: string; label: string; valu
         {data.map((d) => (
           <div key={d.key} className="flex-1 h-full flex flex-col justify-end" title={`${d.label}: ${d.value}`}>
             {d.value > 0 && !short && data.length <= 7 && <span className="text-[0.5625rem] font-bold text-ink-muted text-center mb-0.5">{d.value}</span>}
-            <div className={cn('rounded-t', d.value === 0 ? 'bg-edge' : 'bg-emerald-600')} style={{ height: d.value === 0 ? '2px' : `${Math.max(6, (d.value / max) * 100)}%` }} />
+            <div className={cn('rounded-t', d.value === 0 ? 'bg-edge' : 'bg-acc')} style={{ height: d.value === 0 ? '2px' : `${Math.max(6, (d.value / max) * 100)}%` }} />
           </div>
         ))}
       </div>
@@ -100,7 +100,7 @@ export default function GroupAnalytics({ groupId }: { groupId: string }) {
               <div className="grid grid-cols-2 gap-1.5" role="group" aria-label="Time range">
                 {([7, 30] as const).map((r) => (
                   <button key={r} onClick={() => setRange(r)} aria-pressed={range === r}
-                    className={cn('py-1.5 rounded-lg border-2 text-xs font-bold', range === r ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
+                    className={cn('py-1.5 rounded-lg border-2 text-xs font-bold', range === r ? 'border-acc bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
                     Last {r} days
                   </button>
                 ))}
@@ -122,7 +122,7 @@ export default function GroupAnalytics({ groupId }: { groupId: string }) {
                     <div className="flex flex-wrap gap-1.5 mb-2" role="group" aria-label="Chart">
                       {METRICS.map((m) => (
                         <button key={m.key} onClick={() => setMetric(m.key)} aria-pressed={metric === m.key}
-                          className={cn('px-2.5 py-1 rounded-full text-[0.6875rem] font-bold border', metric === m.key ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-card-2 text-ink-muted border-edge')}>
+                          className={cn('px-2.5 py-1 rounded-full text-[0.6875rem] font-bold border', metric === m.key ? 'bg-acc text-on-acc border-acc' : 'bg-card-2 text-ink-muted border-edge')}>
                           {m.label}
                         </button>
                       ))}

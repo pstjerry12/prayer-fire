@@ -43,7 +43,7 @@ export default function ScriptureVault() {
   return (
     <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
       <div className="px-5 py-4 border-b border-edge flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-acc-soft text-acc"><BookOpen className="w-5 h-5" /></div>
+        <div className="p-2 rounded-lg bg-acc-soft text-acc-strong"><BookOpen className="w-5 h-5" /></div>
         <div>
           <h2 className="font-bold text-ink">Scripture Vault</h2>
           <p className="text-xs text-ink-muted">Key verses in five languages</p>
@@ -52,7 +52,7 @@ export default function ScriptureVault() {
       <div className="p-4">
         <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
           {LANGS.map((l) => (
-            <button key={l.code} onClick={() => setLang(l.code)} className={cn('px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all', lang === l.code ? 'bg-emerald-600 text-white' : 'bg-card text-ink-muted border border-edge hover:bg-card-2')}>
+            <button key={l.code} onClick={() => setLang(l.code)} className={cn('px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all', lang === l.code ? 'bg-acc text-on-acc' : 'bg-card text-ink-muted border border-edge hover:bg-card-2')}>
               {l.flag} {l.label}
             </button>
           ))}
@@ -64,9 +64,9 @@ export default function ScriptureVault() {
               <p className="text-ink-soft text-sm leading-relaxed italic">"{card.text}"</p>
               <div className="flex gap-3 mt-3">
                 <button onClick={() => handleCopy(card.id, `"${card.text}" — ${card.reference}`)} className="flex items-center gap-1 text-xs text-ink-muted hover:text-ink transition-colors">
-                  {copied === card.id ? <Check className="w-3 h-3 text-acc" /> : <Copy className="w-3 h-3" />} {copied === card.id ? 'Copied' : 'Copy'}
+                  {copied === card.id ? <Check className="w-3 h-3 text-acc-strong" /> : <Copy className="w-3 h-3" />} {copied === card.id ? 'Copied' : 'Copy'}
                 </button>
-                <button onClick={() => handleSpeak(card.id, card.text)} className={cn('flex items-center gap-1 text-xs transition-colors', speaking === card.id ? 'text-acc' : 'text-ink-muted hover:text-ink')}>
+                <button onClick={() => handleSpeak(card.id, card.text)} className={cn('flex items-center gap-1 text-xs transition-colors', speaking === card.id ? 'text-acc-strong' : 'text-ink-muted hover:text-ink')}>
                   {speaking === card.id ? <MicOff className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />} {speaking === card.id ? 'Stop' : 'Listen'}
                 </button>
               </div>

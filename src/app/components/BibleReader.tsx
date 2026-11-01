@@ -408,7 +408,7 @@ export default function BibleReader() {
               onClick={() => changeTranslation(t.id)}
               className={cn(
                 'h-11 min-w-[4.5rem] rounded-full px-5 text-sm font-bold transition-colors active:scale-95',
-                chosen ? 'bg-emerald-600 text-white' : 'bg-card-2 text-ink-muted hover:text-acc-strong'
+                chosen ? 'bg-acc-soft text-acc-strong ring-1 ring-acc-edge' : 'bg-card-2 text-ink-muted hover:text-acc-strong'
               )}
             >
               {t.shortName}
@@ -427,8 +427,8 @@ export default function BibleReader() {
               className={cn(
                 'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all',
                 step === s.n
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-acc-soft text-acc-strong hover:brightness-95 active:scale-95'
+                  ? 'bg-acc-soft text-acc-strong ring-1 ring-acc-edge'
+                  : 'bg-card-2 text-ink-muted hover:brightness-95 active:scale-95'
               )}
             >
               {s.label}
@@ -450,7 +450,7 @@ export default function BibleReader() {
               <select
                 value={currentBook.testament === 'OT' ? book : 'Genesis'}
                 onChange={(e) => selectBook(e.target.value)}
-                className="mt-1.5 w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                className="mt-1.5 w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
               >
                 {otBooks.map((b) => (
                   <option key={b.name} value={b.name}>{b.name}</option>
@@ -462,7 +462,7 @@ export default function BibleReader() {
               <select
                 value={currentBook.testament === 'NT' ? book : ''}
                 onChange={(e) => e.target.value && selectBook(e.target.value)}
-                className="mt-1.5 w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                className="mt-1.5 w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
               >
                 <option value="" disabled>Select book…</option>
                 {ntBooks.map((b) => (
@@ -479,7 +479,7 @@ export default function BibleReader() {
       {step === 2 && (
         <div className="bg-card rounded-2xl p-5">
           <div className="flex items-center justify-between mb-3">
-            <button onClick={() => setStep(1)} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc">
+            <button onClick={() => setStep(1)} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc-strong">
               <ChevronLeft className="w-4 h-4" /> Books
             </button>
             <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1">
@@ -507,7 +507,7 @@ export default function BibleReader() {
           {/* Verses as numbers */}
           <div className="bg-card rounded-2xl p-5">
             <div className="flex items-center justify-between mb-3">
-              <button onClick={() => setStep(2)} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc">
+              <button onClick={() => setStep(2)} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc-strong">
                 <ChevronLeft className="w-4 h-4" /> Chapters
               </button>
               <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1">
@@ -523,7 +523,7 @@ export default function BibleReader() {
                     onClick={() => jumpToVerse(v.number)}
                     className={cn(
                       'grid h-9 place-items-center rounded-lg text-xs font-bold transition-all',
-                      selected.includes(v.number) ? 'bg-warn text-white' : 'bg-card-2 text-ink-muted hover:text-ink hover:bg-card-3'
+                      selected.includes(v.number) ? 'bg-acc-soft text-acc-strong ring-1 ring-acc-edge' : 'bg-card-2 text-ink-muted hover:text-ink hover:bg-card-3'
                     )}
                   >
                     {v.number}
@@ -539,7 +539,7 @@ export default function BibleReader() {
           <div className="bg-card rounded-2xl p-5">
             <div className="flex items-center justify-between gap-2 border-b border-edge pb-3 mb-3">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="grid h-9 w-9 place-items-center rounded-lg bg-acc-soft text-acc shrink-0">
+                <span className="grid h-9 w-9 place-items-center rounded-lg bg-acc-soft text-acc-strong shrink-0">
                   <BookOpen className="w-4 h-4" />
                 </span>
                 <div className="min-w-0">
@@ -554,7 +554,7 @@ export default function BibleReader() {
                   onClick={() => (reading ? stopReading() : startReading(selected))}
                   className={cn(
                     'shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold',
-                    reading ? 'bg-emerald-600 text-white' : 'bg-card-2 text-ink-soft hover:bg-card-3'
+                    reading ? 'bg-acc-soft text-acc-strong ring-1 ring-acc-edge' : 'bg-card-2 text-ink-soft hover:bg-card-3'
                   )}
                 >
                   {reading ? <Square className="w-4 h-4 fill-current" /> : <Volume2 className="w-4 h-4" />}
@@ -576,10 +576,10 @@ export default function BibleReader() {
                   </button>
                 </div>
                 {sermon ? (
-                  <span className="flex items-center gap-1.5 rounded-lg bg-warn-soft border border-warn-edge pl-2.5 pr-1 py-1 text-xs font-bold text-warn-strong max-w-full">
+                  <span className="flex items-center gap-1.5 rounded-lg bg-acc-soft border border-acc-edge pl-2.5 pr-1 py-1 text-xs font-bold text-acc-strong max-w-full">
                     <BookOpenText className="w-3.5 h-3.5 shrink-0" />
                     <span className="truncate">Sermon: {sermon.title}</span>
-                    <button onClick={() => setActiveSermon(null)} aria-label="End sermon session" className="p-1 rounded-md hover:bg-warn-soft-2">
+                    <button onClick={() => setActiveSermon(null)} aria-label="End sermon session" className="p-1 rounded-md hover:bg-acc-soft-2">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </span>
@@ -592,7 +592,7 @@ export default function BibleReader() {
                   </button>
                 )}
                 {selected.length > 0 && (
-                  <button onClick={() => setSelected([])} className="ml-auto text-xs font-bold text-acc hover:underline">
+                  <button onClick={() => setSelected([])} className="ml-auto text-xs font-bold text-acc-strong hover:underline">
                     Clear {selected.length} selected
                   </button>
                 )}
@@ -606,16 +606,16 @@ export default function BibleReader() {
               </div>
             ) : unavailable ? (
               <div className="text-center py-12">
-                <AlertTriangle className="w-8 h-8 text-warn mx-auto mb-2" />
+                <AlertTriangle className="w-8 h-8 text-acc-strong mx-auto mb-2" />
                 <p className="text-ink-muted text-sm">This translation is unavailable, please reinstall the app.</p>
-                <button onClick={() => loadChapter(currentBook.osis, chapter, translationId)} className="mt-3 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold">
+                <button onClick={() => loadChapter(currentBook.osis, chapter, translationId)} className="mt-3 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">
                   Retry
                 </button>
               </div>
             ) : verses ? (
               <>
                 {speechProblem && (
-                  <p className="mb-3 rounded-lg bg-warn-soft border border-warn-edge px-3 py-2 text-xs text-ink-soft">
+                  <p className="mb-3 rounded-lg bg-acc-soft border border-acc-edge px-3 py-2 text-xs text-ink-soft">
                     Read aloud couldn&apos;t start on this device. Check that a text-to-speech voice is installed and your media volume is up.
                     <span className="block mt-1 text-[0.6875rem] text-ink-muted break-words">Details: {speechProblem}</span>
                   </p>
@@ -656,16 +656,16 @@ export default function BibleReader() {
                           style={background ? { background } : undefined}
                           className={cn(
                             'rounded-xl px-3 py-2 -mx-1 transition-colors',
-                            isReading && 'ring-2 ring-orange-400',
-                            !isReading && isSelected && 'ring-2 ring-warn-edge',
-                            !isReading && isSelected && !background && 'bg-warn-soft',
+                            isReading && 'ring-2 ring-acc',
+                            !isReading && isSelected && 'ring-2 ring-acc-edge',
+                            !isReading && isSelected && !background && 'bg-acc-soft',
                             !isReading && !isSelected && !background && 'hover:bg-card-2'
                           )}
                         >
                           <p className="leading-relaxed text-ink-soft" style={{ fontSize }}>
                             <sup className="mr-1.5 font-serif-heading font-bold text-acc-strong">{v.number}</sup>
                             {v.text}
-                            {bookmarked && <BookmarkIcon className="inline-block ml-1.5 w-3.5 h-3.5 fill-current text-warn align-text-bottom" aria-label="Bookmarked" />}
+                            {bookmarked && <BookmarkIcon className="inline-block ml-1.5 w-3.5 h-3.5 fill-current text-acc-strong align-text-bottom" aria-label="Bookmarked" />}
                           </p>
                         </LongPressable>
                       </div>
@@ -693,7 +693,7 @@ export default function BibleReader() {
           <button
             onClick={onListen}
             aria-label={selected.length > 0 ? `Listen to the ${selected.length} selected verse${selected.length === 1 ? '' : 's'}` : 'Listen: hear this chapter read aloud'}
-            className="flex items-center gap-2 h-14 pl-4 pr-5 rounded-full bg-emerald-600 text-white font-bold text-base shadow-2xl ring-4 ring-orange-400/40 active:scale-95 hover:bg-emerald-500"
+            className="flex items-center gap-2 h-14 pl-4 pr-5 rounded-full bg-acc text-on-acc font-bold text-base shadow-2xl ring-4 ring-acc/40 active:scale-95 hover:bg-acc-hover"
           >
             <Play className="w-6 h-6 fill-current" />
             Listen

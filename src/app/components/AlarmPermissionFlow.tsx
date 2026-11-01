@@ -112,7 +112,7 @@ export default function AlarmPermissionFlow({
     <div className="fixed inset-0 z-[95] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-card rounded-2xl border border-edge shadow-2xl p-5 animate-pop">
         <div className="flex items-start justify-between mb-3">
-          <span className="grid h-11 w-11 place-items-center rounded-xl bg-acc-soft text-acc">
+          <span className="grid h-11 w-11 place-items-center rounded-xl bg-acc-soft text-acc-strong">
             {s.icon}
           </span>
           <button onClick={onCancel} className="p-1 text-ink-faint hover:text-ink" title="Not now">
@@ -132,7 +132,7 @@ export default function AlarmPermissionFlow({
             </p>
             <button
               onClick={goToNext}
-              className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500"
+              className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover"
             >
               Continue
             </button>
@@ -141,7 +141,7 @@ export default function AlarmPermissionFlow({
           <div className="flex gap-2">
             <button
               onClick={s.request}
-              className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500"
+              className="flex-1 py-3 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover"
             >
               {s.cta}
             </button>

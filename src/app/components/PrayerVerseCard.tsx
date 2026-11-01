@@ -38,7 +38,7 @@ export default function PrayerVerseCard({ verse }: { verse: BibleVerse }) {
         <div className="flex items-start justify-between gap-2 mb-2">
           <p className="text-acc-strong text-xs font-semibold">{verse.reference}</p>
           <span className="flex items-center gap-1 text-ink-faint">
-            {bookmarked && <BookmarkIcon className="w-4 h-4 fill-current text-warn" aria-label="Bookmarked" />}
+            {bookmarked && <BookmarkIcon className="w-4 h-4 fill-current text-acc-strong" aria-label="Bookmarked" />}
             <ChevronRight className="w-4 h-4" />
           </span>
         </div>

@@ -38,7 +38,7 @@ export default function PartnerNetwork() {
     <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
       <div className="px-5 py-4 border-b border-edge flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-acc-soft text-acc"><Users className="w-5 h-5" /></div>
+          <div className="p-2 rounded-lg bg-acc-soft text-acc-strong"><Users className="w-5 h-5" /></div>
           <div className="flex items-center gap-2">
             <h2 className="font-bold text-ink">Partner Network</h2>
             {isPremium ? (
@@ -49,7 +49,7 @@ export default function PartnerNetwork() {
           </div>
         </div>
         {isPremium && (
-          <button onClick={() => setShowForm(!showForm)} className="px-3 py-1.5 bg-emerald-600 rounded-lg text-white text-xs font-semibold hover:bg-emerald-500">
+          <button onClick={() => setShowForm(!showForm)} className="px-3 py-1.5 bg-acc rounded-lg text-on-acc text-xs font-semibold hover:bg-acc-hover">
             {showForm ? 'Cancel' : '+ Add Request'}
           </button>
         )}
@@ -58,16 +58,16 @@ export default function PartnerNetwork() {
       {!isPremium && (
         <div className="p-4">
           <div className="bg-acc-soft/50 border border-acc-edge rounded-xl p-5 text-center space-y-3">
-            <Crown className="w-12 h-12 text-acc mx-auto" />
+            <Crown className="w-12 h-12 text-acc-strong mx-auto" />
             <h3 className="text-ink font-bold text-base">Prayer Fire Partner Required</h3>
             <p className="text-ink-muted text-xs leading-relaxed">Join our global intercessory community. Submit prayer requests, join prayer groups, and stand in the gap with believers worldwide.</p>
             <ul className="text-left text-ink-soft text-xs space-y-1.5 max-w-xs mx-auto">
-              <li className="flex items-start gap-2"><Check className="w-3 h-3 text-acc mt-0.5 flex-shrink-0" /><span>Join approved prayer groups</span></li>
-              <li className="flex items-start gap-2"><Check className="w-3 h-3 text-acc mt-0.5 flex-shrink-0" /><span>Submit & pray for partner requests</span></li>
-              <li className="flex items-start gap-2"><Check className="w-3 h-3 text-acc mt-0.5 flex-shrink-0" /><span>Global prayer alerts & reminders</span></li>
-              <li className="flex items-start gap-2"><Check className="w-3 h-3 text-acc mt-0.5 flex-shrink-0" /><span>Pray together in prayer groups</span></li>
+              <li className="flex items-start gap-2"><Check className="w-3 h-3 text-acc-strong mt-0.5 flex-shrink-0" /><span>Join approved prayer groups</span></li>
+              <li className="flex items-start gap-2"><Check className="w-3 h-3 text-acc-strong mt-0.5 flex-shrink-0" /><span>Submit & pray for partner requests</span></li>
+              <li className="flex items-start gap-2"><Check className="w-3 h-3 text-acc-strong mt-0.5 flex-shrink-0" /><span>Global prayer alerts & reminders</span></li>
+              <li className="flex items-start gap-2"><Check className="w-3 h-3 text-acc-strong mt-0.5 flex-shrink-0" /><span>Pray together in prayer groups</span></li>
             </ul>
-            <Link href="/partner" className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500 flex items-center justify-center gap-2">
+            <Link href="/partner" className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover flex items-center justify-center gap-2">
               <Crown className="w-4 h-4" /> Upgrade to Prayer Fire Partner
             </Link>
             <p className="text-ink-muted text-[0.625rem]">{isAndroidApp ? 'Subscribe securely with Google Play' : '7-day free trial • then choose a plan'}</p>
@@ -81,7 +81,7 @@ export default function PartnerNetwork() {
             <input type="text" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-card border border-edge-strong rounded-lg px-4 py-2 text-sm text-ink placeholder-ink-faint" />
             <input type="text" placeholder="Location (city, country)" value={location} onChange={(e) => setLocation(e.target.value)} className="w-full bg-card border border-edge-strong rounded-lg px-4 py-2 text-sm text-ink placeholder-ink-faint" />
             <textarea placeholder="Share your prayer request..." value={request} onChange={(e) => setRequest(e.target.value)} className="w-full bg-card border border-edge-strong rounded-lg px-4 py-2 text-sm text-ink placeholder-ink-faint resize-none h-20" />
-            <button onClick={submitRequest} className="w-full py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-500">Submit Request</button>
+            <button onClick={submitRequest} className="w-full py-2 bg-acc text-on-acc rounded-lg text-sm font-semibold hover:bg-acc-hover">Submit Request</button>
           </div>
         )}
 

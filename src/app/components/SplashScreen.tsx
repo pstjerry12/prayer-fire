@@ -76,13 +76,13 @@ export default function SplashScreen() {
       )}
     >
       {/* Logo */}
-      <div className="w-24 h-24 rounded-full bg-red-50 ring-2 ring-red-200 flex items-center justify-center overflow-hidden shadow-lg shadow-red-500/20 mb-4">
+      <div className="w-24 h-24 rounded-full bg-danger-soft ring-2 ring-danger-edge flex items-center justify-center overflow-hidden shadow-lg shadow-danger/20 mb-4">
         <img src="/logo.png" alt="Prayer Fire" className="w-full h-full object-cover" />
       </div>
 
       {/* App name */}
       <h1 className="font-serif-heading text-2xl font-bold text-ink">Prayer Fire</h1>
-      <p className="text-red-600 font-semibold italic text-sm mt-1">Praying like Daniel</p>
+      <p className="text-danger font-semibold italic text-sm mt-1">Praying like Daniel</p>
 
       {/* Progress bar */}
       <div className="w-56 mt-8">
@@ -94,7 +94,7 @@ export default function SplashScreen() {
         </div>
         <div className="flex items-center justify-between mt-2">
           <span className="text-ink-muted text-[0.6875rem] flex items-center gap-1">
-            <Flame className="w-3 h-3 text-acc" />
+            <Flame className="w-3 h-3 text-acc-strong" />
             {BOOT_MESSAGES[messageIndex]}
           </span>
           <span className="text-ink-muted text-[0.6875rem] font-bold tabular-nums">{Math.round(progress)}%</span>

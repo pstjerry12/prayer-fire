@@ -19,14 +19,14 @@ export default function TopicPage() {
     <>
       <Navbar />
       <main className="max-w-3xl md:max-w-4xl mx-auto px-4 py-6 pb-28 md:pb-10">
-        <button onClick={() => router.back()} className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-acc mb-4">
+        <button onClick={() => router.back()} className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-acc-strong mb-4">
           <ChevronLeft className="w-4 h-4" /> Prayer Verses
         </button>
 
         {!category ? (
           <div className="bg-card rounded-2xl border border-edge p-8 text-center">
             <p className="text-ink-muted text-sm">That topic could not be found.</p>
-            <button onClick={() => router.push('/bible')} className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold">
+            <button onClick={() => router.push('/bible')} className="mt-4 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">
               Back to the Bible
             </button>
           </div>
