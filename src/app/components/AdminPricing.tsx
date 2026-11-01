@@ -268,7 +268,7 @@ export default function AdminPricing() {
       {/* ── Prices ─────────────────────────────────────────────── */}
       <section className="bg-card rounded-2xl border border-edge p-5 space-y-4">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="font-bold text-ink flex items-center gap-2"><Tag className="w-5 h-5 text-acc" /> Subscription prices (Google Play)</h2>
+          <h2 className="font-bold text-ink flex items-center gap-2"><Tag className="w-5 h-5 text-acc-strong" /> Subscription prices (Google Play)</h2>
           <button onClick={loadPrices} disabled={busy === 'load'} className="flex items-center gap-1.5 text-xs font-bold text-acc-strong px-3 py-1.5 rounded-lg border border-edge hover:bg-card-2 disabled:opacity-60">
             {busy === 'load' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />} Reload
           </button>
@@ -277,7 +277,7 @@ export default function AdminPricing() {
           These are the real prices in Google Play. The app always shows the price Google returns, so changing a price here changes what people see and pay.
         </p>
 
-        <div className="rounded-xl bg-warn-soft border border-warn-edge p-3 text-xs text-warn-strong leading-relaxed flex gap-2">
+        <div className="rounded-xl bg-acc-soft border border-acc-edge p-3 text-xs text-acc-strong leading-relaxed flex gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>
             <strong>Price increases:</strong> existing subscribers keep their old price until they accept the new one. Google tells them by notification and email, and anyone who does not accept is cancelled after the notice period.
@@ -319,9 +319,9 @@ export default function AdminPricing() {
                               </button>
                               {preview && (
                                 <div className="space-y-2">
-                                  <p className="text-sm font-bold text-ink">{money(preview.oldPriceMicros, preview.currencyCode)} → {money(preview.newPriceMicros, preview.currencyCode)} <span className={cn('text-xs', direction === 'increase' ? 'text-warn-strong' : 'text-emerald-600')}>({direction})</span></p>
-                                  {direction === 'increase' && <p className="text-xs text-warn-strong">This is a price increase. Existing subscribers must accept it before they pay more.</p>}
-                                  {direction === 'decrease' && <p className="text-xs text-emerald-700">This is a price decrease. It applies to existing subscribers automatically.</p>}
+                                  <p className="text-sm font-bold text-ink">{money(preview.oldPriceMicros, preview.currencyCode)} → {money(preview.newPriceMicros, preview.currencyCode)} <span className={cn('text-xs', direction === 'increase' ? 'text-acc-strong' : 'text-acc-strong')}>({direction})</span></p>
+                                  {direction === 'increase' && <p className="text-xs text-acc-strong">This is a price increase. Existing subscribers must accept it before they pay more.</p>}
+                                  {direction === 'decrease' && <p className="text-xs text-acc-strong">This is a price decrease. It applies to existing subscribers automatically.</p>}
                                   {preview.regionCode !== 'OTHER_USD' && preview.regionCode !== 'OTHER_EUR' && direction !== 'same' && (
                                     <label className="flex items-start gap-2 text-xs text-ink-soft">
                                       <input type="checkbox" checked={applyExisting} onChange={(e) => setApplyExisting(e.target.checked)} className="mt-0.5" />
@@ -329,7 +329,7 @@ export default function AdminPricing() {
                                     </label>
                                   )}
                                   {direction !== 'same' && (
-                                    <button onClick={applyPrice} disabled={busy !== null} className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-500 disabled:opacity-60 flex items-center gap-1.5">
+                                    <button onClick={applyPrice} disabled={busy !== null} className="px-4 py-2 rounded-lg bg-acc text-on-acc text-sm font-bold hover:bg-acc-hover disabled:opacity-60 flex items-center gap-1.5">
                                       {busy === 'apply' && <Loader2 className="w-4 h-4 animate-spin" />} Apply in Google Play
                                     </button>
                                   )}
@@ -349,19 +349,19 @@ export default function AdminPricing() {
         ))}
 
         {products && <button onClick={() => setShowAll((v) => !v)} className="text-xs font-bold text-acc-strong hover:underline">{showAll ? 'Show main countries only' : 'Show every country'}</button>}
-        {priceMsg && <p role="status" className={cn('text-sm rounded-xl p-3 border', priceMsg.kind === 'ok' ? 'text-emerald-700 bg-acc-soft border-acc-edge' : 'text-danger bg-danger-soft border-danger-edge')}>{priceMsg.kind === 'ok' && <Check className="inline w-4 h-4 mr-1" />}{priceMsg.text}</p>}
+        {priceMsg && <p role="status" className={cn('text-sm rounded-xl p-3 border', priceMsg.kind === 'ok' ? 'text-acc-strong bg-acc-soft border-acc-edge' : 'text-danger bg-danger-soft border-danger-edge')}>{priceMsg.kind === 'ok' && <Check className="inline w-4 h-4 mr-1" />}{priceMsg.text}</p>}
       </section>
 
       {/* ── Free premium mode ──────────────────────────────────── */}
       <section className="bg-card rounded-2xl border border-edge p-5 space-y-4">
-        <h2 className="font-bold text-ink flex items-center gap-2"><Gift className="w-5 h-5 text-acc" /> Free Premium Mode</h2>
+        <h2 className="font-bold text-ink flex items-center gap-2"><Gift className="w-5 h-5 text-acc-strong" /> Free Premium Mode</h2>
         <p className="text-xs text-ink-muted leading-relaxed">
           While this is on, everyone gets every Partner and Leader feature, the subscribe screens are hidden, and a small banner says &ldquo;Premium is free for a limited time&rdquo;. With an end date it switches itself off.
         </p>
         <p className={cn('text-sm font-bold rounded-xl p-3', freeNow?.active ? 'bg-acc-soft text-acc-strong' : 'bg-card-2 text-ink-muted')} role="status">
           {freeNow?.active ? `ON now${freeNow.endsAt ? ` until ${new Date(freeNow.endsAt).toLocaleString()}` : ' (no end date)'}` : free.enabled ? 'Switched on, but not active right now (before the start date or after the end date).' : 'OFF'}
         </p>
-        <div className="rounded-xl bg-warn-soft border border-warn-edge p-3 text-xs text-warn-strong leading-relaxed flex gap-2" role="note">
+        <div className="rounded-xl bg-acc-soft border border-acc-edge p-3 text-xs text-acc-strong leading-relaxed flex gap-2" role="note">
           <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>
             <strong>Free Premium Mode does not pause anyone&apos;s payments.</strong> {free.existing === 'keep' || !free.enabled
@@ -388,10 +388,10 @@ export default function AdminPricing() {
             </label>
           ))}
         </fieldset>
-        <button onClick={() => saveFree(free)} disabled={busy !== null} className="px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-500 disabled:opacity-60 flex items-center gap-2">
+        <button onClick={() => saveFree(free)} disabled={busy !== null} className="px-4 py-2.5 rounded-xl bg-acc text-on-acc text-sm font-bold hover:bg-acc-hover disabled:opacity-60 flex items-center gap-2">
           {busy === 'free' && <Loader2 className="w-4 h-4 animate-spin" />} Save
         </button>
-        {freeMsg && <p role="status" className={cn('text-sm rounded-xl p-3 border', freeMsg.kind === 'ok' ? 'text-emerald-700 bg-acc-soft border-acc-edge' : 'text-danger bg-danger-soft border-danger-edge')}>{freeMsg.text}</p>}
+        {freeMsg && <p role="status" className={cn('text-sm rounded-xl p-3 border', freeMsg.kind === 'ok' ? 'text-acc-strong bg-acc-soft border-acc-edge' : 'text-danger bg-danger-soft border-danger-edge')}>{freeMsg.text}</p>}
 
         {free.existing === 'defer' && (
           <div className="rounded-xl border border-edge bg-card-2 p-4 space-y-3">
@@ -404,7 +404,7 @@ export default function AdminPricing() {
             <label className="flex items-center gap-2 text-xs text-ink-soft"><input type="checkbox" checked={includeSandbox} onChange={(e) => setIncludeSandbox(e.target.checked)} /> Include licence testers (for testing only)</label>
             <div className="flex flex-wrap gap-2">
               <button onClick={deferPreview} disabled={busy !== null} className="px-3 py-2 rounded-lg border border-edge-strong text-xs font-bold text-ink-soft hover:bg-card disabled:opacity-60 flex items-center gap-1.5">{busy === 'deferPreview' && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Preview</button>
-              <button onClick={deferRun} disabled={busy !== null} className="px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500 disabled:opacity-60 flex items-center gap-1.5">{busy === 'deferRun' && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Defer billing now</button>
+              <button onClick={deferRun} disabled={busy !== null} className="px-3 py-2 rounded-lg bg-acc text-on-acc text-xs font-bold hover:bg-acc-hover disabled:opacity-60 flex items-center gap-1.5">{busy === 'deferRun' && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Defer billing now</button>
             </div>
             {deferInfo && <p role="status" className="text-sm text-ink-soft">{deferInfo}</p>}
           </div>
@@ -455,7 +455,7 @@ export default function AdminPricing() {
               </label>
             )}
           </div>
-          <button onClick={createOffer} disabled={busy !== null || !chosenPlan || !offerForm.offerId.trim()} className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-500 disabled:opacity-60 flex items-center gap-1.5">
+          <button onClick={createOffer} disabled={busy !== null || !chosenPlan || !offerForm.offerId.trim()} className="px-4 py-2 rounded-lg bg-acc text-on-acc text-sm font-bold hover:bg-acc-hover disabled:opacity-60 flex items-center gap-1.5">
             {busy === 'offerCreate' && <Loader2 className="w-4 h-4 animate-spin" />} Create draft offer
           </button>
         </div>
@@ -469,9 +469,9 @@ export default function AdminPricing() {
                 <span className="block">{o.description}</span>
               </span>
               <span className="flex items-center gap-2 shrink-0">
-                <span className={cn('font-bold', o.state === 'ACTIVE' ? 'text-emerald-600' : 'text-ink-muted')}>{o.state}</span>
+                <span className={cn('font-bold', o.state === 'ACTIVE' ? 'text-acc-strong' : 'text-ink-muted')}>{o.state}</span>
                 {o.state !== 'ACTIVE' ? (
-                  <button onClick={() => setOfferState(o, 'offers.activate')} disabled={busy !== null} className="px-2.5 py-1 rounded-md bg-emerald-600 text-white font-bold disabled:opacity-60">Activate</button>
+                  <button onClick={() => setOfferState(o, 'offers.activate')} disabled={busy !== null} className="px-2.5 py-1 rounded-md bg-acc text-on-acc font-bold disabled:opacity-60">Activate</button>
                 ) : (
                   <button onClick={() => setOfferState(o, 'offers.deactivate')} disabled={busy !== null} className="px-2.5 py-1 rounded-md border border-edge-strong font-bold text-ink-soft disabled:opacity-60">Deactivate</button>
                 )}
@@ -479,7 +479,7 @@ export default function AdminPricing() {
             </li>
           ))}
         </ul>
-        {offerMsg && <p role="status" className={cn('text-sm rounded-xl p-3 border', offerMsg.kind === 'ok' ? 'text-emerald-700 bg-acc-soft border-acc-edge' : 'text-danger bg-danger-soft border-danger-edge')}>{offerMsg.text}</p>}
+        {offerMsg && <p role="status" className={cn('text-sm rounded-xl p-3 border', offerMsg.kind === 'ok' ? 'text-acc-strong bg-acc-soft border-acc-edge' : 'text-danger bg-danger-soft border-danger-edge')}>{offerMsg.text}</p>}
       </section>
 
       {/* ── Log ──────────────────────────────────────────────────── */}
@@ -490,7 +490,7 @@ export default function AdminPricing() {
           {prices.map((l) => (
             <li key={l.id} className="text-xs rounded-lg bg-card-2 p-3 text-ink-soft">
               <strong className="text-ink">{PRODUCT_NAMES[l.productId] ?? l.productId} / {l.basePlanId} / {l.regionCode}</strong>: {money(l.oldPriceMicros, l.currencyCode)} → {money(l.newPriceMicros, l.currencyCode)}{l.appliedToExisting ? ' (existing subscribers included)' : ''}
-              <span className={cn('ml-2 font-bold', l.result === 'success' ? 'text-emerald-600' : 'text-danger')}>{l.result}</span>
+              <span className={cn('ml-2 font-bold', l.result === 'success' ? 'text-acc-strong' : 'text-danger')}>{l.result}</span>
               {l.errorMessage && <span className="block text-danger mt-0.5">{l.errorMessage}</span>}
               <span className="block text-ink-faint mt-0.5">{l.adminEmail ?? 'unknown admin'} · {new Date(l.createdAt).toLocaleString()}</span>
             </li>
@@ -498,7 +498,7 @@ export default function AdminPricing() {
           {actions.map((a) => (
             <li key={a.id} className="text-xs rounded-lg bg-card-2 p-3 text-ink-soft">
               <strong className="text-ink">{({ free_mode: 'Free Premium Mode', defer_billing: 'Billing deferred', offer_create: 'Offer created (draft)', offer_activate: 'Offer activated', offer_deactivate: 'Offer deactivated' } as Record<string, string>)[a.action] ?? a.action}</strong> <span className="text-ink-faint">{a.details ? JSON.stringify(a.details) : ''}</span>
-              <span className={cn('ml-2 font-bold', a.result === 'success' ? 'text-emerald-600' : 'text-warn-strong')}>{a.result}</span>
+              <span className={cn('ml-2 font-bold', a.result === 'success' ? 'text-acc-strong' : 'text-acc-strong')}>{a.result}</span>
               <span className="block text-ink-faint mt-0.5">{a.adminEmail ?? 'unknown admin'} · {new Date(a.createdAt).toLocaleString()}</span>
             </li>
           ))}

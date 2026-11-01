@@ -35,10 +35,10 @@ function Row({ icon, label, hint, onClick, active }: { icon: ReactNode; label: s
       onClick={onClick}
       className={cn(
         'w-full flex items-center gap-3 px-4 py-3.5 text-left active:bg-card-2 hover:bg-card-2 transition-colors',
-        active && 'bg-warn-soft'
+        active && 'bg-acc-soft'
       )}
     >
-      <span className="w-9 h-9 rounded-xl bg-acc-soft text-acc grid place-items-center shrink-0">{icon}</span>
+      <span className="w-9 h-9 rounded-xl bg-acc-soft text-acc-strong grid place-items-center shrink-0">{icon}</span>
       <span className="min-w-0">
         <span className="block text-sm font-bold text-ink">{label}</span>
         {hint && <span className="block text-xs text-ink-muted truncate">{hint}</span>}

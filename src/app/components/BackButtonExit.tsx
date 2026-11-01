@@ -90,7 +90,7 @@ export default function BackButtonExit() {
   return (
     <div className="fixed inset-x-0 bottom-24 z-[9999] flex justify-center px-4 pointer-events-none safe-bottom">
       <div className="flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-ink text-page shadow-2xl border border-white/10 animate-[toast-in_0.22s_ease-out]">
-        <LogOut className="w-4 h-4 text-amber-400 shrink-0" />
+        <LogOut className="w-4 h-4 text-acc-strong shrink-0" />
         <span className="text-sm font-semibold">Tap back again to exit</span>
       </div>
     </div>

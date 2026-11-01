@@ -27,7 +27,7 @@ export default function HeroProfile() {
         <div className="flex items-center gap-1">
           {user && (
             <div className="hidden sm:flex items-center gap-2 bg-card border border-edge rounded-full pl-1 pr-2 py-1 shadow-sm">
-              <span className="w-7 h-7 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center">
+              <span className="w-7 h-7 rounded-full bg-acc text-on-acc text-xs font-bold flex items-center justify-center">
                 {initials}
               </span>
               <span className="text-xs font-semibold text-ink max-w-[90px] truncate">{displayName}</span>
@@ -94,7 +94,7 @@ export default function HeroProfile() {
               ) : (
                 <button
                   onClick={() => { setOpen(false); setShowAuth(true); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-emerald-600 hover:bg-acc-soft"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-acc-strong hover:bg-acc-soft"
                 >
                   <LogIn className="w-4 h-4" /> Sign In / Create Account
                 </button>

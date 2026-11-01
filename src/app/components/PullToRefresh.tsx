@@ -76,7 +76,7 @@ export default function PullToRefresh({ children }: { children: ReactNode }) {
         style={{ height: pullDistance }}
       >
         <RefreshCw
-          className={cn('w-5 h-5 text-acc', refreshing && 'animate-spin')}
+          className={cn('w-5 h-5 text-acc-strong', refreshing && 'animate-spin')}
           style={
             refreshing
               ? undefined

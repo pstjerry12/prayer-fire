@@ -24,10 +24,10 @@ export default function SocialLinks() {
   if (!links) return null;
 
   const items = [
-    { key: 'youtube', href: links.youtube, label: 'YouTube', icon: Play, className: 'bg-red-600' },
-    { key: 'facebook', href: links.facebook, label: 'Facebook', icon: null, className: 'bg-blue-600' },
-    { key: 'instagram', href: links.instagram, label: 'Instagram', icon: Camera, className: 'bg-gradient-to-br from-amber-500 via-pink-600 to-purple-600' },
-    { key: 'whatsapp', href: links.whatsapp, label: 'WhatsApp', icon: MessageCircle, className: 'bg-emerald-600' },
+    { key: 'youtube', href: links.youtube, label: 'YouTube', icon: Play, className: 'bg-danger' },
+    { key: 'facebook', href: links.facebook, label: 'Facebook', icon: null, className: 'bg-acc' },
+    { key: 'instagram', href: links.instagram, label: 'Instagram', icon: Camera, className: 'bg-gradient-to-br from-acc via-acc to-acc' },
+    { key: 'whatsapp', href: links.whatsapp, label: 'WhatsApp', icon: MessageCircle, className: 'bg-acc' },
     { key: 'tiktok', href: links.tiktok, label: 'TikTok', icon: Music2, className: 'bg-black' },
   ].filter((item) => item.href.trim());
 

@@ -53,14 +53,14 @@ export default function PrayerVersePage() {
     <>
       <Navbar />
       <main className="max-w-2xl mx-auto px-4 py-6 pb-32 md:pb-12">
-        <button onClick={() => router.back()} className="inline-flex items-center gap-1 text-sm font-semibold text-ink-muted hover:text-acc mb-5">
+        <button onClick={() => router.back()} className="inline-flex items-center gap-1 text-sm font-semibold text-ink-muted hover:text-acc-strong mb-5">
           <ChevronLeft className="w-5 h-5" /> {category ? category.name : 'Back'}
         </button>
 
         {!verse ? (
           <div className="bg-card rounded-2xl border border-edge p-8 text-center">
             <p className="text-ink-muted text-sm">That prayer verse could not be found.</p>
-            <button onClick={() => router.push('/bible')} className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold">
+            <button onClick={() => router.push('/bible')} className="mt-4 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">
               Back to the Bible
             </button>
           </div>
@@ -76,7 +76,7 @@ export default function PrayerVersePage() {
                 <h1 className="font-serif-heading text-2xl font-bold text-acc-strong mt-1">{verse.reference}</h1>
                 <p className="text-xs text-ink-muted mt-0.5">King James Version</p>
               </div>
-              {bookmarked && <BookmarkIcon className="w-6 h-6 fill-current text-warn shrink-0" aria-label="Bookmarked" />}
+              {bookmarked && <BookmarkIcon className="w-6 h-6 fill-current text-acc-strong shrink-0" aria-label="Bookmarked" />}
             </header>
 
             <LongPressable
@@ -89,7 +89,7 @@ export default function PrayerVersePage() {
             <p className="px-6 pt-2 text-[0.6875rem] text-ink-faint">Hold the verse for a menu: copy, read aloud, bookmark</p>
 
             {reader.problem && (
-              <p className="mx-6 mt-3 rounded-lg bg-warn-soft border border-warn-edge px-3 py-2 text-xs text-ink-soft">
+              <p className="mx-6 mt-3 rounded-lg bg-acc-soft border border-acc-edge px-3 py-2 text-xs text-ink-soft">
                 Read aloud couldn&apos;t start on this device. Check that a text-to-speech voice is installed and your media volume is up.
                 <span className="block mt-1 text-[0.6875rem] text-ink-muted break-words">Details: {reader.problemDetail ?? 'no voice available'}</span>
               </p>
@@ -100,14 +100,14 @@ export default function PrayerVersePage() {
                 onClick={readAloud}
                 className={cn(
                   'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold',
-                  reader.reading ? 'bg-emerald-600 text-white' : 'bg-card-2 text-ink-soft hover:bg-card-3'
+                  reader.reading ? 'bg-acc text-on-acc' : 'bg-card-2 text-ink-soft hover:bg-card-3'
                 )}
               >
                 {reader.reading ? <Square className="w-4 h-4 fill-current" /> : <Volume2 className="w-4 h-4" />}
                 {reader.reading ? 'Stop' : 'Read Aloud'}
               </button>
               <button onClick={handleCopy} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card-2 text-ink-soft text-sm font-bold hover:bg-card-3">
-                {copied ? <Check className="w-4 h-4 text-acc" /> : <Copy className="w-4 h-4" />}
+                {copied ? <Check className="w-4 h-4 text-acc-strong" /> : <Copy className="w-4 h-4" />}
                 {copied ? 'Copied' : 'Copy'}
               </button>
               <button
@@ -115,7 +115,7 @@ export default function PrayerVersePage() {
                 aria-pressed={bookmarked}
                 className={cn(
                   'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold',
-                  bookmarked ? 'bg-emerald-600 text-white' : 'bg-card-2 text-ink-soft hover:bg-card-3'
+                  bookmarked ? 'bg-acc text-on-acc' : 'bg-card-2 text-ink-soft hover:bg-card-3'
                 )}
               >
                 <BookmarkIcon className={cn('w-4 h-4', bookmarked && 'fill-current')} />

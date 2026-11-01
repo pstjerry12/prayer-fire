@@ -282,14 +282,14 @@ const BENEFITS_QA = [
 
 // ── Color map for benefit badges ──
 const COLOR_MAP: Record<string, string> = {
-  amber: 'bg-amber-100 text-amber-600',
-  emerald: 'bg-emerald-100 text-emerald-600',
-  blue: 'bg-blue-100 text-blue-600',
-  purple: 'bg-purple-100 text-purple-600',
-  rose: 'bg-rose-100 text-rose-600',
-  orange: 'bg-orange-100 text-orange-600',
-  teal: 'bg-teal-100 text-teal-600',
-  red: 'bg-red-100 text-red-600',
+  amber: 'bg-acc-soft-2 text-acc-strong',
+  emerald: 'bg-acc-soft-2 text-acc-strong',
+  blue: 'bg-acc-soft-2 text-acc-strong',
+  purple: 'bg-acc-soft-2 text-acc-strong',
+  rose: 'bg-danger-soft text-danger',
+  orange: 'bg-acc-soft-2 text-acc-strong',
+  teal: 'bg-acc-soft-2 text-acc-strong',
+  red: 'bg-danger-soft text-danger',
 };
 
 export default function UserManualPage() {
@@ -308,7 +308,7 @@ export default function UserManualPage() {
     <>
       <Navbar />
       <main className="max-w-3xl md:max-w-4xl mx-auto px-4 py-6 pb-28 md:pb-10">
-        <Link href="/" className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-acc mb-6">
+        <Link href="/" className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-acc-strong mb-6">
           <ChevronLeft className="w-4 h-4" /> Home
         </Link>
 
@@ -338,7 +338,7 @@ export default function UserManualPage() {
           <p className="text-ink-soft leading-relaxed mb-4">
             The alarm rings for everything else — work, meetings, school runs — but <strong>nothing rings for prayer</strong>.
           </p>
-          <p className="text-acc font-bold text-lg">Until now.</p>
+          <p className="text-acc-strong font-bold text-lg">Until now.</p>
           <p className="text-ink-soft leading-relaxed mt-4">
             Prayer Fire is not just another Christian app. It is a <strong>spiritual alarm system</strong> for your soul. It is a <strong>cure for prayerlessness</strong>. It is the tool that transforms your desire to pray into a <strong>daily, unbreakable habit</strong> — just like Daniel did in Babylon.
           </p>
@@ -359,7 +359,7 @@ export default function UserManualPage() {
             >
               <span className="text-2xl flex-shrink-0">{item.emoji}</span>
               <span className="font-semibold text-ink text-sm flex-1">{item.question}</span>
-              <ChevronRight className="w-5 h-5 text-ink-faint group-hover:text-acc transition flex-shrink-0" />
+              <ChevronRight className="w-5 h-5 text-ink-faint group-hover:text-acc-strong transition flex-shrink-0" />
             </button>
           ))}
         </div>
@@ -377,22 +377,22 @@ export default function UserManualPage() {
               onClick={() => openPopup('benefits', i)}
               className="w-full bg-card rounded-2xl border border-edge p-4 flex items-center gap-3 hover:border-acc transition text-left group"
             >
-              <span className={`p-2 rounded-lg ${COLOR_MAP[item.color] || 'bg-gray-100 text-gray-600'} flex-shrink-0`}>
+              <span className={`p-2 rounded-lg ${COLOR_MAP[item.color] || 'bg-card-3 text-ink-muted'} flex-shrink-0`}>
                 <span className="text-lg">{item.emoji}</span>
               </span>
               <span className="font-semibold text-ink text-sm flex-1">{item.question}</span>
-              <ChevronRight className="w-5 h-5 text-ink-faint group-hover:text-acc transition flex-shrink-0" />
+              <ChevronRight className="w-5 h-5 text-ink-faint group-hover:text-acc-strong transition flex-shrink-0" />
             </button>
           ))}
         </div>
 
         {/* ====== PRAYER FIRE PARTNER ====== */}
-        <div className="bg-gradient-to-b from-amber-50 to-card rounded-2xl border-2 border-amber-300 p-6 mb-8">
+        <div className="bg-gradient-to-b from-acc-soft to-card rounded-2xl border-2 border-acc-edge p-6 mb-8">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-4xl">👑</span>
             <div>
               <h2 className="font-serif-heading text-2xl font-black text-ink">Prayer Fire Partner</h2>
-              <p className="text-amber-600 font-bold">$2.99/month · $23.99/year</p>
+              <p className="text-acc-strong font-bold">$2.99/month · $23.99/year</p>
             </div>
           </div>
 
@@ -403,35 +403,35 @@ export default function UserManualPage() {
 
           <div className="space-y-4 mb-6">
             <div className="flex items-start gap-3">
-              <Globe className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <Globe className="w-5 h-5 text-acc-strong flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold text-ink">Join Global Prayer Groups</p>
                 <p className="text-ink-soft text-sm">Connect with believers across Nigeria, Kenya, Ghana, the UK, the US, South Africa — praying for the SAME things at the SAME time. There is power in agreement.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Users className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <Users className="w-5 h-5 text-acc-strong flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold text-ink">Submit &amp; Pray for Partner Requests</p>
                 <p className="text-ink-soft text-sm">Someone in Ghana is praying for their sick mother. Someone in the UK is battling addiction. You see their request. You pray for them. They pray for you.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Megaphone className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <Megaphone className="w-5 h-5 text-acc-strong flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold text-ink">Global Prayer Alerts</p>
                 <p className="text-ink-soft text-sm">When an emergency hits — a nation in crisis, a persecuted believer — you get notified instantly. You become a first responder in the spirit.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Mic2 className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <Mic2 className="w-5 h-5 text-acc-strong flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold text-ink">Voice-to-Text Prayer Writing</p>
                 <p className="text-ink-soft text-sm">Speak your prayers and the app writes them. Perfect for intercessory sessions where you&apos;re praying for 10, 20, 50 people.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Headphones className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <Headphones className="w-5 h-5 text-acc-strong flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold text-ink">Priority Support</p>
                 <p className="text-ink-soft text-sm">Partners get served first — technical, spiritual, or community help.</p>
@@ -439,24 +439,24 @@ export default function UserManualPage() {
             </div>
           </div>
 
-          <div className="bg-amber-100 rounded-xl p-4">
-            <p className="font-bold text-amber-800 mb-1">💎 The Spiritual Benefit:</p>
-            <p className="text-amber-700 text-sm leading-relaxed mb-2">
+          <div className="bg-acc-soft-2 rounded-xl p-4">
+            <p className="font-bold text-ink mb-1">💎 The Spiritual Benefit:</p>
+            <p className="text-acc-strong text-sm leading-relaxed mb-2">
               Prayer Fire Partner moves you from &quot;I pray for myself&quot; to <strong>&quot;I pray for the world.&quot;</strong> This is intercession. This is standing in the gap. This is what separates a Christian who prays from a <strong>prayer warrior</strong>.
             </p>
-            <p className="text-amber-600 text-sm italic">
+            <p className="text-acc-strong text-sm italic">
               &quot;I exhort therefore… that intercessions be made for all men.&quot; — 1 Timothy 2:1
             </p>
           </div>
         </div>
 
         {/* ====== FIRE PARTNER LEADER ====== */}
-        <div className="bg-gradient-to-b from-red-50 to-card rounded-2xl border-2 border-red-300 p-6 mb-8">
+        <div className="bg-gradient-to-b from-danger-soft to-card rounded-2xl border-2 border-danger-edge p-6 mb-8">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-4xl">🔥</span>
             <div>
               <h2 className="font-serif-heading text-2xl font-black text-ink">Fire Partner Leader</h2>
-              <p className="text-red-600 font-bold">$9.99/month · $89.99/year</p>
+              <p className="text-danger font-bold">$9.99/month · $89.99/year</p>
             </div>
           </div>
 
@@ -467,35 +467,35 @@ export default function UserManualPage() {
 
           <div className="space-y-4 mb-6">
             <div className="flex items-start gap-3">
-              <Users className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <Users className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold text-ink">Create &amp; Manage Your Own Prayer Groups</p>
                 <p className="text-ink-soft text-sm">Build groups for your church, campus, workplace, nation. You set the prayer times. You set the vision. You lead.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Shield className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <Shield className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold text-ink">Admin &amp; Moderation Tools</p>
                 <p className="text-ink-soft text-sm">3 co-admins per group. Approve members. Pin scriptures. Keep the group focused, holy, and on fire.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <BarChart3 className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <BarChart3 className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold text-ink">Partner Network Analytics</p>
                 <p className="text-ink-soft text-sm">See who&apos;s faithful. See who&apos;s falling away. A shepherd knows his sheep.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Star className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <Star className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold text-ink">Feature Your Prayer Groups</p>
                 <p className="text-ink-soft text-sm">Your group gets highlighted globally. More intercessors join. Your fire spreads.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Zap className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <Zap className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold text-ink">Early Access to New Features</p>
                 <p className="text-ink-soft text-sm">Leaders get every new feature first. New templates. New languages. New tools. You lead from the front.</p>
@@ -503,12 +503,12 @@ export default function UserManualPage() {
             </div>
           </div>
 
-          <div className="bg-red-100 rounded-xl p-4">
-            <p className="font-bold text-red-800 mb-1">💎 The Spiritual Benefit:</p>
-            <p className="text-red-700 text-sm leading-relaxed mb-2">
+          <div className="bg-danger-soft rounded-xl p-4">
+            <p className="font-bold text-ink mb-1">💎 The Spiritual Benefit:</p>
+            <p className="text-danger text-sm leading-relaxed mb-2">
               Fire Partner Leader equips you to do what <strong>Nehemiah did</strong> — build a team, set watchmen, and rebuild the walls of prayer in your generation. You are no longer just praying. You are <strong>mobilizing prayer</strong>.
             </p>
-            <p className="text-red-600 text-sm italic">
+            <p className="text-danger text-sm italic">
               &quot;I sought for a man… that should stand in the gap before me for the land…&quot; — Ezekiel 22:30
             </p>
           </div>
@@ -521,17 +521,17 @@ export default function UserManualPage() {
             <div className="flex items-center justify-between bg-card-2 rounded-lg px-4 py-3">
               <span className="text-ink-soft text-sm">1 soda per month</span>
               <span className="font-bold text-ink mx-2">$2.99</span>
-              <span className="text-acc font-semibold text-sm">→ Global intercessory community</span>
+              <span className="text-acc-strong font-semibold text-sm">→ Global intercessory community</span>
             </div>
             <div className="flex items-center justify-between bg-card-2 rounded-lg px-4 py-3">
               <span className="text-ink-soft text-sm">1 fast food meal</span>
               <span className="font-bold text-ink mx-2">$9.99</span>
-              <span className="text-acc font-semibold text-sm">→ Your own prayer movement</span>
+              <span className="text-acc-strong font-semibold text-sm">→ Your own prayer movement</span>
             </div>
             <div className="flex items-center justify-between bg-card-2 rounded-lg px-4 py-3">
               <span className="text-ink-soft text-sm">Netflix subscription</span>
               <span className="font-bold text-ink mx-2">$15.99</span>
-              <span className="text-acc font-semibold text-sm">→ Feeds your SOUL, not flesh</span>
+              <span className="text-acc-strong font-semibold text-sm">→ Feeds your SOUL, not flesh</span>
             </div>
           </div>
           <p className="text-ink-soft text-sm text-center mt-4 italic">
@@ -540,7 +540,7 @@ export default function UserManualPage() {
         </div>
 
         {/* ====== BOTTOM LINE ====== */}
-        <div className="bg-gradient-to-r from-red-600 to-amber-500 rounded-2xl p-6 text-white mb-6">
+        <div className="bg-navy rounded-2xl p-6 text-cream mb-6">
           <h2 className="font-serif-heading text-2xl font-black mb-4 text-center">🔥 The Bottom Line</h2>
           <p className="text-white/90 leading-relaxed mb-4 text-center">
             Prayerlessness is the <strong>silent killer</strong> of spiritual life.
@@ -568,7 +568,7 @@ export default function UserManualPage() {
             Imagine what happens when <strong>millions of Daniels</strong> pray three times a day — in every nation, every time zone, every language — and <strong>the fire never goes out</strong>.
           </p>
           <div className="text-3xl font-black text-danger mb-2">PRAY 3 TIMES A DAY.</div>
-          <div className="text-xl font-bold text-acc mb-4">CURE PRAYERLESSNESS. SET THE WORLD ON FIRE.</div>
+          <div className="text-xl font-bold text-acc-strong mb-4">CURE PRAYERLESSNESS. SET THE WORLD ON FIRE.</div>
           <p className="text-ink-muted text-sm">The fire is waiting. 🔥</p>
           <p className="text-ink-faint text-xs mt-6">Pastor Jerry C. — Founder, Prayer Fire</p>
         </div>

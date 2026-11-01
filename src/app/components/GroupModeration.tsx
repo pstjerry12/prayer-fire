@@ -27,7 +27,7 @@ export function ReportsQueue({ detail, busy, act }: { detail: GroupDetail; busy:
             <div key={r.id} className="bg-card-2 rounded-lg p-3 space-y-1.5">
               <p className="text-[0.6875rem] text-ink-muted">
                 <span className="font-bold uppercase">{r.targetType}</span> by <span className="font-semibold text-ink">{r.authorName}</span>
-                {r.hidden && <span className="ml-1.5 bg-warn-soft text-warn-strong px-1.5 py-0.5 rounded-full font-bold">hidden</span>}
+                {r.hidden && <span className="ml-1.5 bg-acc-soft text-acc-strong px-1.5 py-0.5 rounded-full font-bold">hidden</span>}
               </p>
               <p className="text-sm text-ink-soft whitespace-pre-wrap break-words line-clamp-4">{r.text}</p>
               <p className="text-[0.6875rem] text-danger-strong">
@@ -36,7 +36,7 @@ export function ReportsQueue({ detail, busy, act }: { detail: GroupDetail; busy:
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {!r.hidden && (
                   <button disabled={busy} onClick={() => act({ action: 'resolveReport', reportId: r.id, resolution: 'hide' })}
-                    className="px-2.5 py-1.5 bg-warn-soft text-warn-strong rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-60"><EyeOff className="w-3.5 h-3.5" /> Hide</button>
+                    className="px-2.5 py-1.5 bg-acc-soft text-acc-strong rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-60"><EyeOff className="w-3.5 h-3.5" /> Hide</button>
                 )}
                 <button disabled={busy} onClick={() => { if (confirm(`Delete this ${r.targetType} for everyone?`)) act({ action: 'resolveReport', reportId: r.id, resolution: 'delete' }); }}
                   className="px-2.5 py-1.5 bg-danger text-white rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-60"><Trash2 className="w-3.5 h-3.5" /> Delete</button>

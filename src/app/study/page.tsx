@@ -61,7 +61,7 @@ function CopyButton({ value }: { value: string }) {
       }}
       className="flex items-center gap-1 text-xs text-ink-muted hover:text-ink"
     >
-      {copied ? <Check className="w-3 h-3 text-acc" /> : <Copy className="w-3 h-3" />}
+      {copied ? <Check className="w-3 h-3 text-acc-strong" /> : <Copy className="w-3 h-3" />}
       {copied ? 'Copied' : 'Copy'}
     </button>
   );
@@ -237,7 +237,7 @@ function SermonsTab() {
     <div className="space-y-4">
       <button
         onClick={() => setStarting(true)}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-500 active:scale-[0.99]"
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-acc text-on-acc text-sm font-bold hover:bg-acc-hover active:scale-[0.99]"
       >
         <Plus className="w-4 h-4" /> Start a Sermon Session
       </button>
@@ -259,7 +259,7 @@ function SermonsTab() {
                 onClick={() => router.push(`/study/sermon/${s.id}`)}
                 className="w-full text-left bg-card rounded-xl border border-edge p-4 hover:bg-card-2 active:bg-card-2 flex items-center gap-3"
               >
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-acc-soft text-acc shrink-0">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-acc-soft text-acc-strong shrink-0">
                   <BookOpenText className="w-5 h-5" />
                 </span>
                 <span className="min-w-0 flex-1">
@@ -269,7 +269,7 @@ function SermonsTab() {
                   </span>
                   <span className="block text-[0.6875rem] text-ink-faint mt-0.5">
                     {count} {count === 1 ? 'verse' : 'verses'}
-                    {active && <span className="ml-2 rounded-full bg-warn-soft border border-warn-edge px-2 py-0.5 text-warn-strong font-bold">Active session</span>}
+                    {active && <span className="ml-2 rounded-full bg-acc-soft border border-acc-edge px-2 py-0.5 text-acc-strong font-bold">Active session</span>}
                   </span>
                 </span>
                 <ChevronRight className="w-4 h-4 text-ink-faint shrink-0" />
@@ -320,7 +320,7 @@ export default function StudyPage() {
     <>
       <Navbar />
       <main className="max-w-3xl md:max-w-4xl mx-auto px-4 py-6 pb-28 md:pb-10">
-        <Link href="/bible" className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-acc mb-4">
+        <Link href="/bible" className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-acc-strong mb-4">
           <ChevronLeft className="w-4 h-4" /> Bible
         </Link>
 

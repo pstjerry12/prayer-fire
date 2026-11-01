@@ -66,7 +66,7 @@ export default function AdminFeaturedGroups() {
   return (
     <div className="space-y-4">
       <div className={card}>
-        <h2 className="font-serif-heading font-bold text-ink flex items-center gap-2"><Star className="w-4 h-4 text-warn-strong" /> Featured groups</h2>
+        <h2 className="font-serif-heading font-bold text-ink flex items-center gap-2"><Star className="w-4 h-4 text-acc-strong" /> Featured groups</h2>
         <p className="text-ink-muted text-xs mt-1 leading-relaxed">
           Leaders can ask to have their group featured. Approved groups get a Featured badge and appear first in the groups list and in search.
           You can give an end date (the group then stops being featured by itself) or leave it open and remove it later.
@@ -95,7 +95,7 @@ export default function AdminFeaturedGroups() {
                     <input type="date" value={ends[r.id] ?? ''} onChange={(e) => setEnds({ ...ends, [r.id]: e.target.value })} aria-label={`End date for ${r.groupName}`} className={cn(input, 'block mt-1')} />
                   </label>
                   <button disabled={busy} onClick={() => run({ action: 'approve', id: r.id, until: endOfDay(ends[r.id] ?? '') }, `${r.groupName} is now featured.`)}
-                    className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-emerald-500 disabled:opacity-60"><Check className="w-3.5 h-3.5" /> Approve</button>
+                    className="px-3 py-2 bg-acc text-on-acc rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-acc-hover disabled:opacity-60"><Check className="w-3.5 h-3.5" /> Approve</button>
                 </div>
                 <div className="flex flex-wrap items-end gap-2">
                   <input value={notes[r.id] ?? ''} onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })} maxLength={200} placeholder="Reason shown to the leader (optional)" aria-label={`Reason for declining ${r.groupName}`} className={cn(input, 'flex-1 min-w-[10rem]')} />

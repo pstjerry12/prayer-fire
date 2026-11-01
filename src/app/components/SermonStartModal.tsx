@@ -40,7 +40,7 @@ export default function SermonStartModal({ onClose, onStarted }: Props) {
             onChange={(e) => setTitle(e.target.value)}
             maxLength={200}
             placeholder="e.g. Faith that moves mountains"
-            className="mt-1 w-full bg-card border border-edge-strong rounded-xl px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="mt-1 w-full bg-card border border-edge-strong rounded-xl px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
           />
         </label>
         <label className="block">
@@ -50,7 +50,7 @@ export default function SermonStartModal({ onClose, onStarted }: Props) {
             onChange={(e) => setPreacher(e.target.value)}
             maxLength={200}
             placeholder="e.g. Pastor Jerry"
-            className="mt-1 w-full bg-card border border-edge-strong rounded-xl px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="mt-1 w-full bg-card border border-edge-strong rounded-xl px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
           />
         </label>
         <label className="block">
@@ -59,11 +59,11 @@ export default function SermonStartModal({ onClose, onStarted }: Props) {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="mt-1 w-full bg-card border border-edge-strong rounded-xl px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="mt-1 w-full bg-card border border-edge-strong rounded-xl px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
           />
         </label>
 
-        <button type="submit" className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 active:scale-[0.99]">
+        <button type="submit" className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover active:scale-[0.99]">
           Start session
         </button>
       </form>

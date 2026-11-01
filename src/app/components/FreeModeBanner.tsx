@@ -16,7 +16,7 @@ export default function FreeModeBanner() {
     }
   }
   return (
-    <div role="status" className="flex items-center justify-center gap-1.5 bg-emerald-600 text-white text-xs font-bold py-1.5 px-3 text-center">
+    <div role="status" className="flex items-center justify-center gap-1.5 bg-acc text-on-acc text-xs font-bold py-1.5 px-3 text-center">
       <Gift className="w-3.5 h-3.5 shrink-0" /> Premium is free for a limited time{until}
     </div>
   );

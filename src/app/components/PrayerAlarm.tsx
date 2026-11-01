@@ -157,14 +157,14 @@ export default function PrayerAlarm() {
       <h1 className="text-3xl font-black text-white mb-2 text-center">
         Prayer Time!
       </h1>
-      <p className="text-xl text-amber-400 font-bold mb-8 text-center">
+      <p className="text-xl text-acc-strong font-bold mb-8 text-center">
         {alarmLabel}
       </p>
 
       {/* Big DISMISS button */}
       <button
         onClick={dismiss}
-        className="px-12 py-5 bg-red-600 hover:bg-red-500 text-white rounded-2xl text-2xl font-black shadow-2xl transition-all active:scale-95"
+        className="px-12 py-5 bg-danger hover:bg-danger text-white rounded-2xl text-2xl font-black shadow-2xl transition-all active:scale-95"
       >
         DISMISS ALARM
       </button>

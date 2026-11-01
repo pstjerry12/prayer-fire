@@ -35,8 +35,8 @@ export default function DonationCard() {
       <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
         <div className="p-5 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <HandHeart className="w-5 h-5 text-acc" />
-            <span className="text-acc text-xs font-bold uppercase tracking-wider">Support Prayer Fire</span>
+            <HandHeart className="w-5 h-5 text-acc-strong" />
+            <span className="text-acc-strong text-xs font-bold uppercase tracking-wider">Support Prayer Fire</span>
           </div>
           <div className="text-4xl mb-3">💝</div>
           <h3 className="font-serif-heading text-lg font-bold text-ink mb-2">
@@ -150,8 +150,8 @@ export default function DonationCard() {
     <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
       {/* Live/test mode indicator */}
       <div className={cn(
-        'text-white text-[0.625rem] font-bold text-center py-1.5 px-3 flex items-center justify-center gap-1.5',
-        isLiveMode ? 'bg-emerald-600' : 'bg-amber-600'
+        'text-on-acc text-[0.625rem] font-bold text-center py-1.5 px-3 flex items-center justify-center gap-1.5',
+        isLiveMode ? 'bg-acc' : 'bg-acc'
       )}>
         {isLiveMode ? '🔒 Secure giving via Flutterwave (Live)' : '🧪 Test mode — no real money moves'}
       </div>
@@ -164,7 +164,7 @@ export default function DonationCard() {
         <button
           onClick={() => { setExpanded((v) => !v); setError(''); }}
           aria-expanded={expanded}
-          className="w-full py-2.5 rounded-xl font-bold text-sm text-acc bg-transparent border border-acc/40 hover:bg-acc-soft transition-colors flex items-center justify-center gap-2"
+          className="w-full py-2.5 rounded-xl font-bold text-sm text-acc-strong bg-transparent border border-acc/40 hover:bg-acc-soft transition-colors flex items-center justify-center gap-2"
         >
           Support
           <ChevronDown className={cn('w-4 h-4 transition-transform duration-300', expanded && 'rotate-180')} />
@@ -220,7 +220,7 @@ export default function DonationCard() {
           <button
             onClick={handleDonate}
             disabled={paying}
-            className="w-full py-3.5 rounded-xl font-bold text-sm text-white bg-acc hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
+            className="w-full py-3.5 rounded-xl font-bold text-sm text-on-acc bg-acc hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
           >
             {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className="w-4 h-4" />}
             {paying ? 'Opening payment…' : 'Continue'}

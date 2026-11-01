@@ -91,7 +91,7 @@ export default function BibleSearchBar({ translationId, onGoTo }: Props) {
           placeholder="Search the Bible, or jump to John 3:16"
           aria-label="Search the Bible or jump to a verse"
           enterKeyHint="go"
-          className="w-full bg-card-2 border border-edge-strong rounded-xl pl-10 pr-10 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+          className="w-full bg-card-2 border border-edge-strong rounded-xl pl-10 pr-10 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
         />
         {query && (
           <button type="button" onClick={() => setQuery('')} aria-label="Clear search" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-ink-muted hover:bg-card-3">

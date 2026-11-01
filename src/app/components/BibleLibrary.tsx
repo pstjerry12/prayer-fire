@@ -31,7 +31,7 @@ export default function BibleLibrary() {
   return (
     <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
       <div className="px-5 py-4 border-b border-edge flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-acc-soft text-acc"><ScrollText className="w-5 h-5" /></div>
+        <div className="p-2 rounded-lg bg-acc-soft text-acc-strong"><ScrollText className="w-5 h-5" /></div>
         <div>
           <h2 className="font-bold text-ink">Prayer Verses</h2>
           <p className="text-xs text-ink-muted">Themed verses for your prayer life</p>
@@ -45,7 +45,7 @@ export default function BibleLibrary() {
             placeholder="Search verses..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
+            className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
           />
         </div>
 

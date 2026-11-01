@@ -134,7 +134,7 @@ export default function WorshipPlayer({ compact = false }: { compact?: boolean }
     <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
       <div className="px-4 py-3 border-b border-edge flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Music className="w-4 h-4 text-acc" />
+          <Music className="w-4 h-4 text-acc-strong" />
           <span className="font-bold text-sm text-ink">Praise & Worship Songs</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -148,7 +148,7 @@ export default function WorshipPlayer({ compact = false }: { compact?: boolean }
           <button
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-500 disabled:opacity-60"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-acc text-on-acc rounded-lg text-xs font-bold hover:bg-acc-hover disabled:opacity-60"
           >
             {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
             Upload
@@ -166,7 +166,7 @@ export default function WorshipPlayer({ compact = false }: { compact?: boolean }
             <button
               onClick={togglePlay}
               disabled={loading}
-              className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center hover:bg-emerald-500 disabled:opacity-60"
+              className="w-10 h-10 rounded-full bg-acc text-on-acc flex items-center justify-center hover:bg-acc-hover disabled:opacity-60"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
             </button>
@@ -178,7 +178,7 @@ export default function WorshipPlayer({ compact = false }: { compact?: boolean }
               step={0.1}
               value={progress}
               onChange={seek}
-              className="flex-1 accent-emerald-600"
+              className="flex-1 accent-acc"
             />
             <span className="text-[0.625rem] text-ink-muted tabular-nums whitespace-nowrap">{fmt(progress)} / {fmt(duration)}</span>
           </div>
@@ -193,17 +193,17 @@ export default function WorshipPlayer({ compact = false }: { compact?: boolean }
             placeholder="Song title"
             value={urlName}
             onChange={(e) => setUrlName(e.target.value)}
-            className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
           />
           <input
             type="url"
             placeholder="Audio link (mp3/m4a URL)"
             value={urlLink}
             onChange={(e) => setUrlLink(e.target.value)}
-            className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
           />
           <div className="flex gap-2">
-            <button onClick={handleUrl} className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-500">Add Song</button>
+            <button onClick={handleUrl} className="flex-1 py-2 bg-acc text-on-acc rounded-lg text-xs font-bold hover:bg-acc-hover">Add Song</button>
             <button onClick={() => setShowUrl(false)} className="px-3 py-2 bg-card-3 text-ink-muted rounded-lg text-xs font-semibold hover:bg-card-2"><X className="w-4 h-4" /></button>
           </div>
         </div>
@@ -230,7 +230,7 @@ export default function WorshipPlayer({ compact = false }: { compact?: boolean }
               >
                 <button
                   onClick={() => (active ? togglePlay() : playSong(song))}
-                  className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center bg-emerald-600 text-white hover:bg-emerald-500"
+                  className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center bg-acc text-on-acc hover:bg-acc-hover"
                 >
                   {active && isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
                 </button>

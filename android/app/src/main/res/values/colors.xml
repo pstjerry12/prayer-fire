@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Prayer Fire brand palette (mirrors the web app's fire theme).
+    <!-- Prayer Fire "Midnight and Ember" palette (mirrors src/app/globals.css).
          styles.xml references these; without this file AAPT2 cannot resolve them. -->
-    <color name="colorPrimary">#E05050</color>
-    <color name="colorPrimaryDark">#2A0A0A</color>
-    <color name="colorAccent">#FF9800</color>
+    <color name="colorPrimary">#14213D</color>
+    <color name="colorPrimaryDark">#14213D</color>
+    <color name="colorAccent">#E8772E</color>
+    <!-- Status bar and the splash screen background. -->
+    <color name="navy">#14213D</color>
 </resources>

@@ -23,14 +23,14 @@ export default function ReadAloudBar({ state, label, onPause, onResume, onStop }
     >
       <div className="flex items-center gap-3 bg-card border border-edge-strong shadow-2xl rounded-2xl pl-4 pr-2 py-2">
         <span className="relative flex h-2.5 w-2.5 shrink-0">
-          {state === 'playing' && <span className="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-70 animate-ping" />}
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-orange-500" />
+          {state === 'playing' && <span className="absolute inline-flex h-full w-full rounded-full bg-acc opacity-70 animate-ping" />}
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-acc" />
         </span>
         <p className="flex-1 min-w-0 truncate text-sm font-bold text-ink">{state === 'paused' ? `Paused · ${label}` : label}</p>
         <button
           onClick={state === 'playing' ? onPause : onResume}
           aria-label={state === 'playing' ? 'Pause' : 'Resume'}
-          className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-600 text-white active:scale-95"
+          className="grid h-10 w-10 place-items-center rounded-xl bg-acc text-on-acc active:scale-95"
         >
           {state === 'playing' ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
         </button>

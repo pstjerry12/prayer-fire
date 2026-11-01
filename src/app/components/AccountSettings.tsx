@@ -111,8 +111,8 @@ export default function AccountSettings({
               {user ? (
                 <div className="bg-card-2 rounded-xl p-4 border border-edge">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0">
-                      <UserCircle className="w-7 h-7 text-white" />
+                    <div className="w-11 h-11 rounded-full bg-acc flex items-center justify-center flex-shrink-0">
+                      <UserCircle className="w-7 h-7 text-on-acc" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-ink font-bold text-sm truncate">
@@ -140,12 +140,12 @@ export default function AccountSettings({
                   onClick={onSignIn}
                   className="w-full flex items-center gap-3 p-4 bg-acc-soft border border-acc-edge rounded-xl hover:bg-acc-soft-2/60 transition-all"
                 >
-                  <LogIn className="w-5 h-5 text-acc" />
+                  <LogIn className="w-5 h-5 text-acc-strong" />
                   <div className="flex-1 text-left">
                     <p className="text-acc-strong font-bold text-sm">Sign In / Create Account</p>
                     <p className="text-ink-muted text-xs">Sync your identity across the community</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-acc" />
+                  <ChevronRight className="w-4 h-4 text-acc-strong" />
                 </button>
               )}
             </div>
@@ -153,7 +153,7 @@ export default function AccountSettings({
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-card-2 rounded-xl py-3 px-1 text-center border border-edge">
-                <Flame className="w-5 h-5 text-acc mx-auto mb-1" />
+                <Flame className="w-5 h-5 text-acc-strong mx-auto mb-1" />
                 <p className="text-ink font-bold text-xl">{streakCount}</p>
                 <p className="text-ink-muted text-[0.625rem]">Day Streak</p>
               </div>
@@ -163,7 +163,7 @@ export default function AccountSettings({
                 <p className="text-ink-muted text-[0.625rem]">Personal</p>
               </div>
               <div className="bg-card-2 rounded-xl py-3 px-1 text-center border border-edge">
-                <Users className="w-5 h-5 text-acc mx-auto mb-1" />
+                <Users className="w-5 h-5 text-acc-strong mx-auto mb-1" />
                 <p className="text-ink font-bold text-xl">{intercessoryCount}</p>
                 <p className="text-ink-muted text-[0.625rem]">Intercessory</p>
               </div>
@@ -174,18 +174,18 @@ export default function AccountSettings({
               onClick={onSendFeedback}
               className="w-full flex items-center gap-3 p-4 bg-acc-soft border border-acc-edge rounded-xl hover:bg-acc-soft-2/60 transition-all"
             >
-              <MessageSquareHeart className="w-5 h-5 text-acc shrink-0" />
+              <MessageSquareHeart className="w-5 h-5 text-acc-strong shrink-0" />
               <div className="flex-1 text-left">
                 <p className="text-acc-strong font-bold text-sm">Send Feedback</p>
                 <p className="text-ink-muted text-xs">Report a problem or suggest an idea</p>
               </div>
-              <ChevronRight className="w-4 h-4 text-acc" />
+              <ChevronRight className="w-4 h-4 text-acc-strong" />
             </button>
 
             {/* Text Size */}
             <div>
               <h3 className="text-ink-soft text-sm font-semibold mb-1 flex items-center gap-2">
-                <Type className="w-4 h-4 text-acc" /> Text Size
+                <Type className="w-4 h-4 text-acc-strong" /> Text Size
               </h3>
               <p className="text-ink-muted text-xs mb-3">Make words bigger and easier to read across the whole app.</p>
               <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="Text size">
@@ -222,7 +222,7 @@ export default function AccountSettings({
             {/* Currency */}
             <div>
               <h3 className="text-ink-soft text-sm font-semibold mb-3 flex items-center gap-2">
-                <Globe className="w-4 h-4 text-acc" /> Preferred Currency
+                <Globe className="w-4 h-4 text-acc-strong" /> Preferred Currency
               </h3>
               <div className="grid grid-cols-2 gap-2">
                 {CURRENCIES.map((c) => (
@@ -251,11 +251,11 @@ export default function AccountSettings({
                 href={PLAY_STORE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center gap-3 p-3 bg-warn-soft rounded-xl border border-warn-edge hover:bg-warn-soft-2 transition-colors"
+                className="w-full flex items-center gap-3 p-3 bg-acc-soft rounded-xl border border-acc-edge hover:bg-acc-soft-2 transition-colors"
               >
-                <Star className="w-4 h-4 text-warn fill-warn shrink-0" />
+                <Star className="w-4 h-4 text-acc-strong fill-warn shrink-0" />
                 <span className="flex-1 text-sm text-ink-soft font-semibold">Enjoying the app? Leave us a review</span>
-                <ChevronRight className="w-4 h-4 text-warn" />
+                <ChevronRight className="w-4 h-4 text-acc-strong" />
               </a>
             </div>
 
@@ -266,7 +266,7 @@ export default function AccountSettings({
                 onClick={onOpenPrivacy}
                 className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3"
               >
-                <ShieldCheck className="w-4 h-4 text-acc" />
+                <ShieldCheck className="w-4 h-4 text-acc-strong" />
                 <span className="flex-1 text-sm text-ink-soft">Privacy Policy</span>
                 <ChevronRight className="w-4 h-4 text-ink-faint" />
               </button>
@@ -274,7 +274,7 @@ export default function AccountSettings({
                 onClick={onExportData}
                 className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3"
               >
-                <Download className="w-4 h-4 text-acc" />
+                <Download className="w-4 h-4 text-acc-strong" />
                 <span className="flex-1 text-sm text-ink-soft">Export my data (JSON)</span>
                 <ChevronRight className="w-4 h-4 text-ink-faint" />
               </button>

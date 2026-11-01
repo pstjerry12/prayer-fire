@@ -159,7 +159,7 @@ export default function PlaySubscription() {
                 : `, and ends on ${formatDate(subscription.expiresAt)}.`
               : '.'}
           </p>
-          {notice && <p className="mt-3 rounded-xl bg-warn-soft border border-warn-edge text-warn-strong text-xs p-3">{notice}</p>}
+          {notice && <p className="mt-3 rounded-xl bg-acc-soft border border-acc-edge text-acc-strong text-xs p-3">{notice}</p>}
         </div>
       )}
 
@@ -173,7 +173,7 @@ export default function PlaySubscription() {
               aria-selected={tier === t}
               disabled={!available(t)}
               onClick={() => setTier(t)}
-              className={cn('flex-1 px-3 py-2 rounded-md text-sm font-bold transition-all disabled:opacity-40', tier === t ? 'bg-emerald-600 text-white' : 'text-ink-muted')}
+              className={cn('flex-1 px-3 py-2 rounded-md text-sm font-bold transition-all disabled:opacity-40', tier === t ? 'bg-acc text-on-acc' : 'text-ink-muted')}
             >
               {t === 'partner' ? 'Partner' : 'Leader'}
             </button>
@@ -181,8 +181,8 @@ export default function PlaySubscription() {
         </div>
       )}
 
-      <div className="rounded-2xl border border-emerald-500 bg-acc-soft/50 p-5">
-        <span className="mb-3 inline-flex items-center gap-1 bg-emerald-600 text-white text-[0.625rem] font-bold px-2 py-0.5 rounded-full">
+      <div className="rounded-2xl border border-acc bg-acc-soft/50 p-5">
+        <span className="mb-3 inline-flex items-center gap-1 bg-acc text-on-acc text-[0.625rem] font-bold px-2 py-0.5 rounded-full">
           <Crown className="w-3 h-3" /> {tier === 'leader' ? 'FIRE PARTNER LEADER' : 'PRAYER FIRE PARTNER'}
         </span>
         <h3 className="text-ink font-bold">{info.name}</h3>
@@ -190,7 +190,7 @@ export default function PlaySubscription() {
         <ul className="space-y-2">
           {info.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-ink-muted text-xs">
-              <Check className="w-3.5 h-3.5 text-acc mt-0.5 flex-shrink-0" /> {f}
+              <Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> {f}
             </li>
           ))}
         </ul>
@@ -199,7 +199,7 @@ export default function PlaySubscription() {
       {!userId ? (
         <div className="rounded-2xl border border-edge bg-card p-5 text-center">
           <p className="text-ink-muted text-sm mb-3">Sign in to subscribe, so your subscription follows you to any phone.</p>
-          <button onClick={() => setShowAuth(true)} className="px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold">
+          <button onClick={() => setShowAuth(true)} className="px-4 py-2.5 rounded-xl bg-acc text-on-acc text-sm font-bold">
             Sign in
           </button>
         </div>
@@ -226,16 +226,16 @@ export default function PlaySubscription() {
                 role="tab"
                 aria-selected={kind === 'yearly'}
                 onClick={() => setKind('yearly')}
-                className={cn('flex-1 px-3 py-2 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5', kind === 'yearly' ? 'bg-emerald-600 text-white' : 'text-ink-muted')}
+                className={cn('flex-1 px-3 py-2 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5', kind === 'yearly' ? 'bg-acc text-on-acc' : 'text-ink-muted')}
               >
                 Yearly
-                <span className={cn('text-[0.625rem] font-extrabold rounded-full px-1.5 py-0.5', kind === 'yearly' ? 'bg-white/25 text-white' : 'bg-emerald-100 text-emerald-700')}>2 months free</span>
+                <span className={cn('text-[0.625rem] font-extrabold rounded-full px-1.5 py-0.5', kind === 'yearly' ? 'bg-white/25 text-white' : 'bg-acc-soft-2 text-acc-strong')}>2 months free</span>
               </button>
               <button
                 role="tab"
                 aria-selected={kind === 'monthly'}
                 onClick={() => setKind('monthly')}
-                className={cn('flex-1 px-3 py-2 rounded-md text-xs font-bold transition-all', kind === 'monthly' ? 'bg-emerald-600 text-white' : 'text-ink-muted')}
+                className={cn('flex-1 px-3 py-2 rounded-md text-xs font-bold transition-all', kind === 'monthly' ? 'bg-acc text-on-acc' : 'text-ink-muted')}
               >
                 Monthly
               </button>
@@ -248,9 +248,9 @@ export default function PlaySubscription() {
                 <span className="text-ink-muted text-sm font-medium"> / {selected.kind === 'monthly' ? 'month' : 'year'}</span>
               </div>
               {selected.freeTrialDays ? (
-                <p className="text-emerald-600 text-sm font-semibold mt-1">Start with a {selected.freeTrialDays}-day free trial</p>
+                <p className="text-acc-strong text-sm font-semibold mt-1">Start with a {selected.freeTrialDays}-day free trial</p>
               ) : selected.introText ? (
-                <p className="text-emerald-600 text-sm font-semibold mt-1">{selected.introText}</p>
+                <p className="text-acc-strong text-sm font-semibold mt-1">{selected.introText}</p>
               ) : null}
               {isUpgrade && <p className="text-ink-muted text-xs mt-1">Upgrading charges only the difference for the rest of your current period.</p>}
               {isDowngrade && <p className="text-ink-muted text-xs mt-1">You keep Leader until your current period ends, then Partner begins.</p>}
@@ -259,7 +259,7 @@ export default function PlaySubscription() {
           <button
             onClick={buy}
             disabled={busy !== null || !selected || sameAsCurrent}
-            className="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 disabled:opacity-60 flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl bg-acc text-on-acc font-bold hover:bg-acc-hover disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {busy === 'buy' && <Loader2 className="w-4 h-4 animate-spin" />}
             {buttonLabel}

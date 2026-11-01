@@ -141,7 +141,7 @@ export default function NotificationPermission() {
     <div className="fixed top-0 left-0 right-0 z-[90] safe-top px-4 pt-3">
       <div className="max-w-md mx-auto bg-card rounded-2xl border border-acc-edge shadow-xl p-4">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-acc-soft text-acc flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-full bg-acc-soft text-acc-strong flex items-center justify-center flex-shrink-0">
             <BellRing className="w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
@@ -156,7 +156,7 @@ export default function NotificationPermission() {
         </div>
         <button
           onClick={allow}
-          className="mt-3 w-full py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500 flex items-center justify-center gap-2"
+          className="mt-3 w-full py-2.5 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover flex items-center justify-center gap-2"
         >
           <Check className="w-4 h-4" /> Allow Notifications
         </button>

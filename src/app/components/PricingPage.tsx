@@ -49,7 +49,7 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
               <div className="text-4xl mb-3">🎁</div>
               <h3 className="text-ink font-bold">Premium is free for a limited time</h3>
               <p className="text-ink-muted text-sm mt-1">Everything in Prayer Fire Partner and Leader is open to you right now. Enjoy!</p>
-              <button onClick={onClose} className="mt-5 px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold">Close</button>
+              <button onClick={onClose} className="mt-5 px-5 py-2.5 rounded-xl bg-acc text-on-acc text-sm font-bold">Close</button>
             </div>
           ) : isAndroidApp ? (
             // The Android app sells Partner and Leader through Google Play only.
@@ -79,7 +79,7 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
                   onClick={() => setBilling('monthly')}
                   className={cn(
                     'px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
-                    billing === 'monthly' ? 'bg-emerald-600 text-white' : 'text-ink-muted'
+                    billing === 'monthly' ? 'bg-acc text-on-acc' : 'text-ink-muted'
                   )}
                 >
                   Monthly
@@ -88,10 +88,10 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
                   onClick={() => setBilling('yearly')}
                   className={cn(
                     'px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
-                    billing === 'yearly' ? 'bg-emerald-600 text-white' : 'text-ink-muted'
+                    billing === 'yearly' ? 'bg-acc text-on-acc' : 'text-ink-muted'
                   )}
                 >
-                  Yearly <span className="text-emerald-300">2 months free</span>
+                  Yearly <span className="opacity-90">2 months free</span>
                 </button>
               </div>
             </div>
@@ -106,12 +106,12 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
                     className={cn(
                       'rounded-2xl border p-5 flex flex-col',
                       plan.highlighted
-                        ? 'border-emerald-500 bg-acc-soft/50 shadow-lg shadow-emerald-500/10'
+                        ? 'border-acc bg-acc-soft/50 shadow-lg shadow-acc/10'
                         : 'border-edge bg-card'
                     )}
                   >
                     {plan.highlighted && (
-                      <span className="self-start mb-3 inline-flex items-center gap-1 bg-emerald-600 text-white text-[0.625rem] font-bold px-2 py-0.5 rounded-full">
+                      <span className="self-start mb-3 inline-flex items-center gap-1 bg-acc text-on-acc text-[0.625rem] font-bold px-2 py-0.5 rounded-full">
                         <Crown className="w-3 h-3" /> MOST POPULAR
                       </span>
                     )}
@@ -124,7 +124,7 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
                       ) : (
                         <>
                           <div className="flex items-baseline gap-1.5">
-                            <span className="text-3xl font-bold text-emerald-600">$0.00</span>
+                            <span className="text-3xl font-bold text-acc-strong">$0.00</span>
                             <span className="text-ink-muted text-xs">
                               / 7 days free
                             </span>
@@ -138,7 +138,7 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
                     <ul className="space-y-2 mb-5 flex-1">
                       {plan.features.map((f) => (
                         <li key={f} className="flex items-start gap-2 text-ink-muted text-xs">
-                          <Check className="w-3.5 h-3.5 text-acc mt-0.5 flex-shrink-0" /> {f}
+                          <Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> {f}
                         </li>
                       ))}
                     </ul>
@@ -147,7 +147,7 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
                       className={cn(
                         'w-full py-2.5 rounded-xl text-sm font-bold transition-all',
                         plan.highlighted
-                          ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+                          ? 'bg-acc text-on-acc hover:bg-acc-hover'
                           : 'border border-edge-strong text-ink-soft hover:bg-card-2'
                       )}
                     >

@@ -19,7 +19,8 @@ const nunitoSans = Nunito_Sans({
   style: ["normal", "italic"],
 });
 
-const themeScript = `try{var t=localStorage.getItem('pfm_theme');if(t==='dark'){document.documentElement.classList.add('dark');}}catch(e){}`;
+// Dark mode: the person's own choice (moon button) wins; with no choice yet, follow the phone's dark-mode setting.
+const themeScript = `try{var t=localStorage.getItem('pfm_theme');if(t==='dark'||(t!=='light'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}`;
 
 // Hide the boot splash instantly if it already showed earlier this session.
 // This runs before first paint, so repeat visits never flash the splash.
@@ -41,7 +42,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f9fafb",
+  themeColor: "#14213d",
   viewportFit: "cover",
 };
 

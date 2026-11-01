@@ -85,12 +85,12 @@ export default function AllPrayersList({
             className={cn(
               'w-full text-left rounded-xl p-3 border-l-4 transition-all hover:brightness-95 active:scale-[0.99] flex items-center gap-2',
               prayer.isAnswered
-                ? 'bg-acc-soft border-l-emerald-500 border border-acc-edge'
+                ? 'bg-acc-soft border-l-acc border border-acc-edge'
                 : prayer.type === 'family'
-                  ? 'bg-acc-soft/40 border-l-emerald-500 border border-acc-edge'
+                  ? 'bg-acc-soft/40 border-l-acc border border-acc-edge'
                   : prayer.type === 'personal'
                     ? 'bg-card border-l-edge-strong border border-edge'
-                    : 'bg-danger-soft/40 border-l-red-500 border border-danger-edge'
+                    : 'bg-danger-soft/40 border-l-danger border border-danger-edge'
             )}
           >
             <div className="flex-1 min-w-0">

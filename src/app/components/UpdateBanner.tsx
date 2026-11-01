@@ -124,7 +124,7 @@ export default function UpdateBanner() {
           aria-labelledby="pfm-update-title"
           className="w-full max-w-sm bg-card rounded-3xl border border-edge shadow-2xl overflow-hidden"
         >
-          <div className="bg-gradient-to-br from-orange-500 to-red-600 px-6 pt-7 pb-6 text-center text-white">
+          <div className="bg-gradient-to-br from-acc to-danger px-6 pt-7 pb-6 text-center text-on-acc">
             <div className="mx-auto w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center mb-3">
               <Sparkles className="w-7 h-7" />
             </div>
@@ -148,7 +148,7 @@ export default function UpdateBanner() {
                 snooze(update.latest, UPDATE_CLICK_MS);
                 setDismissed(true);
               }}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover transition-colors"
             >
               <Download className="w-4 h-4" /> Update now
             </a>
@@ -169,7 +169,7 @@ export default function UpdateBanner() {
     <div className="fixed top-0 left-0 right-0 z-[95] safe-top px-4 pt-3 pointer-events-none">
       <div
         role="status"
-        className="pointer-events-auto max-w-md mx-auto flex items-center gap-3 bg-emerald-600 text-white rounded-2xl shadow-xl px-4 py-3"
+        className="pointer-events-auto max-w-md mx-auto flex items-center gap-3 bg-acc text-on-acc rounded-2xl shadow-xl px-4 py-3"
       >
         <RefreshCw className="w-5 h-5 shrink-0" />
         <div className="flex-1 min-w-0">
@@ -178,7 +178,7 @@ export default function UpdateBanner() {
         </div>
         <button
           onClick={() => window.location.reload()}
-          className="shrink-0 bg-white text-emerald-700 rounded-full px-3 py-1.5 text-xs font-bold"
+          className="shrink-0 bg-white text-acc-strong rounded-full px-3 py-1.5 text-xs font-bold"
         >
           Refresh
         </button>

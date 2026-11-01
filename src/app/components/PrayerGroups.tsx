@@ -283,7 +283,7 @@ export default function PrayerGroups() {
   if (!isPremium) {
     return (
       <div className="bg-card rounded-2xl border border-edge shadow-sm p-8 text-center">
-        <div className="w-16 h-16 rounded-full bg-acc-soft text-acc flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 rounded-full bg-acc-soft text-acc-strong flex items-center justify-center mx-auto mb-4">
           <Users className="w-8 h-8" />
         </div>
         <h2 className="font-serif-heading text-xl font-bold text-ink mb-2">Prayer Fire Partner</h2>
@@ -292,12 +292,12 @@ export default function PrayerGroups() {
           prayer alerts, and pray together. Upgrade to unlock the full intercessory community.
         </p>
         <ul className="text-left text-ink-soft text-xs space-y-1.5 max-w-xs mx-auto mb-5">
-          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc mt-0.5 flex-shrink-0" /> Join prayer groups and pray together</li>
-          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc mt-0.5 flex-shrink-0" /> Prayer requests, testimonies and comments</li>
-          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc mt-0.5 flex-shrink-0" /> Emergency prayer alerts</li>
-          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc mt-0.5 flex-shrink-0" /> Voice-to-text prayer writing</li>
+          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> Join prayer groups and pray together</li>
+          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> Prayer requests, testimonies and comments</li>
+          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> Emergency prayer alerts</li>
+          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> Voice-to-text prayer writing</li>
         </ul>
-        <button onClick={() => setShowPricing(true)} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500">
+        <button onClick={() => setShowPricing(true)} className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover">
           {isAndroidApp ? 'See Prayer Fire Partner' : 'Start 7-Day Free Trial'}
         </button>
       </div>
@@ -308,14 +308,14 @@ export default function PrayerGroups() {
   if (view === 'create') {
     return (
       <div className="space-y-4">
-        <button onClick={() => setView('list')} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc">
+        <button onClick={() => setView('list')} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc-strong">
           <ChevronLeft className="w-4 h-4" /> Back
         </button>
         <h2 className="font-serif-heading text-lg font-bold text-ink">Create a Prayer Group</h2>
         <input type="text" placeholder="Group name (e.g. Redeemed Church Prayer Team)" value={newName} onChange={(e) => setNewName(e.target.value)} aria-label="Group name"
-          className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+          className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
         <textarea placeholder="Description (what does this group pray for?)" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} rows={3} aria-label="Group description"
-          className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+          className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint resize-none focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
         <div>
           <label className="block text-xs font-semibold text-ink-muted mb-1.5 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Group prayer time (pray together)</label>
           <select value={newTime} onChange={(e) => setNewTime(e.target.value)} className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink focus:outline-none">
@@ -325,17 +325,17 @@ export default function PrayerGroups() {
         <div>
           <label className="block text-xs font-semibold text-ink-muted mb-1.5">Who can join?</label>
           <div className="grid grid-cols-2 gap-2">
-            <button type="button" onClick={() => setNewMode('open')} className={cn('py-2.5 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-all', newMode === 'open' ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
+            <button type="button" onClick={() => setNewMode('open')} className={cn('py-2.5 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-all', newMode === 'open' ? 'border-acc bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
               <Globe className="w-4 h-4" /> Open
             </button>
-            <button type="button" onClick={() => setNewMode('approval')} className={cn('py-2.5 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-all', newMode === 'approval' ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
+            <button type="button" onClick={() => setNewMode('approval')} className={cn('py-2.5 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-1.5 transition-all', newMode === 'approval' ? 'border-acc bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
               <Lock className="w-4 h-4" /> Approval only
             </button>
           </div>
           <p className="text-[0.6875rem] text-ink-muted mt-1.5">{newMode === 'open' ? 'Anyone with Prayer Fire Partner can join instantly.' : 'Only people you approve can join.'}</p>
         </div>
         {createError && <p role="alert" className="text-danger text-xs">{createError}</p>}
-        <button onClick={handleCreate} disabled={busy || !newName.trim()} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 disabled:opacity-60 flex items-center justify-center gap-2">
+        <button onClick={handleCreate} disabled={busy || !newName.trim()} className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover disabled:opacity-60 flex items-center justify-center gap-2">
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Create Group
         </button>
       </div>
@@ -346,14 +346,14 @@ export default function PrayerGroups() {
   if (view === 'join') {
     return (
       <div className="space-y-4">
-        <button onClick={() => setView('list')} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc"><ChevronLeft className="w-4 h-4" /> Back</button>
+        <button onClick={() => setView('list')} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc-strong"><ChevronLeft className="w-4 h-4" /> Back</button>
         <h2 className="font-serif-heading text-lg font-bold text-ink">Join a Group</h2>
         <p className="text-ink-muted text-sm">Enter the invite code shared by the group leader.</p>
         <input type="text" placeholder="Invite code (e.g. AB12CD)" value={joinCode} aria-label="Invite code"
           onChange={(e) => { setJoinCode(e.target.value.toUpperCase()); setJoinError(''); }}
-          className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+          className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
         {joinError && <p role="alert" className="text-danger text-xs">{joinError}</p>}
-        <button onClick={handleJoinCode} disabled={busy} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 disabled:opacity-60 flex items-center justify-center gap-2">
+        <button onClick={handleJoinCode} disabled={busy} className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover disabled:opacity-60 flex items-center justify-center gap-2">
           <UserPlus className="w-4 h-4" /> Join Group
         </button>
       </div>
@@ -365,7 +365,7 @@ export default function PrayerGroups() {
     if (!detail) {
       return (
         <div className="space-y-3">
-          <button onClick={() => setView('list')} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc"><ChevronLeft className="w-4 h-4" /> Groups</button>
+          <button onClick={() => setView('list')} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc-strong"><ChevronLeft className="w-4 h-4" /> Groups</button>
           {loadError ? <p role="alert" className="text-danger text-sm">{loadError}</p> : <p className="text-ink-muted text-sm flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Opening group...</p>}
         </div>
       );
@@ -378,23 +378,23 @@ export default function PrayerGroups() {
 
     return (
       <div className="space-y-3">
-        <button onClick={() => { setView('list'); loadDirectory(); }} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc"><ChevronLeft className="w-4 h-4" /> Groups</button>
+        <button onClick={() => { setView('list'); loadDirectory(); }} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc-strong"><ChevronLeft className="w-4 h-4" /> Groups</button>
 
         {notice && <div role="status" className="bg-acc-soft border border-acc-edge rounded-xl px-3 py-2 text-xs font-semibold text-acc-strong">{notice}</div>}
 
         <div className="bg-card rounded-2xl border border-edge p-4">
           <div className="flex items-start justify-between gap-3 mb-2">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-11 h-11 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold flex-shrink-0">{g.name.charAt(0).toUpperCase()}</div>
+              <div className="w-11 h-11 rounded-full bg-acc text-on-acc flex items-center justify-center font-bold flex-shrink-0">{g.name.charAt(0).toUpperCase()}</div>
               <div className="min-w-0">
-                <h2 className="font-bold text-ink truncate flex items-center gap-1.5">{g.name}{g.featured && <span className="bg-warn-soft text-warn-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shrink-0"><Star className="w-2.5 h-2.5" /> FEATURED</span>}</h2>
+                <h2 className="font-bold text-ink truncate flex items-center gap-1.5">{g.name}{g.featured && <span className="bg-acc-soft text-acc-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shrink-0"><Star className="w-2.5 h-2.5" /> FEATURED</span>}</h2>
                 <p className="text-ink-muted text-xs truncate">{g.description || 'No description'}</p>
               </div>
             </div>
             <div className="flex gap-1 flex-shrink-0">
               {detail.inviteCode && (
-                <button onClick={() => copyCode(detail.inviteCode!)} className="p-2 text-ink-muted hover:text-acc" title="Copy invite code" aria-label="Copy invite code">
-                  {copied ? <Check className="w-4 h-4 text-acc" /> : <Copy className="w-4 h-4" />}
+                <button onClick={() => copyCode(detail.inviteCode!)} className="p-2 text-ink-muted hover:text-acc-strong" title="Copy invite code" aria-label="Copy invite code">
+                  {copied ? <Check className="w-4 h-4 text-acc-strong" /> : <Copy className="w-4 h-4" />}
                 </button>
               )}
               {isLeaderOfGroup ? (
@@ -410,9 +410,9 @@ export default function PrayerGroups() {
           </div>
           <div className="flex flex-wrap gap-2 text-[0.6875rem]">
             <span className="bg-acc-soft text-acc-strong px-2 py-1 rounded-full flex items-center gap-1"><Users className="w-3 h-3" /> {active.length} members</span>
-            <span className="bg-warn-soft text-warn-strong px-2 py-1 rounded-full flex items-center gap-1"><Clock className="w-3 h-3" /> Pray at {fmtTime(g.prayerTime)}</span>
+            <span className="bg-acc-soft text-acc-strong px-2 py-1 rounded-full flex items-center gap-1"><Clock className="w-3 h-3" /> Pray at {fmtTime(g.prayerTime)}</span>
             <span className="bg-card-2 text-ink-muted px-2 py-1 rounded-full flex items-center gap-1">{g.joinMode === 'open' ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />} {g.joinMode === 'open' ? 'Open' : 'Approval only'}</span>
-            <span className={cn('px-2 py-1 rounded-full flex items-center gap-1', detail.prayedToday > 0 ? 'bg-warn-soft text-warn-strong' : 'bg-card-2 text-ink-muted')}><Flame className="w-3 h-3" /> {detail.prayedToday} prayed today</span>
+            <span className={cn('px-2 py-1 rounded-full flex items-center gap-1', detail.prayedToday > 0 ? 'bg-acc-soft text-acc-strong' : 'bg-card-2 text-ink-muted')}><Flame className="w-3 h-3" /> {detail.prayedToday} prayed today</span>
           </div>
           {detail.inviteCode && (
             <button onClick={() => copyCode(detail.inviteCode!)} className="mt-3 w-full text-left bg-card-2 rounded-lg px-3 py-2 flex items-center justify-between">
@@ -423,7 +423,7 @@ export default function PrayerGroups() {
         </div>
 
         <button onClick={toggleCheckin} disabled={busy}
-          className={cn('w-full rounded-2xl border p-3 flex items-center justify-center gap-2 font-bold text-sm transition-all', detail.iPrayedToday ? 'bg-acc-soft border-acc-edge text-acc-strong' : 'bg-card border-edge text-ink-muted hover:border-warn-edge')}>
+          className={cn('w-full rounded-2xl border p-3 flex items-center justify-center gap-2 font-bold text-sm transition-all', detail.iPrayedToday ? 'bg-acc-soft border-acc-edge text-acc-strong' : 'bg-card border-edge text-ink-muted hover:border-acc-edge')}>
           <Flame className={cn('w-4 h-4', detail.iPrayedToday && 'animate-flicker')} />
           {detail.iPrayedToday ? 'I prayed today ✓' : 'Mark: I prayed today'}
         </button>
@@ -451,7 +451,7 @@ export default function PrayerGroups() {
               <div className="grid grid-cols-2 gap-2">
                 {(['open', 'approval'] as const).map((m) => (
                   <button key={m} onClick={() => g.joinMode !== m && act({ action: 'update', groupId: g.id, joinMode: m, prayerTime: g.prayerTime ?? '', pinnedVerse: g.pinnedVerse ?? '' })}
-                    className={cn('py-2 rounded-lg border-2 text-xs font-bold flex items-center justify-center gap-1', g.joinMode === m ? 'border-emerald-500 bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
+                    className={cn('py-2 rounded-lg border-2 text-xs font-bold flex items-center justify-center gap-1', g.joinMode === m ? 'border-acc bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
                     {m === 'open' ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />} {m === 'open' ? 'Open' : 'Approval only'}
                   </button>
                 ))}
@@ -461,14 +461,14 @@ export default function PrayerGroups() {
         )}
 
         {detail.canModerate && pending.length > 0 && (
-          <div className="bg-card rounded-2xl border border-warn-edge p-3">
-            <p className="text-[0.625rem] font-bold uppercase tracking-wider text-warn-strong flex items-center gap-1 mb-2"><UserPlus className="w-3 h-3" /> Join requests</p>
+          <div className="bg-card rounded-2xl border border-acc-edge p-3">
+            <p className="text-[0.625rem] font-bold uppercase tracking-wider text-acc-strong flex items-center gap-1 mb-2"><UserPlus className="w-3 h-3" /> Join requests</p>
             <div className="space-y-2">
               {pending.map((m) => (
                 <div key={m.userId} className="flex items-center justify-between gap-2 bg-card-2 rounded-lg px-3 py-2">
                   <span className="text-sm font-semibold text-ink truncate">{m.displayName}</span>
                   <div className="flex gap-1.5 shrink-0">
-                    <button onClick={() => act({ action: 'decide', groupId: g.id, userId: m.userId, approve: true })} className="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-emerald-500"><Check className="w-3.5 h-3.5" /> Approve</button>
+                    <button onClick={() => act({ action: 'decide', groupId: g.id, userId: m.userId, approve: true })} className="px-2.5 py-1.5 bg-acc text-on-acc rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-acc-hover"><Check className="w-3.5 h-3.5" /> Approve</button>
                     <button onClick={() => act({ action: 'decide', groupId: g.id, userId: m.userId, approve: false })} className="px-2.5 py-1.5 bg-card-3 text-ink-soft rounded-lg text-xs font-bold flex items-center gap-1 hover:bg-card"><X className="w-3.5 h-3.5" /> Decline</button>
                   </div>
                 </div>
@@ -494,15 +494,15 @@ export default function PrayerGroups() {
           <div className="flex flex-wrap gap-1.5">
             {POST_KINDS.map((k) => (
               <button key={k.kind} onClick={() => setPostKind(k.kind)}
-                className={cn('px-2.5 py-1 rounded-full text-[0.6875rem] font-bold border', postKind === k.kind ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-card-2 text-ink-muted border-edge')}>
+                className={cn('px-2.5 py-1 rounded-full text-[0.6875rem] font-bold border', postKind === k.kind ? 'bg-acc text-on-acc border-acc' : 'bg-card-2 text-ink-muted border-edge')}>
                 {k.label}
               </button>
             ))}
           </div>
           <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2} placeholder={kindInfo.hint} aria-label="Write a post" maxLength={2000}
-            className="w-full bg-card border border-edge-strong rounded-xl px-4 py-2.5 text-sm text-ink placeholder-ink-faint resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+            className="w-full bg-card border border-edge-strong rounded-xl px-4 py-2.5 text-sm text-ink placeholder-ink-faint resize-none focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
           <button onClick={handleSend} disabled={busy || !draft.trim()}
-            className={cn('w-full py-2 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 disabled:opacity-60', postKind === 'alert' ? 'bg-danger hover:bg-red-500' : 'bg-emerald-600 hover:bg-emerald-500')}>
+            className={cn('w-full py-2 text-on-acc rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 disabled:opacity-60', postKind === 'alert' ? 'bg-danger hover:bg-danger' : 'bg-acc hover:bg-acc-hover')}>
             {postKind === 'alert' ? <Siren className="w-4 h-4" /> : <Send className="w-4 h-4" />} Post {kindInfo.label.toLowerCase()}
           </button>
         </div>
@@ -533,7 +533,7 @@ export default function PrayerGroups() {
             return (
               <article key={p.id} className={cn('rounded-2xl border p-3', p.kind === 'alert' ? 'bg-danger-soft border-danger-edge' : 'bg-card border-edge', hidden && 'opacity-75')}>
                 {hidden && (
-                  <p className="text-[0.6875rem] font-semibold text-warn-strong bg-warn-soft rounded-lg px-2 py-1 mb-2">
+                  <p className="text-[0.6875rem] font-semibold text-acc-strong bg-acc-soft rounded-lg px-2 py-1 mb-2">
                     {detail.canModerate ? 'Hidden from members.' : 'A leader hid this post. Only you and the group leaders can see it.'}
                   </p>
                 )}
@@ -541,7 +541,7 @@ export default function PrayerGroups() {
                   <span className="text-ink font-bold text-xs">{p.authorName}{p.mine ? ' (you)' : ''}</span>
                   {p.kind === 'alert' && <span className="bg-danger text-white text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Siren className="w-2.5 h-2.5" /> EMERGENCY</span>}
                   {p.kind === 'request' && <span className="bg-acc-soft text-acc-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><HandHeart className="w-2.5 h-2.5" /> PRAYER REQUEST</span>}
-                  {p.kind === 'testimony' && <span className="bg-warn-soft text-warn-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Sparkles className="w-2.5 h-2.5" /> TESTIMONY</span>}
+                  {p.kind === 'testimony' && <span className="bg-acc-soft text-acc-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Sparkles className="w-2.5 h-2.5" /> TESTIMONY</span>}
                   {p.pinned && <span className="bg-acc-soft text-acc-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Pin className="w-2.5 h-2.5" /> PINNED</span>}
                   {detail.canModerate && p.reports > 0 && <span className="bg-danger text-white text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full">{p.reports} {p.reports === 1 ? 'REPORT' : 'REPORTS'}</span>}
                   <span className="text-ink-faint text-[0.5625rem] ml-auto">{ago(p.createdAt)}</span>
@@ -569,7 +569,7 @@ export default function PrayerGroups() {
                       {!hidden && (
                         <button disabled={busy} onClick={() => act({ action: 'pin', postId: p.id, pinned: !p.pinned })} className="px-2 py-1 bg-acc-soft text-acc-strong rounded-lg text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60"><Pin className="w-3 h-3" /> {p.pinned ? 'Unpin' : 'Pin to top'}</button>
                       )}
-                      <button disabled={busy} onClick={() => act({ action: 'hidePost', postId: p.id, hidden: !hidden })} className="px-2 py-1 bg-warn-soft text-warn-strong rounded-lg text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60">
+                      <button disabled={busy} onClick={() => act({ action: 'hidePost', postId: p.id, hidden: !hidden })} className="px-2 py-1 bg-acc-soft text-acc-strong rounded-lg text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60">
                         {hidden ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />} {hidden ? 'Unhide' : 'Hide'}
                       </button>
                       <button disabled={busy} onClick={() => { if (confirm('Delete this post for everyone?')) act({ action: 'deletePost', postId: p.id }); }} className="px-2 py-1 bg-danger text-white rounded-lg text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60"><Trash2 className="w-3 h-3" /> Delete</button>
@@ -586,7 +586,7 @@ export default function PrayerGroups() {
                         <div key={c.id} className={cn('bg-card-2 rounded-lg px-3 py-2', cHidden && 'opacity-75')}>
                           <p className="text-xs">
                             <span className="font-bold text-ink">{c.authorName}{c.mine ? ' (you)' : ''}</span> <span className="text-ink-faint">· {ago(c.createdAt)}</span>
-                            {cHidden && <span className="ml-1.5 bg-warn-soft text-warn-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full">{detail.canModerate ? 'HIDDEN' : 'HIDDEN BY A LEADER'}</span>}
+                            {cHidden && <span className="ml-1.5 bg-acc-soft text-acc-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full">{detail.canModerate ? 'HIDDEN' : 'HIDDEN BY A LEADER'}</span>}
                             {detail.canModerate && c.reports > 0 && <span className="ml-1.5 bg-danger text-white text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full">{c.reports} {c.reports === 1 ? 'REPORT' : 'REPORTS'}</span>}
                           </p>
                           <p className="text-sm text-ink-soft whitespace-pre-wrap break-words">{c.body}</p>
@@ -599,7 +599,7 @@ export default function PrayerGroups() {
                               <button disabled={busy} onClick={() => { if (confirm('Delete this comment?')) actAndRefresh({ action: 'deleteComment', commentId: c.id }); }} className="text-ink-faint hover:text-danger text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60"><Trash2 className="w-3 h-3" /> Delete</button>
                             )}
                             {detail.canModerate && (
-                              <button disabled={busy} onClick={() => actAndRefresh({ action: 'hideComment', commentId: c.id, hidden: !cHidden })} className="text-warn-strong text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60">
+                              <button disabled={busy} onClick={() => actAndRefresh({ action: 'hideComment', commentId: c.id, hidden: !cHidden })} className="text-acc-strong text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60">
                                 {cHidden ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />} {cHidden ? 'Unhide' : 'Hide'}
                               </button>
                             )}
@@ -612,7 +612,7 @@ export default function PrayerGroups() {
                       <div className="flex gap-2">
                         <input value={commentDraft} onChange={(e) => setCommentDraft(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendComment()} placeholder="Write a comment..." aria-label="Write a comment" maxLength={1000}
                           className="flex-1 bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint" />
-                        <button onClick={sendComment} disabled={busy || !commentDraft.trim()} className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold disabled:opacity-60">Send</button>
+                        <button onClick={sendComment} disabled={busy || !commentDraft.trim()} className="px-3 py-2 bg-acc text-on-acc rounded-lg text-xs font-bold disabled:opacity-60">Send</button>
                       </div>
                     )}
                   </div>
@@ -629,7 +629,7 @@ export default function PrayerGroups() {
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
-        <button onClick={() => (isLeader ? setView('create') : setShowPricing(true))} className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-emerald-500">
+        <button onClick={() => (isLeader ? setView('create') : setShowPricing(true))} className="flex-1 py-2.5 bg-acc text-on-acc rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-acc-hover">
           <Plus className="w-4 h-4" /> Create Group{!isLeader && <span className="text-[0.625rem] font-bold bg-white/20 rounded-full px-1.5 py-0.5">Leader</span>}
         </button>
         <button onClick={() => setView('join')} className="flex-1 py-2.5 bg-card text-ink-soft border border-edge rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-card-2">
@@ -641,13 +641,13 @@ export default function PrayerGroups() {
       {loadError && <p role="alert" className="text-danger text-xs">{loadError}</p>}
 
       {isLeader && legacy.length > 0 && (
-        <div className="bg-warn-soft border border-warn-edge rounded-2xl p-3 space-y-2">
-          <p className="text-warn-strong text-xs font-bold flex items-center gap-1.5"><CloudUpload className="w-3.5 h-3.5" /> Groups saved only on this phone</p>
-          <p className="text-warn-strong text-xs leading-relaxed">Groups now live online so every member sees the same group. Move yours online (name, description, prayer time and join setting). Old chat messages stay on this phone, and members rejoin with the new invite code.</p>
+        <div className="bg-acc-soft border border-acc-edge rounded-2xl p-3 space-y-2">
+          <p className="text-acc-strong text-xs font-bold flex items-center gap-1.5"><CloudUpload className="w-3.5 h-3.5" /> Groups saved only on this phone</p>
+          <p className="text-acc-strong text-xs leading-relaxed">Groups now live online so every member sees the same group. Move yours online (name, description, prayer time and join setting). Old chat messages stay on this phone, and members rejoin with the new invite code.</p>
           {legacy.map((g) => (
             <div key={g.id} className="flex items-center justify-between gap-2 bg-card rounded-lg px-3 py-2">
               <span className="text-sm font-semibold text-ink truncate">{g.name}</span>
-              <button onClick={() => moveOnline(g)} disabled={busy} className="px-2.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold shrink-0 disabled:opacity-60">Move online</button>
+              <button onClick={() => moveOnline(g)} disabled={busy} className="px-2.5 py-1.5 bg-acc text-on-acc rounded-lg text-xs font-bold shrink-0 disabled:opacity-60">Move online</button>
             </div>
           ))}
         </div>
@@ -658,7 +658,7 @@ export default function PrayerGroups() {
           <span className="sr-only">Search groups</span>
           <Search className="w-4 h-4 text-ink-faint absolute left-3 top-1/2 -translate-y-1/2" />
           <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search groups" aria-label="Search groups"
-            className="w-full bg-card border border-edge-strong rounded-xl pl-9 pr-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+            className="w-full bg-card border border-edge-strong rounded-xl pl-9 pr-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
         </label>
       )}
 
@@ -673,14 +673,14 @@ export default function PrayerGroups() {
         const others = shown.filter((g) => !g.featured);
 
         const card = (g: DirectoryGroup) => (
-          <div key={g.id} className={cn('bg-card border rounded-2xl p-4 transition-all hover:border-acc-edge', g.featured ? 'border-warn-edge' : 'border-edge')}>
+          <div key={g.id} className={cn('bg-card border rounded-2xl p-4 transition-all hover:border-acc-edge', g.featured ? 'border-acc-edge' : 'border-edge')}>
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold flex-shrink-0">{g.name.charAt(0).toUpperCase()}</div>
+              <div className="w-11 h-11 rounded-full bg-acc text-on-acc flex items-center justify-center font-bold flex-shrink-0">{g.name.charAt(0).toUpperCase()}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-ink font-bold text-sm truncate">{g.name}</h3>
-                  {g.featured && <span className="bg-warn-soft text-warn-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0"><Star className="w-2.5 h-2.5" /> FEATURED</span>}
-                  <span className={cn('text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0', g.joinMode === 'open' ? 'bg-acc-soft text-acc-strong' : 'bg-warn-soft text-warn-strong')}>
+                  {g.featured && <span className="bg-acc-soft text-acc-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0"><Star className="w-2.5 h-2.5" /> FEATURED</span>}
+                  <span className={cn('text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0', g.joinMode === 'open' ? 'bg-acc-soft text-acc-strong' : 'bg-acc-soft text-acc-strong')}>
                     {g.joinMode === 'open' ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
                     {g.joinMode === 'open' ? 'Open' : 'Approval'}
                   </span>
@@ -688,8 +688,8 @@ export default function PrayerGroups() {
                 <p className="text-ink-muted text-xs truncate">{g.description || 'No description'}</p>
                 <div className="flex gap-2 mt-1">
                   <span className="text-acc-strong text-[0.625rem] font-semibold flex items-center gap-0.5"><Users className="w-3 h-3" /> {g.memberCount}</span>
-                  <span className="text-warn-strong text-[0.625rem] font-semibold flex items-center gap-0.5"><Clock className="w-3 h-3" /> {fmtTime(g.prayerTime)}</span>
-                  {g.prayedToday > 0 && <span className="text-warn-strong text-[0.625rem] font-semibold flex items-center gap-0.5"><Flame className="w-3 h-3" /> {g.prayedToday}</span>}
+                  <span className="text-acc-strong text-[0.625rem] font-semibold flex items-center gap-0.5"><Clock className="w-3 h-3" /> {fmtTime(g.prayerTime)}</span>
+                  {g.prayedToday > 0 && <span className="text-acc-strong text-[0.625rem] font-semibold flex items-center gap-0.5"><Flame className="w-3 h-3" /> {g.prayedToday}</span>}
                 </div>
               </div>
               {g.myStatus === 'active' ? (
@@ -697,7 +697,7 @@ export default function PrayerGroups() {
               ) : g.myStatus === 'pending' ? (
                 <span className="px-3 py-2 bg-card-2 text-ink-muted rounded-lg text-xs font-bold flex items-center gap-1 flex-shrink-0"><Clock className="w-3.5 h-3.5" /> Requested</span>
               ) : g.myStatus === 'blocked' ? null : (
-                <button onClick={() => handleRequestJoin(g)} disabled={busy} className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 flex-shrink-0 hover:bg-emerald-500 disabled:opacity-60">
+                <button onClick={() => handleRequestJoin(g)} disabled={busy} className="px-3 py-2 bg-acc text-on-acc rounded-lg text-xs font-bold flex items-center gap-1 flex-shrink-0 hover:bg-acc-hover disabled:opacity-60">
                   {g.joinMode === 'open' ? <UserPlus className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
                   {g.joinMode === 'open' ? 'Join' : 'Request'}
                 </button>
@@ -723,7 +723,7 @@ export default function PrayerGroups() {
           <>
             {!term && featuredList.length > 0 && (
               <div className="space-y-2">
-                <h3 className="font-serif-heading font-bold text-ink flex items-center gap-1.5"><Star className="w-4 h-4 text-warn-strong" /> Featured Groups</h3>
+                <h3 className="font-serif-heading font-bold text-ink flex items-center gap-1.5"><Star className="w-4 h-4 text-acc-strong" /> Featured Groups</h3>
                 {featuredList.map(card)}
               </div>
             )}

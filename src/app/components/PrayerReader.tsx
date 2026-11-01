@@ -34,7 +34,7 @@ export default function PrayerReader({ items, initialIndex, onClose }: Props) {
         {/* Header */}
         <div className="px-5 py-4 border-b border-edge flex items-center justify-between flex-shrink-0">
           <div>
-            <p className="text-[0.625rem] font-bold uppercase tracking-wider text-acc">Prayer Point</p>
+            <p className="text-[0.625rem] font-bold uppercase tracking-wider text-acc-strong">Prayer Point</p>
             <p className="text-ink-muted text-xs tabular-nums">{index + 1} of {items.length}</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
@@ -80,14 +80,14 @@ export default function PrayerReader({ items, initialIndex, onClose }: Props) {
             {hasNext ? (
               <button
                 onClick={() => setIndex(index + 1)}
-                className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500 flex items-center justify-center gap-1"
+                className="flex-1 py-3 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover flex items-center justify-center gap-1"
               >
                 Next <ChevronRight className="w-4 h-4" />
               </button>
             ) : (
               <button
                 onClick={onClose}
-                className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-500 flex items-center justify-center gap-1.5"
+                className="flex-1 py-3 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover flex items-center justify-center gap-1.5"
               >
                 <Check className="w-4 h-4" /> Amen
               </button>

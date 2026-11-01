@@ -31,7 +31,7 @@ export default function GroupFeaturing({ detail, busy, act }: { detail: GroupDet
 
       {f.state === 'pending' && (
         <>
-          <p className="text-sm text-ink-soft flex items-start gap-1.5"><Clock className="w-4 h-4 mt-0.5 shrink-0 text-warn-strong" /> <span>Your request is waiting for review.</span></p>
+          <p className="text-sm text-ink-soft flex items-start gap-1.5"><Clock className="w-4 h-4 mt-0.5 shrink-0 text-acc-strong" /> <span>Your request is waiting for review.</span></p>
           <button disabled={busy} onClick={() => act({ action: 'cancelFeaturing', groupId: gid })} className="px-2.5 py-1.5 bg-card-3 text-ink-soft rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-60"><X className="w-3.5 h-3.5" /> Cancel request</button>
         </>
       )}
@@ -49,7 +49,7 @@ export default function GroupFeaturing({ detail, busy, act }: { detail: GroupDet
           <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={2} maxLength={300} aria-label="Why should your group be featured?" placeholder="Tell us a little about your group (optional)"
             className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint resize-none" />
           <button disabled={busy} onClick={async () => { const r = await act({ action: 'requestFeaturing', groupId: gid, message }); if (r) setMessage(''); }}
-            className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 hover:bg-emerald-500 disabled:opacity-60"><Star className="w-3.5 h-3.5" /> Request to be featured</button>
+            className="px-3 py-2 bg-acc text-on-acc rounded-lg text-xs font-bold flex items-center gap-1.5 hover:bg-acc-hover disabled:opacity-60"><Star className="w-3.5 h-3.5" /> Request to be featured</button>
         </>
       )}
     </div>

@@ -207,7 +207,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [whatsNewPending, setWhatsNewPending] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'light';
-    return localStorage.getItem('pfm_theme') === 'dark' ? 'dark' : 'light';
+    // The person's own choice wins; with none saved yet, follow the phone's dark-mode setting.
+    const saved = localStorage.getItem('pfm_theme');
+    if (saved === 'dark' || saved === 'light') return saved;
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
   const [songs, setSongs] = useState<WorshipSong[]>(() => {
     if (typeof window === 'undefined') return [];
@@ -215,10 +218,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return stored ? JSON.parse(stored) : [];
   });
 
-  // Apply + persist theme
+  // Apply the theme. It is only SAVED when the person taps the moon button (see toggleTheme), so a phone that is
+  // set to dark mode keeps following that setting until they choose.
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('pfm_theme', theme);
   }, [theme]);
 
   // Re-apply the saved text size after hydration (the pre-paint script's inline
@@ -227,7 +230,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     applyTextScale(getStoredTextScale());
   }, []);
 
-  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+  const toggleTheme = () =>
+    setTheme((t) => {
+      const next = t === 'dark' ? 'light' : 'dark';
+      try {
+        localStorage.setItem('pfm_theme', next);
+      } catch {
+        // storage unavailable: the choice lasts until the app is closed
+      }
+      return next;
+    });
 
   // Persist worship-song metadata (audio blobs live in IndexedDB)
   useEffect(() => {

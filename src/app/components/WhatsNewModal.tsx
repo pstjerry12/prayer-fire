@@ -19,7 +19,7 @@ export default function WhatsNewModal({ isOpen, onClose, onSendFeedback }: Props
         <div className="bg-card rounded-3xl w-full max-w-md border border-edge shadow-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-edge flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-acc" />
+              <Sparkles className="w-5 h-5 text-acc-strong" />
               <h2 className="font-bold text-ink">What&apos;s New</h2>
             </div>
             <button onClick={onClose} aria-label="Close" className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
@@ -29,7 +29,7 @@ export default function WhatsNewModal({ isOpen, onClose, onSendFeedback }: Props
           <div className="p-6 space-y-4">
             <div className="text-center">
               <p className="text-4xl mb-2">🎉</p>
-              <p className="text-acc text-xs font-bold uppercase tracking-wider">App updated &middot; {release.date}</p>
+              <p className="text-acc-strong text-xs font-bold uppercase tracking-wider">App updated &middot; {release.date}</p>
               <h3 className="font-serif-heading text-lg font-bold text-ink mt-1">{release.title}</h3>
             </div>
             <ul className="space-y-3">
@@ -42,7 +42,7 @@ export default function WhatsNewModal({ isOpen, onClose, onSendFeedback }: Props
             </ul>
             <button
               onClick={onClose}
-              className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-500 transition-all"
+              className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover transition-all"
             >
               Got it 🙏
             </button>

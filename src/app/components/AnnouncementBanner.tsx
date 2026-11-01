@@ -24,12 +24,12 @@ export default function AnnouncementBanner() {
 
   return (
     <div className="max-w-2xl md:max-w-5xl mx-auto px-4 mt-4">
-      <div className="bg-warn-soft border border-warn-edge rounded-2xl p-4 flex items-start gap-3">
-        <span className="grid h-9 w-9 place-items-center rounded-lg bg-warn-soft-2 text-warn shrink-0">
+      <div className="bg-acc-soft border border-acc-edge rounded-2xl p-4 flex items-start gap-3">
+        <span className="grid h-9 w-9 place-items-center rounded-lg bg-acc-soft-2 text-acc-strong shrink-0">
           <Megaphone className="w-4 h-4" />
         </span>
         <div className="min-w-0">
-          <p className="text-[0.625rem] font-bold uppercase tracking-wider text-warn-strong">Announcement</p>
+          <p className="text-[0.625rem] font-bold uppercase tracking-wider text-acc-strong">Announcement</p>
           <p className="text-ink font-bold text-sm mt-0.5">{latest.title}</p>
           <p className="text-ink-soft text-xs mt-0.5 leading-relaxed">{latest.body}</p>
         </div>
