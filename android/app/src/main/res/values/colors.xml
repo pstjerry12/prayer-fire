@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Prayer Fire "Midnight and Ember" palette (mirrors src/app/globals.css).
+    <!-- Prayer Fire "Evergreen" palette (mirrors src/app/globals.css).
          styles.xml references these; without this file AAPT2 cannot resolve them. -->
-    <color name="colorPrimary">#14213D</color>
-    <color name="colorPrimaryDark">#14213D</color>
-    <color name="colorAccent">#E8772E</color>
-    <!-- Status bar and the splash screen background. -->
+    <color name="colorPrimary">#047857</color>
+    <color name="colorPrimaryDark">#065F46</color>
+    <color name="colorAccent">#047857</color>
+    <!-- Status bar behind the light top bar (the night version is in values-night). -->
+    <color name="status_bar">#FAF7F2</color>
+    <!-- Splash screen background (Android 12+): deep navy, where the flame glows best. -->
     <color name="navy">#14213D</color>
 </resources>

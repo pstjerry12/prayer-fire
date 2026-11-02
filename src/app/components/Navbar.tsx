@@ -58,45 +58,45 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 safe-top bg-navy text-cream border-b border-navy-soft">
+    <nav className="sticky top-0 z-50 safe-top bg-bar text-on-bar border-b border-bar-edge">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo (left) */}
         <Link href="/" className="flex items-center gap-3 min-w-0">
-          <div className="w-11 h-11 rounded-full bg-cream ring-1 ring-navy-soft flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="w-11 h-11 rounded-full bg-card ring-1 ring-bar-edge flex items-center justify-center overflow-hidden flex-shrink-0">
             <img src="/logo.png" alt="Prayer Fire" className="w-full h-full object-cover" />
           </div>
           <div className="min-w-0">
-            <h1 className="font-serif-heading text-base font-bold text-cream leading-tight truncate">Prayer Fire</h1>
-            <p className="text-[0.625rem] text-cream/80 hidden sm:block">A Cure For Prayerlessness</p>
-            <p className="text-[0.625rem] text-cream/80 font-semibold italic leading-tight hidden sm:block">Praying like Daniel</p>
+            <h1 className="font-serif-heading text-base font-bold text-on-bar leading-tight truncate">Prayer Fire</h1>
+            <p className="text-[0.625rem] text-on-bar/80 hidden sm:block">A Cure For Prayerlessness</p>
+            <p className="text-[0.625rem] text-on-bar/80 font-semibold italic leading-tight hidden sm:block">Praying like Daniel</p>
           </div>
         </Link>
 
         {/* Right controls */}
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Streak */}
-          <div className="flex items-center gap-1 bg-ember-tint px-2 py-1 rounded-full">
-            <Flame className="w-4 h-4 text-ember-text" />
-            <span className="text-ember-text font-bold text-sm">{streak}</span>
+          <div className="flex items-center gap-1 bg-warn-soft-2 px-2 py-1 rounded-full">
+            <Flame className="w-4 h-4 text-warn-strong" />
+            <span className="text-warn-strong font-bold text-sm">{streak}</span>
           </div>
 
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
-            className="p-2 hover:bg-navy-soft rounded-full transition-colors"
+            className="p-2 hover:bg-bar-hover rounded-full transition-colors"
             title={theme === 'dark' ? 'Switch to light mode' : 'Switch to night mode'}
           >
-            {theme === 'dark' ? <Sun className="w-5 h-5 text-cream" /> : <Moon className="w-5 h-5 text-cream" />}
+            {theme === 'dark' ? <Sun className="w-5 h-5 text-on-bar" /> : <Moon className="w-5 h-5 text-on-bar" />}
           </button>
 
           {/* 3-dots profile button */}
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setProfileOpen(!profileOpen)}
-              className="p-2 hover:bg-navy-soft rounded-full transition-colors"
+              className="p-2 hover:bg-bar-hover rounded-full transition-colors"
               title="Account menu"
             >
-              {profileOpen ? <X className="w-5 h-5 text-cream" /> : <MoreVertical className="w-5 h-5 text-cream" />}
+              {profileOpen ? <X className="w-5 h-5 text-on-bar" /> : <MoreVertical className="w-5 h-5 text-on-bar" />}
             </button>
 
             {profileOpen && (
@@ -168,8 +168,8 @@ export default function Navbar() {
           </div>
 
           {/* Mobile nav toggle */}
-          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2 hover:bg-navy-soft rounded-full transition-colors">
-            {menuOpen ? <X className="w-5 h-5 text-cream" /> : <Menu className="w-5 h-5 text-cream" />}
+          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2 hover:bg-bar-hover rounded-full transition-colors">
+            {menuOpen ? <X className="w-5 h-5 text-on-bar" /> : <Menu className="w-5 h-5 text-on-bar" />}
           </button>
         </div>
       </div>

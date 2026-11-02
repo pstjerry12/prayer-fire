@@ -33,34 +33,37 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   COLOUR PALETTE "Midnight and Ember" — the ONLY place colours are defined.
+   COLOUR PALETTE "Evergreen" — the ONLY place colours are defined.
 
-     Navy   #14213D  header, bottom-nav active item, headings        (about 30% of the screen)
-     Cream  #FBF7F0  app background                                   (about 60%)
-     Ember  #E8772E  action buttons ONLY: Listen, Start Prayer, Save  (about 10%)
-     Ink / muted     body text #1A1A1A / secondary text #5F5E5A
+     Green   #047857  buttons, icons, active tab, links (white text on it)        (the accent)
+     Mint    #ECFDF5 / #D1FAE5  tinted cards, chips, pills, highlighted tiles
+     Ivory   #FAF7F2  app background, with white cards
+     Navy    #14213D  headings
+     Ink / muted      body text #1F2937 / secondary text #5B6574
+     Amber / Red      only for notices ("warn") and errors ("danger")
 
    Write new screens with the semantic classes (bg-page, bg-card, bg-acc, bg-acc-soft, text-ink, text-ink-muted,
-   text-acc-strong, border-edge ...) or the palette names (bg-navy, text-ember-dark, bg-ember-tint ...). Tailwind's
-   built-in colour names (bg-blue-500, text-red-600, ...) are remapped at the bottom of the theme block onto the same
-   palette, so they can never introduce another colour. The colours outside it are the Google "G" logo, the flame logo
-   image and the user-chosen verse highlight colours.
+   text-acc-strong, border-edge, bg-bar ...). Tailwind's built-in colour names (bg-blue-500, text-red-600, ...) are
+   remapped at the bottom of the theme block onto the same palette, so they can never introduce another colour. The
+   colours outside it are the Google "G" logo, the flame logo image and the user-chosen verse highlight colours.
 
-   ACCESSIBILITY (WCAG AA, checked with numbers): white on #E8772E is only 2.95:1, so buttons use navy text (--on-acc,
-   5.4:1; set it to #FFFFFF to switch back). #C25E1C is 4.3:1 on white, so SMALL ember text uses --ember-text #A8500F
-   (5.5:1 on white, 4.7:1 on the tint); #C25E1C stays for icons, large text and pressed states.
+   ACCESSIBILITY (WCAG AA, checked with numbers): white on #047857 is 5.5:1; #047857 text on mint is 4.8:1 or better;
+   muted text on ivory is 5.5:1; amber and red text are at least 4.5:1 on their tints. (#059669 would be only 3.8:1
+   with white text, which is why the fill is the slightly deeper #047857.)
    ───────────────────────────────────────────────────────────────────────────── */
 
 /* The palette itself (static: always emitted as CSS variables, and each one is also a Tailwind colour). */
 @theme static {
   --color-navy: #14213d;
   --color-navy-soft: #24345a;
-  --color-ember: #e8772e;
-  --color-ember-dark: #c25e1c;
-  --color-ember-text: #a8500f;
-  --color-ember-tint: #fcebdd;
-  --color-ember-light: #f0a06a;
-  --color-cream: #fbf7f0;
+  --color-leaf: #047857;
+  --color-leaf-dark: #065f46;
+  --color-leaf-light: #34d399;
+  --color-leaf-pale: #6ee7b7;
+  --color-mint: #ecfdf5;
+  --color-mint-2: #d1fae5;
+  --color-mint-edge: #a7f3d0;
+  --color-cream: #faf7f2;
   --color-night: #0e1628;
   --color-night-card: #1a2540;
   --color-night-border: #2c3a5c;
@@ -84,8 +87,13 @@
   --color-border: var(--edge);
   --color-edge-strong: var(--edge-strong);
   --color-heading: var(--heading);
-  /* "acc" = the accent. acc = ember FILL (buttons), on-acc = text on that fill, acc-strong = accent TEXT and icons,
-     acc-soft / acc-soft-2 = the ember tint, acc-edge = a tinted outline, acc-hover = pressed/hover. */
+  /* The top bar: its own tokens so it can be light (default) or dark without touching any screen. */
+  --color-bar: var(--bar);
+  --color-on-bar: var(--on-bar);
+  --color-bar-edge: var(--bar-edge);
+  --color-bar-hover: var(--bar-hover);
+  /* "acc" = the accent. acc = green FILL (buttons), on-acc = text on that fill, acc-strong = accent TEXT and icons,
+     acc-soft / acc-soft-2 = the mint tint, acc-edge = a tinted outline, acc-hover = pressed/hover. */
   --color-acc: var(--acc);
   --color-on-acc: var(--on-acc);
   --color-acc-hover: var(--acc-hover);
@@ -93,50 +101,50 @@
   --color-acc-soft: var(--acc-soft);
   --color-acc-soft-2: var(--acc-soft-2);
   --color-acc-edge: var(--acc-edge);
-  /* "danger" = errors and destructive actions: ink on cream with a muted outline (the palette has no red). */
+  /* "danger" = errors and destructive actions (red). */
   --color-danger: var(--danger);
   --color-danger-strong: var(--danger-strong);
   --color-danger-soft: var(--danger-soft);
   --color-danger-soft-2: var(--danger-soft-2);
   --color-danger-edge: var(--danger-edge);
-  /* "warn" is kept so older screens still compile; it is now simply the ember family. */
+  /* "warn" = notices and the streak flame (amber). */
   --color-warn: var(--warn);
   --color-warn-strong: var(--warn-strong);
   --color-warn-soft: var(--warn-soft);
   --color-warn-soft-2: var(--warn-soft-2);
   --color-warn-edge: var(--warn-edge);
 
-  /* Every Tailwind colour family (green, emerald, teal, blue, indigo, purple, pink, orange, amber, yellow...) -> the ember family */
-  --color-orange-50: var(--acc-soft);
-  --color-orange-100: var(--acc-soft-2);
-  --color-orange-200: var(--acc-edge);
-  --color-orange-300: var(--acc-edge);
-  --color-orange-400: var(--acc);
-  --color-orange-500: var(--acc);
-  --color-orange-600: var(--acc);
-  --color-orange-700: var(--acc-strong);
+  /* Every Tailwind colour family: green, emerald, teal, blue, indigo, purple, pink ... -> the green family; orange, amber, yellow -> the amber "warn" family; red, rose -> the red "danger" family */
+  --color-orange-50: var(--warn-soft);
+  --color-orange-100: var(--warn-soft-2);
+  --color-orange-200: var(--warn-edge);
+  --color-orange-300: var(--warn-edge);
+  --color-orange-400: var(--warn);
+  --color-orange-500: var(--warn);
+  --color-orange-600: var(--warn);
+  --color-orange-700: var(--warn-strong);
   --color-orange-800: var(--ink);
   --color-orange-900: var(--ink);
   --color-orange-950: var(--ink);
-  --color-amber-50: var(--acc-soft);
-  --color-amber-100: var(--acc-soft-2);
-  --color-amber-200: var(--acc-edge);
-  --color-amber-300: var(--acc-edge);
-  --color-amber-400: var(--acc);
-  --color-amber-500: var(--acc);
-  --color-amber-600: var(--acc);
-  --color-amber-700: var(--acc-strong);
+  --color-amber-50: var(--warn-soft);
+  --color-amber-100: var(--warn-soft-2);
+  --color-amber-200: var(--warn-edge);
+  --color-amber-300: var(--warn-edge);
+  --color-amber-400: var(--warn);
+  --color-amber-500: var(--warn);
+  --color-amber-600: var(--warn);
+  --color-amber-700: var(--warn-strong);
   --color-amber-800: var(--ink);
   --color-amber-900: var(--ink);
   --color-amber-950: var(--ink);
-  --color-yellow-50: var(--acc-soft);
-  --color-yellow-100: var(--acc-soft-2);
-  --color-yellow-200: var(--acc-edge);
-  --color-yellow-300: var(--acc-edge);
-  --color-yellow-400: var(--acc);
-  --color-yellow-500: var(--acc);
-  --color-yellow-600: var(--acc);
-  --color-yellow-700: var(--acc-strong);
+  --color-yellow-50: var(--warn-soft);
+  --color-yellow-100: var(--warn-soft-2);
+  --color-yellow-200: var(--warn-edge);
+  --color-yellow-300: var(--warn-edge);
+  --color-yellow-400: var(--warn);
+  --color-yellow-500: var(--warn);
+  --color-yellow-600: var(--warn);
+  --color-yellow-700: var(--warn-strong);
   --color-yellow-800: var(--ink);
   --color-yellow-900: var(--ink);
   --color-yellow-950: var(--ink);
@@ -357,48 +365,53 @@
   /* Light mode */
   --page: var(--color-cream);
   --card: #ffffff;
-  --card-2: var(--color-cream);
-  --card-3: #e6dfd2;
-  --ink: #1a1a1a;
-  --ink-soft: #1a1a1a;
-  --ink-muted: #5f5e5a;
-  --ink-faint: #5f5e5a;
-  --ink-ghost: #5f5e5a;
+  --card-2: #f5f1ea;
+  --card-3: #e7e5e4;
+  --ink: #1f2937;
+  --ink-soft: #334155;
+  --ink-muted: #5b6574;
+  --ink-faint: #5b6574;
+  --ink-ghost: #5b6574;
   --heading: var(--color-navy);
-  --edge: #e6dfd2;
-  --edge-strong: color-mix(in srgb, #e6dfd2 40%, #5f5e5a);
-  --acc: var(--color-ember);
-  --on-acc: var(--color-navy);
-  --acc-hover: var(--color-ember-dark);
-  --acc-strong: var(--color-ember-text);
-  --acc-soft: var(--color-ember-tint);
-  --acc-soft-2: var(--color-ember-tint);
-  --acc-edge: color-mix(in srgb, var(--color-ember) 30%, var(--color-ember-tint));
-  --danger: #1a1a1a;
-  --danger-strong: #1a1a1a;
-  --danger-soft: var(--color-cream);
-  --danger-soft-2: var(--color-cream);
-  --danger-edge: #5f5e5a;
-  --warn: var(--color-ember);
-  --warn-strong: var(--color-ember-text);
-  --warn-soft: var(--color-ember-tint);
-  --warn-soft-2: var(--color-ember-tint);
-  --warn-edge: color-mix(in srgb, var(--color-ember) 30%, var(--color-ember-tint));
+  --edge: #e7e5e4;
+  --edge-strong: #d6d3d1;
+  /* top bar: light, like the page */
+  --bar: var(--color-cream);
+  --on-bar: var(--ink);
+  --bar-edge: var(--edge);
+  --bar-hover: rgba(31, 41, 55, 0.08);
+  --acc: var(--color-leaf);
+  --on-acc: #ffffff;
+  --acc-hover: var(--color-leaf-dark);
+  --acc-strong: var(--color-leaf);
+  --acc-soft: var(--color-mint);
+  --acc-soft-2: var(--color-mint-2);
+  --acc-edge: var(--color-mint-edge);
+  --danger: #b91c1c;
+  --danger-strong: #991b1b;
+  --danger-soft: #fef2f2;
+  --danger-soft-2: #fee2e2;
+  --danger-edge: #fecaca;
+  --warn: #d97706;
+  --warn-strong: #92400e;
+  --warn-soft: #fffbeb;
+  --warn-soft-2: #fef3c7;
+  --warn-edge: #fde68a;
 
   /* Verse highlight colours: the colours people choose for highlighting a verse. They are content, not interface
      colours, so they keep their own hues (translucent so they read on light and dark pages). The reading highlight
-     (the verse being read aloud) is the ember tint. */
+     (the verse being read aloud) is the mint tint. */
   --hl-bookmark: rgba(250, 204, 21, 0.4);
   --hl-orange: rgba(251, 146, 60, 0.4);
   --hl-green: rgba(74, 222, 128, 0.36);
   --hl-blue: rgba(96, 165, 250, 0.4);
   --hl-pink: rgba(244, 114, 182, 0.4);
   --hl-purple: rgba(168, 139, 250, 0.4);
-  --hl-reading: rgba(232, 119, 46, 0.26);
+  --hl-reading: rgba(4, 120, 87, 0.22);
 }
 
 .dark {
-  /* Dark mode: deep midnight, ember stays ember. */
+  /* Dark mode: deep midnight navy, the green brightens. */
   --page: var(--color-night);
   --card: var(--color-night-card);
   --card-2: color-mix(in srgb, var(--color-night-card) 72%, var(--color-night-border));
@@ -411,23 +424,27 @@
   --heading: var(--color-night-ink);
   --edge: var(--color-night-border);
   --edge-strong: color-mix(in srgb, var(--color-night-border) 45%, var(--color-night-muted));
-  --acc: var(--color-ember);
-  --on-acc: var(--color-navy);
-  --acc-hover: var(--color-ember-dark);
-  --acc-strong: var(--color-ember-light);
-  --acc-soft: color-mix(in srgb, var(--color-night-card) 86%, var(--color-ember));
-  --acc-soft-2: color-mix(in srgb, var(--color-night-card) 78%, var(--color-ember));
-  --acc-edge: color-mix(in srgb, var(--color-night-card) 60%, var(--color-ember));
-  --danger: var(--color-night-ink);
-  --danger-strong: var(--color-night-ink);
-  --danger-soft: color-mix(in srgb, var(--color-night-card) 80%, var(--color-night-border));
-  --danger-soft-2: color-mix(in srgb, var(--color-night-card) 80%, var(--color-night-border));
-  --danger-edge: var(--color-night-muted);
-  --warn: var(--color-ember);
-  --warn-strong: var(--color-ember-light);
-  --warn-soft: color-mix(in srgb, var(--color-night-card) 86%, var(--color-ember));
-  --warn-soft-2: color-mix(in srgb, var(--color-night-card) 78%, var(--color-ember));
-  --warn-edge: color-mix(in srgb, var(--color-night-card) 60%, var(--color-ember));
+  --bar: var(--color-night);
+  --on-bar: var(--color-night-ink);
+  --bar-edge: var(--color-night-border);
+  --bar-hover: rgba(243, 238, 228, 0.1);
+  --acc: var(--color-leaf-light);
+  --on-acc: var(--color-night);
+  --acc-hover: #10b981;
+  --acc-strong: var(--color-leaf-pale);
+  --acc-soft: color-mix(in srgb, var(--color-night-card) 86%, var(--color-leaf-light));
+  --acc-soft-2: color-mix(in srgb, var(--color-night-card) 78%, var(--color-leaf-light));
+  --acc-edge: color-mix(in srgb, var(--color-night-card) 60%, var(--color-leaf-light));
+  --danger: #f87171;
+  --danger-strong: #fca5a5;
+  --danger-soft: color-mix(in srgb, var(--color-night-card) 86%, #ef4444);
+  --danger-soft-2: color-mix(in srgb, var(--color-night-card) 78%, #ef4444);
+  --danger-edge: color-mix(in srgb, var(--color-night-card) 60%, #f87171);
+  --warn: #fbbf24;
+  --warn-strong: #fcd34d;
+  --warn-soft: color-mix(in srgb, var(--color-night-card) 86%, #f59e0b);
+  --warn-soft-2: color-mix(in srgb, var(--color-night-card) 78%, #f59e0b);
+  --warn-edge: color-mix(in srgb, var(--color-night-card) 60%, #fbbf24);
 }
 
 /* Real headings (h1 to h4) are navy in light mode (and the light text colour in dark mode) wherever they use the normal text colour.

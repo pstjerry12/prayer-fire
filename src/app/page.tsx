@@ -20,7 +20,7 @@ export default function HomePage() {
         <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-4 md:pt-8">
           {/* ── Header ───────────────────────────── */}
           <section className="text-center">
-            <span className="inline-flex items-center gap-1.5 bg-acc-soft-2 text-acc-strong text-xs font-bold px-3 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1.5 bg-warn-soft text-warn-strong text-xs font-bold px-3 py-1 rounded-full border border-warn-edge">
               <Flame className="w-3.5 h-3.5" /> Pray 3x a Day
             </span>
             <h1 className="font-serif-heading text-3xl md:text-5xl font-bold text-ink mt-2">
@@ -29,7 +29,7 @@ export default function HomePage() {
             <p className="text-base md:text-xl text-acc-strong font-serif-heading font-semibold mt-1">
               Write it. Speak it. Pray it. Trust God.
             </p>
-            <p className="text-ink-muted font-semibold italic text-xs md:text-sm mt-1">
+            <p className="text-danger font-semibold italic text-xs md:text-sm mt-1">
               Praying like Daniel — a cure for prayerlessness
             </p>
           </section>
@@ -41,7 +41,7 @@ export default function HomePage() {
                 href="/workshop"
                 className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-card border border-edge p-3.5 text-center active:scale-[0.98] transition-transform"
               >
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-ember-tint text-ember-dark">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-acc-soft text-acc-strong">
                   <Flame className="w-5 h-5" />
                 </span>
                 <h3 className="font-bold text-[0.9375rem] leading-tight text-ink">Write Prayer Points</h3>
@@ -52,7 +52,7 @@ export default function HomePage() {
                 href="/startup"
                 className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-card border border-edge p-3.5 text-center active:scale-[0.98] transition-transform"
               >
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-ember-tint text-ember-dark">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-acc-soft text-acc-strong">
                   <Sparkles className="w-5 h-5" />
                 </span>
                 <h3 className="font-bold text-[0.9375rem] leading-tight text-ink">Start-Up Prayer</h3>
@@ -65,7 +65,7 @@ export default function HomePage() {
               href="/schedule"
               className="flex h-12 items-center gap-3 rounded-2xl bg-card border border-edge px-3 text-sm font-bold text-ink active:scale-[0.99] transition-transform"
             >
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ember-tint text-ember-dark">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-acc-soft text-acc-strong">
                 <Clock className="w-5 h-5" />
               </span>
               <span className="flex-1 text-heading">Set Daily Schedule</span>
