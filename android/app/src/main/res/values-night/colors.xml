@@ -2,4 +2,5 @@
 <resources>
     <!-- Night mode: the status bar is the same deep navy as the app's night page. -->
     <color name="status_bar">#0E1628</color>
+    <color name="splash_bg">#0E1628</color>
 </resources>

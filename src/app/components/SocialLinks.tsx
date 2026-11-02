@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCachedJson } from '@/lib/cachedJson';
 import { Play, Camera, MessageCircle, Music2 } from 'lucide-react';
 
 interface Links {
@@ -12,14 +12,7 @@ interface Links {
 }
 
 export default function SocialLinks() {
-  const [links, setLinks] = useState<Links | null>(null);
-
-  useEffect(() => {
-    fetch('/api/social-links')
-      .then((r) => r.json())
-      .then(setLinks)
-      .catch(() => setLinks(null));
-  }, []);
+  const links = useCachedJson<Links>('/api/social-links', 10 * 60 * 1000);
 
   if (!links) return null;
 
@@ -29,7 +22,7 @@ export default function SocialLinks() {
     { key: 'instagram', href: links.instagram, label: 'Instagram', icon: Camera, className: 'bg-gradient-to-br from-acc via-acc to-acc' },
     { key: 'whatsapp', href: links.whatsapp, label: 'WhatsApp', icon: MessageCircle, className: 'bg-acc' },
     { key: 'tiktok', href: links.tiktok, label: 'TikTok', icon: Music2, className: 'bg-black' },
-  ].filter((item) => item.href.trim());
+  ].filter((item) => (item.href ?? '').trim());
 
   if (items.length === 0) return null;
 

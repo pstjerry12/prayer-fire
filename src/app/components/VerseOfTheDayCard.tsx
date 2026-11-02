@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { BookOpen, ChevronDown, Play, Sparkles, Square } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { KJV_BIBLE_VERSES } from '@/app/data/bibleVerses';
-import { loadTranslation, getChapter } from '@/lib/bible/loadTranslation';
+import { loadChapter } from '@/lib/bible/loadTranslation';
+import { announceNavigation } from '@/lib/navFeedback';
 import { parseReferenceInput } from '@/lib/bible/reference';
 import { getSelectedTranslation, getTranslationMeta, DEFAULT_TRANSLATION, type TranslationId } from '@/lib/bible/translations';
 import { useReadAloud } from '@/lib/useReadAloud';
@@ -47,10 +48,9 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
     const { chapter, verse: start } = parsed;
     const end = parsed.verseEnd ?? start;
     let cancelled = false;
-    loadTranslation(translationId)
-      .then((data) => {
+    loadChapter(translationId, parsed.book.osis, chapter)
+      .then((ch) => {
         if (cancelled) return;
-        const ch = getChapter(data, parsed.book.osis, chapter);
         const text = ch?.verses.filter((v) => v.number >= start && v.number <= end).map((v) => v.text).join(' ');
         if (text) setLoaded({ id: translationId, text });
       })
@@ -64,7 +64,10 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
   const shown = loaded && loaded.id === translationId ? getTranslationMeta(translationId).shortName : 'KJV';
 
   function open() {
-    if (parsed?.chapter && parsed.verse) router.push(`/bible/verse/${parsed.book.osis}/${parsed.chapter}/${parsed.verse}`);
+    if (parsed?.chapter && parsed.verse) {
+      announceNavigation();
+      router.push(`/bible/verse/${parsed.book.osis}/${parsed.chapter}/${parsed.verse}`);
+    }
   }
 
   // Opens the Bible reader on this verse's chapter, with the verse selected.
@@ -75,6 +78,7 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
     } catch {
       // ignore: the Bible then simply opens at its last place
     }
+    announceNavigation();
     router.push('/bible');
   }
 

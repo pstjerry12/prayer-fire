@@ -63,7 +63,7 @@ export default function Navbar() {
         {/* Logo (left) */}
         <Link href="/" className="flex items-center gap-3 min-w-0">
           <div className="w-11 h-11 rounded-full bg-card ring-1 ring-bar-edge flex items-center justify-center overflow-hidden flex-shrink-0">
-            <img src="/logo.png" alt="Prayer Fire" className="w-full h-full object-cover" />
+            <img src="/logo-sm.png" width={192} height={192} decoding="async" alt="Prayer Fire" className="w-full h-full object-cover" />
           </div>
           <div className="min-w-0">
             <h1 className="font-serif-heading text-base font-bold text-on-bar leading-tight truncate">Prayer Fire</h1>

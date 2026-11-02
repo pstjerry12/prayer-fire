@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-4 py-6 text-center">
         <div className="flex items-center justify-center gap-2">
           <span className="grid h-7 w-7 place-items-center rounded-full bg-danger-soft ring-1 ring-danger-edge overflow-hidden">
-            <img src="/logo.png" alt="Prayer Fire" className="w-full h-full object-cover" />
+            <img src="/logo-sm.png" width={192} height={192} decoding="async" alt="Prayer Fire" className="w-full h-full object-cover" />
           </span>
           <span className="text-ink font-serif font-bold text-sm">Prayer Fire</span>
         </div>

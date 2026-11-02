@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCachedJson } from '@/lib/cachedJson';
 import { Megaphone } from 'lucide-react';
 
 interface Announcement {
@@ -11,14 +11,8 @@ interface Announcement {
 }
 
 export default function AnnouncementBanner() {
-  const [latest, setLatest] = useState<Announcement | null>(null);
-
-  useEffect(() => {
-    fetch('/api/announcements')
-      .then((r) => r.json())
-      .then((d) => setLatest(d.announcements?.[0] ?? null))
-      .catch(() => setLatest(null));
-  }, []);
+  const data = useCachedJson<{ announcements?: Announcement[] }>('/api/announcements', 5 * 60 * 1000);
+  const latest = data?.announcements?.[0] ?? null;
 
   if (!latest) return null;
 

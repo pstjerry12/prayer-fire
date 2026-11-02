@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ScrollText, Search } from 'lucide-react';
 import { KJV_BIBLE_CATEGORIES, KJV_BIBLE_VERSES } from '@/app/data/bibleVerses';
 import PrayerVerseCard from './PrayerVerseCard';
@@ -11,7 +11,6 @@ import PrayerVerseCard from './PrayerVerseCard';
  * page (/bible/topic/<id>); typing in the search box lists matching verses here.
  */
 export default function BibleLibrary() {
-  const router = useRouter();
   const [search, setSearch] = useState('');
 
   const counts = useMemo(() => {
@@ -66,15 +65,15 @@ export default function BibleLibrary() {
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {KJV_BIBLE_CATEGORIES.map((cat) => (
-                <button
+                <Link
                   key={cat.id}
-                  onClick={() => router.push(`/bible/topic/${encodeURIComponent(cat.id)}`)}
+                  href={`/bible/topic/${encodeURIComponent(cat.id)}`}
                   className="bg-card rounded-xl p-3 text-left hover:bg-acc-soft/50 transition-all border border-edge hover:border-acc-edge active:scale-[0.98]"
                 >
                   <span className="text-xl mb-1 block">{cat.icon}</span>
                   <span className="text-ink text-sm font-semibold">{cat.name}</span>
                   <span className="text-ink-faint text-xs ml-1">({counts.get(cat.id) ?? 0})</span>
-                </button>
+                </Link>
               ))}
             </div>
             <p className="text-center text-ink-muted text-xs pt-4">Tap a topic to open its verses, or search above</p>

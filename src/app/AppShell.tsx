@@ -25,6 +25,8 @@ import WelcomeSlides from './components/WelcomeSlides';
 import BillingSync from './components/BillingSync';
 import FreeModeBanner from './components/FreeModeBanner';
 import SignInGate, { useSignInRequired } from './components/SignInGate';
+import NavProgress from './components/NavProgress';
+import PrefetchRoutes from './components/PrefetchRoutes';
 
 function Overlays() {
   const {
@@ -131,6 +133,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <AppProvider>
       <SplashScreen />
+      <NavProgress />
+      <PrefetchRoutes />
       <ServiceWorkerRegister />
       <RouteMemory />
       <SessionGuard />

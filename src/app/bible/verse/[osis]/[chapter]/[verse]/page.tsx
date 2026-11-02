@@ -7,7 +7,7 @@ import { cn } from '@/app/utils/cn';
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
 import { BIBLE_BOOKS } from '@/app/data/bibleBooks';
-import { loadTranslation, getChapter } from '@/lib/bible/loadTranslation';
+import { loadChapter } from '@/lib/bible/loadTranslation';
 import { getSelectedTranslation, getTranslationMeta, type TranslationId } from '@/lib/bible/translations';
 import { formatVerse, isVerseBookmarked, toggleBookmarks, useStudy, type VerseInfo } from '@/lib/study';
 import { copyText } from '@/lib/clipboard';
@@ -43,10 +43,9 @@ export default function VersePage() {
     // Reset for the newly selected verse before its text loads.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setState('loading');
-    loadTranslation(translationId)
-      .then((data) => {
+    loadChapter(translationId, osis, chapter)
+      .then((ch) => {
         if (cancelled) return;
-        const ch = getChapter(data, osis, chapter);
         const v = ch?.verses.find((x) => x.number === verseNumber);
         if (!ch || !v) {
           setState('missing');

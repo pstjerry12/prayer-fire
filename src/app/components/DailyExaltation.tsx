@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCachedJson } from '@/lib/cachedJson';
 import { Play } from 'lucide-react';
 import { extractYouTubeVideoId } from '../utils/youtube';
 
@@ -11,16 +11,9 @@ interface DailyVideo {
 }
 
 export default function DailyExaltation() {
-  const [data, setData] = useState<DailyVideo | null>(null);
+  const data = useCachedJson<DailyVideo>('/api/social-links', 10 * 60 * 1000);
 
-  useEffect(() => {
-    fetch('/api/social-links')
-      .then((r) => r.json())
-      .then(setData)
-      .catch(() => setData(null));
-  }, []);
-
-  if (!data || !data.dailyYoutubeUrl.trim()) return null;
+  if (!data || !(data.dailyYoutubeUrl ?? '').trim()) return null;
 
   const videoId = extractYouTubeVideoId(data.dailyYoutubeUrl);
   const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;

@@ -7,6 +7,8 @@
     <color name="colorAccent">#047857</color>
     <!-- Status bar behind the light top bar (the night version is in values-night). -->
     <color name="status_bar">#FAF7F2</color>
-    <!-- Splash screen background (Android 12+): deep navy, where the flame glows best. -->
-    <color name="navy">#14213D</color>
+    <!-- The one start-up colour: the system splash, the window and the web view all use it, and it is the same as the
+         page colour the web app's own boot animation starts on, so there is only ONE visible start-up (night version
+         in values-night). -->
+    <color name="splash_bg">#FAF7F2</color>
 </resources>

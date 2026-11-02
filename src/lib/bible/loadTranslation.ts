@@ -47,6 +47,58 @@ export interface BibleData {
 const cache = new Map<TranslationId, BibleData>();
 const inflight = new Map<TranslationId, Promise<BibleData>>();
 
+/**
+ * Reading only needs ONE book at a time, so each translation is also split into one small file per book
+ * (public/bible-data/v1/<id>/<OSIS>.json, made by `npm run split-bible`; about 5 to 280 KB each instead of the
+ * whole 4.9 MB). loadBook / loadChapter are what the screens use. The whole translation (loadTranslation below) is
+ * now only needed for searching the whole Bible, and as the fallback if a book file cannot be fetched.
+ */
+const BOOK_BASE = '/bible-data/v1';
+const bookCache = new Map<string, BibleBookData>();
+const bookInflight = new Map<string, Promise<BibleBookData | undefined>>();
+
+export function loadBook(id: TranslationId, osis: string): Promise<BibleBookData | undefined> {
+  const key = `${id}/${osis}`;
+  const hit = bookCache.get(key);
+  if (hit) return Promise.resolve(hit);
+  // The whole translation is already in memory (after a Bible search): use it.
+  const whole = cache.get(id);
+  if (whole) return Promise.resolve(whole.books.find((b) => b.book === osis));
+  const pending = bookInflight.get(key);
+  if (pending) return pending;
+
+  const promise = fetch(`${BOOK_BASE}/${id}/${encodeURIComponent(osis)}.json`)
+    .then((res) => {
+      if (!res.ok) throw new Error(`Bible book ${key}: ${res.status}`);
+      return res.json() as Promise<BibleBookData>;
+    })
+    .catch(async () => {
+      // Offline, or the file is missing: fall back to the whole translation (which an older copy of the app may
+      // already have cached on this phone).
+      const data = await loadTranslation(id);
+      return data.books.find((b) => b.book === osis);
+    })
+    .then((book) => {
+      if (book) bookCache.set(key, book);
+      return book;
+    })
+    .finally(() => {
+      bookInflight.delete(key);
+    });
+  bookInflight.set(key, promise);
+  return promise;
+}
+
+export async function loadChapter(id: TranslationId, osis: string, chapter: number): Promise<BibleChapter | undefined> {
+  const book = await loadBook(id, osis);
+  return book?.chapters.find((c) => c.chapter === chapter);
+}
+
+/** Starts fetching a book in the background (for example the one the person was last reading). Never throws. */
+export function preloadBook(id: TranslationId, osis: string): void {
+  loadBook(id, osis).catch(() => {});
+}
+
 async function importTranslation(id: TranslationId): Promise<BibleData> {
   switch (id) {
     case 'kjv':
