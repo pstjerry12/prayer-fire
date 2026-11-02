@@ -4,7 +4,7 @@ import VerseOfTheDayCard from './VerseOfTheDayCard';
 import HomeAudioBibleCard from './HomeAudioBibleCard';
 
 const TILE = 'flex min-h-[3.75rem] items-center gap-3 rounded-2xl bg-card border border-edge p-3 active:scale-[0.98] transition-transform';
-const ICON = 'grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ember-tint text-ember-dark';
+const ICON = 'grid h-9 w-9 shrink-0 place-items-center rounded-full bg-acc-soft text-acc-strong';
 
 /**
  * The lower half of the home screen's first view: today's verse (with Listen), then a 2x2 grid of tiles, each going

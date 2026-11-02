@@ -36,8 +36,8 @@ export default function BottomNav() {
                 active ? 'text-heading' : 'text-ink-muted hover:text-ink'
               )}
             >
-              {/* small ember bar marks the active tab */}
-              {active && <span aria-hidden className="absolute top-0 h-[3px] w-7 rounded-b-full bg-ember" />}
+              {/* small green bar marks the active tab */}
+              {active && <span aria-hidden className="absolute top-0 h-[3px] w-7 rounded-b-full bg-acc" />}
               <Icon className="w-4 h-4" />
               <span className={cn('text-[clamp(8px,0.5rem,10px)] leading-none whitespace-nowrap', active ? 'font-bold' : 'font-medium')}>{tab.label}</span>
             </Link>
