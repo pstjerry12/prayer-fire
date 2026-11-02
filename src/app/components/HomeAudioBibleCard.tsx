@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pause, Play, Square } from 'lucide-react';
 import { BIBLE_BOOKS } from '@/app/data/bibleBooks';
-import { loadTranslation, getChapter, type BibleVerse } from '@/lib/bible/loadTranslation';
+import { loadChapter as loadChapterData, type BibleVerse } from '@/lib/bible/loadTranslation';
 import { getSelectedTranslation } from '@/lib/bible/translations';
 import { FIRST_PLACE, getLastPlace, nextChapter, placeLabel, saveLastPlace, type LastPlace } from '@/lib/bibleLastPlace';
 import { readItems, type ReadController, type ReaderState } from '@/lib/readAloud';
@@ -27,8 +27,7 @@ export default function HomeAudioBibleCard() {
   const loadChapter = useCallback(async (p: LastPlace) => {
     const book = BIBLE_BOOKS.find((b) => b.name === p.book);
     if (!book) return null;
-    const data = await loadTranslation(getSelectedTranslation());
-    const verses = getChapter(data, book.osis, p.chapter)?.verses ?? null;
+    const verses = (await loadChapterData(getSelectedTranslation(), book.osis, p.chapter))?.verses ?? null;
     if (verses) loaded.current = { key: `${p.book}|${p.chapter}`, verses };
     return verses;
   }, []);

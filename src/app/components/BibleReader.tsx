@@ -24,7 +24,7 @@ import {
   type VerseInfo,
 } from '@/lib/study';
 import { BOOKMARK_BG, HIGHLIGHT_STYLES, READING_BG } from '@/lib/highlightStyles';
-import { loadTranslation, getChapter, type BibleVerse } from '@/lib/bible/loadTranslation';
+import { loadChapter as loadChapterData, type BibleVerse } from '@/lib/bible/loadTranslation';
 import {
   BIBLE_TRANSLATIONS,
   DEFAULT_TRANSLATION,
@@ -190,13 +190,11 @@ export default function BibleReader() {
     stopReading();
 
     try {
-      const data = await loadTranslation(translation);
-      const chapterData = getChapter(data, osis, ch);
+      const chapterData = await loadChapterData(translation, osis, ch);
       if (!chapterData) throw new Error('chapter not found');
       setVerses(chapterData.verses);
     } catch {
-      // Bundled local JSON failed to load/parse — a packaging problem, not a
-      // network one, since there's no external API involved anymore.
+      // The book file could not be fetched (offline and not yet cached on this phone) or parsed.
       setUnavailable(true);
     } finally {
       setLoading(false);

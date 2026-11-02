@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { X, BookOpen } from 'lucide-react';
 import { KJV_BIBLE_VERSES } from '../data/bibleVerses';
 import { BIBLE_BOOKS } from '../data/bibleBooks';
-import { loadTranslation, getChapter } from '@/lib/bible/loadTranslation';
+import { loadChapter } from '@/lib/bible/loadTranslation';
 import { getSelectedTranslation, getTranslationMeta, DEFAULT_TRANSLATION, type TranslationId } from '@/lib/bible/translations';
 
 interface Props {
@@ -65,10 +65,9 @@ export default function DailyVerseModal({ isOpen, onClose }: Props) {
     if (!parsed) return; // reference didn't parse — quietly keep the KJV fallback
 
     let cancelled = false;
-    loadTranslation(translationId)
-      .then((data) => {
+    loadChapter(translationId, parsed.osis, parsed.chapter)
+      .then((chapterData) => {
         if (cancelled) return;
-        const chapterData = getChapter(data, parsed.osis, parsed.chapter);
         if (!chapterData) return;
         const text = chapterData.verses
           .filter((v) => v.number >= parsed.start && v.number <= parsed.end)

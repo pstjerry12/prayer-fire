@@ -6,6 +6,8 @@ import { cn } from '../utils/cn';
 interface Props {
   /** A normal tap. */
   onTap?: () => void;
+  /** The moment a finger lands (before it is known to be a tap): used to get the next screen ready early. */
+  onPress?: () => void;
   /** Press and hold (default 1 second). */
   onLongPress: () => void;
   holdMs?: number;
@@ -19,7 +21,7 @@ interface Props {
  * Moving the finger (scrolling) cancels the hold, and the tap that follows a
  * completed hold is swallowed so it doesn't also fire onTap.
  */
-export default function LongPressable({ onTap, onLongPress, holdMs = 1000, className, style, children }: Props) {
+export default function LongPressable({ onTap, onPress, onLongPress, holdMs = 1000, className, style, children }: Props) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const origin = useRef<{ x: number; y: number } | null>(null);
   const fired = useRef(false);
@@ -37,6 +39,7 @@ export default function LongPressable({ onTap, onLongPress, holdMs = 1000, class
       style={style}
       onPointerDown={(e) => {
         if (e.pointerType === 'mouse' && e.button !== 0) return;
+        onPress?.();
         fired.current = false;
         origin.current = { x: e.clientX, y: e.clientY };
         clear();

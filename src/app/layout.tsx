@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   description:
     "Pray 3 Times a Day — A Cure for Prayerlessness. Build a powerful daily prayer habit with guided sessions, a fasting tracker, multi-language scripture, and a global prayer community.",
   icons: {
-    icon: "/logo.png",
+    icon: "/logo-sm.png",
   },
   manifest: "/manifest.webmanifest",
   appleWebApp: {

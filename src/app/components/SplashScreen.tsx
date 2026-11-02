@@ -77,7 +77,7 @@ export default function SplashScreen() {
     >
       {/* Logo */}
       <div className="w-24 h-24 rounded-full bg-danger-soft ring-2 ring-danger-edge flex items-center justify-center overflow-hidden shadow-lg shadow-danger/20 mb-4">
-        <img src="/logo.png" alt="Prayer Fire" className="w-full h-full object-cover" />
+        <img src="/logo-sm.png" width={192} height={192} alt="Prayer Fire" className="w-full h-full object-cover" />
       </div>
 
       {/* App name */}

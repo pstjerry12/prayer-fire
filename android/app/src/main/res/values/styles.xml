@@ -13,6 +13,8 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- Same colour as the splash, so there is never a white flash while the page loads. -->
+        <item name="android:windowBackground">@color/splash_bg</item>
         <!-- Status bar matches the top bar: ivory with dark icons by day, night navy with light icons by night
              (the app also sets the icon style at run time, see src/lib/systemBars.ts). -->
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -22,15 +24,14 @@
         <item name="android:windowLightStatusBar">@bool/light_status_bar</item>
     </style>
 
-    <!-- Launch theme. On Android 12+ the system draws the splash itself, using
-         the adaptive launcher icon on windowSplashScreenBackground; below 12 the
-         androidx splashscreen library shows @drawable/splash (the branded
-         portrait/landscape PNGs). postSplashScreenTheme hands off to the clean
-         full-screen theme once the WebView is up. -->
+    <!-- Launch theme. ONE plain start-up colour (@color/splash_bg, no logo) so the app opens straight into the web
+         app's own boot animation: Android 12+ draws the system splash itself (an invisible icon on that colour);
+         below 12 the androidx splashscreen library does the same. postSplashScreenTheme hands off to the clean
+         full-screen theme as soon as the first frame is drawn (no extra delay is set anywhere). -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="android:background">@drawable/splash</item>
+        <item name="android:windowBackground">@color/splash_bg</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
-        <item name="windowSplashScreenBackground">@color/navy</item>
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="windowSplashScreenBackground">@color/splash_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon_blank</item>
     </style>
 </resources>

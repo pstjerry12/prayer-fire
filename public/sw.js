@@ -9,7 +9,7 @@
 
 const CACHE_NAME = 'pfm-cache-v2';
 
-const PRECACHE_URLS = ['/logo.png', '/manifest.webmanifest'];
+const PRECACHE_URLS = ['/logo-sm.png', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

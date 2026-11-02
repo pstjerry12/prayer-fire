@@ -6,6 +6,7 @@ import { Bookmark as BookmarkIcon, ChevronRight } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { BibleVerse } from '@/app/data/bibleVerses';
 import { copyText } from '@/lib/clipboard';
+import { announceNavigation } from '@/lib/navFeedback';
 import { shareVerse } from '@/lib/shareVerse';
 import { formatVerse, isPrayerBookmarked, togglePrayerBookmark, useStudy } from '@/lib/study';
 import { useReadAloud } from '@/lib/useReadAloud';
@@ -30,7 +31,8 @@ export default function PrayerVerseCard({ verse }: { verse: BibleVerse }) {
   return (
     <>
       <LongPressable
-        onTap={() => router.push(PRAYER_VERSE_PATH(verse.id))}
+        onTap={() => { announceNavigation(); router.push(PRAYER_VERSE_PATH(verse.id)); }}
+        onPress={() => router.prefetch(PRAYER_VERSE_PATH(verse.id))}
         onLongPress={() => setMenuOpen(true)}
         style={bookmarked ? { background: BOOKMARK_BG } : undefined}
         className={cn('rounded-xl border border-edge p-4 transition-colors', !bookmarked && 'bg-card hover:bg-card-2 active:bg-card-2')}

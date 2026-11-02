@@ -190,7 +190,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
           <div className="p-5 border-b border-edge flex items-start justify-between shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-danger-soft ring-1 ring-danger-edge flex items-center justify-center overflow-hidden">
-                <img src="/logo.png" alt="Prayer Fire" className="w-full h-full object-cover" />
+                <img src="/logo-sm.png" width={192} height={192} decoding="async" alt="Prayer Fire" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h2 className="font-serif-heading text-lg font-bold text-ink">
