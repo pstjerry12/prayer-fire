@@ -60,7 +60,7 @@ export default function PartnerPage() {
               </div>
               <div className="flex bg-card-3 rounded-lg p-1">
                 <button onClick={() => setBilling('monthly')} className={cn('px-3 py-1.5 rounded-md text-xs font-semibold transition-all', billing === 'monthly' ? 'bg-acc text-on-acc' : 'text-ink-muted')}>Monthly</button>
-                <button onClick={() => setBilling('yearly')} className={cn('px-3 py-1.5 rounded-md text-xs font-semibold transition-all', billing === 'yearly' ? 'bg-acc text-on-acc' : 'text-ink-muted')}>Yearly <span className="text-on-acc">2 months free</span></button>
+                <button onClick={() => setBilling('yearly')} className={cn('px-3 py-1.5 rounded-md text-xs font-semibold transition-all', billing === 'yearly' ? 'bg-acc text-on-acc' : 'text-ink-muted')}>Yearly <span className={billing === 'yearly' ? 'opacity-90' : 'text-acc-strong'}>2 months free</span></button>
               </div>
             </div>
 

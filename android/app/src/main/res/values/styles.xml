@@ -13,12 +13,13 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
-        <!-- Navy status bar with light icons, to match the app header. -->
+        <!-- Status bar matches the top bar: ivory with dark icons by day, night navy with light icons by night
+             (the app also sets the icon style at run time, see src/lib/systemBars.ts). -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:statusBarColor">@color/navy</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">@color/status_bar</item>
+        <item name="android:windowLightStatusBar">@bool/light_status_bar</item>
     </style>
 
     <!-- Launch theme. On Android 12+ the system draws the splash itself, using

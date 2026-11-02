@@ -10,8 +10,8 @@
   "display": "standalone",
   "orientation": "portrait",
   "categories": ["lifestyle", "health", "social"],
-  "background_color": "#fbf7f0",
-  "theme_color": "#14213d",
+  "background_color": "#faf7f2",
+  "theme_color": "#faf7f2",
   "icons": [
     {
       "src": "/logo.png",

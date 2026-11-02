@@ -27,6 +27,7 @@ import { getStoredUser, checkSession, clearSession, apiLogout, apiDeleteAccount,
 import { saveSongBlob, deleteSongBlob } from '@/lib/audioStore';
 import { listenAuthDeepLink, closeInAppBrowser } from '@/lib/capacitorAlarm';
 import { applyTextScale, getStoredTextScale } from '@/lib/textScale';
+import { syncSystemBars, syncThemeColorMeta } from '@/lib/systemBars';
 import { useAndroidApp } from '@/lib/useAndroidApp';
 import { LATEST_RELEASE, WHATS_NEW_SEEN_KEY } from './data/whatsNew';
 
@@ -222,6 +223,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // set to dark mode keeps following that setting until they choose.
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
+    syncSystemBars(theme === 'dark');
+    syncThemeColorMeta(theme === 'dark');
   }, [theme]);
 
   // Re-apply the saved text size after hydration (the pre-paint script's inline
