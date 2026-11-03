@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Check, Crown, Loader2 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { PRICING_PLANS } from '../data/pricingPlans';
+import FreeNotice from './FreeNotice';
 import { useApp } from '../context';
 import type { SubscriptionTier } from '@/app/types';
 import { statusNotice } from '@/lib/subscriptionRules';
@@ -23,6 +24,7 @@ const PLAN_INFO: Record<SubscriptionTier, { name: string; tagline: string; featu
   partner: pick('partner'),
   leader: pick('leader'),
 };
+const FREE_INFO = pick('seeker');
 
 function pick(id: string) {
   const plan = PRICING_PLANS.find((p) => p.id === id);
@@ -47,9 +49,8 @@ export default function PlaySubscription() {
   const { user, subscription, refreshSubscription, setShowAuth } = useApp();
   const [options, setOptions] = useState<PlanOption[] | null>(null);
   const [problem, setProblem] = useState<'not-configured' | 'unavailable' | null>(null);
-  const [tier, setTier] = useState<SubscriptionTier>('partner');
   const [kind, setKind] = useState<BillingKind>('yearly'); // yearly first: it is the better deal
-  const [busy, setBusy] = useState<null | 'buy' | 'restore'>(null);
+  const [busy, setBusy] = useState<null | 'restore' | `buy-${SubscriptionTier}`>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const userId = user?.id ?? null;
@@ -72,12 +73,6 @@ export default function PlaySubscription() {
     load();
   }, [userId, load]);
 
-  // Start on the plan the person already has, so "Manage" and "Upgrade" make sense.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (subscription) setTier(subscription.tier);
-  }, [subscription]);
-
   // After a purchase the server may need a moment: ask it, and keep asking briefly until the plan shows.
   async function activate(): Promise<boolean> {
     for (let i = 0; i < 6; i++) {
@@ -93,23 +88,21 @@ export default function PlaySubscription() {
     return false;
   }
 
-  const available = (t: SubscriptionTier) => !!options?.some((o) => o.tier === t);
-  const selected = options?.find((o) => o.tier === tier && o.kind === kind) ?? null;
+  const optionFor = (t: SubscriptionTier) => options?.find((o) => o.tier === t && o.kind === kind) ?? null;
   const hasBoth = (t: SubscriptionTier) => !!options?.some((o) => o.tier === t && o.kind === 'monthly') && !!options?.some((o) => o.tier === t && o.kind === 'yearly');
-  const sameAsCurrent = !!subscription && !!selected && subscription.tier === selected.tier && !!subscription.basePlanId && selected.productId.endsWith(`:${subscription.basePlanId}`);
-  const isUpgrade = !!subscription && subscription.tier === 'partner' && tier === 'leader';
-  const isDowngrade = !!subscription && subscription.tier === 'leader' && tier === 'partner';
+  const sameAsCurrent = (o: PlanOption | null) => !!subscription && !!o && subscription.tier === o.tier && !!subscription.basePlanId && o.productId.endsWith(`:${subscription.basePlanId}`);
+  const isUpgrade = (t: SubscriptionTier) => !!subscription && subscription.tier === 'partner' && t === 'leader';
+  const isDowngrade = (t: SubscriptionTier) => !!subscription && subscription.tier === 'leader' && t === 'partner';
 
-  async function buy() {
-    if (!selected) return;
-    setBusy('buy');
+  async function buy(selected: PlanOption) {
+    setBusy(`buy-${selected.tier}`);
     setMessage(null);
     const result = await purchasePlan(selected, subscription);
     if (result.status === 'purchased') {
       const ok = await activate();
       setMessage(
         ok
-          ? isDowngrade
+          ? isDowngrade(selected.tier)
             ? 'Done. Your plan changes to Partner at your next renewal.'
             : `Thank you! Prayer Fire ${PLAN_INFO[selected.tier].name.replace('Prayer Fire ', '')} is now active.`
           : 'Your purchase went through. It is being activated; if it does not appear in a minute, tap Restore purchases.'
@@ -133,20 +126,79 @@ export default function PlaySubscription() {
     setBusy(null);
   }
 
-  const info = PLAN_INFO[tier];
   const notice = subscription ? statusNotice(subscription) : null;
-  const buttonLabel = sameAsCurrent
-    ? 'This is your current plan'
-    : isUpgrade
-      ? 'Upgrade to Leader'
-      : isDowngrade
-        ? 'Switch to Partner at renewal'
-        : selected?.freeTrialDays
-          ? 'Start free trial'
-          : 'Subscribe';
+  const ready = !!userId && !problem && !!options;
+
+  function buttonLabel(t: SubscriptionTier, o: PlanOption | null): string {
+    if (sameAsCurrent(o)) return 'This is your current plan';
+    if (isUpgrade(t)) return 'Upgrade to Leader';
+    if (isDowngrade(t)) return 'Switch to Partner at renewal';
+    return o?.freeTrialDays ? 'Start free trial' : 'Subscribe';
+  }
+
+  // (A plain function, not a component, so the cards are not rebuilt on every render.)
+  function paidCard(t: SubscriptionTier) {
+    const info = PLAN_INFO[t];
+    const o = optionFor(t);
+    const current = subscription?.tier === t;
+    return (
+      <section
+        aria-label={info.name}
+        data-testid={`plan-${t}`}
+        className={cn('rounded-2xl border p-5', current ? 'border-acc bg-acc-soft/50' : 'border-edge bg-card')}
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <span className="inline-flex items-center gap-1 bg-acc text-on-acc text-[0.625rem] font-bold px-2 py-0.5 rounded-full">
+            <Crown className="w-3 h-3" /> {t === 'leader' ? 'FIRE PARTNER LEADER' : 'PRAYER FIRE PARTNER'}
+          </span>
+          {current && <span className="text-acc-strong text-[0.625rem] font-bold">YOUR PLAN</span>}
+        </div>
+        <h3 className="text-ink font-bold">{info.name}</h3>
+        <p className="text-ink-muted text-xs mt-1 mb-3">{info.tagline}</p>
+        <ul className="space-y-2">
+          {info.features.map((f) => (
+            <li key={f} className="flex items-start gap-2 text-ink-muted text-xs">
+              <Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> {f}
+            </li>
+          ))}
+        </ul>
+        {ready && (
+          <div className="mt-5 pt-4 border-t border-edge space-y-3">
+            {o ? (
+              <div className="text-center">
+                <div className="text-3xl font-bold text-ink">
+                  {o.priceString}
+                  <span className="text-ink-muted text-sm font-medium"> / {o.kind === 'monthly' ? 'month' : 'year'}</span>
+                </div>
+                {o.freeTrialDays ? (
+                  <p className="text-acc-strong text-sm font-semibold mt-1">Start with a {o.freeTrialDays}-day free trial</p>
+                ) : o.introText ? (
+                  <p className="text-acc-strong text-sm font-semibold mt-1">{o.introText}</p>
+                ) : null}
+                {isUpgrade(t) && <p className="text-ink-muted text-xs mt-1">Upgrading charges only the difference for the rest of your current period.</p>}
+                {isDowngrade(t) && <p className="text-ink-muted text-xs mt-1">You keep Leader until your current period ends, then Partner begins.</p>}
+              </div>
+            ) : (
+              <p className="text-ink-muted text-sm text-center">This plan is not available right now.</p>
+            )}
+            <button
+              onClick={() => o && buy(o)}
+              disabled={busy !== null || !o || sameAsCurrent(o)}
+              className="w-full py-3 rounded-xl bg-acc text-on-acc font-bold hover:bg-acc-hover disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {busy === `buy-${t}` && <Loader2 className="w-4 h-4 animate-spin" />}
+              {buttonLabel(t, o)}
+            </button>
+          </div>
+        )}
+      </section>
+    );
+  }
 
   return (
     <div className="space-y-4">
+      <FreeNotice />
+
       {subscription && (
         <div className="rounded-2xl border border-acc-edge bg-card p-5 text-center">
           <div className="text-3xl mb-2">{subscription.tier === 'leader' ? '🔥' : '👑'}</div>
@@ -163,39 +215,29 @@ export default function PlaySubscription() {
         </div>
       )}
 
-      {/* Plan chooser */}
-      {options && (
-        <div className="flex bg-card-3 rounded-lg p-1" role="tablist" aria-label="Plan">
-          {(['partner', 'leader'] as const).map((t) => (
-            <button
-              key={t}
-              role="tab"
-              aria-selected={tier === t}
-              disabled={!available(t)}
-              onClick={() => setTier(t)}
-              className={cn('flex-1 px-3 py-2 rounded-md text-sm font-bold transition-all disabled:opacity-40', tier === t ? 'bg-acc text-on-acc' : 'text-ink-muted')}
-            >
-              {t === 'partner' ? 'Partner' : 'Leader'}
-            </button>
-          ))}
+      {/* 1. Free */}
+      <section
+        aria-label="Free"
+        data-testid="plan-free"
+        className={cn('rounded-2xl border p-5', !subscription ? 'border-acc bg-acc-soft/50' : 'border-edge bg-card')}
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <span className="inline-flex items-center gap-1 bg-acc-soft-2 text-acc-strong text-[0.625rem] font-bold px-2 py-0.5 rounded-full">FREE</span>
+          {!subscription && <span className="text-acc-strong text-[0.625rem] font-bold">YOUR PLAN</span>}
         </div>
-      )}
-
-      <div className="rounded-2xl border border-acc bg-acc-soft/50 p-5">
-        <span className="mb-3 inline-flex items-center gap-1 bg-acc text-on-acc text-[0.625rem] font-bold px-2 py-0.5 rounded-full">
-          <Crown className="w-3 h-3" /> {tier === 'leader' ? 'FIRE PARTNER LEADER' : 'PRAYER FIRE PARTNER'}
-        </span>
-        <h3 className="text-ink font-bold">{info.name}</h3>
-        <p className="text-ink-muted text-xs mt-1 mb-3">{info.tagline}</p>
+        <h3 className="text-ink font-bold">{FREE_INFO.name}</h3>
+        <p className="text-ink-muted text-xs mt-1 mb-3">{FREE_INFO.tagline}</p>
         <ul className="space-y-2">
-          {info.features.map((f) => (
+          {FREE_INFO.features.map((f) => (
             <li key={f} className="flex items-start gap-2 text-ink-muted text-xs">
               <Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> {f}
             </li>
           ))}
         </ul>
-      </div>
+        <p className="mt-4 text-ink font-bold text-sm">Free, always. Nothing to buy.</p>
+      </section>
 
+      {/* Sign in / loading / problem, once, above the paid plans */}
       {!userId ? (
         <div className="rounded-2xl border border-edge bg-card p-5 text-center">
           <p className="text-ink-muted text-sm mb-3">Sign in to subscribe, so your subscription follows you to any phone.</p>
@@ -218,57 +260,37 @@ export default function PlaySubscription() {
         <div className="flex justify-center py-6 text-ink-muted">
           <Loader2 className="w-5 h-5 animate-spin" />
         </div>
-      ) : (
-        <div className="rounded-2xl border border-edge bg-card p-5 space-y-4">
-          {hasBoth(tier) && (
-            <div className="flex bg-card-3 rounded-lg p-1" role="tablist" aria-label="Billing period">
-              <button
-                role="tab"
-                aria-selected={kind === 'yearly'}
-                onClick={() => setKind('yearly')}
-                className={cn('flex-1 px-3 py-2 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5', kind === 'yearly' ? 'bg-acc text-on-acc' : 'text-ink-muted')}
-              >
-                Yearly
-                <span className={cn('text-[0.625rem] font-extrabold rounded-full px-1.5 py-0.5', kind === 'yearly' ? 'bg-white/25 text-white' : 'bg-acc-soft-2 text-acc-strong')}>2 months free</span>
-              </button>
-              <button
-                role="tab"
-                aria-selected={kind === 'monthly'}
-                onClick={() => setKind('monthly')}
-                className={cn('flex-1 px-3 py-2 rounded-md text-xs font-bold transition-all', kind === 'monthly' ? 'bg-acc text-on-acc' : 'text-ink-muted')}
-              >
-                Monthly
-              </button>
-            </div>
-          )}
-          {selected && (
-            <div className="text-center">
-              <div className="text-3xl font-bold text-ink">
-                {selected.priceString}
-                <span className="text-ink-muted text-sm font-medium"> / {selected.kind === 'monthly' ? 'month' : 'year'}</span>
-              </div>
-              {selected.freeTrialDays ? (
-                <p className="text-acc-strong text-sm font-semibold mt-1">Start with a {selected.freeTrialDays}-day free trial</p>
-              ) : selected.introText ? (
-                <p className="text-acc-strong text-sm font-semibold mt-1">{selected.introText}</p>
-              ) : null}
-              {isUpgrade && <p className="text-ink-muted text-xs mt-1">Upgrading charges only the difference for the rest of your current period.</p>}
-              {isDowngrade && <p className="text-ink-muted text-xs mt-1">You keep Leader until your current period ends, then Partner begins.</p>}
-            </div>
-          )}
+      ) : (hasBoth('partner') || hasBoth('leader')) ? (
+        <div className="flex bg-card-3 rounded-lg p-1" role="tablist" aria-label="Billing period">
           <button
-            onClick={buy}
-            disabled={busy !== null || !selected || sameAsCurrent}
-            className="w-full py-3 rounded-xl bg-acc text-on-acc font-bold hover:bg-acc-hover disabled:opacity-60 flex items-center justify-center gap-2"
+            role="tab"
+            aria-selected={kind === 'yearly'}
+            onClick={() => setKind('yearly')}
+            className={cn('flex-1 px-3 py-2 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5', kind === 'yearly' ? 'bg-acc text-on-acc' : 'text-ink-muted')}
           >
-            {busy === 'buy' && <Loader2 className="w-4 h-4 animate-spin" />}
-            {buttonLabel}
+            Yearly
+            <span className={cn('text-[0.625rem] font-extrabold rounded-full px-1.5 py-0.5', kind === 'yearly' ? 'bg-white/25 text-white' : 'bg-acc-soft-2 text-acc-strong')}>2 months free</span>
           </button>
-          <p className="text-ink-faint text-[0.6875rem] leading-relaxed text-center">
-            Payment is charged to your Google Play account{selected?.freeTrialDays ? ' when the free trial ends' : ' when you confirm'}. The subscription renews
-            automatically until you cancel it, any time, in Google Play: Payments &amp; subscriptions → Subscriptions.
-          </p>
+          <button
+            role="tab"
+            aria-selected={kind === 'monthly'}
+            onClick={() => setKind('monthly')}
+            className={cn('flex-1 px-3 py-2 rounded-md text-xs font-bold transition-all', kind === 'monthly' ? 'bg-acc text-on-acc' : 'text-ink-muted')}
+          >
+            Monthly
+          </button>
         </div>
+      ) : null}
+
+      {/* 2. Partner  3. Leader */}
+      {paidCard('partner')}
+      {paidCard('leader')}
+
+      {ready && (
+        <p className="text-ink-faint text-[0.6875rem] leading-relaxed text-center">
+          Payment is charged to your Google Play account when you confirm (or when a free trial ends). The subscription renews
+          automatically until you cancel it, any time, in Google Play: Payments &amp; subscriptions → Subscriptions.
+        </p>
       )}
 
       {message && (
@@ -288,7 +310,7 @@ export default function PlaySubscription() {
             Restore purchases
           </button>
           <button
-            onClick={() => openManageSubscription(subscription?.tier ?? tier)}
+            onClick={() => openManageSubscription(subscription?.tier ?? 'partner')}
             className="flex-1 py-2.5 rounded-xl border border-edge-strong text-ink-soft text-sm font-bold hover:bg-card-2"
           >
             Manage subscription

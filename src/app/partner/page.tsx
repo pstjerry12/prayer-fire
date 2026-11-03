@@ -9,6 +9,7 @@ import Footer from '@/app/components/Footer';
 import { PRICING_PLANS, CURRENCIES, getDefaultCurrency, formatPrice, type Currency } from '@/app/data/pricingPlans';
 import { useApp } from '@/app/context';
 import PlaySubscription from '@/app/components/PlaySubscription';
+import FreeNotice from '@/app/components/FreeNotice';
 
 export default function PartnerPage() {
   const { isPremium, upgrade, isAndroidApp, freeMode } = useApp();
@@ -27,8 +28,8 @@ export default function PartnerPage() {
           <div className="w-12 h-12 rounded-full bg-acc-soft text-acc-strong flex items-center justify-center mx-auto mb-3">
             <Crown className="w-6 h-6" />
           </div>
-          <h1 className="font-serif-heading text-2xl font-bold text-ink">Prayer Fire Partner</h1>
-          <p className="text-ink-muted text-sm mt-1">Join the global intercessory community</p>
+          <h1 className="font-serif-heading text-2xl font-bold text-ink">Prayer Fire Plans</h1>
+          <p className="text-ink-muted text-sm mt-1">Free for everyone. Partner and Leader are optional.</p>
         </div>
 
         {freeMode.active ? (
@@ -50,6 +51,7 @@ export default function PartnerPage() {
           </div>
         ) : (
           <>
+            <div className="mb-4"><FreeNotice /></div>
             {/* Currency + billing */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-2">
