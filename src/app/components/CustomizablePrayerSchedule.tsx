@@ -5,6 +5,7 @@ import { Bell, Pencil, Check, Clock, Moon, Sun, Sunrise, Plus, Trash2, X, BellRi
 import { cn } from '../utils/cn';
 import { playChime } from '@/lib/clientUtils';
 import { useApp } from '@/app/context';
+import { canAddMore, FREE_LIMITS } from '@/lib/tiers';
 import { ALARM_TONES, previewAlarmTone, playAlarmTone, stopAlarm, preloadAlarmSounds, type AlarmToneId } from '@/lib/alarmSound';
 import {
   nativeVibrate,
@@ -67,7 +68,7 @@ function iconFor(id: string) {
 const RANK: Record<string, number> = { midnight: 0, noon: 1, morning: 2 };
 
 export default function CustomizablePrayerSchedule({ appointments, onUpdate }: Props) {
-  const { markPrayedToday } = useApp();
+  const { markPrayedToday, isPremium, promptUpgrade } = useApp();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [alarmFor, setAlarmFor] = useState<string | null>(null);
   const [testAlarmActive, setTestAlarmActive] = useState(false);
@@ -154,6 +155,10 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
   const alarmAppt = appointments.find((a) => a.id === alarmFor) || null;
 
   const add = () => {
+    if (!canAddMore(isPremium, appointments.length, FREE_LIMITS.reminders)) {
+      promptUpgrade('reminders');
+      return;
+    }
     const now = new Date();
     const pad = (n: number) => n.toString().padStart(2, '0');
     onUpdate([...appointments, { id: Date.now().toString(), time: `${pad(now.getHours())}:${pad(now.getMinutes())}`, label: 'New Prayer Watch', enabled: true, useNativeAlarm: true }]);

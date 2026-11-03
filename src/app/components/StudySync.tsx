@@ -15,8 +15,9 @@ const RESYNC_AFTER_MS = 60_000; // when the app comes back to the front
  * there's a connection, and quietly does nothing when there isn't.
  */
 export default function StudySync() {
-  const { user } = useApp();
-  const userId = user?.id ?? null;
+  const { user, isPremium } = useApp();
+  // Backing up and syncing My Study across phones is a Partner feature. Free keeps everything on this phone.
+  const userId = user && isPremium ? user.id : null;
   const running = useRef(false);
   const again = useRef(false);
   const lastRun = useRef(0);

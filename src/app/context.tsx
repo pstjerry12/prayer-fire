@@ -29,6 +29,7 @@ import { listenAuthDeepLink, closeInAppBrowser } from '@/lib/capacitorAlarm';
 import { applyTextScale, getStoredTextScale } from '@/lib/textScale';
 import { syncSystemBars, syncThemeColorMeta } from '@/lib/systemBars';
 import { useAndroidApp } from '@/lib/useAndroidApp';
+import { FREE_LIMITS, roomFor, type GateKind } from '@/lib/tiers';
 import { LATEST_RELEASE, WHATS_NEW_SEEN_KEY } from './data/whatsNew';
 
 // useNativeAlarm defaults to true so every user gets the loud, full-screen
@@ -114,6 +115,10 @@ interface AppContextValue {
   setShowSettings: Dispatch<SetStateAction<boolean>>;
   showPricing: boolean;
   setShowPricing: Dispatch<SetStateAction<boolean>>;
+  /** The plan-limit pop-up: null when closed, otherwise which limit was reached (see src/lib/tiers.ts). */
+  upgradePrompt: GateKind | null;
+  promptUpgrade: (kind: GateKind) => void;
+  closeUpgradePrompt: () => void;
   showDailyVerse: boolean;
   setShowDailyVerse: Dispatch<SetStateAction<boolean>>;
   showDailyWisdom: boolean;
@@ -201,6 +206,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
+  const [upgradePrompt, setUpgradePrompt] = useState<GateKind | null>(null);
+  const promptUpgrade = (kind: GateKind) => setUpgradePrompt(kind);
+  const closeUpgradePrompt = () => setUpgradePrompt(null);
   const [showDailyVerse, setShowDailyVerse] = useState(false);
   const [showDailyWisdom, setShowDailyWisdom] = useState(false);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
@@ -250,6 +258,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [songs]);
 
   const addSongFiles = async (files: File[]) => {
+    // Free keeps up to FREE_LIMITS.songs songs; Partner and Leader have no limit.
+    const room = roomFor(isPremium, songs.length, FREE_LIMITS.songs, files.length);
+    if (room < files.length) setUpgradePrompt('songs');
+    files = files.slice(0, room);
     const incoming: WorshipSong[] = [];
     for (const file of files) {
       const id = `song-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -265,6 +277,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const addSongUrl = async (name: string, url: string) => {
+    if (roomFor(isPremium, songs.length, FREE_LIMITS.songs, 1) < 1) {
+      setUpgradePrompt('songs');
+      return;
+    }
     setSongs((prev) => [
       { id: `song-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name: name.trim() || 'Worship Song', url, source: 'url', addedAt: new Date().toISOString() },
       ...prev,
@@ -568,6 +584,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setShowSettings,
         showPricing,
         setShowPricing,
+        upgradePrompt,
+        promptUpgrade,
+        closeUpgradePrompt,
         showDailyVerse,
         setShowDailyVerse,
         showDailyWisdom,

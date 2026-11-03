@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Utensils, Coffee, CloudSun, BookOpen, Flame, Check, Award } from 'lucide-react';
+import { Utensils, Coffee, CloudSun, BookOpen, Flame, Check, Award, Lock } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { FastingPlan } from '@/app/types';
+import { useApp } from '@/app/context';
+import { isFastAllowed } from '@/lib/tiers';
 
 export default function FastingTracker() {
+  const { isPremium, promptUpgrade } = useApp();
   const [plan, setPlan] = useState<FastingPlan | null>(() => {
     if (typeof window === 'undefined') return null;
     const stored = localStorage.getItem('upp_fasting_plan');
@@ -13,6 +16,10 @@ export default function FastingTracker() {
   });
 
   const startFast = (days: number) => {
+    if (!isFastAllowed(isPremium, days)) {
+      promptUpgrade('fast');
+      return;
+    }
     const newPlan: FastingPlan = { id: Date.now().toString(), days, startDate: new Date().toISOString(), completedDays: 0, checkedDays: [] };
     setPlan(newPlan);
     localStorage.setItem('upp_fasting_plan', JSON.stringify(newPlan));
@@ -52,13 +59,21 @@ export default function FastingTracker() {
           <>
             <p className="text-ink-muted text-sm mb-4 text-center">Choose your fasting plan</p>
             <div className="grid grid-cols-2 gap-3">
-              {plans.map((p) => (
-                <button key={p.days} onClick={() => startFast(p.days)} className="p-4 rounded-xl text-left border border-edge hover:border-acc hover:bg-acc-soft/40 transition-all">
-                  <div className="w-10 h-10 rounded-lg bg-acc-soft text-acc-strong flex items-center justify-center mb-2">{p.icon}</div>
-                  <h3 className="font-bold text-sm text-ink">{p.title}</h3>
-                  <p className="text-ink-muted text-xs">{p.subtitle}</p>
-                </button>
-              ))}
+              {plans.map((p) => {
+                const locked = !isFastAllowed(isPremium, p.days);
+                return (
+                  <button key={p.days} onClick={() => startFast(p.days)} data-testid={`fast-${p.days}`} className="relative p-4 rounded-xl text-left border border-edge hover:border-acc hover:bg-acc-soft/40 transition-all">
+                    {locked && (
+                      <span className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full bg-acc-soft-2 text-acc-strong text-[0.625rem] font-bold px-1.5 py-0.5">
+                        <Lock className="w-3 h-3" /> Partner
+                      </span>
+                    )}
+                    <div className="w-10 h-10 rounded-lg bg-acc-soft text-acc-strong flex items-center justify-center mb-2">{p.icon}</div>
+                    <h3 className="font-bold text-sm text-ink">{p.title}</h3>
+                    <p className="text-ink-muted text-xs">{p.subtitle}</p>
+                  </button>
+                );
+              })}
             </div>
           </>
         ) : (

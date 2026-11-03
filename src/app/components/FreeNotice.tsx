@@ -14,7 +14,7 @@ export default function FreeNotice() {
         <p className="text-heading font-bold text-sm">Most of Prayer Fire is free</p>
         <p className="text-ink-soft text-xs leading-relaxed mt-0.5">
           Writing prayers, guided prayer, the audio Bible, reminders, study notes and more cost nothing. Partner and Leader are
-          optional: they add the community features below and help support the work of Prayer Fire.
+          optional: they add the community, backup and leading features below, and help support the work of Prayer Fire.
         </p>
       </div>
     </div>

@@ -27,6 +27,7 @@ import FreeModeBanner from './components/FreeModeBanner';
 import SignInGate, { useSignInRequired } from './components/SignInGate';
 import NavProgress from './components/NavProgress';
 import PrefetchRoutes from './components/PrefetchRoutes';
+import UpgradePrompt from './components/UpgradePrompt';
 
 function Overlays() {
   const {
@@ -96,6 +97,7 @@ function Overlays() {
         onOpenWhatsNew={() => { setShowSettings(false); openWhatsNew(); }}
         onSendFeedback={() => { setShowSettings(false); setShowFeedback(true); }}
       />
+      <UpgradePrompt />
       <DailyVerseModal isOpen={showDailyVerse} onClose={handleDailyVerseClose} />
       <DailyWisdomModal isOpen={showDailyWisdom} onClose={handleDailyWisdomClose} />
       <WhatsNewModal

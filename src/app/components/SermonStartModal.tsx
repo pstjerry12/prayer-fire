@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
-import { startSermon, todayISO } from '@/lib/study';
+import { startSermon, todayISO, useStudy } from '@/lib/study';
+import { useApp } from '@/app/context';
+import { canAddMore, countLiveSermons, FREE_LIMITS } from '@/lib/tiers';
 
 interface Props {
   onClose: () => void;
@@ -15,11 +17,25 @@ export default function SermonStartModal({ onClose, onStarted }: Props) {
   const [title, setTitle] = useState('');
   const [preacher, setPreacher] = useState('');
   const [date, setDate] = useState(todayISO());
+  const { isPremium, promptUpgrade } = useApp();
+  const study = useStudy();
+  const blocked = !canAddMore(isPremium, countLiveSermons(study.sermons), FREE_LIMITS.sermons);
+
+  // Free keeps its first few sermon sessions: past that, explain Partner instead of opening the form.
+  useEffect(() => {
+    if (blocked) {
+      promptUpgrade('sermons');
+      onClose();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blocked]);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     onStarted(startSermon({ title, preacher, date }));
   }
+
+  if (blocked) return null;
 
   return (
     <div className="fixed inset-0 z-[88] flex items-end sm:items-center justify-center" role="dialog" aria-modal="true" aria-label="Start a sermon session">

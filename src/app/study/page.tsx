@@ -25,6 +25,7 @@ import { entryShortName, formatSermonDate, studyDayLabel } from '@/lib/studyForm
 import { getTranslationMeta, type TranslationId } from '@/lib/bible/translations';
 import { KJV_BIBLE_VERSES } from '@/app/data/bibleVerses';
 import { migrateLegacyFavorites } from '@/lib/study';
+import { useApp } from '@/app/context';
 import { PRAYER_VERSE_PATH } from '@/app/components/PrayerVerseCard';
 
 type Tab = 'bookmarks' | 'highlights' | 'sermons';
@@ -294,6 +295,7 @@ function SermonsTab() {
 
 export default function StudyPage() {
   const [tab, setTabState] = useState<Tab>('bookmarks');
+  const { isPremium } = useApp();
 
   useEffect(() => {
     try {
@@ -326,8 +328,21 @@ export default function StudyPage() {
 
         <div className="mb-5">
           <h1 className="font-serif-heading text-2xl font-bold text-ink">My Study</h1>
-          <p className="text-xs text-ink-muted">Bookmarks, highlights and sermon notes — saved on this phone, and backed up when you&apos;re signed in.</p>
+          <p className="text-xs text-ink-muted">
+            {isPremium
+              ? 'Bookmarks, highlights and sermon notes — saved on this phone, and backed up and synced across your phones.'
+              : 'Bookmarks, highlights and sermon notes — saved on this phone.'}
+          </p>
         </div>
+
+        {!isPremium && (
+          <div className="mb-5 rounded-2xl border border-acc-edge bg-acc-soft p-3 flex items-center gap-3" data-testid="study-backup-note">
+            <p className="flex-1 text-ink-soft text-xs leading-relaxed">
+              <span className="font-bold text-heading">Never lose your notes.</span> Prayer Fire Partner backs up My Study and syncs it across your phones.
+            </p>
+            <Link href="/partner" className="shrink-0 px-3 py-2 rounded-lg bg-acc text-on-acc text-xs font-bold hover:bg-acc-hover">See Partner</Link>
+          </div>
+        )}
 
         <div className="grid grid-cols-3 gap-1 rounded-xl bg-card-2 p-1 mb-5" role="tablist">
           {TABS.map(({ id, label, icon: Icon }) => (
