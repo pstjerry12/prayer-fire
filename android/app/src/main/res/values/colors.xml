@@ -5,10 +5,10 @@
     <color name="colorPrimary">#047857</color>
     <color name="colorPrimaryDark">#065F46</color>
     <color name="colorAccent">#047857</color>
-    <!-- Status bar behind the light top bar (the night version is in values-night). -->
-    <color name="status_bar">#FAF7F2</color>
+    <!-- Status bar behind the evergreen top bar (the night version is in values-night). -->
+    <color name="status_bar">#053D2E</color>
     <!-- The one start-up colour: the system splash, the window and the web view all use it, and it is the same as the
          page colour the web app's own boot animation starts on, so there is only ONE visible start-up (night version
          in values-night). -->
-    <color name="splash_bg">#FAF7F2</color>
+    <color name="splash_bg">#F0E9DA</color>
 </resources>
