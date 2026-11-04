@@ -27,10 +27,14 @@ export interface PrayerAppointment {
   alarmTone?: string;
   /**
    * Android only: ring like a real alarm (AlarmManager exact trigger, loud
-   * looping sound for 5 minutes, full-screen wake screen) instead of a plain
+   * looping sound for 3 minutes, full-screen wake screen) instead of a plain
    * scheduled notification. No iOS equivalent exists — see capacitorAlarm.ts.
    */
   useNativeAlarm?: boolean;
+  /** "group" = a group's prayer time: the alarm's main button is "Join Live Prayer" and opens `callUrl`. Default "personal". */
+  kind?: 'personal' | 'group';
+  /** For a group prayer time: the call link (WhatsApp, Google Meet, Zoom...) the Leader set for the group. */
+  callUrl?: string;
 }
 
 interface Props {
@@ -406,7 +410,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-ink">Ring like an alarm</p>
                     <p className="text-[0.6875rem] text-ink-muted leading-relaxed">
-                      Rings loudly for 5 minutes and wakes the screen, like a real alarm clock — not just a notification.
+                      Rings loudly for 3 minutes and wakes the screen, like a real alarm clock. Stop or Snooze it without opening the app.
                     </p>
                   </div>
                 </div>

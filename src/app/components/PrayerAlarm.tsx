@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useApp } from '@/app/context';
+import { buildAlarmContent } from '@/lib/alarmContent';
 import { playAlarmTone, stopAlarm, DEFAULT_TONE, type AlarmToneId } from '@/lib/alarmSound';
 import {
   isNativePlatformAsync,
@@ -9,6 +11,8 @@ import {
   scheduleAlarmEngineAlarms,
   nativeVibrate,
   listenNotificationTap,
+  listenPrayNow,
+  setNativeAlarmContent,
 } from '@/lib/capacitorAlarm';
 
 /**
@@ -23,6 +27,11 @@ import {
  */
 export default function PrayerAlarm() {
   const { appointments } = useApp();
+  const router = useRouter();
+  const routerRef = useRef(router);
+  useEffect(() => {
+    routerRef.current = router;
+  }, [router]);
   const appointmentsRef = useRef(appointments);
   useEffect(() => {
     appointmentsRef.current = appointments;
@@ -59,6 +68,14 @@ export default function PrayerAlarm() {
         // side by side — scheduleAlarmEngineAlarms() is a no-op on iOS/web.
         scheduleNativeAlarms(appointmentsRef.current);
         scheduleAlarmEngineAlarms(appointmentsRef.current);
+        // Today's prayer point and verse for the full-screen alarm (Android only).
+        setNativeAlarmContent(buildAlarmContent());
+
+        // The alarm's "Pray Now" button opens the app on the prayer session, not the home screen.
+        listenPrayNow(() => routerRef.current.push('/startup')).then((fn) => {
+          if (cancelled) fn();
+          else cleanupFns.push(fn);
+        });
 
         listenNotificationTap((data) => {
           playAlarmTone(DEFAULT_TONE);
