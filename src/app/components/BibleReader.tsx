@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  BookOpen, ChevronLeft, Volume2, Square, Play, Loader2, BookMarked, ListOrdered, AlertTriangle, Bookmark as BookmarkIcon, BookOpenText, X, Minus, Plus,
+  BookOpen, ChevronLeft, Volume2, Square, Play, Loader2, BookMarked, ListOrdered, AlertTriangle, Bookmark as BookmarkIcon, BookOpenText, X, Minus, Plus, Lock,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { useApp } from '@/app/context';
+import { isTranslationAllowed } from '@/lib/tiers';
 import { pushBackHandler } from '@/lib/backHandlerStack';
 import { BIBLE_BOOKS } from '@/app/data/bibleBooks';
 import { readItems, stopSpeech, type ReadController, type ReaderState } from '@/lib/readAloud';
@@ -85,6 +87,7 @@ function readPosition(): SavedPosition | null {
 }
 
 export default function BibleReader() {
+  const { isPremium, promptUpgrade } = useApp();
   const study = useStudy();
   const sermon = activeSermon(study);
 
@@ -248,6 +251,10 @@ export default function BibleReader() {
   }
 
   function changeTranslation(id: TranslationId) {
+    if (!isTranslationAllowed(isPremium, id)) {
+      promptUpgrade('translations');
+      return;
+    }
     setTranslationId(id);
     setSelectedTranslation(id);
   }
@@ -410,6 +417,7 @@ export default function BibleReader() {
               )}
             >
               {t.shortName}
+              {!isTranslationAllowed(isPremium, t.id) && <Lock aria-hidden className="inline w-3 h-3 ml-1 -mt-0.5" />}
             </button>
           );
         })}

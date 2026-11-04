@@ -30,6 +30,7 @@ import { applyTextScale, getStoredTextScale } from '@/lib/textScale';
 import { syncSystemBars, syncThemeColorMeta } from '@/lib/systemBars';
 import { useAndroidApp } from '@/lib/useAndroidApp';
 import { FREE_LIMITS, roomFor, type GateKind } from '@/lib/tiers';
+import { setPremiumFlag } from '@/lib/premiumFlag';
 import { LATEST_RELEASE, WHATS_NEW_SEEN_KEY } from './data/whatsNew';
 
 // useNativeAlarm defaults to true so every user gets the loud, full-screen
@@ -226,6 +227,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem('upp_worship_songs');
     return stored ? JSON.parse(stored) : [];
   });
+
+  // Keep a small note on the phone of whether this person has Partner or Leader, so plain functions outside React (the
+  // Bible translation picker) know what to offer straight away on the next start. Only written once the sign-in
+  // check has finished, so the brief moment before it never overwrites the note with "free".
+  useEffect(() => {
+    if (authChecked) setPremiumFlag(isPremium);
+  }, [authChecked, isPremium]);
 
   // Apply the theme. It is only SAVED when the person taps the moon button (see toggleTheme), so a phone that is
   // set to dark mode keeps following that setting until they choose.

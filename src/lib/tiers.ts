@@ -15,7 +15,10 @@ export const FREE_LIMITS = {
 /** Fasting plans open to everyone. The 21-day Daniel Fast and the 40-day Full Fast are Partner plans. */
 export const FREE_FAST_DAYS: readonly number[] = [3, 7];
 
-export type GateKind = 'reminders' | 'sermons' | 'songs' | 'fast';
+/** Bible translations open to everyone. ASV and WEB are Partner translations. */
+export const FREE_TRANSLATIONS: readonly string[] = ['kjv'];
+
+export type GateKind = 'reminders' | 'sermons' | 'songs' | 'fast' | 'translations';
 
 export const GATE_MESSAGES: Record<GateKind, { title: string; body: string }> = {
   reminders: {
@@ -30,6 +33,10 @@ export const GATE_MESSAGES: Record<GateKind, { title: string; body: string }> = 
     title: 'More worship songs',
     body: `Free holds ${FREE_LIMITS.songs} worship songs in the player. Prayer Fire Partner has no limit.`,
   },
+  translations: {
+    title: 'More Bible translations',
+    body: 'The King James Version is free to read, search and listen to. The American Standard Version (ASV) and the World English Bible (WEB) are part of Prayer Fire Partner.',
+  },
   fast: {
     title: 'Longer fasting plans',
     body: 'The 3-day and 7-day fasts are free. The 21-day Daniel Fast and the 40-day Full Fast are part of Prayer Fire Partner.',
@@ -39,6 +46,10 @@ export const GATE_MESSAGES: Record<GateKind, { title: string; body: string }> = 
 /** True when one more of something may be added: Partner and Leader always, Free until the limit is reached. */
 export function canAddMore(isPremium: boolean, current: number, limit: number): boolean {
   return isPremium || current < limit;
+}
+
+export function isTranslationAllowed(isPremium: boolean, id: string): boolean {
+  return isPremium || FREE_TRANSLATIONS.includes(id);
 }
 
 export function isFastAllowed(isPremium: boolean, days: number): boolean {

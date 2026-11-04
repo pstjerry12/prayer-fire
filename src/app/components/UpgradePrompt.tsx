@@ -7,6 +7,7 @@ import { GATE_MESSAGES } from '@/lib/tiers';
 
 const PARTNER_EXTRAS = [
   'Join prayer groups and the Partner Network',
+  'More Bible translations (ASV and WEB)',
   'Back up and sync My Study across phones',
   'Unlimited reminders, sermon notes and worship songs',
   'The 21-day and 40-day fasting plans',

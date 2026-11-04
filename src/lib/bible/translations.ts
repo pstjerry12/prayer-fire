@@ -1,3 +1,6 @@
+import { getPremiumFlag } from '@/lib/premiumFlag';
+import { isTranslationAllowed } from '@/lib/tiers';
+
 export type TranslationId = 'kjv' | 'asv' | 'web';
 
 export interface BibleTranslation {
@@ -28,7 +31,8 @@ export function getSelectedTranslation(): TranslationId {
   if (typeof window === 'undefined') return DEFAULT_TRANSLATION;
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return isTranslationId(stored) ? stored : DEFAULT_TRANSLATION;
+    // Free reads the King James Version; ASV and WEB are Partner translations (a saved choice is kept for when they join).
+    return isTranslationId(stored) && isTranslationAllowed(getPremiumFlag(), stored) ? stored : DEFAULT_TRANSLATION;
   } catch {
     return DEFAULT_TRANSLATION;
   }
