@@ -12,6 +12,7 @@ import { cn } from '@/app/utils/cn';
 import { extractYouTubeVideoId } from '@/app/utils/youtube';
 import AdminDailyActivity from '@/app/components/AdminDailyActivity';
 import AdminPricing from '@/app/components/AdminPricing';
+import AdminPlans from '@/app/components/AdminPlans';
 import AdminFeaturedGroups from '@/app/components/AdminFeaturedGroups';
 
 type Tab = 'overview' | 'users' | 'feedback' | 'requests' | 'testimonials' | 'donations' | 'pricing' | 'featured' | 'announcements' | 'events' | 'settings';
@@ -552,7 +553,12 @@ export default function AdminPage() {
         )}
 
         {/* ══════ ANNOUNCEMENTS / BROADCAST ══════ */}
-        {tab === 'pricing' && <AdminPricing />}
+        {tab === 'pricing' && (
+          <div className="space-y-6">
+            <AdminPlans />
+            <AdminPricing />
+          </div>
+        )}
 
         {tab === 'featured' && <AdminFeaturedGroups />}
 
