@@ -66,6 +66,7 @@ External services: Google OAuth (sign-in), Flutterwave (donations + webhook), Go
 **Web**
 | Package | Version |
 |---|---|
+| next | **Design v2 (Phase 2):** warm-beige light mode, clear outline on every card, deep-evergreen header in both modes, polished dark mode; native status/splash colours updated (needs a new Android build). See §5 "Design v2" |
 | next | 16.2.11 (App Router) |
 | react / react-dom | 19.2.6 |
 | typescript | 5.9.3 |
