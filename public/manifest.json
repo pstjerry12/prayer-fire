@@ -4,8 +4,8 @@
   "description": "A Cure For Prayerlessness. Write it. Speak it. Pray it. Trust God.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#faf7f2",
-  "theme_color": "#faf7f2",
+  "background_color": "#f0e9da",
+  "theme_color": "#053d2e",
   "icons": [
     {
       "src": "/icon-192.png",
