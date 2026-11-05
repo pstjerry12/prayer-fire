@@ -56,6 +56,7 @@ export default function PrayerVerseCard({ verse }: { verse: BibleVerse }) {
           onCopy={() => copyText(formatVerse(verse.reference, 'KJV', verse.text))}
           onReadAloud={() => reader.start([{ id: verse.id, text: `${verse.reference}. ${verse.text}` }])}
           onShare={() => shareVerse(formatVerse(verse.reference, 'KJV', verse.text))}
+          card={{ body: verse.text, reference: `${verse.reference} (KJV)`, line: formatVerse(verse.reference, 'KJV', verse.text) }}
           bookmarked={bookmarked}
           onToggleBookmark={() => togglePrayerBookmark(verse.id, verse.reference, verse.text)}
         />

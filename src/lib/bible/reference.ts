@@ -1,4 +1,5 @@
 import { BIBLE_BOOKS, type BibleBook } from '@/app/data/bibleBooks';
+import { findLocalBook } from '@/lib/i18n/bookNames';
 
 /** A place in the Bible typed by a person, e.g. "John 3:16", "1 cor 13", "Ps 23". */
 export interface ParsedReference {
@@ -9,7 +10,7 @@ export interface ParsedReference {
   verseEnd: number | null;
 }
 
-const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
 // Common short forms people type, on top of the full names and the OSIS codes.
 const EXTRA_ALIASES: Record<string, string> = {
@@ -53,7 +54,10 @@ export function findBook(typed: string): BibleBook | null {
   if (exact) return exact;
   if (key.length < 3) return null;
   const matches = BIBLE_BOOKS.filter((b) => norm(b.name).startsWith(key));
-  return matches.length === 1 ? matches[0] : null;
+  if (matches.length === 1) return matches[0];
+  // A French, Spanish or Portuguese name ("Genèse", "1 Reyes", "João").
+  const english = findLocalBook(typed);
+  return english ? BIBLE_BOOKS.find((b) => b.name === english) ?? null : null;
 }
 
 /**
@@ -64,7 +68,7 @@ export function parseReferenceInput(input: string): ParsedReference | null {
   const text = input.trim().replace(/\s+/g, ' ');
   if (!text) return null;
   // book (may start with 1/2/3 and contain spaces) + optional chapter + optional verse
-  const m = text.match(/^((?:[123]\s*)?[a-zA-Z][a-zA-Z .]*?)\s*(?:(\d{1,3})(?:\s*[:. ]\s*(\d{1,3}))?(?:\s*[-–]\s*(\d{1,3}))?)?$/);
+  const m = text.match(/^((?:[123]\s*)?[\p{L}][\p{L} .]*?)\s*(?:(\d{1,3})(?:\s*[:. ]\s*(\d{1,3}))?(?:\s*[-–]\s*(\d{1,3}))?)?$/u);
   if (!m) return null;
   const book = findBook(m[1]);
   if (!book) return null;

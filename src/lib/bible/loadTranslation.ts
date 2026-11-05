@@ -107,6 +107,12 @@ async function importTranslation(id: TranslationId): Promise<BibleData> {
       return (await import('@/data/bible/asv.json')).default as BibleData;
     case 'web':
       return (await import('@/data/bible/web.json')).default as BibleData;
+    case 'lsg':
+      return (await import('@/data/bible/lsg.json')).default as BibleData;
+    case 'rv1909':
+      return (await import('@/data/bible/rv1909.json')).default as BibleData;
+    case 'almeida':
+      return (await import('@/data/bible/almeida.json')).default as BibleData;
     default:
       throw new Error(`Unknown Bible translation: ${id}`);
   }

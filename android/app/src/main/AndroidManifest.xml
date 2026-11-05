@@ -100,6 +100,11 @@
 
         </activity>
 
+        <!-- AdMob app id (see android/app/build.gradle: real id from the ADMOB_APP_ID secret, Google's sample id until then). -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -149,6 +154,18 @@
             android:noHistory="true"
             android:taskAffinity=""
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <!-- Home-screen widget: today's prayer point and verse, the fire streak and a Pray now button. -->
+        <receiver
+            android:name=".alarmengine.PrayerWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/prayer_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

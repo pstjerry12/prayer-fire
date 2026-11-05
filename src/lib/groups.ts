@@ -2,7 +2,8 @@ import type { Q } from "./groupsDb.ts";
 
 /** Queries for shared prayer groups. They run through runAsUser(), so the database decides what each caller may see. */
 
-export type JoinOutcome = "joined" | "pending" | "already" | "blocked" | "notfound";
+export type JoinOutcome = "joined" | "pending" | "already" | "blocked" | "notfound" | "full";
+export type GroupApproval = "pending" | "approved" | "rejected";
 export type JoinMode = "open" | "approval";
 export type PostKind = "message" | "alert" | "request" | "testimony";
 export type GroupRole = "leader" | "co_leader" | "member";
@@ -21,6 +22,10 @@ export interface DirectoryGroup {
   /** Featured right now (switched off by itself after its end date). */
   featured: boolean;
   featuredUntil: string | null;
+  /** "pending" / "rejected" are only ever seen by the leader who applied; everyone else sees approved groups. */
+  status: GroupApproval;
+  /** The leader's live prayer call link (WhatsApp, Google Meet, Zoom...). Null when none is set. */
+  callUrl: string | null;
 }
 
 export interface GroupMember {
@@ -75,7 +80,9 @@ export interface FeaturingInfo {
 }
 
 export interface GroupDetail {
-  group: { id: string; name: string; description: string; joinMode: JoinMode; prayerTime: string | null; pinnedVerse: string | null; createdAt: string; featured: boolean };
+  group: { id: string; name: string; description: string; joinMode: JoinMode; prayerTime: string | null; pinnedVerse: string | null; createdAt: string; featured: boolean; status: GroupApproval; reviewNote: string | null; callUrl: string | null; memberLimit: number };
+  /** Today's shared prayer point (Africa/Lagos day), written by the leader or a co-leader. */
+  todayPoint: string | null;
   featuring: FeaturingInfo | null;
   myRole: GroupRole;
   /** Only leaders and co-leaders get the invite code. */
@@ -117,11 +124,13 @@ export async function listDirectory(q: Q): Promise<DirectoryGroup[]> {
     myRole: (r.my_role as GroupRole | null) ?? null,
     featured: r.featured === true,
     featuredUntil: r.featured_until ? new Date(r.featured_until as string).toISOString() : null,
+    status: (r.status as GroupApproval) ?? "approved",
+    callUrl: (r.call_url as string | null) ?? null,
   }));
 }
 
 export async function getGroupDetail(q: Q, groupId: string): Promise<GroupDetail | null> {
-  const [group] = await q<Row>("select id, name, description, join_mode, prayer_time, pinned_verse, created_at, (featured and (featured_until is null or featured_until > now())) as featured_active, featured_until from groups where id = $1", [groupId]);
+  const [group] = await q<Row>("select id, name, description, join_mode, prayer_time, pinned_verse, created_at, (featured and (featured_until is null or featured_until > now())) as featured_active, featured_until, status, review_note, call_url, app_group_member_limit(id) as member_limit from groups where id = $1", [groupId]);
   if (!group) return null; // not a member (or no such group): the database shows nothing
   const [me] = await q<Row>("select role from group_members where group_id = $1 and user_id = app_uid() and status = 'active'", [groupId]);
   if (!me) return null;
@@ -145,6 +154,7 @@ export async function getGroupDetail(q: Q, groupId: string): Promise<GroupDetail
   );
   const reports = canModerate ? await listReports(q, groupId) : [];
   const featuring = me.role === "leader" ? await getFeaturing(q, groupId, group, canModerate) : null;
+  const [point] = await q<Row>("select body from group_points where group_id = $1 and day = (now() at time zone 'Africa/Lagos')::date", [groupId]);
   const [checkins] = await q<Row>(
     "select count(*)::int as n, coalesce(bool_or(user_id = app_uid()), false) as mine from group_checkins where group_id = $1 and day = (now() at time zone 'Africa/Lagos')::date",
     [groupId]
@@ -159,7 +169,12 @@ export async function getGroupDetail(q: Q, groupId: string): Promise<GroupDetail
       pinnedVerse: (group.pinned_verse as string | null) ?? null,
       createdAt: new Date(group.created_at as string).toISOString(),
       featured: group.featured_active === true,
+      status: (group.status as GroupApproval) ?? "approved",
+      reviewNote: (group.review_note as string | null) ?? null,
+      callUrl: (group.call_url as string | null) ?? null,
+      memberLimit: Number(group.member_limit ?? 50),
     },
+    todayPoint: point ? String(point.body) : null,
     featuring,
     myRole: me.role as GroupRole,
     inviteCode: invite ? String(invite.code) : null,
@@ -273,8 +288,9 @@ export const joinGroup = (q: Q, groupId: string) => one<JoinOutcome>(q, "select 
 export const joinGroupByCode = (q: Q, code: string) => one<JoinOutcome>(q, "select app_join_group_by_code($1) as r", [code]);
 export const leaveGroup = (q: Q, groupId: string) => q("select app_leave_group($1)", [groupId]);
 export const decideMember = (q: Q, groupId: string, userId: string, approve: boolean) => q("select app_decide_member($1, $2, $3)", [groupId, userId, approve]);
-export const updateGroup = (q: Q, groupId: string, a: { joinMode: JoinMode; prayerTime: string; pinnedVerse: string }) =>
-  q("select app_update_group($1, $2, $3, $4)", [groupId, a.joinMode, a.prayerTime, a.pinnedVerse]);
+export const updateGroup = (q: Q, groupId: string, a: { joinMode: JoinMode; prayerTime: string; pinnedVerse: string; callUrl?: string }) =>
+  q("select app_update_group($1, $2, $3, $4, $5)", [groupId, a.joinMode, a.prayerTime, a.pinnedVerse, a.callUrl ?? null]);
+export const setGroupPoint = (q: Q, groupId: string, body: string) => q("select app_set_group_point($1, $2)", [groupId, body]);
 export const deleteGroup = (q: Q, groupId: string) => q("select app_delete_group($1)", [groupId]);
 export const addPost = (q: Q, groupId: string, kind: PostKind, body: string) => one<string>(q, "select app_add_post($1, $2, $3) as r", [groupId, kind, body]);
 export const addComment = (q: Q, postId: string, body: string) => one<string>(q, "select app_add_comment($1, $2) as r", [postId, body]);

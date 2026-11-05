@@ -28,6 +28,7 @@ import { saveSongBlob, deleteSongBlob } from '@/lib/audioStore';
 import { listenAuthDeepLink, closeInAppBrowser } from '@/lib/capacitorAlarm';
 import { applyTextScale, getStoredTextScale } from '@/lib/textScale';
 import { syncSystemBars, syncThemeColorMeta } from '@/lib/systemBars';
+import { clearGroupAlarms } from '@/lib/groupAlarms';
 import { useAndroidApp } from '@/lib/useAndroidApp';
 import { LATEST_RELEASE, WHATS_NEW_SEEN_KEY } from './data/whatsNew';
 
@@ -443,6 +444,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     authEpochRef.current += 1;
     await apiLogout();
+    clearGroupAlarms(); // group prayer times belong to the account that is signing out
     setUser(null);
     setSubscription(null);
     setFreeMode({ active: false, endsAt: null });

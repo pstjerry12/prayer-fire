@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import WatchHowStrip from './WatchHowStrip';
 import { usePathname } from 'next/navigation';
 import {
   Menu, X, Flame, Crown, LogIn, ChevronRight, ChevronDown, Moon, Sun, ShieldCheck,
-  MoreVertical, LogOut, User as UserIcon, Settings, BookOpen, Music,
+  MoreVertical, LogOut, User as UserIcon, Settings, BookOpen, Music, PlayCircle, Globe,
 } from 'lucide-react';
 import { useApp } from '@/app/context';
 import { cn } from '@/app/utils/cn';
@@ -20,6 +21,7 @@ const MENU_CATEGORIES = [
     items: [
       { href: '/scripture', label: 'Scripture & Wisdom' },
       { href: '/fasting', label: 'Fasting Tracker' },
+      { href: '/journal', label: 'Prayer Journal' },
     ],
   },
   {
@@ -27,6 +29,24 @@ const MENU_CATEGORIES = [
     label: 'Worship',
     icon: Music,
     items: [{ href: '/worship', label: 'Praise & Worship' }],
+  },
+  {
+    id: 'together',
+    label: 'Pray Together',
+    icon: Globe,
+    items: [
+      { href: '/alerts', label: 'Global Prayer Alerts' },
+      { href: '/groups', label: 'Prayer Groups' },
+    ],
+  },
+  {
+    id: 'learn',
+    label: 'Learn',
+    icon: PlayCircle,
+    items: [
+      { href: '/how-to', label: 'How to use Prayer Fire' },
+      { href: '/podcast', label: 'Podcast & teachings' },
+    ],
   },
 ];
 
@@ -224,6 +244,9 @@ export default function Navbar() {
       </div>
 
       {/* Mobile nav menu: categories */}
+      {/* A small "Watch how" link when the admin has added a tutorial for this feature's page */}
+      <WatchHowStrip />
+
       {menuOpen && (
         <div className="absolute top-full left-0 right-0 bg-card text-ink border-b border-edge p-4 space-y-3 shadow-lg max-h-[80vh] overflow-y-auto">
            <Link

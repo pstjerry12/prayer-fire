@@ -20,11 +20,15 @@ import {
   Sparkles,
   MessageSquareHeart,
 } from 'lucide-react';
+import { adPrivacyOptionsRequired, openAdPrivacyOptions } from '@/lib/adsClient';
 import { useEffect, useState } from 'react';
+import { isLowDataSwitchOn, setLowData } from '@/lib/lowData';
 import { cn } from '../utils/cn';
 import { CURRENCIES, type Currency } from '../data/pricingPlans';
 import type { AuthUser } from '@/app/types';
 import { getAppVersionInfo, PLAY_STORE_URL } from '@/lib/capacitorAlarm';
+import { useI18n } from '@/app/i18n';
+import { LANGUAGES } from '@/lib/i18n/languages';
 import { TEXT_SCALE_OPTIONS, getStoredTextScale, setTextScale } from '@/lib/textScale';
 
 interface Props {
@@ -65,10 +69,14 @@ export default function AccountSettings({
   const [signingOut, setSigningOut] = useState(false);
   const [appVersion, setAppVersion] = useState<{ version: string; build: string } | null>(null);
   const [textScale, setTextScaleState] = useState(1);
+  const { t } = useI18n();
+  // Google requires an "Ad privacy choices" entry for people in the EEA/UK once they have seen the consent form.
+  const [adChoices, setAdChoices] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
     setTextScaleState(getStoredTextScale());
+    setAdChoices(adPrivacyOptionsRequired());
     let cancelled = false;
     getAppVersionInfo().then((info) => {
       if (!cancelled) setAppVersion(info);
@@ -98,7 +106,7 @@ export default function AccountSettings({
       <div className="min-h-full flex items-start justify-center p-4 py-10">
         <div className="bg-card rounded-3xl w-full max-w-md border border-edge shadow-2xl overflow-hidden">
           <div className="p-5 border-b border-edge flex items-center justify-between sticky top-0 bg-card z-10">
-            <h2 className="font-serif-heading text-lg font-bold text-ink">Account Settings</h2>
+            <h2 className="font-serif-heading text-lg font-bold text-ink">{t('settings.title')}</h2>
             <button onClick={onClose} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
               <X className="w-5 h-5" />
             </button>
@@ -244,6 +252,12 @@ export default function AccountSettings({
               </div>
             </div>
 
+            {/* Language */}
+            <LanguagePicker />
+
+            {/* Low-data mode */}
+            <LowDataToggle />
+
             {/* Rate Us */}
             <div className="space-y-2">
               <h3 className="text-ink-soft text-sm font-semibold">Support Us</h3>
@@ -280,6 +294,16 @@ export default function AccountSettings({
                 <span className="flex-1 text-sm text-ink-soft">Community Guidelines</span>
                 <ChevronRight className="w-4 h-4 text-ink-faint" />
               </a>
+              {adChoices && (
+                <button
+                  onClick={() => openAdPrivacyOptions()}
+                  className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3"
+                >
+                  <ShieldCheck className="w-4 h-4 text-acc-strong" />
+                  <span className="flex-1 text-sm text-ink-soft">Ad privacy choices</span>
+                  <ChevronRight className="w-4 h-4 text-ink-faint" />
+                </button>
+              )}
               <button
                 onClick={onExportData}
                 className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3"
@@ -330,6 +354,61 @@ export default function AccountSettings({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+
+/** The app language: one button per language. The Bible follows it where the app has a Bible in that language. */
+function LanguagePicker() {
+  const { t, lang, setLang } = useI18n();
+  return (
+    <div className="space-y-2">
+      <h3 className="text-ink-soft text-sm font-semibold">{t('settings.language')}</h3>
+      <p className="text-xs text-ink-muted">{t('settings.languageHint')}</p>
+      <div role="radiogroup" aria-label={t('settings.language')} className="grid grid-cols-2 gap-2">
+        {LANGUAGES.map((l) => (
+          <button
+            key={l.code}
+            role="radio"
+            aria-checked={lang === l.code}
+            onClick={() => setLang(l.code)}
+            lang={l.code}
+            className={cn(
+              'h-11 rounded-xl border px-3 text-sm font-bold text-left transition-colors',
+              lang === l.code ? 'bg-acc-soft text-acc-strong border-acc-edge' : 'bg-card-2 text-ink-soft border-edge hover:bg-card-3'
+            )}
+          >
+            {l.native}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Switch for low-data mode: no background loading of screens and no optional pictures, to save mobile data. */
+function LowDataToggle() {
+  const [on, setOn] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setOn(isLowDataSwitchOn()); }, []);
+  return (
+    <div className="space-y-2">
+      <h3 className="text-ink-soft text-sm font-semibold">Data saver</h3>
+      <button
+        role="switch"
+        aria-checked={on}
+        onClick={() => { const next = !on; setOn(next); setLowData(next); }}
+        className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3"
+      >
+        <span className="flex-1">
+          <span className="block text-sm text-ink-soft font-semibold">Low-data mode</span>
+          <span className="block text-xs text-ink-muted">Loads less in the background and skips optional pictures. Good for slow or costly data.</span>
+        </span>
+        <span className={`w-10 h-6 rounded-full p-0.5 transition-colors ${on ? 'bg-acc' : 'bg-edge-strong'}`}>
+          <span className={`block w-5 h-5 rounded-full bg-white transition-transform ${on ? 'translate-x-4' : ''}`} />
+        </span>
+      </button>
     </div>
   );
 }

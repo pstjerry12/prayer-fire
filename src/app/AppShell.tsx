@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from 'react';
 import { AppProvider, useApp } from './context';
+import { LanguageProvider } from './i18n';
 import AuthModal from './components/AuthModal';
 import AccountSettings from './components/AccountSettings';
 import PrivacyPolicy from './components/PrivacyPolicy';
@@ -12,6 +13,7 @@ import FeedbackModal from './components/FeedbackModal';
 import UpdateBanner from './components/UpdateBanner';
 import BottomNav from './components/BottomNav';
 import PrayerAlarm from './components/PrayerAlarm';
+import AdsBanner from './components/AdsBanner';
 import SplashScreen from './components/SplashScreen';
 import NotificationPermission from './components/NotificationPermission';
 import PricingPage from './components/PricingPage';
@@ -132,6 +134,7 @@ function ServiceWorkerRegister() {
 export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <AppProvider>
+      <LanguageProvider>
       <SplashScreen />
       <NavProgress />
       <PrefetchRoutes />
@@ -142,6 +145,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <VoicePreloader />
       <BillingSync />
       <PrayerAlarm />
+      {/* The one AdMob banner (Home screen, Android app, not for subscribers); renders nothing itself */}
+      <AdsBanner />
       <GatedNotificationPermission />
       <UpdateBanner />
       <BackButtonExit />
@@ -150,6 +155,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <SignInGate />
       <Overlays />
       <WelcomeSlides />
+      </LanguageProvider>
     </AppProvider>
   );
 }

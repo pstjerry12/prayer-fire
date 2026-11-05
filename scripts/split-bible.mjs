@@ -10,7 +10,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'public', 'bible-data', 'v1');
 rmSync(out, { recursive: true, force: true });
 let files = 0;
-for (const id of ['kjv', 'asv', 'web']) {
+for (const id of ['kjv', 'asv', 'web', 'lsg', 'rv1909', 'almeida']) {
   const data = JSON.parse(readFileSync(join(root, 'src', 'data', 'bible', `${id}.json`), 'utf8'));
   mkdirSync(join(out, id), { recursive: true });
   for (const book of data.books) {
