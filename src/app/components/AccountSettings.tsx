@@ -20,7 +20,9 @@ import {
   Sparkles,
   MessageSquareHeart,
 } from 'lucide-react';
+import { adPrivacyOptionsRequired, openAdPrivacyOptions } from '@/lib/adsClient';
 import { useEffect, useState } from 'react';
+import { isLowDataSwitchOn, setLowData } from '@/lib/lowData';
 import { cn } from '../utils/cn';
 import { CURRENCIES, type Currency } from '../data/pricingPlans';
 import type { AuthUser } from '@/app/types';
@@ -68,10 +70,13 @@ export default function AccountSettings({
   const [appVersion, setAppVersion] = useState<{ version: string; build: string } | null>(null);
   const [textScale, setTextScaleState] = useState(1);
   const { t } = useI18n();
+  // Google requires an "Ad privacy choices" entry for people in the EEA/UK once they have seen the consent form.
+  const [adChoices, setAdChoices] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
     setTextScaleState(getStoredTextScale());
+    setAdChoices(adPrivacyOptionsRequired());
     let cancelled = false;
     getAppVersionInfo().then((info) => {
       if (!cancelled) setAppVersion(info);
@@ -250,6 +255,9 @@ export default function AccountSettings({
             {/* Language */}
             <LanguagePicker />
 
+            {/* Low-data mode */}
+            <LowDataToggle />
+
             {/* Rate Us */}
             <div className="space-y-2">
               <h3 className="text-ink-soft text-sm font-semibold">Support Us</h3>
@@ -276,6 +284,16 @@ export default function AccountSettings({
                 <span className="flex-1 text-sm text-ink-soft">Privacy Policy</span>
                 <ChevronRight className="w-4 h-4 text-ink-faint" />
               </button>
+              {adChoices && (
+                <button
+                  onClick={() => openAdPrivacyOptions()}
+                  className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3"
+                >
+                  <ShieldCheck className="w-4 h-4 text-acc-strong" />
+                  <span className="flex-1 text-sm text-ink-soft">Ad privacy choices</span>
+                  <ChevronRight className="w-4 h-4 text-ink-faint" />
+                </button>
+              )}
               <button
                 onClick={onExportData}
                 className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3"
@@ -355,6 +373,32 @@ function LanguagePicker() {
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** Switch for low-data mode: no background loading of screens and no optional pictures, to save mobile data. */
+function LowDataToggle() {
+  const [on, setOn] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setOn(isLowDataSwitchOn()); }, []);
+  return (
+    <div className="space-y-2">
+      <h3 className="text-ink-soft text-sm font-semibold">Data saver</h3>
+      <button
+        role="switch"
+        aria-checked={on}
+        onClick={() => { const next = !on; setOn(next); setLowData(next); }}
+        className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3"
+      >
+        <span className="flex-1">
+          <span className="block text-sm text-ink-soft font-semibold">Low-data mode</span>
+          <span className="block text-xs text-ink-muted">Loads less in the background and skips optional pictures. Good for slow or costly data.</span>
+        </span>
+        <span className={`w-10 h-6 rounded-full p-0.5 transition-colors ${on ? 'bg-acc' : 'bg-edge-strong'}`}>
+          <span className={`block w-5 h-5 rounded-full bg-white transition-transform ${on ? 'translate-x-4' : ''}`} />
+        </span>
+      </button>
     </div>
   );
 }
