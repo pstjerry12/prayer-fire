@@ -1,3 +1,5 @@
+import { DEFAULT_PLAN_CONFIG } from '@/lib/planConfig';
+
 export type Currency = 'USD' | 'NGN' | 'KES' | 'GHS' | 'ZAR' | 'GBP' | 'EUR';
 
 export interface CurrencyInfo {
@@ -96,14 +98,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     yearly: 0,
     icon: '🙏',
     cta: 'Start Free',
-    features: [
-      'Daily prayer points & reminders',
-      '3-times-a-day prayer schedule',
-      'Family & personal prayer lists',
-      'Scripture Vault & KJV Bible library',
-      'Fasting tracker',
-      'Pray 3x guide (three-times-a-day teaching)',
-    ],
+    features: DEFAULT_PLAN_CONFIG.free.features.map((f) => f.text),
   },
   {
     id: 'partner',
@@ -114,14 +109,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     icon: '👑',
     highlighted: true,
     cta: 'Start 7-Day Free Trial',
-    features: [
-      'Everything in Prayer Seeker',
-      'Join approved global prayer groups',
-      'Submit & pray for partner requests',
-      'Global prayer alerts & reminders',
-      'Voice-to-text prayer writing',
-      'Priority support',
-    ],
+    features: DEFAULT_PLAN_CONFIG.partner.features.map((f) => f.text),
   },
   {
     id: 'leader',
@@ -131,13 +119,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     yearly: 59.99,
     icon: '🔥',
     cta: 'Become a Leader',
-    features: [
-      'Everything in Prayer Fire Partner',
-      'Create & manage prayer groups',
-      'Moderation tools: review reports, hide or delete posts, pin posts, remove or block members, appoint co-leaders',
-      "Group analytics: members, new members, prayer requests, testimonies, I'm praying counts and your busiest days",
-      'Featured groups: ask to have your group shown first in the groups list with a Featured badge',
-    ],
+    features: DEFAULT_PLAN_CONFIG.leader.features.map((f) => f.text),
   },
 ];
 

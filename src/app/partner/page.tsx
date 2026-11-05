@@ -9,9 +9,11 @@ import Footer from '@/app/components/Footer';
 import { PRICING_PLANS, CURRENCIES, getDefaultCurrency, formatPrice, type Currency } from '@/app/data/pricingPlans';
 import { useApp } from '@/app/context';
 import PlaySubscription from '@/app/components/PlaySubscription';
+import { usePlanConfig } from '@/lib/usePlanConfig';
 
 export default function PartnerPage() {
   const { isPremium, upgrade, isAndroidApp, freeMode } = useApp();
+  const config = usePlanConfig();
   const [currency, setCurrency] = useState<Currency>(getDefaultCurrency);
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
 
@@ -27,8 +29,8 @@ export default function PartnerPage() {
           <div className="w-12 h-12 rounded-full bg-acc-soft text-acc-strong flex items-center justify-center mx-auto mb-3">
             <Crown className="w-6 h-6" />
           </div>
-          <h1 className="font-serif-heading text-2xl font-bold text-ink">Prayer Fire Partner</h1>
-          <p className="text-ink-muted text-sm mt-1">Join the global intercessory community</p>
+          <h1 className="font-serif-heading text-2xl font-bold text-ink">Prayer Fire Plans</h1>
+          <p className="text-ink-muted text-sm mt-1">Free for everyone. Partner and Leader are optional.</p>
         </div>
 
         {freeMode.active ? (
@@ -66,6 +68,7 @@ export default function PartnerPage() {
 
             <div className="grid gap-4 sm:grid-cols-3">
               {PRICING_PLANS.map((plan) => {
+                const copy = plan.id === 'seeker' ? config.free : plan.id === 'partner' ? config.partner : config.leader;
                 const price = billing === 'monthly' ? plan.monthly : plan.yearly;
                 return (
                   <div key={plan.id} className={cn('rounded-2xl border p-5 flex flex-col', plan.highlighted ? 'border-acc bg-acc-soft/50 shadow-lg shadow-acc/10' : 'border-edge bg-card')}>
@@ -73,8 +76,8 @@ export default function PartnerPage() {
                       <span className="self-start mb-3 inline-flex items-center gap-1 bg-acc text-on-acc text-[0.625rem] font-bold px-2 py-0.5 rounded-full"><Crown className="w-3 h-3" /> MOST POPULAR</span>
                     )}
                     <div className="text-2xl mb-1">{plan.icon}</div>
-                    <h3 className="text-ink font-bold">{plan.name}</h3>
-                    <p className="text-ink-muted text-xs mt-1 mb-3">{plan.tagline}</p>
+                    <h3 className="text-ink font-bold">{copy.name}</h3>
+                    <p className="text-ink-muted text-xs mt-1 mb-3">{copy.tagline}</p>
                     <div className="mb-4">
                       {price === 0 ? (
                         <span className="text-3xl font-bold text-ink">Free</span>
@@ -91,8 +94,8 @@ export default function PartnerPage() {
                       )}
                     </div>
                     <ul className="space-y-2 mb-5 flex-1">
-                      {plan.features.map((f) => (
-                        <li key={f} className="flex items-start gap-2 text-ink-muted text-xs"><Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> {f}</li>
+                      {copy.features.map((f) => (
+                        <li key={f.text} className="flex items-start gap-2 text-ink-muted text-xs"><Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> <span>{f.text}{f.soon && <span className="ml-1.5 align-middle rounded-full bg-card-3 text-ink-soft text-[0.5625rem] font-bold px-1.5 py-0.5">SOON</span>}</span></li>
                       ))}
                     </ul>
                     {price === 0 ? (
