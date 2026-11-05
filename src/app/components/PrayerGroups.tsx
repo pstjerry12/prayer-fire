@@ -4,11 +4,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Users, Plus, ChevronRight, ChevronLeft, Send, Siren, Clock, LogOut, Trash2, ShieldCheck,
   UserPlus, Copy, Check, Pin, Flame, Lock, Globe, X, MessageCircle, HandHeart, Sparkles, Loader2, CloudUpload,
-  Flag, EyeOff, Eye, Star, Search,
+  Flag, EyeOff, Eye, Star, Search, Phone, Share2, Bell, BellOff, Hourglass,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useApp } from '@/app/context';
 import { playChime } from '@/lib/clientUtils';
+import { openInAppBrowser } from '@/lib/capacitorAlarm';
+import { isGroupAlarmOn, lagosToLocal, saveGroupAlarms, setGroupAlarmOn } from '@/lib/groupAlarms';
 import { MembersManager, REPORT_REASONS, ReportsQueue } from './GroupModeration';
 import GroupAnalytics from './GroupAnalytics';
 import GroupFeaturing from './GroupFeaturing';
@@ -43,7 +45,7 @@ function ago(iso: string) {
 }
 
 export default function PrayerGroups() {
-  const { user, isPremium, isLeader, isAndroidApp, setShowPricing, markPrayedToday } = useApp();
+  const { user, isLeader, setShowPricing, setShowAuth, markPrayedToday } = useApp();
 
   const [view, setView] = useState<'list' | 'detail' | 'create' | 'join'>('list');
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
@@ -64,6 +66,10 @@ export default function PrayerGroups() {
 
   // Join form
   const [joinCode, setJoinCode] = useState('');
+  // The live-prayer call link and today's prayer point (leader / co-leader editors), and this phone's alarm switch for the open group
+  const [callDraft, setCallDraft] = useState<string | null>(null);
+  const [pointDraft, setPointDraft] = useState<string | null>(null);
+  const [alarmOn, setAlarmOn] = useState(true);
   const [joinError, setJoinError] = useState('');
 
   // Posting + comments
@@ -94,6 +100,8 @@ export default function PrayerGroups() {
     if (r.ok) {
       setDirectory(r.data.groups);
       setLoadError('');
+      // This phone rings at the prayer time of every group the person belongs to (each can be switched off).
+      saveGroupAlarms(r.data.groups);
     } else {
       setLoadError(r.error);
     }
@@ -114,11 +122,36 @@ export default function PrayerGroups() {
 
   // Directory on open; the open group refreshes every 20 seconds so members see each other's posts.
   useEffect(() => {
-    if (!isPremium || !user) return;
+    if (!user) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLegacy(readLegacyGroups({ id: user.id, name: user.name, email: user.email }));
     loadDirectory();
-  }, [isPremium, user, loadDirectory]);
+  }, [user, loadDirectory]);
+
+  // An invite link (…/groups?code=AB12CD) opens the Join screen with the code filled in.
+  useEffect(() => {
+    try {
+      const code = new URLSearchParams(window.location.search).get('code');
+      if (code && /^[A-Za-z0-9]{4,12}$/.test(code)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setJoinCode(code.toUpperCase());
+        setView('join');
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    } catch {
+      // no browser: nothing to read
+    }
+  }, []);
+
+  // This phone's alarm switch for the open group
+  useEffect(() => {
+    if (activeGroupId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAlarmOn(isGroupAlarmOn(activeGroupId));
+      setCallDraft(null);
+      setPointDraft(null);
+    }
+  }, [activeGroupId]);
 
   useEffect(() => {
     if (view !== 'detail' || !activeGroupId) return;
@@ -158,7 +191,8 @@ export default function PrayerGroups() {
       : outcome === 'pending' ? 'Request sent! The group leader will approve you.'
         : outcome === 'already' ? 'You are already in this group.'
           : outcome === 'blocked' ? 'You cannot join this group.'
-            : 'No group found.';
+            : outcome === 'full' ? 'This group is full. Ask its leader.'
+              : 'No group found.';
 
   const handleJoinCode = async () => {
     if (!joinCode.trim() || busy) return;
@@ -166,7 +200,7 @@ export default function PrayerGroups() {
     const r = await groupAction<{ outcome: string }>({ action: 'joinByCode', code: joinCode });
     setBusy(false);
     if (!r.ok) return setJoinError(r.error);
-    if (r.data.outcome === 'notfound') return setJoinError('No group found with that code.');
+    if (r.data.outcome === 'notfound') return setJoinError('No group found with that code. A new group also needs the Prayer Fire team\'s approval before anyone can join.');
     setJoinCode('');
     setJoinError('');
     setView('list');
@@ -207,6 +241,38 @@ export default function PrayerGroups() {
     } catch {
       /* ignore */
     }
+  };
+
+  /** The invite link: opens the app (or the website) on the Join screen with the code filled in. */
+  const inviteLink = (code: string) => `https://prayer-fire.vercel.app/groups?code=${encodeURIComponent(code)}`;
+
+  /** Opens the leader's call link (WhatsApp, Google Meet, Zoom...). Only http(s) links are ever stored. */
+  const joinLivePrayer = async (url: string) => {
+    if (!/^https?:\/\//i.test(url)) return;
+    if (await openInAppBrowser(url)) return;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const toggleAlarm = (groupId: string) => {
+    const next = !alarmOn;
+    setGroupAlarmOn(groupId, next);
+    setAlarmOn(next);
+    flashNotice(next ? 'Your phone will ring at the group prayer time.' : 'Alarm off for this group.');
+  };
+
+  const shareInvite = async (g: GroupDetail) => {
+    const link = inviteLink(g.inviteCode ?? '');
+    const text = `Join our prayer group "${g.group.name}" on Prayer Fire. It is free to join. Code: ${g.inviteCode}\n${link}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Join our prayer group', text, url: link });
+        return;
+      }
+    } catch {
+      return; // the share sheet was closed
+    }
+    copyCode(text);
+    flashNotice('Invite copied. Paste it into WhatsApp or a message.');
   };
 
   const act = async (body: Record<string, unknown>, after?: () => void) => {
@@ -279,27 +345,19 @@ export default function PrayerGroups() {
     if (res && res.on === true) markPrayedToday(); // also feeds the global fire streak
   };
 
-  // ── Premium gate ──────────────────────────────────────────────
-  if (!isPremium) {
+  // ── Sign in (prayer groups are free to join: only a Leader pays) ──
+  if (!user) {
     return (
       <div className="bg-card rounded-2xl border border-edge shadow-sm p-8 text-center">
         <div className="w-16 h-16 rounded-full bg-acc-soft text-acc-strong flex items-center justify-center mx-auto mb-4">
           <Users className="w-8 h-8" />
         </div>
-        <h2 className="font-serif-heading text-xl font-bold text-ink mb-2">Prayer Fire Partner</h2>
+        <h2 className="font-serif-heading text-xl font-bold text-ink mb-2">Pray together</h2>
         <p className="text-ink-muted text-sm leading-relaxed mb-5">
-          Join prayer groups for your church or prayer team, share prayer requests and testimonies, send emergency
-          prayer alerts, and pray together. Upgrade to unlock the full intercessory community.
+          Join a prayer group for your church or prayer team with an invite code or link. Share prayer requests and
+          testimonies, tap I&apos;m praying, and join the live prayer call. Joining is free.
         </p>
-        <ul className="text-left text-ink-soft text-xs space-y-1.5 max-w-xs mx-auto mb-5">
-          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> Join prayer groups and pray together</li>
-          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> Prayer requests, testimonies and comments</li>
-          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> Emergency prayer alerts</li>
-          <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> Voice-to-text prayer writing</li>
-        </ul>
-        <button onClick={() => setShowPricing(true)} className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover">
-          {isAndroidApp ? 'See Prayer Fire Partner' : 'Start 7-Day Free Trial'}
-        </button>
+        <button onClick={() => setShowAuth(true)} className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover">Sign in or create an account</button>
       </div>
     );
   }
@@ -311,13 +369,14 @@ export default function PrayerGroups() {
         <button onClick={() => setView('list')} className="flex items-center gap-1 text-sm text-ink-muted hover:text-acc-strong">
           <ChevronLeft className="w-4 h-4" /> Back
         </button>
-        <h2 className="font-serif-heading text-lg font-bold text-ink">Create a Prayer Group</h2>
+        <h2 className="font-serif-heading text-lg font-bold text-ink">Apply to open a Prayer Group</h2>
+        <p className="text-ink-muted text-xs leading-relaxed">You can set your group up now. It goes live, and people can join it, once the Prayer Fire team approves it. Your members join free: only you subscribe.</p>
         <input type="text" placeholder="Group name (e.g. Redeemed Church Prayer Team)" value={newName} onChange={(e) => setNewName(e.target.value)} aria-label="Group name"
           className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
         <textarea placeholder="Description (what does this group pray for?)" value={newDesc} onChange={(e) => setNewDesc(e.target.value)} rows={3} aria-label="Group description"
           className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint resize-none focus:outline-none focus:ring-2 focus:ring-acc-hover/40" />
         <div>
-          <label className="block text-xs font-semibold text-ink-muted mb-1.5 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Group prayer time (pray together)</label>
+          <label className="block text-xs font-semibold text-ink-muted mb-1.5 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Group prayer time (West Africa Time)</label>
           <select value={newTime} onChange={(e) => setNewTime(e.target.value)} className="w-full bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink focus:outline-none">
             {TIME_OPTIONS.map((t) => <option key={t} value={t}>{fmtTime(t)}</option>)}
           </select>
@@ -332,11 +391,11 @@ export default function PrayerGroups() {
               <Lock className="w-4 h-4" /> Approval only
             </button>
           </div>
-          <p className="text-[0.6875rem] text-ink-muted mt-1.5">{newMode === 'open' ? 'Anyone with Prayer Fire Partner can join instantly.' : 'Only people you approve can join.'}</p>
+          <p className="text-[0.6875rem] text-ink-muted mt-1.5">{newMode === 'open' ? 'Anyone with the invite code or link can join instantly, free.' : 'Only people you approve can join. They join free.'}</p>
         </div>
         {createError && <p role="alert" className="text-danger text-xs">{createError}</p>}
         <button onClick={handleCreate} disabled={busy || !newName.trim()} className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover disabled:opacity-60 flex items-center justify-center gap-2">
-          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Create Group
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Send application
         </button>
       </div>
     );
@@ -409,8 +468,8 @@ export default function PrayerGroups() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2 text-[0.6875rem]">
-            <span className="bg-acc-soft text-acc-strong px-2 py-1 rounded-full flex items-center gap-1"><Users className="w-3 h-3" /> {active.length} members</span>
-            <span className="bg-acc-soft text-acc-strong px-2 py-1 rounded-full flex items-center gap-1"><Clock className="w-3 h-3" /> Pray at {fmtTime(g.prayerTime)}</span>
+            <span className="bg-acc-soft text-acc-strong px-2 py-1 rounded-full flex items-center gap-1"><Users className="w-3 h-3" /> {active.length}{detail.canModerate ? ` of ${g.memberLimit}` : ''} members</span>
+            <span className="bg-acc-soft text-acc-strong px-2 py-1 rounded-full flex items-center gap-1"><Clock className="w-3 h-3" /> Pray at {fmtTime(g.prayerTime)} WAT</span>
             <span className="bg-card-2 text-ink-muted px-2 py-1 rounded-full flex items-center gap-1">{g.joinMode === 'open' ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />} {g.joinMode === 'open' ? 'Open' : 'Approval only'}</span>
             <span className={cn('px-2 py-1 rounded-full flex items-center gap-1', detail.prayedToday > 0 ? 'bg-acc-soft text-acc-strong' : 'bg-card-2 text-ink-muted')}><Flame className="w-3 h-3" /> {detail.prayedToday} prayed today</span>
           </div>
@@ -420,6 +479,11 @@ export default function PrayerGroups() {
               <span className="text-ink font-bold tracking-widest">{detail.inviteCode}</span>
             </button>
           )}
+          {detail.inviteCode && g.status === 'approved' && (
+            <button onClick={() => shareInvite(detail)} data-testid="share-invite" className="mt-2 w-full py-2 rounded-lg border border-acc text-acc-strong text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-acc-soft">
+              <Share2 className="w-3.5 h-3.5" /> Share invite link (members join free)
+            </button>
+          )}
         </div>
 
         <button onClick={toggleCheckin} disabled={busy}
@@ -427,6 +491,56 @@ export default function PrayerGroups() {
           <Flame className={cn('w-4 h-4', detail.iPrayedToday && 'animate-flicker')} />
           {detail.iPrayedToday ? 'I prayed today ✓' : 'Mark: I prayed today'}
         </button>
+
+        {g.status === 'pending' && (
+          <div role="status" className="bg-warn-soft border border-warn-edge rounded-2xl p-3 flex items-start gap-2 text-xs text-warn-strong">
+            <Hourglass className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <span><strong>Waiting for approval.</strong> You can set this group up now. It goes live, and people can join with the code, once the Prayer Fire team approves it.</span>
+          </div>
+        )}
+        {g.status === 'rejected' && (
+          <div role="alert" className="bg-danger-soft border border-danger-edge rounded-2xl p-3 text-xs text-danger-strong">
+            <strong>This group was not approved.</strong> {g.reviewNote || 'You can apply again with a clearer name and description.'}
+          </div>
+        )}
+
+        {/* Live prayer: the leader's call link (WhatsApp, Google Meet, Zoom) */}
+        {g.callUrl && (
+          <button onClick={() => joinLivePrayer(g.callUrl!)} data-testid="join-live-prayer"
+            className="w-full rounded-2xl bg-acc text-on-acc p-3.5 flex items-center justify-center gap-2 font-bold hover:bg-acc-hover">
+            <Phone className="w-4 h-4" /> Join Live Prayer
+          </button>
+        )}
+
+        {/* Today's shared prayer point */}
+        {(g.status === 'approved' || detail.canModerate) && (detail.todayPoint || detail.canModerate) && (
+          <div className="bg-card rounded-2xl border border-edge p-3" data-testid="group-point">
+            <p className="text-[0.625rem] font-bold uppercase tracking-wider text-acc-strong flex items-center gap-1 mb-1"><Sparkles className="w-3 h-3" /> Today&apos;s prayer point</p>
+            {detail.todayPoint ? <p className="text-ink text-sm leading-relaxed">{detail.todayPoint}</p> : <p className="text-ink-faint text-xs">No point shared yet today.</p>}
+            {detail.canModerate && (
+              <div className="mt-2 flex gap-2">
+                <input type="text" value={pointDraft ?? detail.todayPoint ?? ''} onChange={(e) => setPointDraft(e.target.value)} maxLength={400} placeholder="Share today's prayer point with the group" aria-label="Today's prayer point"
+                  className="flex-1 min-w-0 bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint" />
+                <button disabled={busy || pointDraft === null || pointDraft === (detail.todayPoint ?? '')}
+                  onClick={async () => { const r = await act({ action: 'setPoint', groupId: g.id, body: pointDraft ?? '' }); if (r) setPointDraft(null); }}
+                  className="px-3 py-2 bg-acc text-on-acc rounded-lg text-xs font-bold disabled:opacity-60">Share</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* This phone's alarm for the group prayer time */}
+        {g.prayerTime && g.status === 'approved' && (
+          <button onClick={() => toggleAlarm(g.id)} aria-pressed={alarmOn} data-testid="group-alarm-toggle"
+            className="w-full bg-card rounded-2xl border border-edge p-3 flex items-center gap-3 text-left">
+            {alarmOn ? <Bell className="w-5 h-5 text-acc-strong flex-shrink-0" /> : <BellOff className="w-5 h-5 text-ink-faint flex-shrink-0" />}
+            <span className="flex-1 min-w-0">
+              <span className="block text-sm font-bold text-ink">Ring my alarm for group prayer</span>
+              <span className="block text-[0.6875rem] text-ink-muted">{fmtTime(g.prayerTime)} West Africa Time{lagosToLocal(g.prayerTime) && lagosToLocal(g.prayerTime) !== g.prayerTime ? ` · ${fmtTime(lagosToLocal(g.prayerTime))} on your phone` : ''}</span>
+            </span>
+            <span className={cn('text-xs font-bold px-2.5 py-1 rounded-full', alarmOn ? 'bg-acc-soft text-acc-strong' : 'bg-card-2 text-ink-muted')}>{alarmOn ? 'On' : 'Off'}</span>
+          </button>
+        )}
 
         {/* Leader / co-leader controls */}
         {detail.canModerate && (
@@ -445,6 +559,14 @@ export default function PrayerGroups() {
                 {!g.prayerTime && <option value="">Not set</option>}
                 {TIME_OPTIONS.map((t) => <option key={t} value={t}>{fmtTime(t)}</option>)}
               </select>
+            </div>
+            <div>
+              <label className="text-[0.625rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1"><Phone className="w-3 h-3" /> Live prayer call link</label>
+              <input type="url" inputMode="url" placeholder="Paste a WhatsApp, Google Meet or Zoom link" value={callDraft ?? g.callUrl ?? ''} aria-label="Live prayer call link"
+                onChange={(e) => setCallDraft(e.target.value)}
+                onBlur={async () => { if (callDraft !== null && callDraft.trim() !== (g.callUrl ?? '')) { const r = await act({ action: 'update', groupId: g.id, joinMode: g.joinMode, prayerTime: g.prayerTime ?? '', pinnedVerse: g.pinnedVerse ?? '', callUrl: callDraft.trim() }); if (r) setCallDraft(null); } }}
+                className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint" />
+              <p className="text-[0.625rem] text-ink-faint mt-1">Members see a &quot;Join Live Prayer&quot; button that opens this link. Leave it empty to remove it.</p>
             </div>
             <div>
               <label className="text-[0.625rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1 mb-1"><ShieldCheck className="w-3 h-3" /> Who can join</label>
@@ -630,7 +752,7 @@ export default function PrayerGroups() {
     <div className="space-y-3">
       <div className="flex gap-2">
         <button onClick={() => (isLeader ? setView('create') : setShowPricing(true))} className="flex-1 py-2.5 bg-acc text-on-acc rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-acc-hover">
-          <Plus className="w-4 h-4" /> Create Group{!isLeader && <span className="text-[0.625rem] font-bold bg-white/20 rounded-full px-1.5 py-0.5">Leader</span>}
+          <Plus className="w-4 h-4" /> Open a Group{!isLeader && <span className="text-[0.625rem] font-bold bg-white/20 rounded-full px-1.5 py-0.5">Leader</span>}
         </button>
         <button onClick={() => setView('join')} className="flex-1 py-2.5 bg-card text-ink-soft border border-edge rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-card-2">
           <UserPlus className="w-4 h-4" /> Join by Code
@@ -679,6 +801,8 @@ export default function PrayerGroups() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-ink font-bold text-sm truncate">{g.name}</h3>
+                  {g.status === 'pending' && <span className="bg-warn-soft text-warn-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">WAITING FOR APPROVAL</span>}
+                  {g.status === 'rejected' && <span className="bg-danger-soft text-danger-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">NOT APPROVED</span>}
                   {g.featured && <span className="bg-acc-soft text-acc-strong text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0"><Star className="w-2.5 h-2.5" /> FEATURED</span>}
                   <span className={cn('text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0', g.joinMode === 'open' ? 'bg-acc-soft text-acc-strong' : 'bg-acc-soft text-acc-strong')}>
                     {g.joinMode === 'open' ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}

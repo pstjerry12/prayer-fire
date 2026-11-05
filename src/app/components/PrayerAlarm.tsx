@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/app/context';
 import { buildAlarmContent } from '@/lib/alarmContent';
+import { GROUP_ALARMS_EVENT, groupAppointments } from '@/lib/groupAlarms';
+import type { PrayerAppointment } from '@/app/components/CustomizablePrayerSchedule';
 import { playAlarmTone, stopAlarm, DEFAULT_TONE, type AlarmToneId } from '@/lib/alarmSound';
 import {
   isNativePlatformAsync,
@@ -26,7 +28,16 @@ import {
  *   • Shows a full-screen "STOP ALARM" overlay
  */
 export default function PrayerAlarm() {
-  const { appointments } = useApp();
+  const { appointments: personalAppointments } = useApp();
+  // Group prayer times of the groups this person belongs to (saved by the groups screen) ring like their own alarms.
+  const [groupAppts, setGroupAppts] = useState<PrayerAppointment[]>([]);
+  useEffect(() => {
+    const read = () => setGroupAppts(groupAppointments());
+    read();
+    window.addEventListener(GROUP_ALARMS_EVENT, read);
+    return () => window.removeEventListener(GROUP_ALARMS_EVENT, read);
+  }, []);
+  const appointments = useMemo(() => [...personalAppointments, ...groupAppts], [personalAppointments, groupAppts]);
   const router = useRouter();
   const routerRef = useRef(router);
   useEffect(() => {
