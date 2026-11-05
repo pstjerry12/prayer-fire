@@ -13,6 +13,7 @@ import { extractYouTubeVideoId } from '@/app/utils/youtube';
 import AdminDailyActivity from '@/app/components/AdminDailyActivity';
 import AdminPricing from '@/app/components/AdminPricing';
 import AdminPlans from '@/app/components/AdminPlans';
+import AdminBibleVoices from '@/app/components/AdminBibleVoices';
 import AdminAds from '@/app/components/AdminAds';
 import AdminVideos from '@/app/components/AdminVideos';
 import AdminAlerts from '@/app/components/AdminAlerts';
@@ -562,6 +563,7 @@ export default function AdminPage() {
         {tab === 'pricing' && (
           <div className="space-y-6">
             <AdminPlans />
+            <AdminBibleVoices />
             <AdminAds />
             <AdminPricing />
           </div>

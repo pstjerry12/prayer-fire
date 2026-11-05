@@ -37,6 +37,8 @@ import LongPressable from './LongPressable';
 import VerseActionSheet from './VerseActionSheet';
 import SermonStartModal from './SermonStartModal';
 import ReadAloudBar from './ReadAloudBar';
+import PremiumVoicePicker from './PremiumVoicePicker';
+import { getPremiumVoice, playPremiumChapter } from '@/lib/premiumVoice';
 import BibleSearchBar from './BibleSearchBar';
 
 function range(n: number): number[] {
@@ -111,6 +113,11 @@ export default function BibleReader() {
   const [readingVerse, setReadingVerse] = useState<number | null>(null);
   const [speechProblem, setSpeechProblem] = useState<string | null>(null);
   const controllerRef = useRef<ReadController | null>(null);
+  // A premium Bible voice (subscribers) reads whole chapters; null = the phone's own voice (free)
+  const [premiumVoice, setPremiumVoiceState] = useState<string | null>(null);
+  useEffect(() => {
+    setPremiumVoiceState(getPremiumVoice());
+  }, []);
   // One-time hint pointing at the Listen button, and "Listen was tapped before a chapter was open".
   const [showListenTip, setShowListenTip] = useState(false);
   const autoListenRef = useRef(false);
@@ -308,6 +315,22 @@ export default function BibleReader() {
   // read can be highlighted and scrolled into view.
   function startReading(numbers: number[] | null) {
     if (!verses) return;
+    // A whole chapter in a premium voice (when the person chose one and has the plan); selected verses always use the phone voice.
+    if (premiumVoice && (!numbers || numbers.length === 0)) {
+      setSpeechProblem(null);
+      setReadingVerse(null);
+      controllerRef.current = playPremiumChapter(
+        { voice: premiumVoice, translation: translationId, book: currentBook.osis, chapter },
+        {
+          onStateChange: setReaderState,
+          onEnd: (reason, detail) => {
+            controllerRef.current = null;
+            if (reason === 'error') setSpeechProblem(detail || 'the premium voice is not available right now');
+          },
+        }
+      );
+      return;
+    }
     const list = numbers && numbers.length > 0 ? versesFor(numbers) : verses;
     const items = list.map((v) => ({ id: v.number, text: v.text }));
     if (!numbers || numbers.length === 0) items.unshift({ id: 0, text: `${book} chapter ${chapter}.` });
@@ -414,6 +437,9 @@ export default function BibleReader() {
           );
         })}
       </div>
+
+      {/* ── Reading voice: the phone's own (free) or a premium voice (subscribers); only shown once premium voices are switched on ── */}
+      <PremiumVoicePicker translation={translationId} book={currentBook.osis} bookName={currentBook.name} chapter={chapter} chapters={currentBook.chapters} onChange={setPremiumVoiceState} />
 
       {/* ── Step indicator ───────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-1.5">
