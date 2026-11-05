@@ -44,6 +44,14 @@ alter table groups add column if not exists featured boolean not null default fa
 alter table groups add column if not exists featured_at timestamptz;
 alter table groups add column if not exists featured_until timestamptz; -- null = no end date
 
+-- A Leader APPLIES to open a group; it goes live only when the app admin approves it (Admin -> Groups). Groups that
+-- existed before this column was added are 'approved'. Only a leader's own pending/rejected groups are visible to them.
+alter table groups add column if not exists status text not null default 'approved' check (status in ('pending', 'approved', 'rejected'));
+alter table groups add column if not exists review_note text;
+alter table groups add column if not exists reviewed_at timestamptz;
+-- The group's live prayer call link (WhatsApp, Google Meet, Zoom ...), set by the leader. Members get "Join Live Prayer".
+alter table groups add column if not exists call_url text check (call_url is null or (call_url ~* '^https?://[^ ]+$' and length(call_url) <= 300));
+
 -- Invite codes live apart from the group so only leaders/co-leaders can read them.
 create table if not exists group_invites (
   group_id text primary key references groups(id) on delete cascade,
@@ -157,11 +165,12 @@ $$ select app_uid() is not null and (app_free_mode() or app_has_entitlement('par
 create or replace function app_is_leader() returns boolean language sql stable security definer set search_path = public as
 $$ select app_uid() is not null and (app_free_mode() or app_has_entitlement('leader')) $$;
 
--- Role of the caller in a group, only while they are an active member AND still premium.
+-- Role of the caller in a group, while they are an active member. MEMBERS ARE FREE: only the Leader pays (app_is_mod
+-- below still needs the Leader plan for every leader/co-leader power).
 create or replace function app_member_role(gid text) returns text language sql stable security definer set search_path = public as
 $$
   select m.role from group_members m
-  where m.group_id = gid and m.user_id = app_uid() and m.status = 'active' and app_is_premium()
+  where m.group_id = gid and m.user_id = app_uid() and m.status = 'active'
 $$;
 
 create or replace function app_is_member(gid text) returns boolean language sql stable security definer set search_path = public as
@@ -205,7 +214,8 @@ grant select on groups, group_invites, group_members, group_posts, group_comment
 drop function if exists app_group_directory();
 create function app_group_directory()
 returns table (id text, name text, description text, join_mode text, prayer_time text, created_at timestamptz,
-               member_count int, prayed_today int, my_status text, my_role text, featured boolean, featured_until timestamptz)
+               member_count int, prayed_today int, my_status text, my_role text, featured boolean, featured_until timestamptz,
+               status text, call_url text)
 language sql stable security definer set search_path = public as
 $$
   select g.id, g.name, g.description, g.join_mode, g.prayer_time, g.created_at,
@@ -214,13 +224,70 @@ $$
     (select m.status from group_members m where m.group_id = g.id and m.user_id = app_uid()),
     (select m.role from group_members m where m.group_id = g.id and m.user_id = app_uid()),
     (g.featured and (g.featured_until is null or g.featured_until > now())),
-    case when g.featured and (g.featured_until is null or g.featured_until > now()) then g.featured_until end
+    case when g.featured and (g.featured_until is null or g.featured_until > now()) then g.featured_until end,
+    g.status, g.call_url
   from groups g
-  where app_is_premium()
+  where app_uid() is not null and (g.status = 'approved' or g.created_by = app_uid())
   order by (g.featured and (g.featured_until is null or g.featured_until > now())) desc,
            case when g.featured and (g.featured_until is null or g.featured_until > now()) then g.featured_at end desc nulls last,
            g.created_at desc
 $$;
+
+-- How many active members a group may have: set by the LEADER's tier. The tiers and their limits live in
+-- app_settings 'plan_config' (JSON, edited in Admin -> Pricing -> Plans and Leader tiers); a tier counts when it is
+-- Available and the group's creator holds its entitlement. Anything missing or broken means 50 (Leader Basic).
+create or replace function app_group_member_limit(gid text) returns int language plpgsql stable security definer set search_path = public as
+$$
+declare
+  cfg jsonb;
+  best int;
+begin
+  begin
+    select value::jsonb into cfg from app_settings where key = 'plan_config';
+    select max((t ->> 'memberLimit')::int) into best
+    from jsonb_array_elements(coalesce(cfg -> 'leaderTiers', '[]'::jsonb)) t
+    where coalesce((t ->> 'available')::boolean, false)
+      and exists (
+        select 1 from subscriptions s
+        where s.user_id = (select g.created_by from groups g where g.id = gid)
+          and s.entitlement = t ->> 'entitlement'
+          and s.expires_at > now() and s.status not in ('REFUNDED', 'EXPIRED')
+      );
+  exception when others then
+    best := null;
+  end;
+  return coalesce(best, 50);
+end $$;
+
+-- One shared prayer point per group per day (Africa/Lagos days), written by the group's leader or co-leader.
+create table if not exists group_points (
+  group_id text not null references groups(id) on delete cascade,
+  day date not null,
+  body text not null,
+  updated_at timestamptz not null default now(),
+  primary key (group_id, day)
+);
+alter table group_points enable row level security;
+alter table group_points force row level security;
+drop policy if exists group_points_read on group_points;
+create policy group_points_read on group_points for select to app_user using (app_is_member(group_id));
+grant select on group_points to app_user;
+
+create or replace function app_set_group_point(p_group text, p_body text)
+returns void language plpgsql security definer set search_path = public as
+$$
+declare
+  today date := (now() at time zone 'Africa/Lagos')::date;
+  body text := left(btrim(coalesce(p_body, '')), 400);
+begin
+  if not app_is_mod(p_group) then raise exception 'not_allowed'; end if;
+  if body = '' then
+    delete from group_points where group_id = p_group and day = today;
+  else
+    insert into group_points (group_id, day, body) values (p_group, today, body)
+    on conflict (group_id, day) do update set body = excluded.body, updated_at = now();
+  end if;
+end $$;
 
 create or replace function app_create_group(p_name text, p_description text, p_join_mode text, p_prayer_time text, p_pinned_verse text)
 returns text language plpgsql security definer set search_path = public as
@@ -236,14 +303,15 @@ begin
   if length(p_name) < 2 or length(p_name) > 80 then raise exception 'bad_name'; end if;
   p_description := left(btrim(coalesce(p_description, '')), 500);
   if p_join_mode not in ('open', 'approval') then raise exception 'bad_join_mode'; end if;
-  if (select count(*) from groups where created_by = app_uid()) >= 10 then raise exception 'too_many_groups'; end if;
+  if (select count(*) from groups where created_by = app_uid() and status <> 'rejected') >= 10 then raise exception 'too_many_groups'; end if;
   loop
     v_code := upper(substr(md5(random()::text || clock_timestamp()::text), 1, 6));
     exit when not exists (select 1 from group_invites i where i.code = v_code);
   end loop;
   select u.name into disp from users u where u.id = app_uid();
-  insert into groups (id, name, description, join_mode, prayer_time, pinned_verse, created_by)
-    values (gid, p_name, p_description, p_join_mode, nullif(p_prayer_time, ''), nullif(left(btrim(coalesce(p_pinned_verse, '')), 200), ''), app_uid());
+  -- Pending until the app admin approves it (the leader can already set it up and gets the invite code).
+  insert into groups (id, name, description, join_mode, prayer_time, pinned_verse, created_by, status)
+    values (gid, p_name, p_description, p_join_mode, nullif(p_prayer_time, ''), nullif(left(btrim(coalesce(p_pinned_verse, '')), 200), ''), app_uid(), 'pending');
   insert into group_invites (group_id, code) values (gid, v_code);
   insert into group_members (group_id, user_id, role, status, display_name)
     values (gid, app_uid(), 'leader', 'active', coalesce(nullif(btrim(disp), ''), 'Leader'));
@@ -260,9 +328,9 @@ declare
   new_status text;
 begin
   if app_uid() is null then raise exception 'signin_required'; end if;
-  if not app_is_premium() then raise exception 'premium_required'; end if;
   select * into g from groups where id = p_group;
-  if not found then return 'notfound'; end if;
+  -- A group that is not approved yet does not exist for anyone but its leader (who is already a member).
+  if not found or g.status <> 'approved' then return 'notfound'; end if;
   select * into m from group_members where group_id = p_group and user_id = app_uid();
   if found then
     if m.status = 'active' then return 'already'; end if;
@@ -271,6 +339,9 @@ begin
   end if;
   select u.name into disp from users u where u.id = app_uid();
   new_status := case when g.join_mode = 'open' then 'active' else 'pending' end;
+  if new_status = 'active' and (select count(*) from group_members x where x.group_id = p_group and x.status = 'active') >= app_group_member_limit(p_group) then
+    return 'full';
+  end if;
   insert into group_members (group_id, user_id, role, status, display_name)
     values (p_group, app_uid(), 'member', new_status, coalesce(nullif(btrim(disp), ''), 'Member'))
   on conflict (group_id, user_id) do update
@@ -306,22 +377,30 @@ $$
 begin
   if not app_is_mod(p_group) then raise exception 'not_allowed'; end if;
   if p_approve then
+    if (select count(*) from group_members x where x.group_id = p_group and x.status = 'active') >= app_group_member_limit(p_group) then
+      raise exception 'group_full';
+    end if;
     update group_members set status = 'active', joined_at = now() where group_id = p_group and user_id = p_user and status = 'pending';
   else
     delete from group_members where group_id = p_group and user_id = p_user and status = 'pending';
   end if;
 end $$;
 
-create or replace function app_update_group(p_group text, p_join_mode text, p_prayer_time text, p_pinned_verse text)
+drop function if exists app_update_group(text, text, text, text);
+create or replace function app_update_group(p_group text, p_join_mode text, p_prayer_time text, p_pinned_verse text, p_call_url text default null)
 returns void language plpgsql security definer set search_path = public as
 $$
+declare url text := nullif(btrim(coalesce(p_call_url, '')), '');
 begin
   if not app_is_mod(p_group) then raise exception 'not_allowed'; end if;
   if p_join_mode not in ('open', 'approval') then raise exception 'bad_join_mode'; end if;
+  if url is not null and not (url ~* '^https?://[^ ]+$' and length(url) <= 300) then raise exception 'bad_call_url'; end if;
+  -- p_call_url null = leave the link as it is; an empty string = remove it.
   update groups
     set join_mode = p_join_mode,
         prayer_time = nullif(p_prayer_time, ''),
-        pinned_verse = nullif(left(btrim(coalesce(p_pinned_verse, '')), 200), '')
+        pinned_verse = nullif(left(btrim(coalesce(p_pinned_verse, '')), 200), ''),
+        call_url = case when p_call_url is null then call_url else url end
     where id = p_group;
 end $$;
 

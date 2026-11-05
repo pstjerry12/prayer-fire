@@ -48,7 +48,7 @@ export const DEFAULT_PLAN_CONFIG: PlanConfig = {
       { text: 'Prayer wall', soon: true },
       { text: 'Full Prayer Vault: all 50 verses in every topic' },
       { text: 'Global Prayer Alerts' },
-      { text: 'Join prayer groups with a code or link', soon: true },
+      { text: 'Join prayer groups with a code or link' },
       { text: 'Tutorial videos and the podcast', soon: true },
       { text: 'One-tap sharing' },
       { text: 'Shows small ads', soon: true },
