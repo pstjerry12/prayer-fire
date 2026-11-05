@@ -20,6 +20,7 @@ import {
   Sparkles,
   MessageSquareHeart,
 } from 'lucide-react';
+import { adPrivacyOptionsRequired, openAdPrivacyOptions } from '@/lib/adsClient';
 import { useEffect, useState } from 'react';
 import { isLowDataSwitchOn, setLowData } from '@/lib/lowData';
 import { cn } from '../utils/cn';
@@ -66,10 +67,13 @@ export default function AccountSettings({
   const [signingOut, setSigningOut] = useState(false);
   const [appVersion, setAppVersion] = useState<{ version: string; build: string } | null>(null);
   const [textScale, setTextScaleState] = useState(1);
+  // Google requires an "Ad privacy choices" entry for people in the EEA/UK once they have seen the consent form.
+  const [adChoices, setAdChoices] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
     setTextScaleState(getStoredTextScale());
+    setAdChoices(adPrivacyOptionsRequired());
     let cancelled = false;
     getAppVersionInfo().then((info) => {
       if (!cancelled) setAppVersion(info);
@@ -274,6 +278,16 @@ export default function AccountSettings({
                 <span className="flex-1 text-sm text-ink-soft">Privacy Policy</span>
                 <ChevronRight className="w-4 h-4 text-ink-faint" />
               </button>
+              {adChoices && (
+                <button
+                  onClick={() => openAdPrivacyOptions()}
+                  className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3"
+                >
+                  <ShieldCheck className="w-4 h-4 text-acc-strong" />
+                  <span className="flex-1 text-sm text-ink-soft">Ad privacy choices</span>
+                  <ChevronRight className="w-4 h-4 text-ink-faint" />
+                </button>
+              )}
               <button
                 onClick={onExportData}
                 className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3"

@@ -33,6 +33,7 @@ const eq = <T,>(a: T, b: T, msg: string) => {
   checks++;
 };
 
+const approve = (id: string) => pool.query("update groups set status = 'approved', reviewed_at = now() where id = $1", [id]);
 const future = "now() + interval '30 days'";
 await pool.query("truncate groups cascade; truncate users, subscriptions, app_settings");
 await pool.query("insert into users (id, name) values ('L','Lydia Leader'),('L2','Lena Leader'),('P','Peter Partner'),('F','Faith Free'),('X','Xavier Outsider'),('Q','Quinn Quiet'),('R1','Rita One'),('R2','Rita Two'),('R3','Rita Three'),('R4','Rita Four')");
@@ -46,10 +47,20 @@ eq(await code(as("P", (q) => G.createGroup(q, { name: "Nope", description: "", j
 // ── leader creates ──────────────────────────────────────────────────────────
 const open = await as("L", (q) => G.createGroup(q, { name: "Dawn Watch", description: "Pray at dawn", joinMode: "open", prayerTime: "05:00" }));
 const approval = await as("L", (q) => G.createGroup(q, { name: "Elders Circle", description: "", joinMode: "approval" }));
+
+// ── a Leader APPLIES: the group is pending until the admin approves it ─────
+eq((await as("L", (q) => G.listDirectory(q))).map((g) => g.status).sort(), ["pending", "pending"], "the leader sees their own groups as pending");
+eq(await as("F", G.listDirectory), [], "nobody else sees a pending group");
+eq(await as("P", (q) => G.joinGroup(q, open)), "notfound", "a pending group cannot be joined by id");
+const pendingCode = (await as("L", (q) => G.getGroupDetail(q, open)))!.inviteCode!;
+eq(await as("P", (q) => G.joinGroupByCode(q, pendingCode)), "notfound", "a pending group cannot be joined by its invite code either");
+ok((await as("L", (q) => G.getGroupDetail(q, open)))!.group.status === "pending", "the leader can already set the group up");
+await approve(open);
+await approve(approval);
+eq((await as("F", G.listDirectory)).map((g) => g.name).sort(), ["Dawn Watch", "Elders Circle"], "approved groups are visible to every signed-in account");
 const lDetail = await as("L", (q) => G.getGroupDetail(q, open));
 ok(lDetail && lDetail.myRole === "leader" && lDetail.canModerate && /^[A-Z0-9]{6}$/.test(lDetail.inviteCode ?? ""), "leader sees invite code and moderator flag");
-eq(await code(as("F", (q) => G.joinGroup(q, open))), "premium_required", "free cannot join");
-eq((await as("F", (q) => G.getGroupDetail(q, open))), null, "free cannot read a group");
+eq((await as("F", (q) => G.getGroupDetail(q, open))), null, "a non-member cannot read a group");
 eq((await as("F", (q) => q("select id from groups"))).length, 0, "free sees no group rows directly");
 eq(await code(as("F", (q) => q("insert into groups (id, name, created_by) values ('hack','h','F')"))), "permission denied for table groups", "app_user cannot write tables directly");
 
@@ -95,6 +106,7 @@ eq((await as("L", (q) => G.getGroupDetail(q, open)))!.prayedToday, 1, "check-in 
 
 // ── other group's data stays separate ───────────────────────────────────────
 const other = await as("L2", (q) => G.createGroup(q, { name: "Other", description: "", joinMode: "open" }));
+await approve(other);
 eq((await as("P", (q) => q("select id from group_posts where group_id = $1", [other]))).length, 0, "no posts of a group you are not in");
 eq(await as("P", (q) => G.getGroupDetail(q, other)), null, "other group is closed to non-members");
 eq(await code(as("L", (q) => G.updateGroup(q, other, { joinMode: "open", prayerTime: "", pinnedVerse: "" }))), "not_allowed", "a leader cannot change someone else's group");
@@ -112,7 +124,8 @@ eq(await as("P", (q) => G.joinGroup(q, other)), "blocked", "blocked cannot rejoi
 await pool.query("update subscriptions set expires_at = now() - interval '1 day' where user_id = 'L'");
 eq(await code(as("L", (q) => G.createGroup(q, { name: "Late", description: "", joinMode: "open" }))), "leader_required", "expired leader cannot create");
 eq(await code(as("L", (q) => G.decideMember(q, approval, "P", true))), "not_allowed", "expired leader cannot moderate");
-eq(await as("L", (q) => G.listDirectory(q)), [], "expired leader (no partner plan) is not premium");
+ok((await as("L", (q) => G.listDirectory(q))).length > 0, "an expired leader keeps their membership and still sees the groups");
+ok(await as("L", (q) => G.getGroupDetail(q, open)), "...and can still read their group (members are free)");
 await pool.query(`update subscriptions set expires_at = ${future} where user_id = 'L'`);
 await pool.query("update subscriptions set status = 'REFUNDED' where user_id = 'L'");
 eq(await code(as("L", (q) => G.createGroup(q, { name: "Refunded", description: "", joinMode: "open" }))), "leader_required", "refunded leader loses access at once");
@@ -122,10 +135,11 @@ await pool.query("update subscriptions set status = 'ACTIVE' where user_id = 'L'
 await pool.query("insert into app_settings (key,value) values ('free_mode_enabled','true')");
 eq(await as("F", (q) => G.joinGroup(q, other)), "joined", "free account can join while free mode is on");
 const fg = await as("F", (q) => G.createGroup(q, { name: "Free mode group", description: "", joinMode: "open" }));
+await approve(fg);
 ok(fg, "free mode lets anyone create");
 await pool.query("insert into app_settings (key,value) values ('free_mode_end', to_char(now() - interval '1 hour','YYYY-MM-DD\"T\"HH24:MI:SSOF'))");
 eq(await code(as("F", (q) => G.createGroup(q, { name: "After", description: "", joinMode: "open" }))), "leader_required", "free mode ended by its end date");
-eq(await as("F", G.listDirectory), [], "free account sees nothing after free mode ends");
+ok((await as("F", G.listDirectory)).length > 0, "a free account still sees the approved groups after free mode ends (members are free)");
 await pool.query("delete from app_settings");
 
 // ── the public Supabase roles cannot use any of it ──────────────────────────
@@ -152,6 +166,7 @@ ok(["rows:0", "permission denied for table group_posts"].includes(await asAnon("
 // ═════════════════════════ MODERATION ═════════════════════════
 await pool.query("update subscriptions set expires_at = now() + interval '30 days', status = 'ACTIVE'");
 const mg = await as("L", (q) => G.createGroup(q, { name: "Moderated", description: "", joinMode: "open" }));
+await approve(mg);
 for (const u of ["P", "Q", "R1", "R2", "R3", "R4"]) await as(u, (q) => G.joinGroup(q, mg));
 const post1 = await as("P", (q) => G.addPost(q, mg, "request", "Spam spam spam"));
 const post2 = await as("Q", (q) => G.addPost(q, mg, "testimony", "A real testimony"));
@@ -288,6 +303,7 @@ eq(await asAnon("select app_remove_member('x','y',true,true)"), "permission deni
 await pool.query("update subscriptions set expires_at = now() + interval '30 days', status = 'ACTIVE' where entitlement in ('leader','partner')");
 await pool.query("delete from subscriptions where user_id = 'Q' and entitlement = 'leader'");
 const ag = await as("L", (q) => G.createGroup(q, { name: "Numbers", description: "", joinMode: "open" }));
+await approve(ag);
 for (const u of ["P", "Q", "R1", "R2"]) await as(u, (q) => G.joinGroup(q, ag));
 const at = async (daysAgo: number) => (await pool.query("select (((now() at time zone 'Africa/Lagos')::date - $1::int) + time '12:00') at time zone 'Africa/Lagos' as t", [daysAgo])).rows[0].t as Date;
 await pool.query("update group_members set joined_at = $2 where group_id = $1 and user_id = 'P'", [ag, await at(2)]);
@@ -345,6 +361,7 @@ eq(await asAnon("select app_group_analytics('x')"), "permission denied for funct
 await pool.query("update subscriptions set expires_at = now() + interval '30 days', status = 'ACTIVE'");
 await pool.query("delete from subscriptions where user_id = 'Q' and entitlement = 'leader'");
 const fg1 = await as("L", (q) => G.createGroup(q, { name: "Featured candidate", description: "", joinMode: "open" }));
+await approve(fg1);
 await as("P", (q) => G.joinGroup(q, fg1));
 await as("Q", (q) => G.joinGroup(q, fg1));
 await as("L", (q) => G.setRole(q, fg1, "Q", "co_leader"));
@@ -380,6 +397,7 @@ eq(await code(as("P", (q) => G.cancelFeaturing(q, fg1))), "not_allowed", "a memb
 
 // approve (no end date) and ordering
 const newer = await as("L2", (q) => G.createGroup(q, { name: "Newer group", description: "", joinMode: "open" }));
+await approve(newer);
 await as("L", (q) => G.requestFeaturing(q, fg1, ""));
 const reqId = (await F.listFeatured(pool)).pending[0].id;
 await F.approveRequest(pool, reqId, "admin1", null);
@@ -431,6 +449,83 @@ await pool.query("update subscriptions set expires_at = now() - interval '1 day'
 eq(await code(as("L", (q) => G.requestFeaturing(q, fg1, "x"))), "not_allowed", "a lapsed Leader plan cannot request");
 await pool.query("update subscriptions set expires_at = now() + interval '30 days' where user_id = 'L'");
 eq(await asAnon("select app_request_featuring('x','y')"), "permission denied for function app_request_featuring", "anon cannot request featuring");
+
+// ── Phase 4: members are free, call link, daily point, member limit, admin approval ─────────────
+{
+  const A = await import("../src/lib/groupApprovals.ts");
+  await pool.query("delete from app_settings; delete from subscriptions where user_id = 'F'");
+  // a free account (no plan at all) joins by invite code, posts, prays and reads: only the Leader pays
+  const g1 = await as("L", (q) => G.createGroup(q, { name: "Free members", description: "", joinMode: "open", prayerTime: "05:30" }));
+  const g1code = (await as("L", (q) => G.getGroupDetail(q, g1)))!.inviteCode!;
+  eq((await A.listApplications(pool)).map((a) => a.groupId), [g1], "the admin sees the application");
+  eq(await as("F", (q) => G.joinGroupByCode(q, g1code)), "notfound", "not yet approved: the code does nothing");
+  await A.decideApplication(pool, g1, true, "");
+  eq((await A.listApplications(pool)).length, 0, "approved: off the admin's list");
+  eq(await code(A.decideApplication(pool, g1, true, "")), "That application was already handled or no longer exists.", "an application is decided once");
+  eq(await as("F", (q) => G.joinGroupByCode(q, g1code)), "joined", "a free account joins with the invite code");
+  const fpost = await as("F", (q) => G.addPost(q, g1, "request", "Pray for my job"));
+  ok(fpost, "a free member can post");
+  eq(await as("F", (q) => G.togglePraying(q, fpost)), true, "a free member can tap I'm praying");
+  ok((await as("F", (q) => G.getGroupDetail(q, g1)))!.group.prayerTime === "05:30", "a free member reads the group");
+  eq(await code(as("F", (q) => G.updateGroup(q, g1, { joinMode: "open", prayerTime: "", pinnedVerse: "" }))), "not_allowed", "a free member cannot change settings");
+  eq(await code(as("F", (q) => G.setGroupPoint(q, g1, "x"))), "not_allowed", "a free member cannot write the daily point");
+  eq(await code(as("F", (q) => G.createGroup(q, { name: "Nope", description: "", joinMode: "open" }))), "leader_required", "a free member still cannot lead a group");
+
+  // call link: https only, kept when a later update does not mention it, removed with an empty value
+  await as("L", (q) => G.updateGroup(q, g1, { joinMode: "open", prayerTime: "05:30", pinnedVerse: "", callUrl: "https://meet.google.com/abc-defg-hij" }));
+  eq((await as("F", (q) => G.getGroupDetail(q, g1)))!.group.callUrl, "https://meet.google.com/abc-defg-hij", "members see the call link");
+  eq((await as("F", G.listDirectory)).find((g) => g.id === g1)!.callUrl, "https://meet.google.com/abc-defg-hij", "the directory carries the call link");
+  await as("L", (q) => G.updateGroup(q, g1, { joinMode: "open", prayerTime: "05:45", pinnedVerse: "John 3:16" }));
+  eq((await as("F", (q) => G.getGroupDetail(q, g1)))!.group.callUrl, "https://meet.google.com/abc-defg-hij", "an update that leaves the link out keeps it");
+  eq(await code(as("L", (q) => G.updateGroup(q, g1, { joinMode: "open", prayerTime: "05:45", pinnedVerse: "", callUrl: "javascript:alert(1)" }))), "bad_call_url", "a link that is not http(s) is refused");
+  eq(await code(as("L", (q) => G.updateGroup(q, g1, { joinMode: "open", prayerTime: "05:45", pinnedVerse: "", callUrl: "intent://x#Intent;end" }))), "bad_call_url", "an intent: link is refused");
+  await as("L", (q) => G.updateGroup(q, g1, { joinMode: "open", prayerTime: "05:45", pinnedVerse: "", callUrl: "" }));
+  eq((await as("F", (q) => G.getGroupDetail(q, g1)))!.group.callUrl, null, "an empty value removes the link");
+
+  // daily prayer point: one a day, members read it, an empty value clears it
+  eq((await as("F", (q) => G.getGroupDetail(q, g1)))!.todayPoint, null, "no point yet");
+  await as("L", (q) => G.setGroupPoint(q, g1, "Pray for the church in Nigeria"));
+  eq((await as("F", (q) => G.getGroupDetail(q, g1)))!.todayPoint, "Pray for the church in Nigeria", "members read today's point");
+  await as("L", (q) => G.setGroupPoint(q, g1, "Pray for peace"));
+  eq((await as("F", (q) => G.getGroupDetail(q, g1)))!.todayPoint, "Pray for peace", "the point is replaced, not added");
+  eq(await as("X", async (q) => (await q("select body from group_points")).length), 0, "an outsider cannot read the points");
+  await as("L", (q) => G.setGroupPoint(q, g1, ""));
+  eq((await as("F", (q) => G.getGroupDetail(q, g1)))!.todayPoint, null, "an empty value clears the point");
+
+  // member limit: 50 by default (Leader Basic); a tier's limit applies while the leader holds its entitlement
+  eq((await as("L", (q) => G.getGroupDetail(q, g1)))!.group.memberLimit, 50, "the default limit is 50");
+  await pool.query("insert into app_settings (key,value) values ('plan_config', $1)", [JSON.stringify({ leaderTiers: [{ id: "leader_basic", name: "Basic", memberLimit: 3, available: true, entitlement: "leader" }] })]);
+  eq((await as("L", (q) => G.getGroupDetail(q, g1)))!.group.memberLimit, 3, "the limit follows the admin's plan_config");
+  eq(await as("R1", (q) => G.joinGroup(q, g1)), "joined", "third member fits (leader, free account, R1)");
+  eq(await as("R2", (q) => G.joinGroup(q, g1)), "full", "the group is full at its limit");
+  await pool.query("update app_settings set value = 'not json {' where key = 'plan_config'");
+  eq((await as("L", (q) => G.getGroupDetail(q, g1)))!.group.memberLimit, 50, "a broken plan_config falls back to 50 instead of breaking joins");
+  await pool.query("update app_settings set value = $1 where key = 'plan_config'", [JSON.stringify({ leaderTiers: [{ id: "c", name: "Church", memberLimit: 500, available: true, entitlement: "leader_church" }, { id: "b", name: "Basic", memberLimit: 3, available: true, entitlement: "leader" }] })]);
+  eq((await as("L", (q) => G.getGroupDetail(q, g1)))!.group.memberLimit, 3, "a tier counts only while the leader holds its entitlement");
+  await pool.query("insert into subscriptions (user_id, entitlement, status, expires_at) values ('L','leader_church','ACTIVE', now() + interval '30 days')");
+  eq((await as("L", (q) => G.getGroupDetail(q, g1)))!.group.memberLimit, 500, "...and the Church tier raises the limit to 500");
+  await pool.query("delete from subscriptions where entitlement = 'leader_church'; delete from app_settings");
+
+  // approval-only group: approving a request past the limit is refused
+  const g2 = await as("L", (q) => G.createGroup(q, { name: "Tiny", description: "", joinMode: "approval" }));
+  await A.decideApplication(pool, g2, true, "");
+  await pool.query("insert into app_settings (key,value) values ('plan_config', $1)", [JSON.stringify({ leaderTiers: [{ id: "b", name: "Basic", memberLimit: 2, available: true, entitlement: "leader" }] })]);
+  eq(await as("R1", (q) => G.joinGroup(q, g2)), "pending", "request queued");
+  eq(await as("R2", (q) => G.joinGroup(q, g2)), "pending", "second request queued");
+  await as("L", (q) => G.decideMember(q, g2, "R1", true));
+  eq(await code(as("L", (q) => G.decideMember(q, g2, "R2", true))), "group_full", "approving past the limit is refused");
+  await pool.query("delete from app_settings");
+
+  // declined application: the leader sees the note, nobody else sees the group
+  const g3 = await as("L2", (q) => G.createGroup(q, { name: "Declined", description: "", joinMode: "open" }));
+  await A.decideApplication(pool, g3, false, "Please add a description");
+  const mine = (await as("L2", (q) => G.listDirectory(q))).find((g) => g.id === g3);
+  ok(mine && mine.status === "rejected", "the leader sees a declined group as declined");
+  eq((await as("L2", (q) => G.getGroupDetail(q, g3)))!.group.reviewNote, "Please add a description", "the leader reads the admin's note");
+  eq((await as("F", G.listDirectory)).some((g) => g.id === g3), false, "a declined group is invisible to others");
+  eq(await as("P", (q) => G.joinGroup(q, g3)), "notfound", "a declined group cannot be joined");
+  eq(await code(as("L2", (q) => q("update groups set status = 'approved' where id = $1", [g3]))), "permission denied for table groups", "a leader cannot approve their own group");
+}
 
 // ── sign-in missing ─────────────────────────────────────────────────────────
 eq(await code(as("", (q) => G.joinGroup(q, open))), "signin_required", "no user, no access");
