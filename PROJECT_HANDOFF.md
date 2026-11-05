@@ -493,6 +493,14 @@ Not started. There is no `ios/` project, and the AlarmEngine is Android-only.
 
 ---
 
+### Engagement (Phase 9)
+- **Prayer Journal:** `src/lib/prayerJournal.ts` (pure logic, tested) + `PrayerJournal.tsx` at `/journal` (Navbar menu: Discipleship). Entries live in localStorage `pfm_journal` only (max 500). "God answered" stores the date and an optional note. Answered prayers can be sent as a testimony (POST `/api/testimonials`, always anonymous, admin approves), made into a picture, or sent on WhatsApp.
+- **Streaks:** already existed (Navbar flame, `computeStreak` in `context.tsx`); now also shown on the widget.
+- **Branded verse picture:** `src/lib/shareImage.ts` draws a 1080x1350 evergreen card on a canvas (layout maths in `cardLayout.ts`, tested). Android: written to the cache with `@capacitor/filesystem` and given to the native share sheet; browser: Web Share with files, else the picture downloads. "Send on WhatsApp" opens `https://wa.me/?text=`. Both are in the verse long-press menu (Bible, Prayer Verses).
+- **Home-screen widget (Android):** `PrayerWidgetProvider.kt` + `res/layout/widget_prayer.xml`, `res/xml/prayer_widget_info.xml`, manifest receiver. Shows today's prayer point and verse from `AlarmContentStore` (the web app refreshes 14 days at a time) and the streak (`setStreak` plugin call, `setNativeWidgetStreak`). Refreshes hourly and whenever the app opens. NOT yet seen on a real phone (CI compiles it).
+- **Low-data mode:** `src/lib/lowData.ts`, switch in Settings ("Data saver", localStorage `pfm_low_data`). `isLowData()` is also true when the phone says Save-Data or the network is 2G. Currently stops background screen prefetching (`PrefetchRoutes`); new features that load pictures or audio (video thumbnails, premium Bible voices) should check `isLowData()` first.
+- Needs a new Android build (new plugin, widget).
+
 ## 6. Backend: database and API
 
 ### Tables (`src/db/schema.ts`, Postgres, snake_case columns)
@@ -738,6 +746,7 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
+| next | **Engagement (Phase 9):** My Prayer Journal (`/journal`, on-phone, answered-with-date, share as anonymous testimony / picture / WhatsApp); one-tap branded verse picture + "Send on WhatsApp" in the verse menu (`shareImage.ts`, needs `@capacitor/filesystem`); Android home-screen widget (today's prayer point, verse, streak, Pray now); Low-data mode switch in Settings (`lowData.ts`). Android version 32 / 1.0.31. See §5 "Engagement" |
 | next | **Premium Bible voices (Phase 8, OFF until keys are added):** subscribers choose ElevenLabs voices; each chapter generated once per voice, saved in Supabase Storage and reused; daily limit on new chapters; save a chapter or a book offline. Needs `ELEVENLABS_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` and `supabase/bible-audio.sql`. See §5 "Bible audio" |
 | next | **Ads (Phase 7, OFF until set up):** AdMob plugin; one Home-screen banner in the Android app, never on other screens, never for subscribers; UMP consent and Ad privacy choices; admin on/off and ad unit id; app id from the `ADMOB_APP_ID` secret (Google's sample id until then). Needs a new Android build and the owner's AdMob steps. See §5 "Ads" |
 | next | **Videos (Phase 6):** admin pastes YouTube links (title and thumbnail fetched automatically); Home "Watch and listen" row, How to use Prayer Fire page with a tutorial per feature, "Watch how" strip on each feature page, Podcast page; plays in the app or opens YouTube. Run `supabase/videos.sql` before deploying |

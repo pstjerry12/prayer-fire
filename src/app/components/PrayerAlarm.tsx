@@ -15,6 +15,7 @@ import {
   listenNotificationTap,
   listenPrayNow,
   setNativeAlarmContent,
+  setNativeWidgetStreak,
 } from '@/lib/capacitorAlarm';
 
 /**
@@ -28,7 +29,7 @@ import {
  *   • Shows a full-screen "STOP ALARM" overlay
  */
 export default function PrayerAlarm() {
-  const { appointments: personalAppointments } = useApp();
+  const { appointments: personalAppointments, streak } = useApp();
   // Group prayer times of the groups this person belongs to (saved by the groups screen) ring like their own alarms.
   const [groupAppts, setGroupAppts] = useState<PrayerAppointment[]>([]);
   useEffect(() => {
@@ -48,6 +49,11 @@ export default function PrayerAlarm() {
     appointmentsRef.current = appointments;
   }, [appointments]);
   const [alarmLabel, setAlarmLabel] = useState<string | null>(null);
+
+  // The Android home-screen widget shows the fire streak (a no-op on web).
+  useEffect(() => {
+    setNativeWidgetStreak(streak);
+  }, [streak]);
 
   const dismiss = () => {
     stopAlarm();

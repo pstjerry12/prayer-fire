@@ -742,6 +742,11 @@ export default function BibleReader() {
           onCopy={() => copyText(menuInfos.map((i) => formatVerse(i.reference, translationMeta.shortName, i.text)).join('\n'))}
           onReadAloud={() => startReading(menu)}
           onShare={() => shareVerse(menuInfos.map((i) => formatVerse(i.reference, translationMeta.shortName, i.text)).join('\n'))}
+          card={{
+            body: menuInfos.map((i) => i.text).join(' '),
+            reference: `${menuTitle} (${translationMeta.shortName})`,
+            line: menuInfos.map((i) => formatVerse(i.reference, translationMeta.shortName, i.text)).join('\n'),
+          }}
           bookmarked={menuAllBookmarked}
           onToggleBookmark={() => {
             const saved = toggleBookmarks(menuInfos);

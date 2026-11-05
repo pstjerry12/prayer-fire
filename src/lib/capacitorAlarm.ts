@@ -129,6 +129,7 @@ interface AlarmEnginePluginApi {
   setAlarmContent(options: {
     items: { day: number; point: string; verse: string; reference: string }[];
   }): Promise<void>;
+  setStreak(options: { days: number }): Promise<void>;
   cancelAlarm(options: { id: string }): Promise<void>;
   cancelAllAlarms(): Promise<void>;
   dismissRinging(): Promise<void>;
@@ -383,6 +384,17 @@ export async function setNativeAlarmContent(
     await engine.setAlarmContent({ items });
   } catch (err) {
     console.error('[CapacitorAlarm] Failed to save alarm content:', err);
+  }
+}
+
+/** Gives the Android home-screen widget the current fire streak. A no-op on web and iOS. */
+export async function setNativeWidgetStreak(days: number): Promise<void> {
+  const { plugin: engine } = await getAlarmEngine();
+  if (!engine) return;
+  try {
+    await engine.setStreak({ days: Math.max(0, Math.floor(days) || 0) });
+  } catch (err) {
+    console.error('[CapacitorAlarm] Failed to save widget streak:', err);
   }
 }
 
