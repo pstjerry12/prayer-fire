@@ -21,7 +21,8 @@ export default function BottomNav() {
   const { setShowSettings } = useApp();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-edge md:hidden">
+    // --ad-offset is the height of the Home banner ad (0 when there is none): the tab bar sits ABOVE the ad, never under it.
+    <nav className="fixed left-0 right-0 z-50 bg-card border-t border-edge md:hidden" style={{ bottom: 'var(--ad-offset, 0px)' }}>
       {/* Navigation tabs */}
       <div className="max-w-4xl mx-auto grid grid-cols-7">
         {TABS.map((tab) => {

@@ -12,6 +12,7 @@ import FeedbackModal from './components/FeedbackModal';
 import UpdateBanner from './components/UpdateBanner';
 import BottomNav from './components/BottomNav';
 import PrayerAlarm from './components/PrayerAlarm';
+import AdsBanner from './components/AdsBanner';
 import SplashScreen from './components/SplashScreen';
 import NotificationPermission from './components/NotificationPermission';
 import PricingPage from './components/PricingPage';
@@ -142,6 +143,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <VoicePreloader />
       <BillingSync />
       <PrayerAlarm />
+      {/* The one AdMob banner (Home screen, Android app, not for subscribers); renders nothing itself */}
+      <AdsBanner />
       <GatedNotificationPermission />
       <UpdateBanner />
       <BackButtonExit />
