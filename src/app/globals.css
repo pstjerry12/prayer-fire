@@ -37,7 +37,8 @@
 
      Green   #047857  buttons, icons, active tab, links (white text on it)        (the accent)
      Mint    #ECFDF5 / #D1FAE5  tinted cards, chips, pills, highlighted tiles
-     Ivory   #FAF7F2  app background, with white cards
+     Beige   #F0E9DA  app background (warm, a little darker than the old ivory), with warm-white cards and clear
+                      #CDBFA3 outlines. The top bar is deep evergreen #053D2E (night: #052E22) in both modes.
      Navy    #14213D  headings
      Ink / muted      body text #1F2937 / secondary text #5B6574
      Amber / Red      only for notices ("warn") and errors ("danger")
@@ -63,7 +64,9 @@
   --color-mint: #ecfdf5;
   --color-mint-2: #d1fae5;
   --color-mint-edge: #a7f3d0;
-  --color-cream: #faf7f2;
+  --color-cream: #f0e9da; /* warm beige page colour (was ivory #faf7f2) */
+  --color-evergreen: #053d2e; /* the top bar: deep evergreen, its own colour, light AND dark mode */
+  --color-evergreen-night: #052e22;
   --color-night: #0e1628;
   --color-night-card: #1a2540;
   --color-night-border: #2c3a5c;
@@ -364,26 +367,27 @@
 :root {
   /* Light mode */
   --page: var(--color-cream);
-  --card: #ffffff;
-  --card-2: #f5f1ea;
-  --card-3: #e7e5e4;
+  --card: #fffdf9;
+  --card-2: #f7f2e7;
+  --card-3: #e4dac6;
   --ink: #1f2937;
   --ink-soft: #334155;
   --ink-muted: #5b6574;
   --ink-faint: #5b6574;
   --ink-ghost: #5b6574;
   --heading: var(--color-navy);
-  --edge: #e7e5e4;
-  --edge-strong: #d6d3d1;
-  /* top bar: light, like the page */
-  --bar: var(--color-cream);
-  --on-bar: var(--ink);
-  --bar-edge: var(--edge);
-  --bar-hover: rgba(31, 41, 55, 0.08);
+  /* Clear warm borders: every card has a visible outline on the beige page. */
+  --edge: #cdbfa3;
+  --edge-strong: #b5a583;
+  /* top bar: deep evergreen with light text, a different colour from the page in both modes */
+  --bar: var(--color-evergreen);
+  --on-bar: #f3eee4;
+  --bar-edge: #0a5a43;
+  --bar-hover: rgba(243, 238, 228, 0.14);
   --acc: var(--color-leaf);
   --on-acc: #ffffff;
   --acc-hover: var(--color-leaf-dark);
-  --acc-strong: var(--color-leaf);
+  --acc-strong: var(--color-leaf-dark); /* darker green text: 6:1 on the beige page */
   --acc-soft: var(--color-mint);
   --acc-soft-2: var(--color-mint-2);
   --acc-edge: var(--color-mint-edge);
@@ -424,10 +428,10 @@
   --heading: var(--color-night-ink);
   --edge: var(--color-night-border);
   --edge-strong: color-mix(in srgb, var(--color-night-border) 45%, var(--color-night-muted));
-  --bar: var(--color-night);
+  --bar: var(--color-evergreen-night);
   --on-bar: var(--color-night-ink);
-  --bar-edge: var(--color-night-border);
-  --bar-hover: rgba(243, 238, 228, 0.1);
+  --bar-edge: #0f5a43;
+  --bar-hover: rgba(243, 238, 228, 0.14);
   --acc: var(--color-leaf-light);
   --on-acc: var(--color-night);
   --acc-hover: #10b981;
@@ -454,6 +458,20 @@ h2.text-ink,
 h3.text-ink,
 h4.text-ink {
   color: var(--heading);
+}
+
+/* Every card gets a clear outline. Most already have one (border-edge); this gives the rest the same one, without touching
+   cards that set their own border, ring or shadow. Written in the components layer so any utility class still wins. */
+@layer components {
+  .bg-card:not([class*="border"]):not([class*="ring"]):not([class*="shadow"]) {
+    border: 1px solid var(--edge);
+  }
+  /* Dark mode, the flagship look: cards sit slightly above the page with a soft top highlight and a deep shadow. */
+  .dark .bg-card:not([class*="shadow"]):not([class*="ring"]) {
+    box-shadow:
+      inset 0 1px 0 rgba(243, 238, 228, 0.05),
+      0 10px 24px -14px rgba(0, 0, 0, 0.65);
+  }
 }
 
 /* Respect device notches / safe areas. */
