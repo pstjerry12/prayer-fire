@@ -30,6 +30,8 @@ export async function runAsUser<T>(pool: Pick<Pool, "connect">, userId: string, 
 const MESSAGES: Record<string, { status: number; message: string }> = {
   signin_required: { status: 401, message: "Sign in to use prayer groups." },
   premium_required: { status: 403, message: "Prayer groups are part of Prayer Fire Partner." },
+  group_full: { status: 400, message: "This group is full. Its leader can raise the limit with a bigger Leader plan." },
+  bad_call_url: { status: 400, message: "The call link must start with https:// (a WhatsApp, Google Meet or Zoom link)." },
   leader_required: { status: 403, message: "Creating and managing groups is part of Prayer Fire Leader." },
   not_allowed: { status: 403, message: "You are not allowed to do that in this group." },
   leader_cannot_leave: { status: 400, message: "You lead this group. Delete it instead of leaving." },

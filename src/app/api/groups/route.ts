@@ -64,7 +64,10 @@ export async function POST(request: Request) {
           await G.decideMember(q, groupId, str(b.userId, 80), b.approve === true);
           return { ok: true };
         case "update":
-          await G.updateGroup(q, groupId, { joinMode: mode(b.joinMode), prayerTime: str(b.prayerTime, 5), pinnedVerse: str(b.pinnedVerse, 300) });
+          await G.updateGroup(q, groupId, { joinMode: mode(b.joinMode), prayerTime: str(b.prayerTime, 5), pinnedVerse: str(b.pinnedVerse, 300), callUrl: typeof b.callUrl === "string" ? str(b.callUrl, 400) : undefined });
+          return { ok: true };
+        case "setPoint":
+          await G.setGroupPoint(q, groupId, str(b.body, 500));
           return { ok: true };
         case "delete":
           await G.deleteGroup(q, groupId);
