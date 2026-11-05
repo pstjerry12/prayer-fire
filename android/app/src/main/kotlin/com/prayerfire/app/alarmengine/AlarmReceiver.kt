@@ -17,15 +17,24 @@ class AlarmReceiver : BroadcastReceiver() {
         val label = intent.getStringExtra(AlarmScheduler.EXTRA_LABEL) ?: "Prayer Time"
         val tone = intent.getStringExtra(AlarmScheduler.EXTRA_TONE) ?: "classic"
 
-        val stored = AlarmStore.all(context).find { it.id == id }
-        if (stored != null) {
-            AlarmScheduler.schedule(context, stored)
+        val kind = intent.getStringExtra(AlarmScheduler.EXTRA_KIND) ?: ScheduledAlarm.KIND_PERSONAL
+        val callUrl = intent.getStringExtra(AlarmScheduler.EXTRA_CALL_URL) ?: ""
+        val isSnooze = intent.getBooleanExtra(AlarmScheduler.EXTRA_SNOOZE, false)
+
+        // A snoozed ring is a one-off: tomorrow's daily alarm is already armed, so do not touch it.
+        if (!isSnooze) {
+            val stored = AlarmStore.all(context).find { it.id == id }
+            if (stored != null) {
+                AlarmScheduler.schedule(context, stored)
+            }
         }
 
         val serviceIntent = Intent(context, AlarmRingService::class.java).apply {
             putExtra(AlarmScheduler.EXTRA_ID, id)
             putExtra(AlarmScheduler.EXTRA_LABEL, label)
             putExtra(AlarmScheduler.EXTRA_TONE, tone)
+            putExtra(AlarmScheduler.EXTRA_KIND, kind)
+            putExtra(AlarmScheduler.EXTRA_CALL_URL, callUrl)
         }
         ContextCompat.startForegroundService(context, serviceIntent)
     }

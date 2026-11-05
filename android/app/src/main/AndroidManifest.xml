@@ -24,7 +24,7 @@
     <!-- ── "Ring like an alarm" native alarm engine ──────────────────── -->
     <!-- Android 14+ runtime-grantable permission for the full-screen ringing UI. -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
-    <!-- The foreground service that plays the alarm tone for 5 minutes. -->
+    <!-- The foreground service that plays the alarm tone for 3 minutes. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <!--
@@ -135,10 +135,15 @@
             android:excludeFromRecents="true"
             android:theme="@style/AppTheme.NoActionBarLaunch" />
 
-        <!-- Invisible: the notification's "Stop" button. Silences the alarm
-             and opens the app. -->
+        <!-- The notification's Stop and Snooze buttons: silence the alarm, open nothing. -->
+        <receiver
+            android:name=".alarmengine.AlarmActionReceiver"
+            android:exported="false" />
+
+        <!-- Invisible: the notification's "Pray Now" / "Join Live Prayer" button. Silences the alarm and opens
+             the prayer session (or the group's call link). The only alarm button that opens anything. -->
         <activity
-            android:name=".alarmengine.AlarmStopActivity"
+            android:name=".alarmengine.AlarmPrayActivity"
             android:exported="false"
             android:excludeFromRecents="true"
             android:noHistory="true"
