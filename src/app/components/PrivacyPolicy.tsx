@@ -2,6 +2,7 @@
 
 import { X, ShieldCheck } from 'lucide-react';
 import { PRIVACY_SECTIONS } from '@/app/data/legal';
+import LegalSections from './LegalSections';
 
 interface Props {
   isOpen: boolean;
@@ -30,12 +31,7 @@ export default function PrivacyPolicy({ isOpen, onClose }: Props) {
               Your privacy matters to us. This policy explains how Prayer Fire handles
               your information.
             </p>
-            {PRIVACY_SECTIONS.map((s) => (
-              <div key={s.title} className="space-y-1.5">
-                <h3 className="text-acc-strong text-sm font-bold">{s.title}</h3>
-                <p className="text-ink-soft text-xs leading-relaxed">{s.body}</p>
-              </div>
-            ))}
+            <LegalSections sections={PRIVACY_SECTIONS} variant="compact" />
             <button
               onClick={onClose}
               className="w-full py-3 bg-card-3 text-ink-soft rounded-xl font-bold hover:bg-card-2 transition-all"

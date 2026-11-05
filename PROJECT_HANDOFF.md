@@ -445,6 +445,13 @@ Not started. There is no `ios/` project, and the AlarmEngine is Android-only.
 
 ---
 
+### Legal and compliance (Phase 11)
+- All legal text lives in `src/app/data/legal.ts` (`TERMS_SECTIONS`, `PRIVACY_SECTIONS`, `COMMUNITY_SECTIONS`, `LEGAL_UPDATED`, `CONTACT_EMAIL`). Pages: `/privacy`, `/terms`, `/community-guidelines`, `/delete-account` (all public, in `SignInGate` PUBLIC_PREFIXES). Pop-ups use `LegalSections` (compact) so the text is identical everywhere.
+- Account deletion: `DELETE /api/auth/account` removes profile and related rows (study, intercessory prayers, group data, reports, alert taps/requests when those tables exist). Google subscriptions must still be cancelled in Google Play (stated on the page).
+- Statements about group approval, Global Alerts and videos assume those PRs are deployed. Update `LEGAL_UPDATED` when text changes.
+- Not built yet: per-user "block this person" (reports and leader remove/block exist). Add `user_blocks` after prayer groups v2 is merged.
+- Owner checklist: `docs/PLAY-CONSOLE-UPDATES.md`.
+
 ## 6. Backend: database and API
 
 ### Tables (`src/db/schema.ts`, Postgres, snake_case columns)
@@ -690,6 +697,7 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
+| next | **Legal & compliance (Phase 11):** rewritten Privacy Policy (AdMob, NDPA 2023, third parties), Terms (subscriptions, UGC, ads, deletion), new Community Guidelines page, public `/delete-account` page, legal links in footer and Settings, Terms link on plans screen, donation note (voluntary, unlocks nothing), account deletion now also removes server study notes, intercessory prayers, reports and alert data; Play Console checklist in `docs/PLAY-CONSOLE-UPDATES.md`. See §5 "Legal" |
 | next | **Plans v2 (Phase 3):** Free / Partner / Leader side by side on the Android plans screen (Google Play price, trial, auto-renew and cancel text, Most popular, Leader tiers with member limits); descriptions and tiers editable in Admin -> Pricing -> "Plans and Leader tiers" (`plan_config`); PR #99 closed. See §5 "Plans v2" |
 | next | **Design v2 (Phase 2):** warm-beige light mode, clear outline on every card, deep-evergreen header in both modes, polished dark mode; native status/splash colours updated (needs a new Android build). See §5 "Design v2" |
 | next | **Leader features finished: moderation, analytics, featured groups (PRs #89, #90, #91, stacked on #88 and #87).** Moderation (reports queue, hide/delete, pin, remove/block, co-leaders), analytics dashboard for the group's leader (numbers only), featured groups with a search box, an admin Featured tab and optional end dates; all enforced in Postgres (RLS + functions in `supabase/groups.sql`); Leader paywall lists all three. Merge order: #87, #88, #89, #90, #91. `supabase/groups.sql` must be applied to production before any of the group code is used |

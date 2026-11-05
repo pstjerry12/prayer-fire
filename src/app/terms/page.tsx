@@ -2,7 +2,10 @@ import Link from 'next/link';
 import { ChevronLeft, FileText } from 'lucide-react';
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
-import { TERMS_SECTIONS } from '@/app/data/legal';
+import LegalSections from '@/app/components/LegalSections';
+import { LEGAL_UPDATED, TERMS_SECTIONS } from '@/app/data/legal';
+
+export const metadata = { title: 'Terms of Service | Prayer Fire' };
 
 export default function TermsPage() {
   return (
@@ -19,18 +22,15 @@ export default function TermsPage() {
           </div>
           <div>
             <h1 className="font-serif-heading text-2xl font-bold text-ink">Terms of Service</h1>
-            <p className="text-xs text-ink-muted">Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+            <p className="text-xs text-ink-muted">Last updated: {LEGAL_UPDATED}</p>
           </div>
         </div>
 
-        <div className="space-y-5">
-          {TERMS_SECTIONS.map((s) => (
-            <div key={s.title} className="bg-card rounded-2xl border border-edge p-5">
-              <h2 className="font-serif-heading text-base font-bold text-ink">{s.title}</h2>
-              <p className="text-ink-soft text-sm leading-relaxed mt-2">{s.body}</p>
-            </div>
-          ))}
-        </div>
+        <LegalSections sections={TERMS_SECTIONS} />
+        <p className="text-ink-muted text-xs mt-5 text-center">
+          See also our <Link href="/privacy" className="text-acc-strong font-semibold underline">Privacy Policy</Link> and{' '}
+          <Link href="/community-guidelines" className="text-acc-strong font-semibold underline">Community Guidelines</Link>.
+        </p>
       </main>
       <Footer />
     </>

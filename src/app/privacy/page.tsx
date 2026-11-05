@@ -2,69 +2,12 @@ import Link from 'next/link';
 import { ChevronLeft, ShieldCheck } from 'lucide-react';
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
+import LegalSections from '@/app/components/LegalSections';
+import { CONTACT_EMAIL, DELETE_ACCOUNT_PATH, LEGAL_UPDATED, PRIVACY_SECTIONS } from '@/app/data/legal';
 
-const CONTACT_EMAIL = 'prayerfiremovemnt@gmail.com';
-
-interface PrivacySection {
-  title: string;
-  intro?: string;
-  bullets?: string[];
-}
-
-const SECTIONS: PrivacySection[] = [
-  {
-    title: 'Information We Collect',
-    bullets: [
-      'Testimonies: If you submit a testimony, we collect the text you provide and, optionally, your name and location. You may choose to submit anonymously.',
-      'Prayer requests: Intercessory prayer points you create are stored to display within your own prayer sessions.',
-      'Account information: If you create an account, we collect your name, email address and/or phone number for authentication purposes.',
-      'Feedback: If you send feedback from Settings, we store your message and the details you choose to add (name, email or phone), along with your app version and device type, to help us improve the app.',
-      'App activity: When you are signed in, we record the days on which your account opens the app. This helps us understand how the app is used and lets us send you a friendly reminder if needed.',
-      'Payment information: If you choose to give voluntarily, payments are processed securely through Flutterwave. We do not store your card details — Flutterwave handles all payment data according to their own security standards.',
-      'Device permissions: The app may request permission to schedule notifications/alarms for your daily prayer reminders. This is used solely to deliver prayer time alerts and is not shared with third parties.',
-    ],
-  },
-  {
-    title: 'How We Use Your Information',
-    bullets: [
-      "To display testimonies and prayer points within the app",
-      "To send prayer time reminders you've scheduled",
-      'To process voluntary donations',
-      "To improve the app's features and content",
-    ],
-  },
-  {
-    title: 'Data Sharing',
-    intro:
-      'We do not sell or share your personal information with third parties, except as necessary to process payments (via Flutterwave) or as required by law.',
-  },
-  {
-    title: 'Data Retention',
-    intro: `Testimonies and prayer points remain stored until you request their removal. Contact us at ${CONTACT_EMAIL} to request deletion of your data.`,
-  },
-  {
-    title: "Children's Privacy",
-    intro:
-      'This app is not directed at children under 13, and we do not knowingly collect data from children under 13.',
-  },
-  {
-    title: 'Changes to This Policy',
-    intro:
-      'We may update this policy from time to time. Changes will be posted on this page with an updated "Last updated" date.',
-  },
-  {
-    title: 'Contact Us',
-    intro: `If you have questions about this privacy policy, contact us at ${CONTACT_EMAIL}.`,
-  },
-];
+export const metadata = { title: 'Privacy Policy | Prayer Fire' };
 
 export default function PrivacyPage() {
-  const lastUpdated = new Date().toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-
   return (
     <>
       <Navbar />
@@ -78,33 +21,18 @@ export default function PrivacyPage() {
             <ShieldCheck className="w-6 h-6 text-acc-strong" />
           </div>
           <div>
-            <h1 className="font-serif-heading text-2xl font-bold text-ink">Privacy Policy — Prayer Fire</h1>
-            <p className="text-xs text-ink-muted">Last updated: {lastUpdated}</p>
+            <h1 className="font-serif-heading text-2xl font-bold text-ink">Privacy Policy: Prayer Fire</h1>
+            <p className="text-xs text-ink-muted">Last updated: {LEGAL_UPDATED}</p>
           </div>
         </div>
 
         <p className="text-ink-soft text-sm leading-relaxed mt-4 mb-5">
-          Prayer Fire (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;the app&rdquo;) respects your privacy.
-          This policy explains what information we collect and how we use it.
+          Prayer Fire respects your privacy. This policy explains what information we collect, why, who we share it with, how long we keep
+          it and the rights you have, including under the Nigeria Data Protection Act 2023. Questions: {CONTACT_EMAIL}.{' '}
+          <Link href={DELETE_ACCOUNT_PATH} className="text-acc-strong font-semibold underline">How to delete your account</Link>.
         </p>
 
-        <div className="space-y-5">
-          {SECTIONS.map((s) => (
-            <div key={s.title} className="bg-card rounded-2xl border border-edge p-5">
-              <h2 className="font-serif-heading text-base font-bold text-ink">{s.title}</h2>
-              {s.intro && <p className="text-ink-soft text-sm leading-relaxed mt-2">{s.intro}</p>}
-              {s.bullets && (
-                <ul className="mt-2 space-y-1.5 list-disc pl-5">
-                  {s.bullets.map((b) => (
-                    <li key={b} className="text-ink-soft text-sm leading-relaxed">
-                      {b}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
-        </div>
+        <LegalSections sections={PRIVACY_SECTIONS} />
       </main>
       <Footer />
     </>

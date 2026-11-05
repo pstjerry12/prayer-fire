@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { sql } from "drizzle-orm";
-import { users, userActivity, feedback, subscriptions } from "@/db/schema";
+import { users, userActivity, feedback, subscriptions, intercessoryPrayers, userStudy } from "@/db/schema";
 import { verifyToken, AUTH_COOKIE } from "@/lib/auth";
 
 export async function DELETE(request: Request) {
@@ -36,6 +36,19 @@ export async function DELETE(request: Request) {
         await db.execute(sql`delete from group_praying where user_id = ${id}`);
         await db.execute(sql`delete from group_checkins where user_id = ${id}`);
         await db.execute(sql`delete from group_members where user_id = ${id}`);
+        await db.execute(sql`delete from group_reports where reporter_id = ${id}`);
+        await db.execute(sql`delete from group_feature_requests where requested_by = ${id}`);
+        // Server copies of this person's private writing (the Privacy Policy promises these go too).
+        await db.delete(intercessoryPrayers).where(eq(intercessoryPrayers.userId, id));
+        await db.delete(userStudy).where(eq(userStudy.userId, id));
+        // Tables that exist only once their feature has been set up on this database (Global Prayer Alerts).
+        for (const [table, run] of [
+          ["alert_praying", () => db.execute(sql`delete from alert_praying where user_id = ${id}`)],
+          ["alert_requests", () => db.execute(sql`delete from alert_requests where user_id = ${id}`)],
+        ] as const) {
+          const exists = await db.execute(sql`select to_regclass(${"public." + table}) as t`);
+          if (exists.rows[0]?.t) await run();
+        }
         await db
           .update(feedback)
           .set({ userId: null, name: null, contact: null })

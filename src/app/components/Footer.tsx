@@ -17,6 +17,13 @@ export default function Footer() {
         <p className="text-ink-faint text-[0.625rem] mt-1">Pastor Jerry C.</p>
 
         <SocialLinks />
+
+        <nav aria-label="Legal" className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[0.6875rem] text-ink-muted">
+          <a href="/privacy" className="underline hover:text-acc-strong">Privacy</a>
+          <a href="/terms" className="underline hover:text-acc-strong">Terms</a>
+          <a href="/community-guidelines" className="underline hover:text-acc-strong">Community Guidelines</a>
+          <a href="/delete-account" className="underline hover:text-acc-strong">Delete account</a>
+        </nav>
       </div>
     </footer>
   );

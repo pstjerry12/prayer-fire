@@ -296,7 +296,9 @@ export default function PlaySubscription() {
         {paidCard('leader')}
       </div>
 
-      <p className="text-ink-faint text-[0.6875rem] leading-relaxed text-center">{payNote}</p>
+      <p className="text-ink-faint text-[0.6875rem] leading-relaxed text-center">
+        {payNote} By subscribing you agree to the <a href="/terms" className="underline text-acc-strong">Terms of Service</a>. Members who join your group never pay.
+      </p>
 
       {message && (
         <p role="status" className="text-center text-sm text-ink-soft bg-card-2 border border-edge rounded-xl p-3">
