@@ -5,20 +5,23 @@ import { usePathname } from 'next/navigation';
 import { Home, Pencil, Play, BookOpen, Sparkles, Globe, Clock, Type } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useApp } from '../context';
+import { useT } from '../i18n';
+import type { MessageKey } from '@/lib/i18n/messages';
 
-const TABS = [
-  { href: '/', label: 'Home', icon: Home, exact: true },
-  { href: '/workshop', label: 'Write', icon: Pencil, exact: false },
-  { href: '/startup', label: 'Start-Up', icon: Play, exact: false },
-  { href: '/bible', label: 'Bible', icon: BookOpen, exact: false },
-  { href: '/scripture', label: 'Scripture', icon: Sparkles, exact: false },
-  { href: '/network', label: 'Partners', icon: Globe, exact: false },
-  { href: '/fasting', label: 'Fasting', icon: Clock, exact: false },
+const TABS: { href: string; label: MessageKey; icon: typeof Home; exact: boolean }[] = [
+  { href: '/', label: 'nav.home', icon: Home, exact: true },
+  { href: '/workshop', label: 'nav.write', icon: Pencil, exact: false },
+  { href: '/startup', label: 'nav.startUp', icon: Play, exact: false },
+  { href: '/bible', label: 'nav.bible', icon: BookOpen, exact: false },
+  { href: '/scripture', label: 'nav.scripture', icon: Sparkles, exact: false },
+  { href: '/network', label: 'nav.partners', icon: Globe, exact: false },
+  { href: '/fasting', label: 'nav.fasting', icon: Clock, exact: false },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
   const { setShowSettings } = useApp();
+  const t = useT();
 
   return (
     // --ad-offset is the height of the Home banner ad (0 when there is none): the tab bar sits ABOVE the ad, never under it.
@@ -40,7 +43,7 @@ export default function BottomNav() {
               {/* small green bar marks the active tab */}
               {active && <span aria-hidden className="absolute top-0 h-[3px] w-7 rounded-b-full bg-acc" />}
               <Icon className="w-4 h-4" />
-              <span className={cn('text-[clamp(8px,0.5rem,10px)] leading-none whitespace-nowrap', active ? 'font-bold' : 'font-medium')}>{tab.label}</span>
+              <span className={cn('text-[clamp(8px,0.5rem,10px)] leading-none whitespace-nowrap', active ? 'font-bold' : 'font-medium')}>{t(tab.label)}</span>
             </Link>
           );
         })}

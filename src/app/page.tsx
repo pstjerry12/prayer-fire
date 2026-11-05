@@ -9,10 +9,12 @@ import TestimonyCard from './components/TestimonyCard';
 import AnnouncementBanner from './components/AnnouncementBanner';
 import DailyExaltation from './components/DailyExaltation';
 import HomeFold from './components/HomeFold';
+import { useT } from './i18n';
 import HomeVideos from './components/HomeVideos';
 import HomeAlertCard from './components/HomeAlertCard';
 
 export default function HomePage() {
+  const t = useT();
   return (
     <>
       <Navbar />
@@ -25,16 +27,16 @@ export default function HomePage() {
           {/* ── Header ───────────────────────────── */}
           <section className="text-center">
             <span className="inline-flex items-center gap-1.5 bg-warn-soft text-warn-strong text-xs font-bold px-3 py-1 rounded-full border border-warn-edge">
-              <Flame className="w-3.5 h-3.5" /> Pray 3x a Day
+              <Flame className="w-3.5 h-3.5" /> {t('home.badge')}
             </span>
             <h1 className="font-serif-heading text-3xl md:text-5xl font-bold text-ink mt-2">
               Prayer Fire
             </h1>
             <p className="text-base md:text-xl text-acc-strong font-serif-heading font-semibold mt-1">
-              Write it. Speak it. Pray it. Trust God.
+              {t('home.tagline')}
             </p>
             <p className="text-danger font-semibold italic text-xs md:text-sm mt-1">
-              Praying like Daniel — a cure for prayerlessness
+              {t('home.daniel')}
             </p>
           </section>
 
@@ -48,8 +50,8 @@ export default function HomePage() {
                 <span className="grid h-9 w-9 place-items-center rounded-full bg-acc-soft text-acc-strong">
                   <Flame className="w-5 h-5" />
                 </span>
-                <h3 className="font-bold text-[0.9375rem] leading-tight text-ink">Write Prayer Points</h3>
-                <p className="text-xs font-semibold text-ink-muted">Prayer Workshop</p>
+                <h3 className="font-bold text-[0.9375rem] leading-tight text-ink">{t('home.writePoints')}</h3>
+                <p className="text-xs font-semibold text-ink-muted">{t('home.workshop')}</p>
               </Link>
 
               <Link
@@ -59,8 +61,8 @@ export default function HomePage() {
                 <span className="grid h-9 w-9 place-items-center rounded-full bg-acc-soft text-acc-strong">
                   <Sparkles className="w-5 h-5" />
                 </span>
-                <h3 className="font-bold text-[0.9375rem] leading-tight text-ink">Start-Up Prayer</h3>
-                <p className="text-xs font-semibold text-ink-muted">7-step guided</p>
+                <h3 className="font-bold text-[0.9375rem] leading-tight text-ink">{t('home.startUpPrayer')}</h3>
+                <p className="text-xs font-semibold text-ink-muted">{t('home.sevenStep')}</p>
               </Link>
             </section>
 
@@ -72,7 +74,7 @@ export default function HomePage() {
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-acc-soft text-acc-strong">
                 <Clock className="w-5 h-5" />
               </span>
-              <span className="flex-1 text-heading">Set Daily Schedule</span>
+              <span className="flex-1 text-heading">{t('home.schedule')}</span>
               <ChevronRight className="w-4 h-4 text-ink-muted" />
             </Link>
 
@@ -99,9 +101,9 @@ export default function HomePage() {
                 <Users className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-ink font-bold text-sm md:text-base">Prayer Groups</h3>
+                <h3 className="text-ink font-bold text-sm md:text-base">{t('home.groups')}</h3>
                 <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">
-                  Pray together in teams
+                  {t('home.groupsHint')}
                 </p>
               </div>
               <ChevronRight className="w-4 h-4 text-ink-ghost shrink-0" />
@@ -118,8 +120,8 @@ export default function HomePage() {
                 <Globe className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-ink font-bold text-sm md:text-base">Prayer Network</h3>
-                <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">Stand in the gap for others worldwide</p>
+                <h3 className="text-ink font-bold text-sm md:text-base">{t('home.network')}</h3>
+                <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">{t('home.networkHint')}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-ink-ghost shrink-0" />
             </div>

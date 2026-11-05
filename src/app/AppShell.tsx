@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from 'react';
 import { AppProvider, useApp } from './context';
+import { LanguageProvider } from './i18n';
 import AuthModal from './components/AuthModal';
 import AccountSettings from './components/AccountSettings';
 import PrivacyPolicy from './components/PrivacyPolicy';
@@ -133,6 +134,7 @@ function ServiceWorkerRegister() {
 export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <AppProvider>
+      <LanguageProvider>
       <SplashScreen />
       <NavProgress />
       <PrefetchRoutes />
@@ -153,6 +155,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <SignInGate />
       <Overlays />
       <WelcomeSlides />
+      </LanguageProvider>
     </AppProvider>
   );
 }

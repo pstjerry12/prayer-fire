@@ -493,6 +493,12 @@ Not started. There is no `ios/` project, and the AlarmEngine is Android-only.
 
 ---
 
+### Languages (Phase 10)
+- Text lives in `src/lib/i18n/messages.ts` (English first, other languages fall back to English per key). `LanguageProvider` (`src/app/i18n.tsx`, in `AppShell`) holds `lang`; components use `useI18n()` / `useT()`. Language is stored in `pfm_lang`; first visit uses `navigator.languages`.
+- Choosing a language that has a Bible switches the Bible to it (`translationForLanguage`); choosing Swahili/Korean/Tagalog leaves the Bible as is and shows a note.
+- Bibles: `lsg`, `rv1909`, `almeida` in `src/data/bible/*.json` + `public/bible-data/v1/<id>/` (built by `scripts/import-translations.mjs`; licences in `docs/BIBLE-TRANSLATIONS.md`). Almeida needs its CC BY credit (shown by `BibleReader`). RV1909 lacks 18 verse numbers that its versification folds into the previous verse.
+- Translated so far: bottom menu, Home, Bible page, Settings title + language picker, book names (fr/es/pt). NOT translated: most other screens, Prayer Verses and My Study (still KJV English). Wording needs a native-speaker review (`docs/LANGUAGES.md`).
+- Read aloud takes `lang` from the Bible translation (`readItems({ lang })`).
 ### Engagement (Phase 9)
 - **Prayer Journal:** `src/lib/prayerJournal.ts` (pure logic, tested) + `PrayerJournal.tsx` at `/journal` (Navbar menu: Discipleship). Entries live in localStorage `pfm_journal` only (max 500). "God answered" stores the date and an optional note. Answered prayers can be sent as a testimony (POST `/api/testimonials`, always anonymous, admin approves), made into a picture, or sent on WhatsApp.
 - **Streaks:** already existed (Navbar flame, `computeStreak` in `context.tsx`); now also shown on the widget.
@@ -746,6 +752,7 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
+| next | **Languages (Phase 10):** App language switcher (English, French, Spanish, Portuguese, Swahili, Korean, Tagalog) in Settings, follows the phone's language on first visit; main screens translated; Bibles added: Louis Segond 1910 (fr), Reina-Valera 1909 (es), Bíblia Livre/Almeida (pt, CC BY: credit shown); book names and read-aloud voice follow the Bible language; Bible search accepts local book names. Details: `docs/BIBLE-TRANSLATIONS.md`, `docs/LANGUAGES.md`. See §5 "Languages" |
 | next | **Engagement (Phase 9):** My Prayer Journal (`/journal`, on-phone, answered-with-date, share as anonymous testimony / picture / WhatsApp); one-tap branded verse picture + "Send on WhatsApp" in the verse menu (`shareImage.ts`, needs `@capacitor/filesystem`); Android home-screen widget (today's prayer point, verse, streak, Pray now); Low-data mode switch in Settings (`lowData.ts`). Android version 32 / 1.0.31. See §5 "Engagement" |
 | next | **Premium Bible voices (Phase 8, OFF until keys are added):** subscribers choose ElevenLabs voices; each chapter generated once per voice, saved in Supabase Storage and reused; daily limit on new chapters; save a chapter or a book offline. Needs `ELEVENLABS_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` and `supabase/bible-audio.sql`. See §5 "Bible audio" |
 | next | **Ads (Phase 7, OFF until set up):** AdMob plugin; one Home-screen banner in the Android app, never on other screens, never for subscribers; UMP consent and Ad privacy choices; admin on/off and ad unit id; app id from the `ADMOB_APP_ID` secret (Google's sample id until then). Needs a new Android build and the owner's AdMob steps. See §5 "Ads" |
