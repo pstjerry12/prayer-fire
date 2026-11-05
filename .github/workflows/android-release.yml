@@ -129,6 +129,9 @@ jobs:
 
       - name: Build release AAB + universal APK
         working-directory: android
+        env:
+          # The real AdMob app id (repo secret ADMOB_APP_ID). Empty = Google's sample id, so the app still starts.
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
         run: |
           chmod +x ./gradlew
           ./gradlew clean bundleRelease --no-daemon
@@ -137,6 +140,8 @@ jobs:
       - name: Build debug APK (optional)
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_debug_apk }}
         working-directory: android
+        env:
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
         run: ./gradlew assembleDebug --no-daemon
 
       - name: Verify signature
