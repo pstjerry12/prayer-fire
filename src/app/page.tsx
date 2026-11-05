@@ -9,6 +9,7 @@ import TestimonyCard from './components/TestimonyCard';
 import AnnouncementBanner from './components/AnnouncementBanner';
 import DailyExaltation from './components/DailyExaltation';
 import HomeFold from './components/HomeFold';
+import HomeVideos from './components/HomeVideos';
 import HomeAlertCard from './components/HomeAlertCard';
 
 export default function HomePage() {
@@ -84,6 +85,9 @@ export default function HomePage() {
         <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-4 md:pt-8">
           {/* ── Daily Morning Exaltation (YouTube) ── */}
           <DailyExaltation />
+
+          {/* ── Podcast, short teachings and "How to use Prayer Fire" (nothing until the admin adds videos) ── */}
+          <HomeVideos />
 
           {/* ── Prayer Groups (horizontal) ────────── */}
           <Link
