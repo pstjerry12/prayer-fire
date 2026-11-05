@@ -284,6 +284,16 @@ export default function AccountSettings({
                 <span className="flex-1 text-sm text-ink-soft">Privacy Policy</span>
                 <ChevronRight className="w-4 h-4 text-ink-faint" />
               </button>
+              <a href="/terms" className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3">
+                <ShieldCheck className="w-4 h-4 text-acc-strong" />
+                <span className="flex-1 text-sm text-ink-soft">Terms of Service</span>
+                <ChevronRight className="w-4 h-4 text-ink-faint" />
+              </a>
+              <a href="/community-guidelines" className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3">
+                <ShieldCheck className="w-4 h-4 text-acc-strong" />
+                <span className="flex-1 text-sm text-ink-soft">Community Guidelines</span>
+                <ChevronRight className="w-4 h-4 text-ink-faint" />
+              </a>
               {adChoices && (
                 <button
                   onClick={() => openAdPrivacyOptions()}

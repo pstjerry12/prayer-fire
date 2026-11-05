@@ -493,6 +493,12 @@ Not started. There is no `ios/` project, and the AlarmEngine is Android-only.
 
 ---
 
+### Legal and compliance (Phase 11)
+- All legal text lives in `src/app/data/legal.ts` (`TERMS_SECTIONS`, `PRIVACY_SECTIONS`, `COMMUNITY_SECTIONS`, `LEGAL_UPDATED`, `CONTACT_EMAIL`). Pages: `/privacy`, `/terms`, `/community-guidelines`, `/delete-account` (all public, in `SignInGate` PUBLIC_PREFIXES). Pop-ups use `LegalSections` (compact) so the text is identical everywhere.
+- Account deletion: `DELETE /api/auth/account` removes profile and related rows (study, intercessory prayers, group data, reports, alert taps/requests when those tables exist). Google subscriptions must still be cancelled in Google Play (stated on the page).
+- Statements about group approval, Global Alerts and videos assume those PRs are deployed. Update `LEGAL_UPDATED` when text changes.
+- Not built yet: per-user "block this person" (reports and leader remove/block exist). Add `user_blocks` after prayer groups v2 is merged.
+- Owner checklist: `docs/PLAY-CONSOLE-UPDATES.md`.
 ### Languages (Phase 10)
 - Text lives in `src/lib/i18n/messages.ts` (English first, other languages fall back to English per key). `LanguageProvider` (`src/app/i18n.tsx`, in `AppShell`) holds `lang`; components use `useI18n()` / `useT()`. Language is stored in `pfm_lang`; first visit uses `navigator.languages`.
 - Choosing a language that has a Bible switches the Bible to it (`translationForLanguage`); choosing Swahili/Korean/Tagalog leaves the Bible as is and shows a note.
@@ -752,6 +758,7 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
+| next | **Legal & compliance (Phase 11):** rewritten Privacy Policy (AdMob, NDPA 2023, third parties), Terms (subscriptions, UGC, ads, deletion), new Community Guidelines page, public `/delete-account` page, legal links in footer and Settings, Terms link on plans screen, donation note (voluntary, unlocks nothing), account deletion now also removes server study notes, intercessory prayers, reports and alert data; Play Console checklist in `docs/PLAY-CONSOLE-UPDATES.md`. See §5 "Legal" |
 | next | **Languages (Phase 10):** App language switcher (English, French, Spanish, Portuguese, Swahili, Korean, Tagalog) in Settings, follows the phone's language on first visit; main screens translated; Bibles added: Louis Segond 1910 (fr), Reina-Valera 1909 (es), Bíblia Livre/Almeida (pt, CC BY: credit shown); book names and read-aloud voice follow the Bible language; Bible search accepts local book names. Details: `docs/BIBLE-TRANSLATIONS.md`, `docs/LANGUAGES.md`. See §5 "Languages" |
 | next | **Engagement (Phase 9):** My Prayer Journal (`/journal`, on-phone, answered-with-date, share as anonymous testimony / picture / WhatsApp); one-tap branded verse picture + "Send on WhatsApp" in the verse menu (`shareImage.ts`, needs `@capacitor/filesystem`); Android home-screen widget (today's prayer point, verse, streak, Pray now); Low-data mode switch in Settings (`lowData.ts`). Android version 32 / 1.0.31. See §5 "Engagement" |
 | next | **Premium Bible voices (Phase 8, OFF until keys are added):** subscribers choose ElevenLabs voices; each chapter generated once per voice, saved in Supabase Storage and reused; daily limit on new chapters; save a chapter or a book offline. Needs `ELEVENLABS_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` and `supabase/bible-audio.sql`. See §5 "Bible audio" |

@@ -1,7 +1,8 @@
 'use client';
 
 import { X, ScrollText } from 'lucide-react';
-import type { LegalSection } from '@/app/data/legal';
+import { LEGAL_UPDATED, type LegalSection } from '@/app/data/legal';
+import LegalSections from './LegalSections';
 
 interface Props {
   isOpen: boolean;
@@ -28,16 +29,11 @@ export default function LegalModal({ isOpen, title, sections, onClose }: Props) 
           </div>
 
           <div className="p-5 space-y-5">
-            {sections.map((s) => (
-              <div key={s.title} className="space-y-1.5">
-                <h3 className="text-acc-strong text-sm font-bold">{s.title}</h3>
-                <p className="text-ink-soft text-xs leading-relaxed">{s.body}</p>
-              </div>
-            ))}
+            <LegalSections sections={sections} variant="compact" />
 
             <div className="bg-card-2 rounded-xl p-3 border border-edge text-center">
               <p className="text-ink-muted text-[0.6875rem]">
-                Last updated: {new Date().getFullYear()} · Prayer Fire
+                Last updated: {LEGAL_UPDATED} · Prayer Fire
               </p>
             </div>
 

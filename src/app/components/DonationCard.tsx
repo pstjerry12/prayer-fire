@@ -178,7 +178,7 @@ export default function DonationCard() {
       >
         <div className="border-t border-edge px-4 pt-4 pb-4">
           <p className="text-ink-muted text-xs leading-relaxed mb-4">
-            Your voluntary gifts help revive prayer among Christians worldwide.
+            Your voluntary gifts help revive prayer among Christians worldwide. Giving is a gift: it does not unlock any feature or plan.
           </p>
 
           {/* Currency */}
