@@ -4,6 +4,14 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // AdMob's app-ads.txt: always plain text, and re-checked often so an edit is picked up quickly.
+        source: "/app-ads.txt",
+        headers: [
+          { key: "Content-Type", value: "text/plain; charset=utf-8" },
+          { key: "Cache-Control", value: "public, max-age=300, s-maxage=300" },
+        ],
+      },
+      {
         // One small file per Bible book and translation (see scripts/split-bible.mjs). The folder name carries the
         // version, so these can be cached for a year without ever going stale.
         source: "/bible-data/:path*",
