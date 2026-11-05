@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Menu, X, Flame, Crown, LogIn, ChevronRight, ChevronDown, Moon, Sun, ShieldCheck,
-  MoreVertical, LogOut, User as UserIcon, Settings, BookOpen, Music,
+  MoreVertical, LogOut, User as UserIcon, Settings, BookOpen, Music, Globe,
 } from 'lucide-react';
 import { useApp } from '@/app/context';
 import { cn } from '@/app/utils/cn';
@@ -27,6 +27,15 @@ const MENU_CATEGORIES = [
     label: 'Worship',
     icon: Music,
     items: [{ href: '/worship', label: 'Praise & Worship' }],
+  },
+  {
+    id: 'together',
+    label: 'Pray Together',
+    icon: Globe,
+    items: [
+      { href: '/alerts', label: 'Global Prayer Alerts' },
+      { href: '/groups', label: 'Prayer Groups' },
+    ],
   },
 ];
 
