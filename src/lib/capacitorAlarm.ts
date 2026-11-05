@@ -123,6 +123,11 @@ interface AlarmEnginePluginApi {
     minute: number;
     label: string;
     tone: string;
+    kind?: 'personal' | 'group';
+    callUrl?: string;
+  }): Promise<void>;
+  setAlarmContent(options: {
+    items: { day: number; point: string; verse: string; reference: string }[];
   }): Promise<void>;
   cancelAlarm(options: { id: string }): Promise<void>;
   cancelAllAlarms(): Promise<void>;
@@ -333,7 +338,7 @@ export async function cancelAllNativeAlarms(): Promise<void> {
   }
 }
 
-// ── AlarmEngine: schedule/cancel the loud, 5-minute Android alarms ──
+// ── AlarmEngine: schedule/cancel the loud, 3-minute Android alarms ──
 // Only appointments with useNativeAlarm=true go through here — everything
 // else keeps using the plain LocalNotifications path above.
 export async function scheduleAlarmEngineAlarms(
@@ -355,12 +360,48 @@ export async function scheduleAlarmEngineAlarms(
         minute: mm,
         label: appt.label,
         tone: appt.alarmTone || 'classic',
+        kind: appt.kind === 'group' ? 'group' : 'personal',
+        callUrl: appt.kind === 'group' ? appt.callUrl ?? '' : '',
       });
     }
     console.log('[CapacitorAlarm] Scheduled AlarmEngine alarms');
   } catch (err) {
     console.error('[CapacitorAlarm] Failed to schedule AlarmEngine alarms:', err);
   }
+}
+
+/**
+ * Gives the native full-screen alarm screen the next few days of prayer points and verses (it shows today's).
+ * Android only; a no-op on web and iOS.
+ */
+export async function setNativeAlarmContent(
+  items: { day: number; point: string; verse: string; reference: string }[]
+): Promise<void> {
+  const { plugin: engine } = await getAlarmEngine();
+  if (!engine) return;
+  try {
+    await engine.setAlarmContent({ items });
+  } catch (err) {
+    console.error('[CapacitorAlarm] Failed to save alarm content:', err);
+  }
+}
+
+/**
+ * Calls back when the alarm's "Pray Now" button opens the app (deep link `<app scheme>://pray`), both when the app
+ * was already running and when the button launched it. The caller sends the person straight to the prayer session.
+ */
+export async function listenPrayNow(callback: () => void): Promise<() => void> {
+  const remove = await subscribeAppUrl(praySubscribers, callback);
+  if (pendingPrayNow) {
+    pendingPrayNow = false;
+    callback();
+  }
+  return remove;
+}
+
+/** True for the deep link the alarm's Pray Now button opens. */
+export function isPrayNowLink(url: string): boolean {
+  return /^[a-z0-9.]+:\/\/pray\/?(\?.*)?$/i.test(url);
 }
 
 export async function cancelAllAlarmEngineAlarms(): Promise<void> {
@@ -513,16 +554,42 @@ export async function listenNotificationTap(
 export async function listenAuthDeepLink(
   callback: (url: string) => void
 ): Promise<() => void> {
-  if (!isCapacitorNative()) return () => {};
+  return subscribeAppUrl(authSubscribers, callback);
+}
+
+// Capacitor hands a link that launched the app to the FIRST listener that registers, and only that one. Two parts of
+// the app want links (Google sign-in and the alarm's Pray Now button), so there is ONE real listener here that
+// passes each link to the right part. A Pray Now link that arrives before its part has started is kept until it does.
+const authSubscribers = new Set<(url: string) => void>();
+const praySubscribers = new Set<() => void>();
+let pendingPrayNow = false;
+let appUrlListening = false;
+
+async function ensureAppUrlListener(): Promise<void> {
+  if (appUrlListening) return;
+  appUrlListening = true;
   try {
     const { App } = await import('@capacitor/app');
-    const listener = await App.addListener('appUrlOpen', (event) => {
-      callback(event.url);
+    await App.addListener('appUrlOpen', (event) => {
+      if (isPrayNowLink(event.url)) {
+        if (praySubscribers.size > 0) praySubscribers.forEach((cb) => cb());
+        else pendingPrayNow = true;
+      } else {
+        authSubscribers.forEach((cb) => cb(event.url));
+      }
     });
-    return () => listener.remove();
   } catch {
-    return () => {};
+    appUrlListening = false;
   }
+}
+
+async function subscribeAppUrl<T>(set: Set<T>, callback: T): Promise<() => void> {
+  if (!isCapacitorNative()) return () => {};
+  set.add(callback);
+  await ensureAppUrlListener();
+  return () => {
+    set.delete(callback);
+  };
 }
 
 // ── Listen for the Android hardware/gesture back button ─────────────

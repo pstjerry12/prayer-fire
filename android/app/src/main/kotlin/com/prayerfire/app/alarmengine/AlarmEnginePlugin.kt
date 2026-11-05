@@ -16,7 +16,7 @@ import com.getcapacitor.annotation.CapacitorPlugin
 
 /**
  * Bridges the web app to the native alarm engine: AlarmManager exact
- * scheduling, a foreground service that rings at max alarm volume for 5
+ * scheduling, a foreground service that rings at alarm volume for 3
  * minutes, and the Android 12+/13+/14+ permissions all of that needs.
  *
  * Web (and iOS) keep using @capacitor/local-notifications as before — this
@@ -33,13 +33,16 @@ class AlarmEnginePlugin : Plugin() {
         val minute = call.getInt("minute")
         val label = call.getString("label") ?: "Prayer Time"
         val tone = call.getString("tone") ?: "classic"
+        // "group" alarms show "Join Live Prayer" and open the group's call link instead of the prayer session.
+        val kind = if (call.getString("kind") == ScheduledAlarm.KIND_GROUP) ScheduledAlarm.KIND_GROUP else ScheduledAlarm.KIND_PERSONAL
+        val callUrl = call.getString("callUrl") ?: ""
 
         if (id == null || hour == null || minute == null) {
             call.reject("id, hour and minute are required")
             return
         }
 
-        val alarm = ScheduledAlarm(id, hour, minute, label, tone)
+        val alarm = ScheduledAlarm(id, hour, minute, label, tone, kind, callUrl)
         AlarmStore.save(context, alarm)
         AlarmScheduler.schedule(context, alarm)
         call.resolve()
@@ -62,6 +65,29 @@ class AlarmEnginePlugin : Plugin() {
     @PluginMethod
     fun cancelAllAlarms(call: PluginCall) {
         AlarmStore.clear(context).forEach { AlarmScheduler.cancel(context, it) }
+        call.resolve()
+    }
+
+    /**
+     * Gives the full-screen alarm screen a few weeks of prayer points and verses to show (it picks today's by date).
+     * `items` is an array of { day, point, verse, reference }, where `day` is the phone's local day number.
+     */
+    @PluginMethod
+    fun setAlarmContent(call: PluginCall) {
+        val arr = call.getArray("items")
+        if (arr == null) {
+            call.reject("items is required")
+            return
+        }
+        val items = ArrayList<AlarmContent>()
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            val point = o.optString("point")
+            val verse = o.optString("verse")
+            if (point.isBlank() && verse.isBlank()) continue
+            items.add(AlarmContent(point.take(300), verse.take(400), o.optString("reference").take(80), o.optLong("day", -1L)))
+        }
+        AlarmContentStore.save(context, items)
         call.resolve()
     }
 
