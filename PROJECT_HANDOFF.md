@@ -445,6 +445,14 @@ Not started. There is no `ios/` project, and the AlarmEngine is Android-only.
 
 ---
 
+### Engagement (Phase 9)
+- **Prayer Journal:** `src/lib/prayerJournal.ts` (pure logic, tested) + `PrayerJournal.tsx` at `/journal` (Navbar menu: Discipleship). Entries live in localStorage `pfm_journal` only (max 500). "God answered" stores the date and an optional note. Answered prayers can be sent as a testimony (POST `/api/testimonials`, always anonymous, admin approves), made into a picture, or sent on WhatsApp.
+- **Streaks:** already existed (Navbar flame, `computeStreak` in `context.tsx`); now also shown on the widget.
+- **Branded verse picture:** `src/lib/shareImage.ts` draws a 1080x1350 evergreen card on a canvas (layout maths in `cardLayout.ts`, tested). Android: written to the cache with `@capacitor/filesystem` and given to the native share sheet; browser: Web Share with files, else the picture downloads. "Send on WhatsApp" opens `https://wa.me/?text=`. Both are in the verse long-press menu (Bible, Prayer Verses).
+- **Home-screen widget (Android):** `PrayerWidgetProvider.kt` + `res/layout/widget_prayer.xml`, `res/xml/prayer_widget_info.xml`, manifest receiver. Shows today's prayer point and verse from `AlarmContentStore` (the web app refreshes 14 days at a time) and the streak (`setStreak` plugin call, `setNativeWidgetStreak`). Refreshes hourly and whenever the app opens. NOT yet seen on a real phone (CI compiles it).
+- **Low-data mode:** `src/lib/lowData.ts`, switch in Settings ("Data saver", localStorage `pfm_low_data`). `isLowData()` is also true when the phone says Save-Data or the network is 2G. Currently stops background screen prefetching (`PrefetchRoutes`); new features that load pictures or audio (video thumbnails, premium Bible voices) should check `isLowData()` first.
+- Needs a new Android build (new plugin, widget).
+
 ## 6. Backend: database and API
 
 ### Tables (`src/db/schema.ts`, Postgres, snake_case columns)
@@ -690,6 +698,7 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
+| next | **Engagement (Phase 9):** My Prayer Journal (`/journal`, on-phone, answered-with-date, share as anonymous testimony / picture / WhatsApp); one-tap branded verse picture + "Send on WhatsApp" in the verse menu (`shareImage.ts`, needs `@capacitor/filesystem`); Android home-screen widget (today's prayer point, verse, streak, Pray now); Low-data mode switch in Settings (`lowData.ts`). Android version 32 / 1.0.31. See §5 "Engagement" |
 | next | **Plans v2 (Phase 3):** Free / Partner / Leader side by side on the Android plans screen (Google Play price, trial, auto-renew and cancel text, Most popular, Leader tiers with member limits); descriptions and tiers editable in Admin -> Pricing -> "Plans and Leader tiers" (`plan_config`); PR #99 closed. See §5 "Plans v2" |
 | next | **Design v2 (Phase 2):** warm-beige light mode, clear outline on every card, deep-evergreen header in both modes, polished dark mode; native status/splash colours updated (needs a new Android build). See §5 "Design v2" |
 | next | **Leader features finished: moderation, analytics, featured groups (PRs #89, #90, #91, stacked on #88 and #87).** Moderation (reports queue, hide/delete, pin, remove/block, co-leaders), analytics dashboard for the group's leader (numbers only), featured groups with a search box, an admin Featured tab and optional end dates; all enforced in Postgres (RLS + functions in `supabase/groups.sql`); Leader paywall lists all three. Merge order: #87, #88, #89, #90, #91. `supabase/groups.sql` must be applied to production before any of the group code is used |

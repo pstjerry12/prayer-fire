@@ -88,6 +88,15 @@ class AlarmEnginePlugin : Plugin() {
             items.add(AlarmContent(point.take(300), verse.take(400), o.optString("reference").take(80), o.optLong("day", -1L)))
         }
         AlarmContentStore.save(context, items)
+        PrayerWidgetProvider.refreshAll(context)
+        call.resolve()
+    }
+
+    /** The fire streak for the home-screen widget (days in a row with a prayer check-in). */
+    @PluginMethod
+    fun setStreak(call: PluginCall) {
+        val days = call.getInt("days") ?: 0
+        PrayerWidgetProvider.saveStreak(context, days)
         call.resolve()
     }
 

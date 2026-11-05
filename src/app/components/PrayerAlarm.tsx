@@ -13,6 +13,7 @@ import {
   listenNotificationTap,
   listenPrayNow,
   setNativeAlarmContent,
+  setNativeWidgetStreak,
 } from '@/lib/capacitorAlarm';
 
 /**
@@ -26,7 +27,7 @@ import {
  *   • Shows a full-screen "STOP ALARM" overlay
  */
 export default function PrayerAlarm() {
-  const { appointments } = useApp();
+  const { appointments, streak } = useApp();
   const router = useRouter();
   const routerRef = useRef(router);
   useEffect(() => {
@@ -37,6 +38,11 @@ export default function PrayerAlarm() {
     appointmentsRef.current = appointments;
   }, [appointments]);
   const [alarmLabel, setAlarmLabel] = useState<string | null>(null);
+
+  // The Android home-screen widget shows the fire streak (a no-op on web).
+  useEffect(() => {
+    setNativeWidgetStreak(streak);
+  }, [streak]);
 
   const dismiss = () => {
     stopAlarm();

@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { Bookmark as BookmarkIcon, BookOpenText, Check, Copy, Highlighter, Share2, Volume2, X } from 'lucide-react';
+import { Bookmark as BookmarkIcon, BookOpenText, Check, Copy, Highlighter, Image as ImageIcon, MessageCircle, Share2, Volume2, X } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { HIGHLIGHT_COLORS, type HighlightColor } from '@/lib/studyMerge';
 import { HIGHLIGHT_STYLES } from '@/lib/highlightStyles';
 import type { ShareResult } from '@/lib/shareVerse';
+import { shareImageCard, shareToWhatsApp } from '@/lib/shareImage';
 
 interface Props {
   /** "John 3:16" or "John 3:16, 18 (3 verses)" */
@@ -15,6 +16,8 @@ interface Props {
   onReadAloud: () => void;
   /** Opens the phone's share sheet with the verse and a link to the Bible in Prayer Fire. */
   onShare?: () => Promise<ShareResult>;
+  /** What the branded picture and the WhatsApp button send: the words, the reference (e.g. "John 3:16 (KJV)") and the plain-text line. */
+  card?: { body: string; reference: string; line: string };
   bookmarked: boolean;
   onToggleBookmark: () => void;
   /** Bible verses only: highlight colours. Left out for prayer verses. */
@@ -48,10 +51,11 @@ function Row({ icon, label, hint, onClick, active }: { icon: ReactNode; label: s
 }
 
 /** The long-press menu for a verse (or several selected verses). */
-export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, onShare, bookmarked, onToggleBookmark, highlight, sermon }: Props) {
+export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, onShare, card, bookmarked, onToggleBookmark, highlight, sermon }: Props) {
   const [copied, setCopied] = useState(false);
   const [showColors, setShowColors] = useState(false);
   const [shareNote, setShareNote] = useState<string | null>(null);
+  const [imageNote, setImageNote] = useState<string | null>(null);
 
   async function handleCopy() {
     const ok = await onCopy();
@@ -74,6 +78,29 @@ export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, 
     } else {
       onClose();
     }
+  }
+
+  async function handleImage() {
+    if (!card) return;
+    setImageNote('Making your picture...');
+    const result = await shareImageCard(card.body, card.reference, card.line);
+    if (result === 'saved') {
+      setImageNote('Picture saved to your downloads. Send it from your gallery.');
+      setTimeout(onClose, 2200);
+    } else if (result === 'copied') {
+      setImageNote('Copied the text with the link. Paste it into WhatsApp or a message.');
+      setTimeout(onClose, 1800);
+    } else if (result === 'failed') {
+      setImageNote('Could not make the picture on this device.');
+    } else {
+      onClose();
+    }
+  }
+
+  function handleWhatsApp() {
+    if (!card) return;
+    shareToWhatsApp(card.line);
+    onClose();
   }
 
   return (
@@ -100,6 +127,22 @@ export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, 
               label="Share"
               hint={shareNote ?? 'Send the verse with a link to the Bible in Prayer Fire'}
               onClick={handleShare}
+            />
+          )}
+          {card && (
+            <Row
+              icon={<ImageIcon className="w-4 h-4" />}
+              label="Share as picture"
+              hint={imageNote ?? 'A branded Prayer Fire card for WhatsApp, Instagram and more'}
+              onClick={handleImage}
+            />
+          )}
+          {card && (
+            <Row
+              icon={<MessageCircle className="w-4 h-4" />}
+              label="Send on WhatsApp"
+              hint="Opens WhatsApp with the verse and link ready"
+              onClick={handleWhatsApp}
             />
           )}
           <Row

@@ -20,6 +20,7 @@ const MENU_CATEGORIES = [
     items: [
       { href: '/scripture', label: 'Scripture & Wisdom' },
       { href: '/fasting', label: 'Fasting Tracker' },
+      { href: '/journal', label: 'Prayer Journal' },
     ],
   },
   {

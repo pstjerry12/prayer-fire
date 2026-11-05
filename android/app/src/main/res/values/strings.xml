@@ -4,4 +4,7 @@
     <string name="title_activity_main">Prayer Fire</string>
     <string name="package_name">com.prayerfireaction.prayerfire</string>
     <string name="custom_url_scheme">com.prayerfireaction.prayerfire</string>
+    <string name="widget_title">🔥 Today\'s prayer</string>
+    <string name="widget_pray_now">Pray now</string>
+    <string name="widget_description">Today\'s prayer point and verse, your fire streak, and a one-tap Pray now button.</string>
 </resources>
