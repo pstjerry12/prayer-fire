@@ -288,5 +288,59 @@ export type TestimonialRow = typeof testimonials.$inferSelect;
 export type EventRow = typeof events.$inferSelect;
 export type AppSettingRow = typeof appSettings.$inferSelect;
 export type IntercessoryPrayerRow = typeof intercessoryPrayers.$inferSelect;
+// ── Global Prayer Alerts ─────────────────────────────────────────────────────
+// Created by supabase/alerts.sql (only the app's server routes use them). Declared here so `drizzle-kit push` knows they
+// exist and does not drop them. After any push, re-run supabase/alerts.sql.
+export const globalAlerts = pgTable("global_alerts", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  summary: text("summary").notNull().default(""),
+  scriptures: jsonb("scriptures").notNull().default([]),
+  points: jsonb("points").notNull().default([]),
+  country: text("country"),
+  status: text("status").notNull().default("live"), // draft | live | ended
+  source: text("source").notNull().default("admin"), // admin | leader
+  authorName: text("author_name").notNull().default("Prayer Fire"),
+  authorId: text("author_id"),
+  pinned: boolean("pinned").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  endsAt: timestamp("ends_at", { withTimezone: true }),
+});
+
+export const alertPraying = pgTable(
+  "alert_praying",
+  {
+    alertId: text("alert_id").notNull(),
+    userId: text("user_id").notNull(),
+    country: text("country").notNull().default("XX"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.alertId, t.userId] })]
+);
+
+export const alertUpdates = pgTable("alert_updates", {
+  id: text("id").primaryKey(),
+  alertId: text("alert_id").notNull(),
+  kind: text("kind").notNull(), // update | testimony
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const alertRequests = pgTable("alert_requests", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  authorName: text("author_name").notNull(),
+  title: text("title").notNull(),
+  summary: text("summary").notNull().default(""),
+  scriptures: jsonb("scriptures").notNull().default([]),
+  points: jsonb("points").notNull().default([]),
+  country: text("country"),
+  status: text("status").notNull().default("pending"), // pending | approved | rejected
+  note: text("note"),
+  alertId: text("alert_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  decidedAt: timestamp("decided_at", { withTimezone: true }),
+});
+
 export type FeedbackRow = typeof feedback.$inferSelect;
 export type TesterRow = typeof testers.$inferSelect;

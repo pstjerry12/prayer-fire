@@ -6,16 +6,17 @@ import {
   LayoutDashboard, Users, Globe, HandHeart, ChevronLeft, ShieldCheck,
   Trash2, Check, X, RefreshCw, Loader2, Search, Megaphone, Send, Crown, UserMinus,
   Settings, MessageSquareHeart, CalendarDays, DollarSign, Key, ExternalLink,
-  AlertTriangle, Flame, Eye, EyeOff, Plus, Edit3, Save, Link as LinkIcon, MessageCircle, Copy, Star,
+  AlertTriangle, Flame, Eye, EyeOff, Plus, Edit3, Save, Link as LinkIcon, MessageCircle, Copy, Star, Siren,
 } from 'lucide-react';
 import { cn } from '@/app/utils/cn';
 import { extractYouTubeVideoId } from '@/app/utils/youtube';
 import AdminDailyActivity from '@/app/components/AdminDailyActivity';
 import AdminPricing from '@/app/components/AdminPricing';
 import AdminPlans from '@/app/components/AdminPlans';
+import AdminAlerts from '@/app/components/AdminAlerts';
 import AdminFeaturedGroups from '@/app/components/AdminFeaturedGroups';
 
-type Tab = 'overview' | 'users' | 'feedback' | 'requests' | 'testimonials' | 'donations' | 'pricing' | 'featured' | 'announcements' | 'events' | 'settings';
+type Tab = 'overview' | 'users' | 'feedback' | 'requests' | 'testimonials' | 'donations' | 'pricing' | 'featured' | 'alerts' | 'announcements' | 'events' | 'settings';
 
 interface Stats {
   users: number;
@@ -275,6 +276,7 @@ export default function AdminPage() {
     { id: 'donations', label: 'Donations', icon: HandHeart },
     { id: 'pricing', label: 'Pricing', icon: DollarSign },
     { id: 'featured', label: 'Featured', icon: Star },
+    { id: 'alerts', label: 'Alerts', icon: Siren },
     { id: 'announcements', label: 'Broadcast', icon: Megaphone },
     { id: 'events', label: 'Events', icon: CalendarDays },
     { id: 'settings', label: 'Settings', icon: Settings },
@@ -561,6 +563,7 @@ export default function AdminPage() {
         )}
 
         {tab === 'featured' && <AdminFeaturedGroups />}
+        {tab === 'alerts' && <AdminAlerts />}
 
         {tab === 'announcements' && (
           <div className="space-y-4">
