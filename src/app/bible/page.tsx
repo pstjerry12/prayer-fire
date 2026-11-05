@@ -8,9 +8,11 @@ import Footer from '@/app/components/Footer';
 import BibleReader from '@/app/components/BibleReader';
 import { KJV_BIBLE_VERSES } from '@/app/data/bibleVerses';
 import { migrateLegacyFavorites } from '@/lib/study';
+import { useT } from '@/app/i18n';
 
 /** The Bible: search, translation, then Book › Chapters › Verses. Prayer Verses and My Study have their own pages on the home screen. */
 export default function BiblePage() {
+  const t = useT();
   useEffect(() => {
     migrateLegacyFavorites(KJV_BIBLE_VERSES);
   }, []);
@@ -20,7 +22,7 @@ export default function BiblePage() {
       <Navbar />
       <main className="max-w-3xl md:max-w-4xl mx-auto px-4 py-6 pb-28 md:pb-10">
         <Link href="/" className="inline-flex items-center gap-1 text-sm text-ink-muted hover:text-acc-strong mb-4">
-          <ChevronLeft className="w-4 h-4" /> Home
+          <ChevronLeft className="w-4 h-4" /> {t('common.home')}
         </Link>
 
         <div className="flex items-center gap-3 mb-5">
@@ -28,8 +30,8 @@ export default function BiblePage() {
             <BookOpen className="w-6 h-6 text-acc-strong" />
           </div>
           <div>
-            <h1 className="font-serif-heading text-2xl font-bold text-ink">Holy Bible</h1>
-            <p className="text-xs text-ink-muted">Read or listen</p>
+            <h1 className="font-serif-heading text-2xl font-bold text-ink">{t('bible.title')}</h1>
+            <p className="text-xs text-ink-muted">{t('bible.subtitle')}</p>
           </div>
         </div>
 

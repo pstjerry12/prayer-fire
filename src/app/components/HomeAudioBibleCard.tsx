@@ -4,8 +4,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pause, Play, Square } from 'lucide-react';
 import { BIBLE_BOOKS } from '@/app/data/bibleBooks';
 import { loadChapter as loadChapterData, type BibleVerse } from '@/lib/bible/loadTranslation';
-import { getSelectedTranslation } from '@/lib/bible/translations';
-import { FIRST_PLACE, getLastPlace, nextChapter, placeLabel, saveLastPlace, type LastPlace } from '@/lib/bibleLastPlace';
+import { getSelectedTranslation, getTranslationMeta, CHAPTER_WORD } from '@/lib/bible/translations';
+import { useI18n } from '@/app/i18n';
+import { FIRST_PLACE, getLastPlace, nextChapter, saveLastPlace, type LastPlace } from '@/lib/bibleLastPlace';
 import { readItems, type ReadController, type ReaderState } from '@/lib/readAloud';
 
 /**
@@ -14,6 +15,8 @@ import { readItems, type ReadController, type ReaderState } from '@/lib/readAlou
  * the voice is the phone's own, so it works without internet. The tile is a grid item (the home screen's 2x2 grid).
  */
 export default function HomeAudioBibleCard() {
+  const { t, bookLabel } = useI18n();
+  const where = (p: LastPlace) => `${bookLabel(p.book)} ${p.chapter}`;
   const [place, setPlace] = useState<LastPlace | null>(null);
   const [state, setState] = useState<ReaderState>('idle');
   const [nowVerse, setNowVerse] = useState<number | null>(null);
@@ -57,9 +60,11 @@ export default function HomeAudioBibleCard() {
     // Resume at the verse they stopped on (a little before it is not needed: the verse is read whole).
     const from = start.verse && start.verse > 1 ? start.verse : 0;
     const items = verses.filter((v) => v.number >= from).map((v) => ({ id: v.number, text: v.text }));
-    if (!from) items.unshift({ id: 0, text: `${start.book} chapter ${start.chapter}.` });
+    const bibleLang = getTranslationMeta(getSelectedTranslation()).language;
+    if (!from) items.unshift({ id: 0, text: `${bookLabel(start.book)} ${CHAPTER_WORD[bibleLang]} ${start.chapter}.` });
 
     controller.current = readItems(items, {
+      lang: bibleLang,
       onItemStart: (_i, item) => {
         const n = typeof item.id === 'number' ? item.id : 0;
         setNowVerse(n > 0 ? n : null);
@@ -84,12 +89,12 @@ export default function HomeAudioBibleCard() {
   }
 
   const reading = state !== 'idle';
-  const title = reading ? (state === 'playing' ? 'Pause' : 'Resume') : 'Audio Bible';
+  const title = reading ? (state === 'playing' ? 'Pause' : 'Resume') : t('home.audioBible');
   const detail = reading
-    ? `${placeLabel(current)}${nowVerse ? `:${nowVerse}` : ''}`
+    ? `${where(current)}${nowVerse ? `:${nowVerse}` : ''}`
     : place
-      ? placeLabel(current)
-      : `Start at ${placeLabel(FIRST_PLACE)}`;
+      ? where(current)
+      : `Start at ${where(FIRST_PLACE)}`;
 
   return (
     <>
@@ -99,7 +104,7 @@ export default function HomeAudioBibleCard() {
           aria-label={
             reading
               ? state === 'playing' ? 'Pause the Bible reading' : 'Resume the Bible reading'
-              : place ? `Audio Bible, continue ${placeLabel(current)}` : 'Audio Bible, start listening'
+              : place ? `Audio Bible, continue ${where(current)}` : 'Audio Bible, start listening'
           }
           className="flex h-full min-h-[3.75rem] w-full items-center gap-3 rounded-2xl bg-card border border-edge p-3 text-left active:scale-[0.98] transition-transform"
         >

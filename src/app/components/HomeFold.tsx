@@ -1,7 +1,10 @@
+'use client';
+
 import Link from 'next/link';
 import { BookOpen, NotebookPen, ScrollText } from 'lucide-react';
 import VerseOfTheDayCard from './VerseOfTheDayCard';
 import HomeAudioBibleCard from './HomeAudioBibleCard';
+import { useT } from '../i18n';
 
 const TILE = 'flex min-h-[3.75rem] items-center gap-3 rounded-2xl bg-card border border-edge p-3 active:scale-[0.98] transition-transform';
 const ICON = 'grid h-9 w-9 shrink-0 place-items-center rounded-full bg-acc-soft text-acc-strong';
@@ -11,6 +14,7 @@ const ICON = 'grid h-9 w-9 shrink-0 place-items-center rounded-full bg-acc-soft 
  * straight to its own page. The Audio Bible tile starts reading aloud where the person stopped.
  */
 export default function HomeFold() {
+  const t = useT();
   return (
     <div className="space-y-4" data-testid="home-fold">
       <VerseOfTheDayCard compact />
@@ -18,22 +22,22 @@ export default function HomeFold() {
         <Link href="/bible" className={TILE}>
           <span className={ICON}><BookOpen className="w-5 h-5" /></span>
           <span className="min-w-0">
-            <span className="block text-[0.9375rem] font-bold leading-tight text-heading">Bible</span>
-            <span className="block text-xs font-semibold text-ink-muted">Read or search</span>
+            <span className="block text-[0.9375rem] font-bold leading-tight text-heading">{t('home.tileBible')}</span>
+            <span className="block text-xs font-semibold text-ink-muted">{t('home.readOrSearch')}</span>
           </span>
         </Link>
         <Link href="/prayer-verses" className={TILE}>
           <span className={ICON}><ScrollText className="w-5 h-5" /></span>
           <span className="min-w-0">
-            <span className="block text-[0.9375rem] font-bold leading-tight text-heading">Prayer Verses</span>
-            <span className="block text-xs font-semibold text-ink-muted">Pray by topic</span>
+            <span className="block text-[0.9375rem] font-bold leading-tight text-heading">{t('home.tileVerses')}</span>
+            <span className="block text-xs font-semibold text-ink-muted">{t('home.byTopic')}</span>
           </span>
         </Link>
         <Link href="/study" className={TILE}>
           <span className={ICON}><NotebookPen className="w-5 h-5" /></span>
           <span className="min-w-0">
-            <span className="block text-[0.9375rem] font-bold leading-tight text-heading">My Study</span>
-            <span className="block text-xs font-semibold text-ink-muted">Notes &amp; bookmarks</span>
+            <span className="block text-[0.9375rem] font-bold leading-tight text-heading">{t('home.tileStudy')}</span>
+            <span className="block text-xs font-semibold text-ink-muted">{t('home.notes')}</span>
           </span>
         </Link>
         <HomeAudioBibleCard />

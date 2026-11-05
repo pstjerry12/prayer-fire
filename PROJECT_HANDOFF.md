@@ -445,6 +445,13 @@ Not started. There is no `ios/` project, and the AlarmEngine is Android-only.
 
 ---
 
+### Languages (Phase 10)
+- Text lives in `src/lib/i18n/messages.ts` (English first, other languages fall back to English per key). `LanguageProvider` (`src/app/i18n.tsx`, in `AppShell`) holds `lang`; components use `useI18n()` / `useT()`. Language is stored in `pfm_lang`; first visit uses `navigator.languages`.
+- Choosing a language that has a Bible switches the Bible to it (`translationForLanguage`); choosing Swahili/Korean/Tagalog leaves the Bible as is and shows a note.
+- Bibles: `lsg`, `rv1909`, `almeida` in `src/data/bible/*.json` + `public/bible-data/v1/<id>/` (built by `scripts/import-translations.mjs`; licences in `docs/BIBLE-TRANSLATIONS.md`). Almeida needs its CC BY credit (shown by `BibleReader`). RV1909 lacks 18 verse numbers that its versification folds into the previous verse.
+- Translated so far: bottom menu, Home, Bible page, Settings title + language picker, book names (fr/es/pt). NOT translated: most other screens, Prayer Verses and My Study (still KJV English). Wording needs a native-speaker review (`docs/LANGUAGES.md`).
+- Read aloud takes `lang` from the Bible translation (`readItems({ lang })`).
+
 ## 6. Backend: database and API
 
 ### Tables (`src/db/schema.ts`, Postgres, snake_case columns)
@@ -690,6 +697,7 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
+| next | **Languages (Phase 10):** App language switcher (English, French, Spanish, Portuguese, Swahili, Korean, Tagalog) in Settings, follows the phone's language on first visit; main screens translated; Bibles added: Louis Segond 1910 (fr), Reina-Valera 1909 (es), Bíblia Livre/Almeida (pt, CC BY: credit shown); book names and read-aloud voice follow the Bible language; Bible search accepts local book names. Details: `docs/BIBLE-TRANSLATIONS.md`, `docs/LANGUAGES.md`. See §5 "Languages" |
 | next | **Plans v2 (Phase 3):** Free / Partner / Leader side by side on the Android plans screen (Google Play price, trial, auto-renew and cancel text, Most popular, Leader tiers with member limits); descriptions and tiers editable in Admin -> Pricing -> "Plans and Leader tiers" (`plan_config`); PR #99 closed. See §5 "Plans v2" |
 | next | **Design v2 (Phase 2):** warm-beige light mode, clear outline on every card, deep-evergreen header in both modes, polished dark mode; native status/splash colours updated (needs a new Android build). See §5 "Design v2" |
 | next | **Leader features finished: moderation, analytics, featured groups (PRs #89, #90, #91, stacked on #88 and #87).** Moderation (reports queue, hide/delete, pin, remove/block, co-leaders), analytics dashboard for the group's leader (numbers only), featured groups with a search box, an admin Featured tab and optional end dates; all enforced in Postgres (RLS + functions in `supabase/groups.sql`); Leader paywall lists all three. Merge order: #87, #88, #89, #90, #91. `supabase/groups.sql` must be applied to production before any of the group code is used |

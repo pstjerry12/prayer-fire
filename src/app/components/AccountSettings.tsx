@@ -25,6 +25,8 @@ import { cn } from '../utils/cn';
 import { CURRENCIES, type Currency } from '../data/pricingPlans';
 import type { AuthUser } from '@/app/types';
 import { getAppVersionInfo, PLAY_STORE_URL } from '@/lib/capacitorAlarm';
+import { useI18n } from '@/app/i18n';
+import { LANGUAGES } from '@/lib/i18n/languages';
 import { TEXT_SCALE_OPTIONS, getStoredTextScale, setTextScale } from '@/lib/textScale';
 
 interface Props {
@@ -65,6 +67,7 @@ export default function AccountSettings({
   const [signingOut, setSigningOut] = useState(false);
   const [appVersion, setAppVersion] = useState<{ version: string; build: string } | null>(null);
   const [textScale, setTextScaleState] = useState(1);
+  const { t } = useI18n();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -98,7 +101,7 @@ export default function AccountSettings({
       <div className="min-h-full flex items-start justify-center p-4 py-10">
         <div className="bg-card rounded-3xl w-full max-w-md border border-edge shadow-2xl overflow-hidden">
           <div className="p-5 border-b border-edge flex items-center justify-between sticky top-0 bg-card z-10">
-            <h2 className="font-serif-heading text-lg font-bold text-ink">Account Settings</h2>
+            <h2 className="font-serif-heading text-lg font-bold text-ink">{t('settings.title')}</h2>
             <button onClick={onClose} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
               <X className="w-5 h-5" />
             </button>
@@ -244,6 +247,9 @@ export default function AccountSettings({
               </div>
             </div>
 
+            {/* Language */}
+            <LanguagePicker />
+
             {/* Rate Us */}
             <div className="space-y-2">
               <h3 className="text-ink-soft text-sm font-semibold">Support Us</h3>
@@ -319,6 +325,35 @@ export default function AccountSettings({
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+
+/** The app language: one button per language. The Bible follows it where the app has a Bible in that language. */
+function LanguagePicker() {
+  const { t, lang, setLang } = useI18n();
+  return (
+    <div className="space-y-2">
+      <h3 className="text-ink-soft text-sm font-semibold">{t('settings.language')}</h3>
+      <p className="text-xs text-ink-muted">{t('settings.languageHint')}</p>
+      <div role="radiogroup" aria-label={t('settings.language')} className="grid grid-cols-2 gap-2">
+        {LANGUAGES.map((l) => (
+          <button
+            key={l.code}
+            role="radio"
+            aria-checked={lang === l.code}
+            onClick={() => setLang(l.code)}
+            lang={l.code}
+            className={cn(
+              'h-11 rounded-xl border px-3 text-sm font-bold text-left transition-colors',
+              lang === l.code ? 'bg-acc-soft text-acc-strong border-acc-edge' : 'bg-card-2 text-ink-soft border-edge hover:bg-card-3'
+            )}
+          >
+            {l.native}
+          </button>
+        ))}
       </div>
     </div>
   );

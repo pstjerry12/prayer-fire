@@ -31,8 +31,12 @@ import {
   getSelectedTranslation,
   setSelectedTranslation,
   getTranslationMeta,
+  hasBibleIn,
+  CHAPTER_WORD,
   type TranslationId,
 } from '@/lib/bible/translations';
+import { LANGUAGES } from '@/lib/i18n/languages';
+import { useI18n } from '@/app/i18n';
 import LongPressable from './LongPressable';
 import VerseActionSheet from './VerseActionSheet';
 import SermonStartModal from './SermonStartModal';
@@ -85,6 +89,7 @@ function readPosition(): SavedPosition | null {
 }
 
 export default function BibleReader() {
+  const { t, lang, bookLabel } = useI18n();
   const study = useStudy();
   const sermon = activeSermon(study);
 
@@ -310,10 +315,11 @@ export default function BibleReader() {
     if (!verses) return;
     const list = numbers && numbers.length > 0 ? versesFor(numbers) : verses;
     const items = list.map((v) => ({ id: v.number, text: v.text }));
-    if (!numbers || numbers.length === 0) items.unshift({ id: 0, text: `${book} chapter ${chapter}.` });
+    if (!numbers || numbers.length === 0) items.unshift({ id: 0, text: `${bookLabel(book)} ${CHAPTER_WORD[translationMeta.language]} ${chapter}.` });
 
     setSpeechProblem(null);
     controllerRef.current = readItems(items, {
+      lang: translationMeta.language,
       onItemStart: (_i, item) => {
         const n = typeof item.id === 'number' ? item.id : 0;
         setReadingVerse(n > 0 ? n : null);
@@ -333,7 +339,7 @@ export default function BibleReader() {
 
   const reading = readerState !== 'idle';
 
-  const readingLabel = readingVerse ? `Reading ${book} ${chapter}:${readingVerse}` : `Reading ${book} ${chapter}`;
+  const readingLabel = readingVerse ? `Reading ${bookLabel(book)} ${chapter}:${readingVerse}` : `Reading ${bookLabel(book)} ${chapter}`;
 
   // "Listen" tapped on the book/chapter list: open the chapter, then read it from verse 1 once it has loaded.
   useEffect(() => {
@@ -376,8 +382,8 @@ export default function BibleReader() {
   const menuInfos = menuVerses.map(infoFor);
   const menuTitle =
     menuVerses.length === 1
-      ? `${book} ${chapter}:${menuVerses[0].number}`
-      : `${book} ${chapter}:${menuVerses.map((v) => v.number).join(', ')}`;
+      ? `${bookLabel(book)} ${chapter}:${menuVerses[0].number}`
+      : `${bookLabel(book)} ${chapter}:${menuVerses.map((v) => v.number).join(', ')}`;
   const menuAllBookmarked = menuInfos.length > 0 && menuInfos.every((i) => study.verses[verseKey(i)]?.bookmarkedAt != null);
   const menuHighlight = menuInfos.length > 0 ? study.verses[verseKey(menuInfos[0])]?.highlight ?? null : null;
 
@@ -394,26 +400,32 @@ export default function BibleReader() {
       <BibleSearchBar translationId={translationId} onGoTo={goTo} />
 
       {/* ── Translation: one chip each, the chosen one filled green ── */}
-      <div role="radiogroup" aria-label="Bible translation" className="flex gap-2">
-        {BIBLE_TRANSLATIONS.map((t) => {
-          const chosen = t.id === translationId;
+      <div role="radiogroup" aria-label={t('bible.translation')} className="flex flex-wrap gap-2">
+        {BIBLE_TRANSLATIONS.map((tr) => {
+          const chosen = tr.id === translationId;
           return (
             <button
-              key={t.id}
+              key={tr.id}
               role="radio"
               aria-checked={chosen}
-              aria-label={t.name}
-              onClick={() => changeTranslation(t.id)}
+              aria-label={tr.name}
+              onClick={() => changeTranslation(tr.id)}
               className={cn(
                 'h-11 min-w-[4.5rem] rounded-full px-5 text-sm font-bold transition-colors active:scale-95',
                 chosen ? 'bg-acc-soft text-acc-strong ring-1 ring-acc-edge' : 'bg-card-2 text-ink-muted hover:text-acc-strong'
               )}
             >
-              {t.shortName}
+              {tr.shortName}
             </button>
           );
         })}
       </div>
+
+      {lang !== 'en' && !hasBibleIn(lang) && (
+        <p className="text-xs text-ink-muted -mt-2" role="note">
+          {t('bible.fallbackNote', { language: LANGUAGES.find((l) => l.code === lang)?.native ?? lang })}
+        </p>
+      )}
 
       {/* ── Step indicator ───────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-1.5">
@@ -451,7 +463,7 @@ export default function BibleReader() {
                 className="mt-1.5 w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
               >
                 {otBooks.map((b) => (
-                  <option key={b.name} value={b.name}>{b.name}</option>
+                  <option key={b.name} value={b.name}>{bookLabel(b.name)}</option>
                 ))}
               </select>
             </label>
@@ -464,7 +476,7 @@ export default function BibleReader() {
               >
                 <option value="" disabled>Select book…</option>
                 {ntBooks.map((b) => (
-                  <option key={b.name} value={b.name}>{b.name}</option>
+                  <option key={b.name} value={b.name}>{bookLabel(b.name)}</option>
                 ))}
               </select>
             </label>
@@ -481,7 +493,7 @@ export default function BibleReader() {
               <ChevronLeft className="w-4 h-4" /> Books
             </button>
             <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1">
-              <ListOrdered className="w-3.5 h-3.5" /> Chapters of {book}
+              <ListOrdered className="w-3.5 h-3.5" /> Chapters of {bookLabel(book)}
             </p>
             <span className="text-xs font-semibold text-ink-muted">{currentBook.chapters} chapters</span>
           </div>
@@ -509,7 +521,7 @@ export default function BibleReader() {
                 <ChevronLeft className="w-4 h-4" /> Chapters
               </button>
               <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1">
-                <ListOrdered className="w-3.5 h-3.5" /> Verses in {book} {chapter}
+                <ListOrdered className="w-3.5 h-3.5" /> Verses in {bookLabel(book)} {chapter}
               </p>
               <span className="text-xs font-semibold text-ink-muted">{verses?.length ?? '…'} verses</span>
             </div>
@@ -542,9 +554,10 @@ export default function BibleReader() {
                 </span>
                 <div className="min-w-0">
                   <h2 className="font-serif-heading text-lg font-bold text-ink truncate">
-                    {book} {chapter}
+                    {bookLabel(book)} {chapter}
                   </h2>
                   <p className="text-[0.6875rem] text-ink-muted">{translationMeta.name}</p>
+                  {translationMeta.credit && <p className="text-[0.625rem] text-ink-faint leading-snug mt-0.5">{t('bible.credit', { credit: translationMeta.credit })}</p>}
                 </div>
               </div>
               {verses && !loading && (
@@ -600,7 +613,7 @@ export default function BibleReader() {
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12 text-ink-muted">
                 <Loader2 className="w-6 h-6 animate-spin mb-2" />
-                <p className="text-sm">Loading {book} {chapter}…</p>
+                <p className="text-sm">Loading {bookLabel(book)} {chapter}…</p>
               </div>
             ) : unavailable ? (
               <div className="text-center py-12">
