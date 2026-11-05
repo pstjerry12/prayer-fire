@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, Globe, HandHeart, ChevronLeft, ShieldCheck,
   Trash2, Check, X, RefreshCw, Loader2, Search, Megaphone, Send, Crown, UserMinus,
   Settings, MessageSquareHeart, CalendarDays, DollarSign, Key, ExternalLink,
-  AlertTriangle, Flame, Eye, EyeOff, Plus, Edit3, Save, Link as LinkIcon, MessageCircle, Copy, Star, PlayCircle,
+  AlertTriangle, Flame, Eye, EyeOff, Plus, Edit3, Save, Link as LinkIcon, MessageCircle, Copy, Star, Siren, PlayCircle,
 } from 'lucide-react';
 import { cn } from '@/app/utils/cn';
 import { extractYouTubeVideoId } from '@/app/utils/youtube';
@@ -14,9 +14,11 @@ import AdminDailyActivity from '@/app/components/AdminDailyActivity';
 import AdminPricing from '@/app/components/AdminPricing';
 import AdminPlans from '@/app/components/AdminPlans';
 import AdminVideos from '@/app/components/AdminVideos';
+import AdminAlerts from '@/app/components/AdminAlerts';
+import AdminGroupApplications from '@/app/components/AdminGroupApplications';
 import AdminFeaturedGroups from '@/app/components/AdminFeaturedGroups';
 
-type Tab = 'overview' | 'users' | 'feedback' | 'requests' | 'testimonials' | 'donations' | 'pricing' | 'featured' | 'videos' | 'announcements' | 'events' | 'settings';
+type Tab = 'overview' | 'users' | 'feedback' | 'requests' | 'testimonials' | 'donations' | 'pricing' | 'featured' | 'alerts' | 'videos' | 'announcements' | 'events' | 'settings';
 
 interface Stats {
   users: number;
@@ -275,7 +277,8 @@ export default function AdminPage() {
     { id: 'testimonials', label: 'Testimonials', icon: MessageSquareHeart },
     { id: 'donations', label: 'Donations', icon: HandHeart },
     { id: 'pricing', label: 'Pricing', icon: DollarSign },
-    { id: 'featured', label: 'Featured', icon: Star },
+    { id: 'featured', label: 'Groups', icon: Star },
+    { id: 'alerts', label: 'Alerts', icon: Siren },
     { id: 'videos', label: 'Videos', icon: PlayCircle },
     { id: 'announcements', label: 'Broadcast', icon: Megaphone },
     { id: 'events', label: 'Events', icon: CalendarDays },
@@ -562,7 +565,13 @@ export default function AdminPage() {
           </div>
         )}
 
-        {tab === 'featured' && <AdminFeaturedGroups />}
+        {tab === 'featured' && (
+          <div className="space-y-6">
+            <AdminGroupApplications />
+            <AdminFeaturedGroups />
+          </div>
+        )}
+        {tab === 'alerts' && <AdminAlerts />}
         {tab === 'videos' && <AdminVideos />}
 
         {tab === 'announcements' && (

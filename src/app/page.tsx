@@ -10,6 +10,7 @@ import AnnouncementBanner from './components/AnnouncementBanner';
 import DailyExaltation from './components/DailyExaltation';
 import HomeFold from './components/HomeFold';
 import HomeVideos from './components/HomeVideos';
+import HomeAlertCard from './components/HomeAlertCard';
 
 export default function HomePage() {
   return (
@@ -19,6 +20,8 @@ export default function HomePage() {
       <main className="bg-page min-h-screen pb-32 md:pb-16">
         {/* ── First screen: heading, the two prayer cards, the schedule bar, today's verse, four tiles ── */}
         <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-4 md:pt-8">
+          {/* ── Urgent Global Prayer Alert (nothing here when there is none) ── */}
+          <HomeAlertCard />
           {/* ── Header ───────────────────────────── */}
           <section className="text-center">
             <span className="inline-flex items-center gap-1.5 bg-warn-soft text-warn-strong text-xs font-bold px-3 py-1 rounded-full border border-warn-edge">
