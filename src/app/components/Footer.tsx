@@ -1,3 +1,5 @@
+'use client';
+
 import SocialLinks from './SocialLinks';
 import { useI18n } from '@/app/i18n';
 
