@@ -9,7 +9,6 @@ import TestimonyCard from './components/TestimonyCard';
 import AnnouncementBanner from './components/AnnouncementBanner';
 import DailyExaltation from './components/DailyExaltation';
 import HomeFold from './components/HomeFold';
-import HomeFeatureRow from './components/HomeFeatureRow';
 import { useT } from './i18n';
 import HomeVideos from './components/HomeVideos';
 import HomeAlertCard from './components/HomeAlertCard';
@@ -41,11 +40,6 @@ export default function HomePage() {
               {t('home.daniel')}
             </p>
           </section>
-
-          {/* ── Every feature, newest first: swipe, or use the arrows at the edges ── */}
-          <div className="md:max-w-2xl md:mx-auto">
-            <HomeFeatureRow />
-          </div>
 
           <div className="mt-5 md:max-w-2xl md:mx-auto space-y-4">
             {/* ── Two prayer cards, side by side ── */}

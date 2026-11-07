@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { ChevronDown, ChevronRight, Info, LogIn, LogOut, Mail, Settings, ShieldCheck, User as UserIcon, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Info, LayoutGrid, LogIn, LogOut, Mail, Settings, ShieldCheck, User as UserIcon, X } from 'lucide-react';
 import { useApp } from '@/app/context';
 import { useI18n } from '@/app/i18n';
 import LanguageMenu from './LanguageMenu';
@@ -88,6 +88,12 @@ export default function SideDrawer({ open, onClose }: { open: boolean; onClose: 
         </div>
 
         <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+          <Link href="/features" onClick={onClose} className={ROW} data-testid="drawer-features">
+            <LayoutGrid className="w-5 h-5 text-bar-accent" aria-hidden />
+            <span className="flex-1">{t('menu.features')}</span>
+            <ChevronRight className="w-4 h-4 text-on-bar/60" aria-hidden />
+          </Link>
+
           <button className={ROW} onClick={go(() => setShowSettings(true))}>
             <Settings className="w-5 h-5 text-bar-accent" aria-hidden />
             <span className="flex-1">{t('menu.settings')}</span>
