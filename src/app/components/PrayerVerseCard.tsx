@@ -14,6 +14,7 @@ import { BOOKMARK_BG } from '@/lib/highlightStyles';
 import LongPressable from './LongPressable';
 import ReadAloudBar from './ReadAloudBar';
 import VerseActionSheet from './VerseActionSheet';
+import { useI18n } from '@/app/i18n';
 
 export const PRAYER_VERSE_PATH = (id: string) => `/bible/prayer/${encodeURIComponent(id)}`;
 
@@ -22,6 +23,7 @@ export const PRAYER_VERSE_PATH = (id: string) => `/bible/prayer/${encodeURICompo
  * menu (Copy, Read Aloud, Bookmark).
  */
 export default function PrayerVerseCard({ verse }: { verse: BibleVerse }) {
+  const { t } = useI18n();
   const router = useRouter();
   const study = useStudy();
   const reader = useReadAloud();
@@ -40,7 +42,7 @@ export default function PrayerVerseCard({ verse }: { verse: BibleVerse }) {
         <div className="flex items-start justify-between gap-2 mb-2">
           <p className="text-acc-strong text-xs font-semibold">{verse.reference}</p>
           <span className="flex items-center gap-1 text-ink-faint">
-            {bookmarked && <BookmarkIcon className="w-4 h-4 fill-current text-acc-strong" aria-label="Bookmarked" />}
+            {bookmarked && <BookmarkIcon className="w-4 h-4 fill-current text-acc-strong" aria-label={t('id.bookmarked')} />}
             <ChevronRight className="w-4 h-4" />
           </span>
         </div>

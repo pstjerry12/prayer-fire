@@ -6,8 +6,10 @@ import {
   MoreVertical, LogOut, LogIn, User as UserIcon, Settings, ShieldCheck, X,
 } from 'lucide-react';
 import { useApp } from '@/app/context';
+import { useI18n } from '@/app/i18n';
 
 export default function HeroProfile() {
+  const { t } = useI18n();
   const { user, signOut, setShowAuth, setShowSettings } = useApp();
   const [open, setOpen] = useState(false);
 
@@ -36,7 +38,7 @@ export default function HeroProfile() {
           <button
             onClick={() => setOpen(!open)}
             className="w-9 h-9 rounded-full bg-card border border-edge shadow-sm flex items-center justify-center text-ink-muted hover:text-ink hover:bg-card-2 transition-colors"
-            title="Account menu"
+            title={t('nav.accountMenu')}
           >
             {open ? <X className="w-4 h-4" /> : <MoreVertical className="w-4 h-4" />}
           </button>
@@ -53,8 +55,8 @@ export default function HeroProfile() {
               </div>
             ) : (
               <div className="p-3 border-b border-edge">
-                <p className="text-ink font-bold text-sm">Guest</p>
-                <p className="text-ink-muted text-xs">Sign in to save your prayers</p>
+                <p className="text-ink font-bold text-sm">{t('menu.guest')}</p>
+                <p className="text-ink-muted text-xs">{t('menu.guestHint')}</p>
               </div>
             )}
 

@@ -37,6 +37,7 @@ export default function AdsBanner() {
   }, [android]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSuppressed(adsSuppressed());
     const onSuppress = () => setSuppressed(true);
     window.addEventListener(ADS_SUPPRESS_EVENT, onSuppress);

@@ -6,6 +6,7 @@ import { cn } from '../utils/cn';
 import { getStoredToken } from '@/lib/authClient';
 import { getAppVersionInfo, getNativePlatform } from '@/lib/capacitorAlarm';
 import type { AuthUser } from '@/app/types';
+import { useI18n } from '@/app/i18n';
 
 type Category = 'bug' | 'idea' | 'praise' | 'other';
 
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export default function FeedbackModal({ isOpen, onClose, user }: Props) {
+  const { t, tr } = useI18n();
   const [category, setCategory] = useState<Category>('bug');
   const [message, setMessage] = useState('');
   const [name, setName] = useState('');
@@ -48,7 +50,7 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
 
   const handleSend = async () => {
     if (!message.trim()) {
-      setError('Please write your feedback first.');
+      setError(t('ui.pleaseWriteYourFeedbackFirst'));
       return;
     }
     setSending(true);
@@ -74,12 +76,12 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(data.error || 'Could not send feedback. Please try again.');
+        throw new Error(data.error || t('ui.couldNotSendFeedbackPlease'));
       }
       setSent(true);
       setMessage('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send feedback. Please try again.');
+      setError(err instanceof Error ? err.message : t('ui.couldNotSendFeedbackPlease'));
     } finally {
       setSending(false);
     }
@@ -92,9 +94,9 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
           <div className="px-5 py-4 border-b border-edge flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MessageSquareHeart className="w-5 h-5 text-acc-strong" />
-              <h2 className="font-bold text-ink">Send Feedback</h2>
+              <h2 className="font-bold text-ink">{t('accountSettings.sendFeedback')}</h2>
             </div>
-            <button onClick={onClose} aria-label="Close" className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
+            <button onClick={onClose} aria-label={t('authModal.close')} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -102,32 +104,24 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
           {sent ? (
             <div className="p-6 text-center space-y-3">
               <CheckCircle2 className="w-12 h-12 text-acc-strong mx-auto" />
-              <h3 className="font-serif-heading text-lg font-bold text-ink">Thank you!</h3>
-              <p className="text-ink-muted text-sm leading-relaxed">
-                Your feedback has reached the Prayer Fire team. We read every message and use it to improve the app.
-              </p>
+              <h3 className="font-serif-heading text-lg font-bold text-ink">{t('feedbackModal.thankYou')}</h3>
+              <p className="text-ink-muted text-sm leading-relaxed">{t('feedbackModal.yourFeedbackHasReachedThe')}</p>
               <div className="flex gap-2 pt-2">
                 <button
                   onClick={() => setSent(false)}
                   className="flex-1 py-3 bg-card-2 border border-edge text-ink-soft rounded-xl font-bold text-sm hover:bg-card-3"
-                >
-                  Send more
-                </button>
+                >{t('feedbackModal.sendMore')}</button>
                 <button
                   onClick={onClose}
                   className="flex-1 py-3 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover"
-                >
-                  Done
-                </button>
+                >{t('customizablePrayerSchedule.done')}</button>
               </div>
             </div>
           ) : (
             <div className="p-5 space-y-4">
-              <p className="text-ink-muted text-sm leading-relaxed">
-                Found a problem or have an idea? Tell us — every message helps make Prayer Fire better.
-              </p>
+              <p className="text-ink-muted text-sm leading-relaxed">{t('feedbackModal.foundAProblemOrHave')}</p>
 
-              <div className="grid grid-cols-4 gap-1.5" role="radiogroup" aria-label="Feedback type">
+              <div className="grid grid-cols-4 gap-1.5" role="radiogroup" aria-label={t('feedbackModal.feedbackType')}>
                 {CATEGORIES.map((c) => (
                   <button
                     key={c.id}
@@ -142,20 +136,18 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
                     )}
                   >
                     <span className="text-lg leading-none" aria-hidden>{c.emoji}</span>
-                    {c.label}
+                    {tr(c.label)}
                   </button>
                 ))}
               </div>
 
               <div>
-                <label htmlFor="feedback-message" className="block text-xs font-semibold text-ink-muted mb-1.5">
-                  Your feedback
-                </label>
+                <label htmlFor="feedback-message" className="block text-xs font-semibold text-ink-muted mb-1.5">{t('feedbackModal.yourFeedback')}</label>
                 <textarea
                   id="feedback-message"
                   value={message}
                   onChange={(e) => { setMessage(e.target.value.slice(0, MAX_MESSAGE)); setError(''); }}
-                  placeholder={current.placeholder}
+                  placeholder={tr(current.placeholder)}
                   rows={5}
                   className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 resize-y"
                 />
@@ -165,7 +157,7 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label htmlFor="feedback-name" className="block text-xs font-semibold text-ink-muted mb-1.5">
-                    Name <span className="font-normal text-ink-faint">(optional)</span>
+                    Name <span className="font-normal text-ink-faint">{t('feedbackModal.optional')}</span>
                   </label>
                   <input
                     id="feedback-name"
@@ -176,7 +168,7 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
                 </div>
                 <div>
                   <label htmlFor="feedback-contact" className="block text-xs font-semibold text-ink-muted mb-1.5">
-                    Email / phone <span className="font-normal text-ink-faint">(optional)</span>
+                    Email / phone <span className="font-normal text-ink-faint">{t('feedbackModal.optional')}</span>
                   </label>
                   <input
                     id="feedback-contact"
@@ -189,7 +181,7 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
 
               {error && (
                 <div className="bg-danger-soft text-danger border border-danger-edge rounded-lg px-3 py-2.5 text-xs">
-                  {error}
+                  {tr(error)}
                 </div>
               )}
 
@@ -199,7 +191,7 @@ export default function FeedbackModal({ isOpen, onClose, user }: Props) {
                 className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                {sending ? 'Sending…' : 'Send Feedback'}
+                {sending ? 'Sending…' : t('accountSettings.sendFeedback')}
               </button>
             </div>
           )}

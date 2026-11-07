@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Loader2, Heart } from 'lucide-react';
 import CollapsibleToggle from './CollapsibleToggle';
+import { useI18n } from '@/app/i18n';
 
 interface TestimonyRow {
   id: string;
@@ -19,6 +20,7 @@ function bylineFor(t: TestimonyRow): string {
 }
 
 export default function TestimonyCard() {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [testimonials, setTestimonials] = useState<TestimonyRow[]>([]);
@@ -45,7 +47,7 @@ export default function TestimonyCard() {
   const handleSubmit = async () => {
     const trimmed = text.trim();
     if (!trimmed) {
-      setSubmitError('Please share a few words about what God has done.');
+      setSubmitError(t('ui.pleaseShareAFewWords'));
       return;
     }
     setSubmitError('');
@@ -61,14 +63,14 @@ export default function TestimonyCard() {
           isAnonymous,
         }),
       });
-      if (!res.ok) throw new Error('Request failed');
+      if (!res.ok) throw new Error(t('ui.requestFailed'));
       setSubmitted(true);
       setText('');
       setName('');
       setLocation('');
       setIsAnonymous(false);
     } catch {
-      setSubmitError('Could not submit your testimony. Please try again.');
+      setSubmitError(t('ui.couldNotSubmitYourTestimony'));
     } finally {
       setSubmitting(false);
     }
@@ -77,10 +79,10 @@ export default function TestimonyCard() {
   return (
     <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">
       <div className="p-4">
-        <h3 className="font-serif-heading text-base font-bold text-ink">Testimony Page</h3>
-        <p className="text-ink-muted text-xs mt-0.5 mb-4">Listen to how this app is a blessing to many</p>
+        <h3 className="font-serif-heading text-base font-bold text-ink">{t('testimonyCard.testimonyPage')}</h3>
+        <p className="text-ink-muted text-xs mt-0.5 mb-4">{t('testimonyCard.listenToHowThisApp')}</p>
 
-        <CollapsibleToggle label="What Others Have Shared" open={open} onToggle={() => setOpen((v) => !v)}>
+        <CollapsibleToggle label={t('testimonyCard.whatOthersHaveShared')} open={open} onToggle={() => setOpen((v) => !v)}>
           <div className="border-t border-edge pt-4 mt-4">
             {loading && (
               <div className="flex justify-center py-6">
@@ -89,7 +91,7 @@ export default function TestimonyCard() {
             )}
 
             {!loading && testimonials.length === 0 && (
-              <p className="text-ink-muted text-sm text-center py-4">No testimonies yet — be the first to share.</p>
+              <p className="text-ink-muted text-sm text-center py-4">{t('testimonyCard.noTestimoniesYetBeThe')}</p>
             )}
 
             <div className="space-y-3 mb-4">
@@ -103,50 +105,46 @@ export default function TestimonyCard() {
 
             {/* Nested toggle: Share What God Has Done */}
             <CollapsibleToggle
-              label="Share What God Has Done"
+              label={t('testimonyCard.shareWhatGodHasDone')}
               open={shareOpen}
               onToggle={() => { setShareOpen((v) => !v); setSubmitted(false); }}
               maxHeightPx={700}
             >
               <div className="border-t border-edge pt-4 mt-4">
                 {submitted ? (
-                  <div className="bg-acc-soft text-acc-strong rounded-xl px-4 py-4 text-sm text-center">
-                    🙏 Thank you for sharing! Your testimony is pending review and will appear here once approved.
-                  </div>
+                  <div className="bg-acc-soft text-acc-strong rounded-xl px-4 py-4 text-sm text-center">{t('testimonyCard.thankYouForSharingYour')}</div>
                 ) : (
                   <>
-                    <p className="text-ink-muted text-xs leading-relaxed mb-4">
-                      Tell us how this app has strengthened your prayer life. Your words could be the spark someone else needs today.
-                    </p>
+                    <p className="text-ink-muted text-xs leading-relaxed mb-4">{t('testimonyCard.tellUsHowThisApp')}</p>
 
-                    <label className="block text-xs font-semibold text-ink-muted mb-1.5">Your testimony</label>
+                    <label className="block text-xs font-semibold text-ink-muted mb-1.5">{t('testimonyCard.yourTestimony')}</label>
                     <textarea
                       value={text}
                       onChange={(e) => { setText(e.target.value); setSubmitError(''); }}
-                      placeholder="Since I started the midnight prayer schedule, I've noticed..."
+                      placeholder={t('testimonyCard.sinceIStartedTheMidnight')}
                       rows={4}
                       className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint mb-3 focus:outline-none focus:ring-2 focus:ring-acc/40 focus:border-acc resize-none"
                     />
 
                     {!isAnonymous && (
                       <>
-                        <label className="block text-xs font-semibold text-ink-muted mb-1.5">Name (optional)</label>
+                        <label className="block text-xs font-semibold text-ink-muted mb-1.5">{t('testimonyCard.nameOptional')}</label>
                         <input
                           type="text"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          placeholder="Your name"
+                          placeholder={t('partnerNetwork.yourName')}
                           className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint mb-3 focus:outline-none focus:ring-2 focus:ring-acc/40 focus:border-acc"
                         />
                       </>
                     )}
 
-                    <label className="block text-xs font-semibold text-ink-muted mb-1.5">Location (optional)</label>
+                    <label className="block text-xs font-semibold text-ink-muted mb-1.5">{t('testimonyCard.locationOptional')}</label>
                     <input
                       type="text"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      placeholder="City, Country"
+                      placeholder={t('testimonyCard.cityCountry')}
                       className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink placeholder-ink-faint mb-3 focus:outline-none focus:ring-2 focus:ring-acc/40 focus:border-acc"
                     />
 
@@ -157,7 +155,7 @@ export default function TestimonyCard() {
                         onChange={(e) => setIsAnonymous(e.target.checked)}
                         className="w-4 h-4 accent-acc"
                       />
-                      <span className="text-sm text-ink-soft">Post anonymously</span>
+                      <span className="text-sm text-ink-soft">{t('testimonyCard.postAnonymously')}</span>
                     </label>
 
                     {submitError && (
@@ -172,7 +170,7 @@ export default function TestimonyCard() {
                       className="w-full py-3.5 rounded-xl font-bold text-sm text-on-acc bg-acc hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
                     >
                       {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Heart className="w-4 h-4" />}
-                      {submitting ? 'Submitting…' : 'Submit Testimony'}
+                      {submitting ? 'Submitting…' : t('ui.submitTestimony')}
                     </button>
                   </>
                 )}

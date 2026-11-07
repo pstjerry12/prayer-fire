@@ -129,6 +129,7 @@ interface AlarmEnginePluginApi {
   setAlarmContent(options: {
     items: { day: number; point: string; verse: string; reference: string }[];
   }): Promise<void>;
+  setAlarmText(options: Record<string, string>): Promise<void>;
   setStreak(options: { days: number }): Promise<void>;
   cancelAlarm(options: { id: string }): Promise<void>;
   cancelAllAlarms(): Promise<void>;
@@ -225,8 +226,12 @@ export async function checkAlarmPermission(): Promise<'granted' | 'denied' | 'pr
  * native local notifications. These fire at the exact time
  * even if the app is killed / phone is asleep.
  */
+export type NotificationText = { title: string; body: (label: string) => string };
+const DEFAULT_NOTIFICATION_TEXT: NotificationText = { title: '🔥 Prayer Time', body: (label) => `${label} — it's time to pray!` };
+
 export async function scheduleNativeAlarms(
-  appointments: PrayerAppointment[]
+  appointments: PrayerAppointment[],
+  text: NotificationText = DEFAULT_NOTIFICATION_TEXT
 ): Promise<void> {
   const { plugin: LocalNotifications } = await getLocalNotifications();
   if (!LocalNotifications) return; // Web — nothing to schedule natively
@@ -294,8 +299,8 @@ export async function scheduleNativeAlarms(
 
       notifications.push({
         id: notifId,
-        title: '🔥 Prayer Time',
-        body: `${appt.label} — it's time to pray!`,
+        title: text.title,
+        body: text.body(appt.label),
         schedule: {
           at: fireAt,
           repeats: true,
@@ -384,6 +389,20 @@ export async function setNativeAlarmContent(
     await engine.setAlarmContent({ items });
   } catch (err) {
     console.error('[CapacitorAlarm] Failed to save alarm content:', err);
+  }
+}
+
+/**
+ * Gives the native alarm screen and notification their wording (title, Stop, Snooze, Pray Now...) in the chosen language.
+ * Android only; a no-op on web and iOS.
+ */
+export async function setNativeAlarmText(texts: Record<string, string>): Promise<void> {
+  const { plugin: engine } = await getAlarmEngine();
+  if (!engine) return;
+  try {
+    await engine.setAlarmText(texts);
+  } catch (err) {
+    console.error('[CapacitorAlarm] Failed to save alarm text:', err);
   }
 }
 

@@ -18,8 +18,10 @@ import {
   type SermonEntry,
 } from '@/lib/study';
 import { entryShortName, formatSermonDate, sermonAsText } from '@/lib/studyFormat';
+import { useI18n } from '@/app/i18n';
 
 function EntryCard({ sermonId, entry, index, onOpen }: { sermonId: string; entry: SermonEntry; index: number; onOpen: () => void }) {
+  const { t } = useI18n();
   const [note, setNote] = useState(entry.note);
   const [editing, setEditing] = useState(false);
 
@@ -47,7 +49,7 @@ function EntryCard({ sermonId, entry, index, onOpen }: { sermonId: string; entry
               }}
               rows={note ? Math.min(6, Math.max(2, Math.ceil(note.length / 40))) : 2}
               maxLength={5000}
-              placeholder="Your note on this verse…"
+              placeholder={t('id.yourNoteOnThisVerse')}
               className="mt-2 w-full bg-card-2 border border-edge rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 resize-none"
             />
           ) : (
@@ -56,7 +58,7 @@ function EntryCard({ sermonId, entry, index, onOpen }: { sermonId: string; entry
             </button>
           )}
         </div>
-        <button onClick={() => removeSermonEntry(sermonId, entry.id)} aria-label="Remove verse from sermon" className="p-1.5 rounded-lg text-ink-faint hover:text-danger hover:bg-card-3 shrink-0">
+        <button onClick={() => removeSermonEntry(sermonId, entry.id)} aria-label={t('id.removeVerseFromSermon')} className="p-1.5 rounded-lg text-ink-faint hover:text-danger hover:bg-card-3 shrink-0">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
@@ -66,6 +68,7 @@ function EntryCard({ sermonId, entry, index, onOpen }: { sermonId: string; entry
 
 /** One sermon: its verses in the order they were added, with an optional note on each. */
 export default function SermonPage() {
+  const { t } = useI18n();
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const study = useStudy();
@@ -97,10 +100,8 @@ export default function SermonPage() {
 
         {!visible ? (
           <div className="bg-card rounded-2xl border border-edge p-8 text-center">
-            <p className="text-ink-muted text-sm">That sermon could not be found.</p>
-            <button onClick={() => router.push('/study')} className="mt-4 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">
-              Open My Study
-            </button>
+            <p className="text-ink-muted text-sm">{t('id.thatSermonCouldNotBe')}</p>
+            <button onClick={() => router.push('/study')} className="mt-4 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">{t('id.openMyStudy')}</button>
           </div>
         ) : (
           <>
@@ -111,22 +112,22 @@ export default function SermonPage() {
                     defaultValue={visible.title}
                     onBlur={(e) => updateSermon(visible.id, { title: e.target.value.trim() || 'Untitled sermon' })}
                     maxLength={200}
-                    aria-label="Sermon title"
+                    aria-label={t('sermonStartModal.sermonTitle')}
                     className="w-full bg-card border border-edge-strong rounded-xl px-3 py-2 text-lg font-bold text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
                   />
                   <input
                     defaultValue={visible.preacher}
                     onBlur={(e) => updateSermon(visible.id, { preacher: e.target.value })}
                     maxLength={200}
-                    placeholder="Preacher"
-                    aria-label="Preacher"
+                    placeholder={t('sermonStartModal.preacher')}
+                    aria-label={t('sermonStartModal.preacher')}
                     className="w-full bg-card border border-edge-strong rounded-xl px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
                   />
                   <input
                     type="date"
                     defaultValue={visible.date}
                     onBlur={(e) => e.target.value && updateSermon(visible.id, { date: e.target.value })}
-                    aria-label="Date"
+                    aria-label={t('sermonStartModal.date')}
                     className="w-full bg-card border border-edge-strong rounded-xl px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
                   />
                   <button onClick={() => setEditingMeta(false)} className="flex items-center gap-1 text-xs font-bold text-acc-strong">
@@ -139,7 +140,7 @@ export default function SermonPage() {
                     <h1 className="font-serif-heading text-2xl font-bold text-ink">{visible.title}</h1>
                     <p className="text-sm text-ink-muted mt-0.5">{[visible.preacher, formatSermonDate(visible.date)].filter(Boolean).join(' · ')}</p>
                   </div>
-                  <button onClick={() => setEditingMeta(true)} aria-label="Edit sermon details" className="p-2 rounded-lg text-ink-muted hover:bg-card-3 shrink-0">
+                  <button onClick={() => setEditingMeta(true)} aria-label={t('id.editSermonDetails')} className="p-2 rounded-lg text-ink-muted hover:bg-card-3 shrink-0">
                     <Pencil className="w-4 h-4" />
                   </button>
                 </div>
@@ -174,14 +175,14 @@ export default function SermonPage() {
 
             {active && (
               <p className="mb-4 rounded-lg bg-acc-soft border border-acc-edge px-3 py-2 text-xs text-ink-soft">
-                This is your active session. In the Bible, hold a verse and choose <strong>Add to Sermon Notes</strong> to save it here.
+                This is your active session. In the Bible, hold a verse and choose <strong>{t('verseActionSheet.addToSermonNotes')}</strong> to save it here.
               </p>
             )}
 
             {entries.length === 0 ? (
               <div className="bg-card rounded-2xl border border-edge p-8 text-center">
-                <p className="font-bold text-ink text-sm">No verses yet</p>
-                <p className="text-xs text-ink-muted mt-1.5 max-w-xs mx-auto">Make this the active session, then hold verses in the Bible and choose Add to Sermon Notes.</p>
+                <p className="font-bold text-ink text-sm">{t('id.noVersesYet')}</p>
+                <p className="text-xs text-ink-muted mt-1.5 max-w-xs mx-auto">{t('id.makeThisTheActiveSession')}</p>
               </div>
             ) : (
               <ol className="space-y-3">
@@ -200,19 +201,15 @@ export default function SermonPage() {
             <div className="mt-8 pt-5 border-t border-edge">
               {confirmDelete ? (
                 <div className="flex items-center gap-3">
-                  <p className="text-xs text-ink-muted flex-1">Delete this sermon and its notes?</p>
+                  <p className="text-xs text-ink-muted flex-1">{t('id.deleteThisSermonAndIts')}</p>
                   <button
                     onClick={() => {
                       deleteSermon(visible.id);
                       router.replace('/study');
                     }}
                     className="px-3 py-2 rounded-lg bg-danger-soft border border-danger-edge text-danger text-xs font-bold"
-                  >
-                    Delete
-                  </button>
-                  <button onClick={() => setConfirmDelete(false)} className="px-3 py-2 rounded-lg bg-card-2 text-ink-soft text-xs font-bold">
-                    Cancel
-                  </button>
+                  >{t('groupModeration.delete')}</button>
+                  <button onClick={() => setConfirmDelete(false)} className="px-3 py-2 rounded-lg bg-card-2 text-ink-soft text-xs font-bold">{t('customizablePrayerSchedule.cancel')}</button>
                 </div>
               ) : (
                 <button onClick={() => setConfirmDelete(true)} className="flex items-center gap-1.5 text-xs font-bold text-ink-muted hover:text-danger">

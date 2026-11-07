@@ -2,6 +2,7 @@
 
 import { X, Sparkles } from 'lucide-react';
 import { LATEST_RELEASE } from '../data/whatsNew';
+import { useI18n } from '@/app/i18n';
 
 interface Props {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function WhatsNewModal({ isOpen, onClose, onSendFeedback }: Props) {
+  const { t } = useI18n();
   if (!isOpen || !LATEST_RELEASE) return null;
   const release = LATEST_RELEASE;
 
@@ -20,9 +22,9 @@ export default function WhatsNewModal({ isOpen, onClose, onSendFeedback }: Props
           <div className="px-5 py-4 border-b border-edge flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-acc-strong" />
-              <h2 className="font-bold text-ink">What&apos;s New</h2>
+              <h2 className="font-bold text-ink">{t('whatsNewModal.whatSNew')}</h2>
             </div>
-            <button onClick={onClose} aria-label="Close" className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
+            <button onClick={onClose} aria-label={t('authModal.close')} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -43,15 +45,11 @@ export default function WhatsNewModal({ isOpen, onClose, onSendFeedback }: Props
             <button
               onClick={onClose}
               className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover transition-all"
-            >
-              Got it 🙏
-            </button>
+            >{t('whatsNewModal.gotIt')}</button>
             <button
               onClick={onSendFeedback}
               className="w-full py-2 text-acc-strong text-sm font-semibold hover:underline"
-            >
-              Have feedback? Tell us 💬
-            </button>
+            >{t('whatsNewModal.haveFeedbackTellUs')}</button>
           </div>
         </div>
       </div>

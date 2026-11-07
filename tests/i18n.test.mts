@@ -1,48 +1,76 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { LANGUAGES, detectLanguage, isLang, ttsTagFor } from '../src/lib/i18n/languages.ts';
-import { EN, MESSAGES, translate, type MessageKey } from '../src/lib/i18n/messages.ts';
+import { EN, MESSAGES, translate, translateText, type MessageKey } from '../src/lib/i18n/messages.ts';
 import { BOOK_TABLE_SIZES, ENGLISH_BOOKS, bookLabel, findLocalBook, hasBookNames, normalizeName } from '../src/lib/i18n/bookNames.ts';
 
-// ── languages ──
-assert.deepEqual(LANGUAGES.map((l) => l.code), ['en', 'fr', 'es', 'pt', 'sw', 'ko', 'tl']);
+// ── languages: English, French, Spanish, Portuguese only ──
+assert.deepEqual(LANGUAGES.map((l) => l.code), ['en', 'fr', 'es', 'pt']);
+assert.deepEqual(LANGUAGES.map((l) => l.native), ['English', 'Français', 'Español', 'Português']);
 assert.equal(detectLanguage(['fr-CA', 'en']), 'fr');
-assert.equal(detectLanguage(['de-DE', 'es-MX']), 'es');
+assert.equal(detectLanguage(['de-DE', 'es-MX']), 'es', 'first supported language in the phone list');
 assert.equal(detectLanguage(['pt-BR']), 'pt');
-assert.equal(detectLanguage(['fil-PH']), 'tl');
-assert.equal(detectLanguage(['sw']), 'sw');
-assert.equal(detectLanguage(['ko-KR']), 'ko');
+assert.equal(detectLanguage(['sw']), 'en', 'no longer offered: English');
+assert.equal(detectLanguage(['ko-KR']), 'en');
 assert.equal(detectLanguage(['ja-JP']), 'en', 'unsupported phone language: English');
 assert.equal(detectLanguage([]), 'en');
 assert.equal(detectLanguage(undefined), 'en');
-assert.ok(isLang('fr') && !isLang('xx') && !isLang(null));
+assert.ok(isLang('fr') && !isLang('xx') && !isLang('sw') && !isLang(null));
 assert.equal(ttsTagFor('pt'), 'pt-BR');
 
-// ── messages: every language has every key, no blanks, and keeps the {slots} of the English text ──
+// ── locale files: locales/en.json, fr.json, es.json, pt.json have the same keys, no blanks, the same {slots} ──
 const slots = (s: string) => (s.match(/\{\w+\}/g) ?? []).sort().join(',');
+const files = Object.fromEntries(['en', 'fr', 'es', 'pt'].map((c) => [c, JSON.parse(readFileSync(new URL(`../locales/${c}.json`, import.meta.url), 'utf8')) as Record<string, string>]));
+assert.deepEqual(Object.keys(files.en), Object.keys(files.en).slice().sort(), 'keys are kept sorted');
 for (const lang of LANGUAGES.map((l) => l.code)) {
+  assert.deepEqual(Object.keys(files[lang]), Object.keys(files.en), `${lang}.json has the same keys as en.json`);
   for (const key of Object.keys(EN) as MessageKey[]) {
     const v = MESSAGES[lang][key];
     assert.ok(typeof v === 'string' && v.trim().length > 0, `${lang} is missing ${key}`);
     assert.equal(slots(v!), slots(EN[key]), `${lang}.${key} has different {slots}`);
+    if (lang !== 'en' && key !== 'featDesc.language' && EN[key].length > 25 && /[a-z]{4}/.test(EN[key])) assert.notEqual(v, EN[key], `${lang}.${key} was left in English`);
   }
-  const extra = Object.keys(MESSAGES[lang]).filter((k) => !(k in EN));
-  assert.deepEqual(extra, [], `${lang} has keys that English does not`);
 }
+assert.ok(Object.keys(EN).length > 800, 'the whole app is in the locale files');
+// the app name, in each language (the Play Store name stays "Prayer Fire")
+assert.equal(translate('en', 'app.name'), 'Prayer Fire');
+assert.equal(translate('fr', 'app.name'), 'Feu de Prière');
+assert.equal(translate('es', 'app.name'), 'Fuego de Oración');
+assert.equal(translate('pt', 'app.name'), 'Fogo de Oração');
 assert.equal(translate('fr', 'nav.home'), 'Accueil');
 assert.equal(translate('en', 'nav.home'), 'Home');
-assert.equal(translate('ko', 'bible.fallbackNote', { language: '한국어' }), '앱에 아직 한국어 성경이 없어서 성경은 영어로 표시됩니다.');
+assert.equal(translate('es', 'language.button'), 'Idioma');
 // a missing wording falls back to English
-const saved = MESSAGES.sw['home.badge'];
-delete MESSAGES.sw['home.badge'];
-assert.equal(translate('sw', 'home.badge'), EN['home.badge']);
-MESSAGES.sw['home.badge'] = saved;
+const saved = MESSAGES.fr['nav.home'];
+delete MESSAGES.fr['nav.home'];
+assert.equal(translate('fr', 'nav.home'), EN['nav.home']);
+MESSAGES.fr['nav.home'] = saved;
+// text built from data is looked up by its English wording; unknown text comes back unchanged
+assert.equal(translateText('fr', 'Mercy Prayer'), 'Prière de miséricorde');
+assert.equal(translateText('pt', 'Praise & Worship'), 'Louvor e adoração');
+assert.equal(translateText('en', 'Mercy Prayer'), 'Mercy Prayer');
+assert.equal(translateText('es', 'Some text nobody translated'), 'Some text nobody translated');
 // bottom tab labels must stay short so seven fit on a phone
 for (const lang of LANGUAGES.map((l) => l.code)) {
   for (const k of ['nav.home', 'nav.write', 'nav.startUp', 'nav.bible', 'nav.scripture', 'nav.partners', 'nav.fasting'] as MessageKey[]) {
     assert.ok(translate(lang, k).length <= 12, `${lang} ${k} too long for the tab bar: ${translate(lang, k)}`);
   }
 }
+// the Home feature cards: every one has a name and a one-line description in every language
+for (const lang of LANGUAGES.map((l) => l.code)) {
+  for (const key of Object.keys(EN).filter((k) => k.startsWith('feat.') || k.startsWith('featDesc.'))) assert.ok(MESSAGES[lang][key].length > 1, `${lang}.${key}`);
+}
+// no screen file may use a key that does not exist
+const used = new Set<string>();
+const walk = (dir: URL) => {
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const u = new URL(e.name + (e.isDirectory() ? '/' : ''), dir);
+    if (e.isDirectory()) walk(u);
+    else if (/\.tsx?$/.test(e.name)) for (const m of readFileSync(u, 'utf8').matchAll(/\bt\('([\w.-]+)'/g)) used.add(m[1]);
+  }
+};
+walk(new URL('../src/', import.meta.url));
+for (const k of used) assert.ok(k in EN, `screens use the key ${k} but locales/en.json does not have it`);
 
 // ── book names ──
 assert.deepEqual(BOOK_TABLE_SIZES, { fr: 66, es: 66, pt: 66, en: 66 });
@@ -50,9 +78,8 @@ for (const lang of ['fr', 'es', 'pt'] as const) assert.equal(new Set(ENGLISH_BOO
 assert.equal(bookLabel('John', 'fr'), 'Jean');
 assert.equal(bookLabel('Psalms', 'es'), 'Salmos');
 assert.equal(bookLabel('Revelation', 'pt'), 'Apocalipse');
-assert.equal(bookLabel('John', 'sw'), 'John', 'no name table: English');
 assert.equal(bookLabel('Nonsense', 'fr'), 'Nonsense');
-assert.ok(hasBookNames('fr') && !hasBookNames('ko'));
+assert.ok(hasBookNames('fr') && hasBookNames('es') && hasBookNames('pt') && !hasBookNames('en'));
 // the names match the Bible files' own book order
 const kjv = JSON.parse(readFileSync(new URL('../src/data/bible/kjv.json', import.meta.url), 'utf8'));
 assert.deepEqual(kjv.books.map((b: { englishName: string }) => b.englishName).map((n: string) => (n === 'Psalm' ? 'Psalms' : n)), [...ENGLISH_BOOKS], 'book order matches the bundled Bible');

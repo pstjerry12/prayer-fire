@@ -12,6 +12,7 @@ import {
   formatPrice,
   type Currency,
 } from '../data/pricingPlans';
+import { useI18n } from '@/app/i18n';
 
 interface Props {
   isOpen: boolean;
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
+  const { t, tr } = useI18n();
   const [currency, setCurrency] = useState<Currency>(getDefaultCurrency);
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
   const { isAndroidApp, freeMode } = useApp();
@@ -33,10 +35,8 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
           {/* Header */}
           <div className="p-5 border-b border-edge flex items-start justify-between sticky top-0 bg-card z-10">
             <div>
-              <h2 className="font-serif-heading text-xl font-bold text-ink">
-                Become a Prayer Fire Partner
-              </h2>
-              <p className="text-ink-muted text-sm mt-1">Join the global intercessory community</p>
+              <h2 className="font-serif-heading text-xl font-bold text-ink">{t('pricingPage.becomeAPrayerFirePartner')}</h2>
+              <p className="text-ink-muted text-sm mt-1">{t('pricingPage.joinTheGlobalIntercessoryCommunity')}</p>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
               <X className="w-5 h-5" />
@@ -47,9 +47,9 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
             // Free Premium Mode: nothing to buy while everything is open.
             <div className="p-8 text-center">
               <div className="text-4xl mb-3">🎁</div>
-              <h3 className="text-ink font-bold">Premium is free for a limited time</h3>
-              <p className="text-ink-muted text-sm mt-1">Everything in Prayer Fire Partner and Leader is open to you right now. Enjoy!</p>
-              <button onClick={onClose} className="mt-5 px-5 py-2.5 rounded-xl bg-acc text-on-acc text-sm font-bold">Close</button>
+              <h3 className="text-ink font-bold">{t('pricingPage.premiumIsFreeForA')}</h3>
+              <p className="text-ink-muted text-sm mt-1">{t('pricingPage.everythingInPrayerFirePartner')}</p>
+              <button onClick={onClose} className="mt-5 px-5 py-2.5 rounded-xl bg-acc text-on-acc text-sm font-bold">{t('authModal.close')}</button>
             </div>
           ) : isAndroidApp ? (
             // The Android app sells Partner and Leader through Google Play only.
@@ -81,9 +81,7 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
                     'px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
                     billing === 'monthly' ? 'bg-acc text-on-acc' : 'text-ink-muted'
                   )}
-                >
-                  Monthly
-                </button>
+                >{t('playSubscription.monthly')}</button>
                 <button
                   onClick={() => setBilling('yearly')}
                   className={cn(
@@ -91,7 +89,7 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
                     billing === 'yearly' ? 'bg-acc text-on-acc' : 'text-ink-muted'
                   )}
                 >
-                  Yearly <span className="opacity-90">2 months free</span>
+                  {t('playSubscription.yearly')} <span className="opacity-90">{t('playSubscription.2MonthsFree')}</span>
                 </button>
               </div>
             </div>
@@ -112,25 +110,23 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
                   >
                     {plan.highlighted && (
                       <span className="self-start mb-3 inline-flex items-center gap-1 bg-acc text-on-acc text-[0.625rem] font-bold px-2 py-0.5 rounded-full">
-                        <Crown className="w-3 h-3" /> MOST POPULAR
+                        <Crown className="w-3 h-3" /> {t('partner.mostPopular')}
                       </span>
                     )}
                     <div className="text-2xl mb-1">{plan.icon}</div>
-                    <h3 className="text-ink font-bold">{plan.name}</h3>
-                    <p className="text-ink-muted text-xs mt-1 mb-3">{plan.tagline}</p>
+                    <h3 className="text-ink font-bold">{tr(plan.name)}</h3>
+                    <p className="text-ink-muted text-xs mt-1 mb-3">{tr(plan.tagline)}</p>
                     <div className="mb-4">
                       {price === 0 ? (
-                        <span className="text-3xl font-bold text-ink">Free</span>
+                        <span className="text-3xl font-bold text-ink">{t('playSubscription.free')}</span>
                       ) : (
                         <>
                           <div className="flex items-baseline gap-1.5">
                             <span className="text-3xl font-bold text-acc-strong">$0.00</span>
-                            <span className="text-ink-muted text-xs">
-                              / 7 days free
-                            </span>
+                            <span className="text-ink-muted text-xs">{t('pricingPage.7DaysFree')}</span>
                           </div>
                           <div className="text-ink-faint text-sm line-through mt-0.5">
-                            {formatPrice(price, currency)}/{billing === 'monthly' ? 'mo' : 'yr'} after
+                            {t(billing === 'monthly' ? 'ui.perMonthAfter' : 'ui.perYearAfter', { price: formatPrice(price, currency) })}
                           </div>
                         </>
                       )}
@@ -138,7 +134,7 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
                     <ul className="space-y-2 mb-5 flex-1">
                       {plan.features.map((f) => (
                         <li key={f} className="flex items-start gap-2 text-ink-muted text-xs">
-                          <Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> {f}
+                          <Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> {tr(f)}
                         </li>
                       ))}
                     </ul>
@@ -151,16 +147,14 @@ export default function PricingPage({ isOpen, onClose, onSelectPlan }: Props) {
                           : 'border border-edge-strong text-ink-soft hover:bg-card-2'
                       )}
                     >
-                      {plan.cta}
+                      {tr(plan.cta)}
                     </button>
                   </div>
                 );
               })}
             </div>
 
-            <p className="text-center text-ink-muted text-xs">
-              🎁 7-day free trial &middot; No charge today &middot; Pay after your trial
-            </p>
+            <p className="text-center text-ink-muted text-xs">{t('pricingPage.7DayFreeTrialNo')}</p>
           </div>
           )}
         </div>

@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { Utensils, Coffee, CloudSun, BookOpen, Flame, Check, Award } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { FastingPlan } from '@/app/types';
+import { useI18n } from '@/app/i18n';
 
 export default function FastingTracker() {
+  const { t } = useI18n();
   const [plan, setPlan] = useState<FastingPlan | null>(() => {
     if (typeof window === 'undefined') return null;
     const stored = localStorage.getItem('upp_fasting_plan');
@@ -43,14 +45,14 @@ export default function FastingTracker() {
       <div className="px-5 py-4 border-b border-edge flex items-center gap-3">
         <div className="p-2 rounded-lg bg-acc-soft text-acc-strong"><Utensils className="w-5 h-5" /></div>
         <div>
-          <h2 className="font-bold text-ink">Fasting Tracker</h2>
-          <p className="text-xs text-ink-muted">Discipline your body, feed your spirit</p>
+          <h2 className="font-bold text-ink">{t('feat.fasting')}</h2>
+          <p className="text-xs text-ink-muted">{t('fastingTracker.disciplineYourBodyFeedYour')}</p>
         </div>
       </div>
       <div className="p-4">
         {!plan ? (
           <>
-            <p className="text-ink-muted text-sm mb-4 text-center">Choose your fasting plan</p>
+            <p className="text-ink-muted text-sm mb-4 text-center">{t('fastingTracker.chooseYourFastingPlan')}</p>
             <div className="grid grid-cols-2 gap-3">
               {plans.map((p) => (
                 <button key={p.days} onClick={() => startFast(p.days)} className="p-4 rounded-xl text-left border border-edge hover:border-acc hover:bg-acc-soft/40 transition-all">
@@ -70,7 +72,7 @@ export default function FastingTracker() {
               </div>
               <div className="text-right">
                 <p className="text-acc-strong font-bold text-2xl">{plan.completedDays}/{plan.days}</p>
-                <p className="text-ink-muted text-xs">days completed</p>
+                <p className="text-ink-muted text-xs">{t('fastingTracker.daysCompleted')}</p>
               </div>
             </div>
             <div className="h-2 bg-card-3 rounded-full mb-4 overflow-hidden">
@@ -86,11 +88,11 @@ export default function FastingTracker() {
             {plan.completedDays === plan.days && (
               <div className="bg-acc-soft rounded-xl p-4 text-center border border-acc-edge mb-4">
                 <Award className="w-8 h-8 text-acc-strong mx-auto mb-2" />
-                <p className="text-acc-strong font-bold">Fast Completed!</p>
-                <p className="text-acc-strong/80 text-sm">Well done! God honors your dedication.</p>
+                <p className="text-acc-strong font-bold">{t('fastingTracker.fastCompleted')}</p>
+                <p className="text-acc-strong/80 text-sm">{t('fastingTracker.wellDoneGodHonorsYour')}</p>
               </div>
             )}
-            <button onClick={resetPlan} className="w-full py-2 bg-card-3 rounded-xl text-ink-muted text-sm font-semibold hover:bg-card-3">Start New Fast</button>
+            <button onClick={resetPlan} className="w-full py-2 bg-card-3 rounded-xl text-ink-muted text-sm font-semibold hover:bg-card-3">{t('fastingTracker.startNewFast')}</button>
           </div>
         )}
       </div>

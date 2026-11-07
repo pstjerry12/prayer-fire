@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Check, Crown, Download, Loader2, Mic2, Trash2, X } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { downloadChapter, getPremiumVoice, isChapterDownloaded, removeChapterDownload, setPremiumVoice, type VoiceInfo } from '@/lib/premiumVoice';
+import { useI18n } from '@/app/i18n';
 
 interface Props {
   translation: string;
@@ -20,6 +21,7 @@ interface Props {
  * at a time, for offline listening. Renders nothing until the owner has switched premium voices on (the server says so).
  */
 export default function PremiumVoicePicker({ translation, book, bookName, chapter, chapters, onChange }: Props) {
+  const { t, tr } = useI18n();
   const router = useRouter();
   const [info, setInfo] = useState<{ available: boolean; eligible: boolean; voices: VoiceInfo[] } | null>(null);
   const [voice, setVoice] = useState<string | null>(null);
@@ -60,7 +62,7 @@ export default function PremiumVoicePicker({ translation, book, bookName, chapte
     setMessage('');
     const r = await downloadChapter({ voice, translation, book, chapter });
     setBusy(null);
-    setMessage(r.ok ? 'Saved on this phone. It plays without internet.' : r.message);
+    setMessage(r.ok ? t('ui.savedOnThisPhoneIt') : r.message);
     refreshSaved();
   };
 
@@ -91,42 +93,42 @@ export default function PremiumVoicePicker({ translation, book, bookName, chapte
       <button onClick={() => setOpen(true)} data-testid="voice-button" aria-haspopup="dialog"
         className="flex items-center gap-2 h-10 rounded-full px-4 text-sm font-bold bg-card-2 text-ink-soft hover:text-acc-strong self-start">
         <Mic2 className="w-4 h-4" /> Voice: {chosen ? chosen.label : 'Phone voice'}
-        {!info.eligible && <Crown className="w-3.5 h-3.5 text-acc-strong" aria-label="Partner" />}
+        {!info.eligible && <Crown className="w-3.5 h-3.5 text-acc-strong" aria-label={t('feat.partner')} />}
       </button>
 
       {open && (
-        <div role="dialog" aria-modal="true" aria-label="Reading voice" data-testid="voice-sheet" className="fixed inset-0 z-[80] bg-black/50 flex items-end sm:items-center justify-center" onClick={() => setOpen(false)}>
+        <div role="dialog" aria-modal="true" aria-label={t('premiumVoicePicker.readingVoice')} data-testid="voice-sheet" className="fixed inset-0 z-[80] bg-black/50 flex items-end sm:items-center justify-center" onClick={() => setOpen(false)}>
           <div className="w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl border border-edge p-5 space-y-3 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="font-serif-heading text-lg font-bold text-ink">Reading voice</h2>
-              <button onClick={() => setOpen(false)} aria-label="Close" className="p-1.5 rounded-full bg-card-2 text-ink-soft"><X className="w-5 h-5" /></button>
+              <h2 className="font-serif-heading text-lg font-bold text-ink">{t('premiumVoicePicker.readingVoice')}</h2>
+              <button onClick={() => setOpen(false)} aria-label={t('authModal.close')} className="p-1.5 rounded-full bg-card-2 text-ink-soft"><X className="w-5 h-5" /></button>
             </div>
             <button onClick={() => choose(null)} className={cn('w-full text-left rounded-2xl border p-3 flex items-center gap-3', !voice ? 'border-acc bg-acc-soft' : 'border-edge bg-card-2')}>
-              <span className="flex-1"><span className="block text-sm font-bold text-ink">Phone voice</span><span className="block text-xs text-ink-muted">Free. Your phone reads aloud, even offline.</span></span>
+              <span className="flex-1"><span className="block text-sm font-bold text-ink">{t('premiumVoicePicker.phoneVoice')}</span><span className="block text-xs text-ink-muted">{t('premiumVoicePicker.freeYourPhoneReadsAloud')}</span></span>
               {!voice && <Check className="w-4 h-4 text-acc-strong" />}
             </button>
             {info.voices.map((v) => (
               <button key={v.id} onClick={() => choose(v.id)} data-testid={`voice-${v.id}`} className={cn('w-full text-left rounded-2xl border p-3 flex items-center gap-3', voice === v.id ? 'border-acc bg-acc-soft' : 'border-edge bg-card-2')}>
-                <span className="flex-1"><span className="block text-sm font-bold text-ink">{v.label}</span><span className="block text-xs text-ink-muted">{v.description || 'Premium voice'}</span></span>
-                {info.eligible ? (voice === v.id && <Check className="w-4 h-4 text-acc-strong" />) : <span className="flex items-center gap-1 text-[0.625rem] font-bold text-acc-strong"><Crown className="w-3 h-3" /> PARTNER</span>}
+                <span className="flex-1"><span className="block text-sm font-bold text-ink">{v.label}</span><span className="block text-xs text-ink-muted">{v.description || t('ui.premiumVoice')}</span></span>
+                {info.eligible ? (voice === v.id && <Check className="w-4 h-4 text-acc-strong" />) : <span className="flex items-center gap-1 text-[0.625rem] font-bold text-acc-strong"><Crown className="w-3 h-3" /> {t('premiumVoicePicker.partner')}</span>}
               </button>
             ))}
-            {!info.eligible && <p className="text-ink-muted text-xs">Premium voices are part of Prayer Fire Partner. Tap one to see the plans.</p>}
+            {!info.eligible && <p className="text-ink-muted text-xs">{t('premiumVoicePicker.premiumVoicesArePartOf')}</p>}
 
             {voice && info.eligible && (
               <div className="rounded-2xl border border-edge p-3 space-y-2">
-                <p className="text-[0.625rem] font-bold uppercase tracking-wider text-ink-muted">Offline listening</p>
+                <p className="text-[0.625rem] font-bold uppercase tracking-wider text-ink-muted">{t('premiumVoicePicker.offlineListening')}</p>
                 <div className="flex gap-2">
                   {saved ? (
-                    <button onClick={async () => { await removeChapterDownload({ voice, translation, book, chapter }); refreshSaved(); }} className="flex-1 py-2 rounded-xl border border-edge-strong text-ink-soft text-xs font-bold flex items-center justify-center gap-1.5"><Trash2 className="w-3.5 h-3.5" /> Remove this chapter</button>
+                    <button onClick={async () => { await removeChapterDownload({ voice, translation, book, chapter }); refreshSaved(); }} className="flex-1 py-2 rounded-xl border border-edge-strong text-ink-soft text-xs font-bold flex items-center justify-center gap-1.5"><Trash2 className="w-3.5 h-3.5" /> {t('premiumVoicePicker.removeThisChapter')}</button>
                   ) : (
                     <button onClick={saveChapter} disabled={busy !== null} data-testid="save-chapter" className="flex-1 py-2 rounded-xl bg-acc text-on-acc text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-60">{busy === 'chapter' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />} Save {bookName} {chapter}</button>
                   )}
                   <button onClick={saveBook} disabled={busy !== null} className="flex-1 py-2 rounded-xl border border-acc text-acc-strong text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-60">{busy === 'book' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />} Save the book</button>
                 </div>
                 {progress && <p className="text-ink-muted text-xs">{progress}</p>}
-                {saved && !message && <p className="text-acc-strong text-xs font-semibold">This chapter is saved on your phone.</p>}
-                {message && <p role="status" className="text-ink-soft text-xs">{message}</p>}
+                {saved && !message && <p className="text-acc-strong text-xs font-semibold">{t('premiumVoicePicker.thisChapterIsSavedOn')}</p>}
+                {message && <p role="status" className="text-ink-soft text-xs">{tr(message)}</p>}
               </div>
             )}
           </div>

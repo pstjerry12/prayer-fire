@@ -6,6 +6,7 @@ import { BookOpen, Flame, Headphones, type LucideIcon } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useSignInRequired } from './SignInGate';
 import { useApp } from '../context';
+import { useI18n } from '@/app/i18n';
 
 const WELCOME_SEEN_KEY = 'pfm_welcome_seen';
 // Set once a person has finished their first daily devotional, so it marks someone who has used the app before.
@@ -31,6 +32,7 @@ const SLIDES: { icon: LucideIcon; title: string; text: string }[] = [
 
 /** Three welcome slides for someone opening Prayer Fire for the first time, shown right after they sign in. */
 export default function WelcomeSlides() {
+  const { t, tr } = useI18n();
   const router = useRouter();
   const { user } = useApp();
   const signInRequired = useSignInRequired();
@@ -67,20 +69,18 @@ export default function WelcomeSlides() {
   }
 
   return (
-    <div className="fixed inset-0 z-[90] bg-black/55 backdrop-blur-sm overflow-y-auto" role="dialog" aria-modal="true" aria-label="Welcome to Prayer Fire">
+    <div className="fixed inset-0 z-[90] bg-black/55 backdrop-blur-sm overflow-y-auto" role="dialog" aria-modal="true" aria-label={t('welcomeSlides.welcomeToPrayerFire')}>
       <div className="min-h-full flex items-center justify-center p-4">
         <div className="w-full max-w-sm rounded-3xl bg-card border border-edge shadow-2xl overflow-hidden">
           <div className="flex justify-end px-4 pt-3">
-            <button onClick={() => finish(false)} className="text-xs font-bold text-ink-muted hover:text-ink px-2 py-1">
-              Skip
-            </button>
+            <button onClick={() => finish(false)} className="text-xs font-bold text-ink-muted hover:text-ink px-2 py-1">{t('welcomeSlides.skip')}</button>
           </div>
           <div className="px-6 pb-6 text-center">
             <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-acc-soft text-acc-strong">
               <Icon className="w-10 h-10" />
             </div>
-            <h2 className="mt-4 font-serif-heading text-2xl font-bold text-ink">{slide.title}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-ink-soft min-h-[4.5rem]">{slide.text}</p>
+            <h2 className="mt-4 font-serif-heading text-2xl font-bold text-ink">{tr(slide.title)}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-ink-soft min-h-[4.5rem]">{tr(slide.text)}</p>
 
             <div className="mt-4 flex justify-center gap-1.5" aria-hidden>
               {SLIDES.map((_, i) => (
@@ -90,17 +90,11 @@ export default function WelcomeSlides() {
 
             {last ? (
               <div className="mt-5 space-y-2">
-                <button onClick={() => finish(true)} className="w-full h-12 rounded-xl bg-acc text-on-acc font-bold hover:bg-acc-hover active:scale-95">
-                  Open the Bible
-                </button>
-                <button onClick={() => finish(false)} className="w-full h-10 text-sm font-bold text-acc-strong hover:underline">
-                  Get started
-                </button>
+                <button onClick={() => finish(true)} className="w-full h-12 rounded-xl bg-acc text-on-acc font-bold hover:bg-acc-hover active:scale-95">{t('verse.openTheBible')}</button>
+                <button onClick={() => finish(false)} className="w-full h-10 text-sm font-bold text-acc-strong hover:underline">{t('welcomeSlides.getStarted')}</button>
               </div>
             ) : (
-              <button onClick={() => setIndex(index + 1)} className="mt-5 w-full h-12 rounded-xl bg-acc text-on-acc font-bold hover:bg-acc-hover active:scale-95">
-                Next
-              </button>
+              <button onClick={() => setIndex(index + 1)} className="mt-5 w-full h-12 rounded-xl bg-acc text-on-acc font-bold hover:bg-acc-hover active:scale-95">{t('welcomeSlides.next')}</button>
             )}
           </div>
         </div>

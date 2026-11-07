@@ -13,6 +13,7 @@ import HomeFeatureRow from './components/HomeFeatureRow';
 import { useT } from './i18n';
 import HomeVideos from './components/HomeVideos';
 import HomeAlertCard from './components/HomeAlertCard';
+import { useI18n } from '@/app/i18n';
 
 export default function HomePage() {
   const t = useT();
@@ -144,8 +145,8 @@ export default function HomePage() {
               <span className="text-xl md:text-2xl">📖</span>
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-ink font-bold text-sm md:text-base">User Manual &amp; Benefits</h3>
-              <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">Discover how this app transforms your prayer life — and the spiritual power of each feature</p>
+              <h3 className="text-ink font-bold text-sm md:text-base">{t('nav.manualCard')}</h3>
+              <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">{t('app.discoverHowThisAppTransforms')}</p>
             </div>
             <span className="text-ink-faint text-lg md:text-xl">›</span>
           </Link>
@@ -159,8 +160,8 @@ export default function HomePage() {
               <Crown className="w-5 h-5 md:w-7 md:h-7" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-ink font-bold text-sm md:text-base">Become a Prayer Fire Partner</p>
-              <p className="text-ink-muted text-[0.6875rem] md:text-sm">Unlock the full intercessory community</p>
+              <p className="text-ink font-bold text-sm md:text-base">{t('pricingPage.becomeAPrayerFirePartner')}</p>
+              <p className="text-ink-muted text-[0.6875rem] md:text-sm">{t('app.unlockTheFullIntercessoryCommunity')}</p>
             </div>
             <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-acc-strong" />
           </Link>

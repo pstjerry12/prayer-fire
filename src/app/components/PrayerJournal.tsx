@@ -7,6 +7,7 @@ import {
   testimonyText, waitedPhrase, waiting, type JournalEntry,
 } from '@/lib/prayerJournal';
 import { shareImageCard, shareToWhatsApp } from '@/lib/shareImage';
+import { useI18n } from '@/app/i18n';
 
 const fmt = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -15,6 +16,7 @@ const fmt = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: 
  * testimony (anonymously, after admin approval), a picture, or on WhatsApp. Kept on this phone only.
  */
 export default function PrayerJournal() {
+  const { t } = useI18n();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [text, setText] = useState('');
@@ -53,16 +55,16 @@ export default function PrayerJournal() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ testimony: testimonyText(e), isAnonymous: true }),
       });
-      say(e.id, res.ok ? 'Thank you! Your testimony was sent without your name and will appear once approved.' : 'Could not send. Please try again.');
+      say(e.id, res.ok ? t('ui.thankYouYourTestimonyWas') : t('ui.couldNotSendPleaseTry'));
     } catch {
-      say(e.id, 'Could not send. Check your connection and try again.');
+      say(e.id, t('ui.couldNotSendCheckYour'));
     }
   }
 
   async function sharePicture(e: JournalEntry) {
     const body = e.answerNote || e.text;
     const result = await shareImageCard(body, 'Answered prayer', `Answered prayer: ${body}`, waitedPhrase(e) ? `God answered ${waitedPhrase(e)}` : '');
-    if (result === 'saved') say(e.id, 'Picture saved to your downloads.');
+    if (result === 'saved') say(e.id, t('ui.pictureSavedToYourDownloads2'));
     else if (result === 'failed') say(e.id, 'Could not make the picture on this device.');
   }
 
@@ -74,8 +76,8 @@ export default function PrayerJournal() {
       <div className="flex items-center gap-3 mb-4">
         <div className="w-11 h-11 rounded-xl bg-acc-soft flex items-center justify-center"><BookHeart className="w-6 h-6 text-acc-strong" /></div>
         <div>
-          <h1 className="font-serif-heading text-2xl font-bold text-ink">My Prayer Journal</h1>
-          <p className="text-xs text-ink-muted">Write it down. Watch what God does. It stays on this phone.</p>
+          <h1 className="font-serif-heading text-2xl font-bold text-ink">{t('prayerJournal.myPrayerJournal')}</h1>
+          <p className="text-xs text-ink-muted">{t('prayerJournal.writeItDownWatchWhat')}</p>
         </div>
       </div>
 
@@ -87,14 +89,14 @@ export default function PrayerJournal() {
           if (next !== entriesRef.current) { commit(next); setText(''); setTab('waiting'); }
         }}
       >
-        <label htmlFor="journal-text" className="block text-xs font-semibold text-ink-muted mb-1.5">What are you praying for?</label>
+        <label htmlFor="journal-text" className="block text-xs font-semibold text-ink-muted mb-1.5">{t('prayerJournal.whatAreYouPrayingFor')}</label>
         <textarea
           id="journal-text"
           value={text}
           onChange={(e) => setText(e.target.value)}
           maxLength={MAX_TEXT}
           rows={3}
-          placeholder="e.g. Healing for my mother; a job; my children's salvation"
+          placeholder={t('prayerJournal.eGHealingForMy')}
           className="w-full rounded-xl border border-edge bg-card-2 px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-acc"
         />
         <button type="submit" disabled={!text.trim()} className="mt-2 w-full py-2.5 rounded-xl bg-acc text-on-acc font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2">
@@ -102,7 +104,7 @@ export default function PrayerJournal() {
         </button>
       </form>
 
-      <div className="grid grid-cols-3 gap-2 mb-4 text-center" aria-label="Journal summary">
+      <div className="grid grid-cols-3 gap-2 mb-4 text-center" aria-label={t('prayerJournal.journalSummary')}>
         {[['Prayers', stats.total], ['Waiting', stats.waiting], ['Answered', stats.answered]].map(([l, n]) => (
           <div key={String(l)} className="bg-card rounded-xl border border-edge py-2">
             <div className="text-lg font-bold text-ink">{n}</div>
@@ -112,22 +114,22 @@ export default function PrayerJournal() {
       </div>
 
       <div className="flex gap-2 mb-3" role="tablist">
-        {(['waiting', 'answered'] as const).map((t) => (
+        {(['waiting', 'answered'] as const).map((tb) => (
           <button
-            key={t}
+            key={tb}
             role="tab"
-            aria-selected={tab === t}
-            onClick={() => setTab(t)}
-            className={`flex-1 py-2 rounded-xl text-sm font-bold border ${tab === t ? 'bg-acc text-on-acc border-acc' : 'bg-card text-ink-soft border-edge'}`}
+            aria-selected={tab === tb}
+            onClick={() => setTab(tb)}
+            className={`flex-1 py-2 rounded-xl text-sm font-bold border ${tab === tb ? 'bg-acc text-on-acc border-acc' : 'bg-card text-ink-soft border-edge'}`}
           >
-            {t === 'waiting' ? 'Still praying' : 'Answered'}
+            {tb === 'waiting' ? t('ui.stillPraying') : t('ui.answered')}
           </button>
         ))}
       </div>
 
       {loaded && list.length === 0 && (
         <p className="text-ink-muted text-sm text-center py-8">
-          {tab === 'waiting' ? 'Nothing here yet. Add what is on your heart above.' : 'No answered prayers yet. Keep praying: God hears you.'}
+          {tab === 'waiting' ? t('ui.nothingHereYetAddWhat') : t('ui.noAnsweredPrayersYetKeep')}
         </p>
       )}
 
@@ -149,8 +151,8 @@ export default function PrayerJournal() {
                   <CheckCircle2 className="w-4 h-4" /> God answered
                 </button>
                 <button
-                  onClick={() => { if (window.confirm('Delete this prayer from your journal?')) commit(removeEntry(entriesRef.current, e.id)); }}
-                  aria-label="Delete this prayer"
+                  onClick={() => { if (window.confirm(t('ui.deleteThisPrayerFromYour'))) commit(removeEntry(entriesRef.current, e.id)); }}
+                  aria-label={t('prayerJournal.deleteThisPrayer')}
                   className="px-3 rounded-xl border border-edge text-ink-muted"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -160,7 +162,7 @@ export default function PrayerJournal() {
 
             {!e.answeredAt && answering === e.id && (
               <div className="mt-3 space-y-2">
-                <label htmlFor={`note-${e.id}`} className="block text-xs font-semibold text-ink-muted">What did God do? (optional)</label>
+                <label htmlFor={`note-${e.id}`} className="block text-xs font-semibold text-ink-muted">{t('prayerJournal.whatDidGodDoOptional')}</label>
                 <textarea
                   id={`note-${e.id}`}
                   value={note}
@@ -176,7 +178,7 @@ export default function PrayerJournal() {
                   >
                     <Check className="w-4 h-4" /> Save as answered
                   </button>
-                  <button onClick={() => setAnswering(null)} className="px-4 rounded-xl border border-edge text-ink-soft text-xs font-bold">Cancel</button>
+                  <button onClick={() => setAnswering(null)} className="px-4 rounded-xl border border-edge text-ink-soft text-xs font-bold">{t('customizablePrayerSchedule.cancel')}</button>
                 </div>
               </div>
             )}
@@ -195,8 +197,8 @@ export default function PrayerJournal() {
                   </button>
                 </div>
                 <div className="flex justify-between">
-                  <button onClick={() => commit(setAnswered(entriesRef.current, e.id, false))} className="text-xs text-ink-muted flex items-center gap-1"><Undo2 className="w-3.5 h-3.5" /> Back to still praying</button>
-                  <button onClick={() => { if (window.confirm('Delete this prayer from your journal?')) commit(removeEntry(entriesRef.current, e.id)); }} className="text-xs text-danger flex items-center gap-1"><Trash2 className="w-3.5 h-3.5" /> Delete</button>
+                  <button onClick={() => commit(setAnswered(entriesRef.current, e.id, false))} className="text-xs text-ink-muted flex items-center gap-1"><Undo2 className="w-3.5 h-3.5" /> {t('prayerJournal.backToStillPraying')}</button>
+                  <button onClick={() => { if (window.confirm(t('ui.deleteThisPrayerFromYour'))) commit(removeEntry(entriesRef.current, e.id)); }} className="text-xs text-danger flex items-center gap-1"><Trash2 className="w-3.5 h-3.5" /> {t('groupModeration.delete')}</button>
                 </div>
               </div>
             )}

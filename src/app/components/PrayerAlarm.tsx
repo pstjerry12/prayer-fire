@@ -16,8 +16,10 @@ import {
   listenNotificationTap,
   listenPrayNow,
   setNativeAlarmContent,
+  setNativeAlarmText,
   setNativeWidgetStreak,
 } from '@/lib/capacitorAlarm';
+import { useI18n } from '@/app/i18n';
 
 /**
  * Watches the clock and fires a prayer-time alarm whenever an enabled prayer
@@ -30,6 +32,7 @@ import {
  *   • Shows a full-screen "STOP ALARM" overlay
  */
 export default function PrayerAlarm() {
+  const { t, tr, lang } = useI18n();
   const { appointments: personalAppointments, streak } = useApp();
   // Group prayer times of the groups this person belongs to (saved by the groups screen) ring like their own alarms.
   const [groupAppts, setGroupAppts] = useState<PrayerAppointment[]>([]);
@@ -49,7 +52,20 @@ export default function PrayerAlarm() {
   useEffect(() => {
     appointmentsRef.current = appointments;
   }, [appointments]);
+  // The notification wording follows the chosen language; the effect below runs again when the language changes.
+  const textRef = useRef({ title: t('alarm.notifTitle'), body: (label: string) => t('alarm.notifBody', { label }), fallback: t('alarm.fallbackLabel'), tr });
+  useEffect(() => {
+    textRef.current = { title: t('alarm.notifTitle'), body: (label: string) => t('alarm.notifBody', { label }), fallback: t('alarm.fallbackLabel'), tr };
+  }, [t, tr]);
   const [alarmLabel, setAlarmLabel] = useState<string | null>(null);
+
+  // The words on the native alarm screen and notification follow the chosen language (Android only; a no-op on web).
+  useEffect(() => {
+    setNativeAlarmText({
+      title: t('alarm.notifTitle'), body: t('alarm.notifBody', { label: '{label}' }), groupBody: t('alarm.groupBody', { label: '{label}' }),
+      stop: t('alarm.stop'), snooze: t('alarm.snooze', { n: '{n}' }), prayNow: t('alarm.prayNow'), joinLive: t('alarm.joinLive'),
+    });
+  }, [t]);
 
   // The Android home-screen widget shows the fire streak (a no-op on web).
   useEffect(() => {
@@ -84,10 +100,10 @@ export default function PrayerAlarm() {
         // (Android only) the loud AlarmManager-driven ring for whichever
         // appointments have "Ring like an alarm" turned on. The two run
         // side by side — scheduleAlarmEngineAlarms() is a no-op on iOS/web.
-        scheduleNativeAlarms(appointmentsRef.current);
+        scheduleNativeAlarms(appointmentsRef.current, textRef.current);
         scheduleAlarmEngineAlarms(appointmentsRef.current);
         // Today's prayer point and verse for the full-screen alarm (Android only).
-        setNativeAlarmContent(buildAlarmContent());
+        setNativeAlarmContent(buildAlarmContent().map((c) => ({ ...c, point: textRef.current.tr(c.point) })));
 
         // The alarm's "Pray Now" button opens the app on the prayer session, not the home screen.
         // (An alarm opening the app also switches ads off for this session: see lib/adsGuard.ts.)
@@ -102,7 +118,7 @@ export default function PrayerAlarm() {
         listenNotificationTap((data) => {
           suppressAdsForSession();
           playAlarmTone(DEFAULT_TONE);
-          setAlarmLabel(data.label || 'Prayer Time');
+          setAlarmLabel(data.label || textRef.current.fallback);
           if (typeof window !== 'undefined') window.focus();
         }).then((fn) => {
           if (cancelled) fn();
@@ -115,7 +131,7 @@ export default function PrayerAlarm() {
         // BootReceiver re-arms everything after a reboot), so
         // rescheduling them every minute would just be unnecessary
         // AlarmManager churn.
-        const reschedule = () => scheduleNativeAlarms(appointmentsRef.current);
+        const reschedule = () => scheduleNativeAlarms(appointmentsRef.current, textRef.current);
         const interval = setInterval(reschedule, 60000);
         cleanupFns.push(() => clearInterval(interval));
         return;
@@ -126,8 +142,8 @@ export default function PrayerAlarm() {
         // System notification
         if ('Notification' in window && Notification.permission === 'granted') {
           try {
-            const n = new Notification('🔥 Prayer Time', {
-              body: `${label} — it's time to pray!`,
+            const n = new Notification(textRef.current.title, {
+              body: textRef.current.body(label),
               icon: '/logo.png',
               badge: '/logo.png',
               tag: 'prayer-alarm',
@@ -181,7 +197,7 @@ export default function PrayerAlarm() {
       cleanupFns = [];
       stopAlarm();
     };
-  }, [appointments]);
+  }, [appointments, lang]);
 
   // ── Full-screen STOP ALARM overlay ───────────────────────────
   if (!alarmLabel) return null;
@@ -194,9 +210,7 @@ export default function PrayerAlarm() {
       </div>
 
       {/* Prayer label */}
-      <h1 className="text-3xl font-black text-white mb-2 text-center">
-        Prayer Time!
-      </h1>
+      <h1 className="text-3xl font-black text-white mb-2 text-center">{t('prayerAlarm.prayerTime')}</h1>
       <p className="text-xl text-acc-strong font-bold mb-8 text-center">
         {alarmLabel}
       </p>
@@ -205,13 +219,9 @@ export default function PrayerAlarm() {
       <button
         onClick={dismiss}
         className="px-12 py-5 bg-danger hover:bg-danger text-white rounded-2xl text-2xl font-black shadow-2xl transition-all active:scale-95"
-      >
-        DISMISS ALARM
-      </button>
+      >{t('prayerAlarm.dismissAlarm')}</button>
 
-      <p className="text-white/50 text-sm mt-4">
-        Tap to stop the alarm
-      </p>
+      <p className="text-white/50 text-sm mt-4">{t('customizablePrayerSchedule.tapToStopTheAlarm')}</p>
     </div>
   );
 }

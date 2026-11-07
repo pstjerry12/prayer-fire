@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Flame } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { useI18n } from '@/app/i18n';
 
 const BOOT_MESSAGES = [
   'Igniting the prayer fire…',
@@ -18,6 +19,7 @@ const STEP_MS = 50;
 const SPLASH_KEY = 'pfm_splash_shown';
 
 export default function SplashScreen() {
+  const { t, tr } = useI18n();
   const [progress, setProgress] = useState(0);
   const [fading, setFading] = useState(false);
   // Always render on first paint (both server + client) so there is NO flash
@@ -77,12 +79,12 @@ export default function SplashScreen() {
     >
       {/* Logo */}
       <div className="w-24 h-24 rounded-full bg-danger-soft ring-2 ring-danger-edge flex items-center justify-center overflow-hidden shadow-lg shadow-danger/20 mb-4">
-        <img src="/logo-sm.png" width={192} height={192} alt="Prayer Fire" className="w-full h-full object-cover" />
+        <img src="/logo-sm.png" width={192} height={192} alt={t('app.name')} className="w-full h-full object-cover" />
       </div>
 
       {/* App name */}
-      <h1 className="font-serif-heading text-2xl font-bold text-ink">Prayer Fire</h1>
-      <p className="text-danger font-semibold italic text-sm mt-1">Praying like Daniel</p>
+      <h1 className="font-serif-heading text-2xl font-bold text-ink">{t('app.name')}</h1>
+      <p className="text-danger font-semibold italic text-sm mt-1">{t('app.subtagline')}</p>
 
       {/* Progress bar */}
       <div className="w-56 mt-8">
@@ -95,7 +97,7 @@ export default function SplashScreen() {
         <div className="flex items-center justify-between mt-2">
           <span className="text-ink-muted text-[0.6875rem] flex items-center gap-1">
             <Flame className="w-3 h-3 text-acc-strong" />
-            {BOOT_MESSAGES[messageIndex]}
+            {tr(BOOT_MESSAGES[messageIndex])}
           </span>
           <span className="text-ink-muted text-[0.6875rem] font-bold tabular-nums">{Math.round(progress)}%</span>
         </div>

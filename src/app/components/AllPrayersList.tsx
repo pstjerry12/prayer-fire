@@ -5,6 +5,7 @@ import { Heart, ChevronRight } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { PrayerPoint, IntercessoryPrayer, IntercessoryCategory } from '@/app/types';
 import PrayerReader, { type ReaderItem } from './PrayerReader';
+import { useI18n } from '@/app/i18n';
 
 export default function AllPrayersList({
   prayers,
@@ -15,6 +16,7 @@ export default function AllPrayersList({
   intercessoryPrayers: IntercessoryPrayer[];
   categories: IntercessoryCategory[];
 }) {
+  const { t } = useI18n();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const familyPrayers = categories.flatMap((cat) =>
@@ -60,8 +62,8 @@ export default function AllPrayersList({
     return (
       <div className="bg-card-2 rounded-xl p-4 border border-edge text-center">
         <Heart className="w-8 h-8 text-ink-ghost mx-auto mb-2" />
-        <p className="text-ink-muted text-sm">No saved prayers yet</p>
-        <p className="text-ink-faint text-xs">Write your prayer points in the Prayer Workshop</p>
+        <p className="text-ink-muted text-sm">{t('allPrayersList.noSavedPrayersYet')}</p>
+        <p className="text-ink-faint text-xs">{t('allPrayersList.writeYourPrayerPointsIn')}</p>
       </div>
     );
   }

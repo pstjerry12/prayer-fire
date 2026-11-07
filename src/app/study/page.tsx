@@ -26,6 +26,7 @@ import { getTranslationMeta, type TranslationId } from '@/lib/bible/translations
 import { KJV_BIBLE_VERSES } from '@/app/data/bibleVerses';
 import { migrateLegacyFavorites } from '@/lib/study';
 import { PRAYER_VERSE_PATH } from '@/app/components/PrayerVerseCard';
+import { useI18n } from '@/app/i18n';
 
 type Tab = 'bookmarks' | 'highlights' | 'sermons';
 const TAB_KEY = 'pfm_study_tab';
@@ -79,6 +80,7 @@ interface BookmarkRow {
 }
 
 function BookmarksTab() {
+  const { t } = useI18n();
   const router = useRouter();
   const study = useStudy();
 
@@ -126,8 +128,8 @@ function BookmarksTab() {
     return (
       <div className="bg-card rounded-2xl border border-edge p-8 text-center">
         <BookmarkIcon className="w-8 h-8 text-ink-faint mx-auto mb-3" />
-        <p className="font-bold text-ink text-sm">No bookmarks yet</p>
-        <p className="text-xs text-ink-muted mt-1.5 max-w-xs mx-auto">Hold any verse, then choose Bookmark. It will be saved here, grouped by the day you saved it.</p>
+        <p className="font-bold text-ink text-sm">{t('study.noBookmarksYet')}</p>
+        <p className="text-xs text-ink-muted mt-1.5 max-w-xs mx-auto">{t('study.holdAnyVerseThenChoose')}</p>
       </div>
     );
   }
@@ -164,6 +166,7 @@ function BookmarksTab() {
 }
 
 function HighlightsTab() {
+  const { t } = useI18n();
   const router = useRouter();
   const study = useStudy();
 
@@ -183,8 +186,8 @@ function HighlightsTab() {
     return (
       <div className="bg-card rounded-2xl border border-edge p-8 text-center">
         <Highlighter className="w-8 h-8 text-ink-faint mx-auto mb-3" />
-        <p className="font-bold text-ink text-sm">No highlights yet</p>
-        <p className="text-xs text-ink-muted mt-1.5 max-w-xs mx-auto">Hold a verse, choose Highlight colour, and pick one. Your highlights are grouped by colour here.</p>
+        <p className="font-bold text-ink text-sm">{t('study.noHighlightsYet')}</p>
+        <p className="text-xs text-ink-muted mt-1.5 max-w-xs mx-auto">{t('study.holdAVerseChooseHighlight')}</p>
       </div>
     );
   }
@@ -228,6 +231,7 @@ function HighlightsTab() {
 }
 
 function SermonsTab() {
+  const { t } = useI18n();
   const router = useRouter();
   const study = useStudy();
   const [starting, setStarting] = useState(false);
@@ -241,12 +245,12 @@ function SermonsTab() {
       >
         <Plus className="w-4 h-4" /> Start a Sermon Session
       </button>
-      <p className="text-xs text-ink-muted -mt-1">During a service, start a session. Then hold any verse in the Bible and choose Add to Sermon Notes — it is saved here, in order.</p>
+      <p className="text-xs text-ink-muted -mt-1">{t('study.duringAServiceStartA')}</p>
 
       {sermons.length === 0 ? (
         <div className="bg-card rounded-2xl border border-edge p-8 text-center">
           <BookOpenText className="w-8 h-8 text-ink-faint mx-auto mb-3" />
-          <p className="font-bold text-ink text-sm">No sermons yet</p>
+          <p className="font-bold text-ink text-sm">{t('study.noSermonsYet')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -269,7 +273,7 @@ function SermonsTab() {
                   </span>
                   <span className="block text-[0.6875rem] text-ink-faint mt-0.5">
                     {count} {count === 1 ? 'verse' : 'verses'}
-                    {active && <span className="ml-2 rounded-full bg-acc-soft border border-acc-edge px-2 py-0.5 text-acc-strong font-bold">Active session</span>}
+                    {active && <span className="ml-2 rounded-full bg-acc-soft border border-acc-edge px-2 py-0.5 text-acc-strong font-bold">{t('study.activeSession')}</span>}
                   </span>
                 </span>
                 <ChevronRight className="w-4 h-4 text-ink-faint shrink-0" />
@@ -293,6 +297,7 @@ function SermonsTab() {
 }
 
 export default function StudyPage() {
+  const { t } = useI18n();
   const [tab, setTabState] = useState<Tab>('bookmarks');
 
   useEffect(() => {
@@ -325,8 +330,8 @@ export default function StudyPage() {
         </Link>
 
         <div className="mb-5">
-          <h1 className="font-serif-heading text-2xl font-bold text-ink">My Study</h1>
-          <p className="text-xs text-ink-muted">Bookmarks, highlights and sermon notes — saved on this phone, and backed up when you&apos;re signed in.</p>
+          <h1 className="font-serif-heading text-2xl font-bold text-ink">{t('feat.study')}</h1>
+          <p className="text-xs text-ink-muted">{t('study.bookmarksHighlightsAndSermonNotes')}</p>
         </div>
 
         <div className="grid grid-cols-3 gap-1 rounded-xl bg-card-2 p-1 mb-5" role="tablist">

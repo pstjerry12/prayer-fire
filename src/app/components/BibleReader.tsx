@@ -420,7 +420,7 @@ export default function BibleReader() {
     const added = addVersesToSermon(sermonId, infos);
     // Read the title fresh: a sermon created a moment ago isn't in this render's snapshot yet.
     const title = getStudyDoc().sermons[sermonId]?.title;
-    showToast(added > 0 ? `Added ${added} verse${added === 1 ? '' : 's'} to ${title ?? 'your sermon notes'}` : 'Already in your sermon notes');
+    showToast(added > 0 ? `Added ${added} verse${added === 1 ? '' : 's'} to ${title ?? 'your sermon notes'}` : t('ui.alreadyInYourSermonNotes'));
   }
 
   return (
@@ -482,7 +482,7 @@ export default function BibleReader() {
           </p>
           <div className="grid sm:grid-cols-2 gap-3">
             <label className="block">
-              <span className="text-xs font-semibold text-ink-soft">Old Testament</span>
+              <span className="text-xs font-semibold text-ink-soft">{t('bibleReader.oldTestament')}</span>
               <select
                 value={currentBook.testament === 'OT' ? book : 'Genesis'}
                 onChange={(e) => selectBook(e.target.value)}
@@ -494,20 +494,20 @@ export default function BibleReader() {
               </select>
             </label>
             <label className="block">
-              <span className="text-xs font-semibold text-ink-soft">New Testament</span>
+              <span className="text-xs font-semibold text-ink-soft">{t('bibleReader.newTestament')}</span>
               <select
                 value={currentBook.testament === 'NT' ? book : ''}
                 onChange={(e) => e.target.value && selectBook(e.target.value)}
                 className="mt-1.5 w-full bg-card border border-edge-strong rounded-lg px-3 py-2.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
               >
-                <option value="" disabled>Select book…</option>
+                <option value="" disabled>{t('bibleReader.selectBook')}</option>
                 {ntBooks.map((b) => (
                   <option key={b.name} value={b.name}>{bookLabel(b.name)}</option>
                 ))}
               </select>
             </label>
           </div>
-          <p className="text-[0.6875rem] text-ink-muted mt-3">Tap a book to see its chapters.</p>
+          <p className="text-[0.6875rem] text-ink-muted mt-3">{t('bibleReader.tapABookToSee')}</p>
         </div>
       )}
 
@@ -567,7 +567,7 @@ export default function BibleReader() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-ink-muted">Loading verse numbers…</p>
+              <p className="text-xs text-ink-muted">{t('bibleReader.loadingVerseNumbers')}</p>
             )}
           </div>
 
@@ -603,12 +603,12 @@ export default function BibleReader() {
             {/* Tools: text size, sermon session, selection */}
             {verses && !loading && (
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <div className="flex items-center rounded-lg bg-card-2 border border-edge" role="group" aria-label="Text size">
-                  <button onClick={() => changeFont(-1)} disabled={fontSize <= FONT_MIN} aria-label="Smaller text" className="grid h-8 w-8 place-items-center text-ink-soft disabled:opacity-40">
+                <div className="flex items-center rounded-lg bg-card-2 border border-edge" role="group" aria-label={t('accountSettings.textSize')}>
+                  <button onClick={() => changeFont(-1)} disabled={fontSize <= FONT_MIN} aria-label={t('bibleReader.smallerText')} className="grid h-8 w-8 place-items-center text-ink-soft disabled:opacity-40">
                     <Minus className="w-4 h-4" />
                   </button>
                   <span className="px-1 text-xs font-bold text-ink-muted tabular-nums">Aa {fontSize}</span>
-                  <button onClick={() => changeFont(1)} disabled={fontSize >= FONT_MAX} aria-label="Larger text" className="grid h-8 w-8 place-items-center text-ink-soft disabled:opacity-40">
+                  <button onClick={() => changeFont(1)} disabled={fontSize >= FONT_MAX} aria-label={t('bibleReader.largerText')} className="grid h-8 w-8 place-items-center text-ink-soft disabled:opacity-40">
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
@@ -616,7 +616,7 @@ export default function BibleReader() {
                   <span className="flex items-center gap-1.5 rounded-lg bg-acc-soft border border-acc-edge pl-2.5 pr-1 py-1 text-xs font-bold text-acc-strong max-w-full">
                     <BookOpenText className="w-3.5 h-3.5 shrink-0" />
                     <span className="truncate">Sermon: {sermon.title}</span>
-                    <button onClick={() => setActiveSermon(null)} aria-label="End sermon session" className="p-1 rounded-md hover:bg-acc-soft-2">
+                    <button onClick={() => setActiveSermon(null)} aria-label={t('bibleReader.endSermonSession')} className="p-1 rounded-md hover:bg-acc-soft-2">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </span>
@@ -644,10 +644,8 @@ export default function BibleReader() {
             ) : unavailable ? (
               <div className="text-center py-12">
                 <AlertTriangle className="w-8 h-8 text-acc-strong mx-auto mb-2" />
-                <p className="text-ink-muted text-sm">This translation is unavailable, please reinstall the app.</p>
-                <button onClick={() => loadChapter(currentBook.osis, chapter, translationId)} className="mt-3 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">
-                  Retry
-                </button>
+                <p className="text-ink-muted text-sm">{t('bibleReader.thisTranslationIsUnavailablePlease')}</p>
+                <button onClick={() => loadChapter(currentBook.osis, chapter, translationId)} className="mt-3 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">{t('bibleReader.retry')}</button>
               </div>
             ) : verses ? (
               <>
@@ -657,9 +655,7 @@ export default function BibleReader() {
                     <span className="block mt-1 text-[0.6875rem] text-ink-muted break-words">Details: {speechProblem}</span>
                   </p>
                 )}
-                <p className="mb-3 text-[0.6875rem] text-ink-muted">
-                  Tap verses to select them · hold a verse for a menu (copy, read, bookmark, highlight, sermon notes)
-                </p>
+                <p className="mb-3 text-[0.6875rem] text-ink-muted">{t('bibleReader.tapVersesToSelectThem')}</p>
                 <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-1">
                   {verses.map((v) => {
                     const info = infoFor(v);
@@ -702,7 +698,7 @@ export default function BibleReader() {
                           <p className="leading-relaxed text-ink-soft" style={{ fontSize }}>
                             <sup className="mr-1.5 font-serif-heading font-bold text-acc-strong">{v.number}</sup>
                             {v.text}
-                            {bookmarked && <BookmarkIcon className="inline-block ml-1.5 w-3.5 h-3.5 fill-current text-acc-strong align-text-bottom" aria-label="Bookmarked" />}
+                            {bookmarked && <BookmarkIcon className="inline-block ml-1.5 w-3.5 h-3.5 fill-current text-acc-strong align-text-bottom" aria-label={t('id.bookmarked')} />}
                           </p>
                         </LongPressable>
                       </div>
@@ -720,8 +716,8 @@ export default function BibleReader() {
         <div className="fixed right-4 z-[55] bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:bottom-8 flex flex-col items-end gap-2">
           {showListenTip && (
             <div role="status" className="relative max-w-[15rem] rounded-xl bg-ink text-page pl-3 pr-8 py-2 text-xs font-bold shadow-xl">
-              Tap Listen to hear the Bible read aloud.
-              <button onClick={dismissListenTip} aria-label="Dismiss tip" className="absolute right-1.5 top-1.5 p-0.5 rounded-md hover:bg-page/20">
+              {t('bibleReader.tapListenToHearThe')}
+              <button onClick={dismissListenTip} aria-label={t('bibleReader.dismissTip')} className="absolute right-1.5 top-1.5 p-0.5 rounded-md hover:bg-page/20">
                 <X className="w-3.5 h-3.5" />
               </button>
               <span className="absolute -bottom-1 right-8 h-2.5 w-2.5 rotate-45 bg-ink" aria-hidden />
@@ -729,11 +725,11 @@ export default function BibleReader() {
           )}
           <button
             onClick={onListen}
-            aria-label={selected.length > 0 ? `Listen to the ${selected.length} selected verse${selected.length === 1 ? '' : 's'}` : 'Listen: hear this chapter read aloud'}
+            aria-label={selected.length > 0 ? `Listen to the ${selected.length} selected verse${selected.length === 1 ? '' : 's'}` : t('ui.listenHearThisChapterRead')}
             className="flex items-center gap-2 h-14 pl-4 pr-5 rounded-full bg-acc text-on-acc font-bold text-base shadow-2xl ring-4 ring-acc/40 active:scale-95 hover:bg-acc-hover"
           >
             <Play className="w-6 h-6 fill-current" />
-            Listen
+            {t('bibleReader.listen')}
           </button>
         </div>
       )}
@@ -763,13 +759,13 @@ export default function BibleReader() {
           bookmarked={menuAllBookmarked}
           onToggleBookmark={() => {
             const saved = toggleBookmarks(menuInfos);
-            showToast(saved ? 'Bookmarked' : 'Bookmark removed');
+            showToast(saved ? 'Bookmarked' : t('ui.bookmarkRemoved'));
           }}
           highlight={{
             current: menuHighlight,
             onPick: (color) => {
               setHighlights(menuInfos, color);
-              showToast(color ? `Highlighted ${HIGHLIGHT_STYLES[color].label.toLowerCase()}` : 'Highlight removed');
+              showToast(color ? `Highlighted ${HIGHLIGHT_STYLES[color].label.toLowerCase()}` : t('ui.highlightRemoved'));
             },
           }}
           sermon={{
@@ -790,7 +786,7 @@ export default function BibleReader() {
             const infos = sermonStart.infos;
             setSermonStart(null);
             if (infos.length > 0) addToSermon(infos, id);
-            else showToast('Sermon session started');
+            else showToast(t('ui.sermonSessionStarted'));
           }}
         />
       )}

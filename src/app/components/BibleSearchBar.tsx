@@ -6,6 +6,7 @@ import { loadTranslation } from '@/lib/bible/loadTranslation';
 import { parseReferenceInput } from '@/lib/bible/reference';
 import { searchBible, searchWords, type SearchHit } from '@/lib/bible/search';
 import type { TranslationId } from '@/lib/bible/translations';
+import { useI18n } from '@/app/i18n';
 
 interface Props {
   translationId: TranslationId;
@@ -32,6 +33,7 @@ function Snippet({ text, words }: { text: string; words: string[] }) {
 
 /** One box for both: type "John 3:16" to jump straight there, or words to search the whole Bible. */
 export default function BibleSearchBar({ translationId, onGoTo }: Props) {
+  const { t } = useI18n();
   const [query, setQuery] = useState('');
   const [debounced, setDebounced] = useState('');
   const [result, setResult] = useState<{ query: string; translationId: string; hits: SearchHit[]; more: boolean } | null>(null);
@@ -88,13 +90,13 @@ export default function BibleSearchBar({ translationId, onGoTo }: Props) {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search the Bible, or jump to John 3:16"
-          aria-label="Search the Bible or jump to a verse"
+          placeholder={t('bibleSearchBar.searchTheBibleOrJump')}
+          aria-label={t('bibleSearchBar.searchTheBibleOrJump2')}
           enterKeyHint="go"
           className="w-full bg-card-2 border border-edge-strong rounded-xl pl-10 pr-10 py-2.5 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
         />
         {query && (
-          <button type="button" onClick={() => setQuery('')} aria-label="Clear search" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-ink-muted hover:bg-card-3">
+          <button type="button" onClick={() => setQuery('')} aria-label={t('bibleSearchBar.clearSearch')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-ink-muted hover:bg-card-3">
             <X className="w-4 h-4" />
           </button>
         )}
@@ -118,8 +120,8 @@ export default function BibleSearchBar({ translationId, onGoTo }: Props) {
               <Loader2 className="w-3.5 h-3.5 animate-spin" /> Searching…
             </p>
           )}
-          {failed && <p className="text-xs text-ink-muted py-2">Search isn&apos;t available right now.</p>}
-          {fresh && fresh.hits.length === 0 && <p className="text-xs text-ink-muted py-2">No verses contain all of those words.</p>}
+          {failed && <p className="text-xs text-ink-muted py-2">{t('bibleSearchBar.searchIsnTAvailableRight')}</p>}
+          {fresh && fresh.hits.length === 0 && <p className="text-xs text-ink-muted py-2">{t('bibleSearchBar.noVersesContainAllOf')}</p>}
           {fresh?.hits.map((h) => (
             <button
               key={`${h.osis}-${h.chapter}-${h.verse}`}

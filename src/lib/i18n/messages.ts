@@ -23,3 +23,28 @@ export function translate(lang: Lang, key: MessageKey, vars?: Record<string, str
   if (!vars) return raw;
   return raw.replace(/\{(\w+)\}/g, (_m, name: string) => (name in vars ? String(vars[name]) : `{${name}}`));
 }
+
+let INDEX: Map<string, MessageKey> | null = null;
+/**
+ * Text that is built from lists or data (step titles, categories, plan names) keeps its English wording in the data and is looked up
+ * here by that English wording. A text with no entry in locales/en.json is returned unchanged, so nothing ever breaks or goes blank.
+ */
+export function translateText(lang: Lang, text: string): string {
+  if (lang === 'en') return text;
+  if (!INDEX) {
+    INDEX = new Map();
+    for (const k of Object.keys(en) as MessageKey[]) if (!INDEX.has(en[k])) INDEX.set(en[k], k);
+  }
+  const key = INDEX.get(text);
+  return key ? translate(lang, key) : text;
+}
+
+/** For code outside React (notifications, alarm text): the saved language of this phone, or English. */
+export function savedLang(): Lang {
+  try {
+    const v = typeof window === 'undefined' ? null : window.localStorage.getItem('pfm_lang');
+    return v === 'fr' || v === 'es' || v === 'pt' ? v : 'en';
+  } catch {
+    return 'en';
+  }
+}

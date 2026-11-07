@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { DEFAULT_LANG, LANG_KEY, LANGUAGES, detectLanguage, isLang, type Lang } from '@/lib/i18n/languages';
-import { translate, type MessageKey } from '@/lib/i18n/messages';
+import { translate, translateText, type MessageKey } from '@/lib/i18n/messages';
 import { bookLabel as labelFor } from '@/lib/i18n/bookNames';
 import { hasBibleIn, setSelectedTranslation, translationForLanguage } from '@/lib/bible/translations';
 
@@ -11,6 +11,8 @@ type I18n = {
   setLang: (lang: Lang) => void;
   /** Screen text in the chosen language (English where a language has no wording yet). */
   t: (key: MessageKey, vars?: Record<string, string | number>) => string;
+  /** Translates a piece of data text by its English wording (list titles, category names...). Unknown text comes back unchanged. */
+  tr: (english: string) => string;
   /** A Bible book name for the screen ("Jean" for John in French). */
   bookLabel: (englishName: string) => string;
 };
@@ -19,6 +21,7 @@ const Ctx = createContext<I18n>({
   lang: DEFAULT_LANG,
   setLang: () => {},
   t: (key, vars) => translate(DEFAULT_LANG, key, vars),
+  tr: (e) => e,
   bookLabel: (n) => n,
 });
 
@@ -75,6 +78,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       lang,
       setLang,
       t: (key, vars) => translate(lang, key, vars),
+      tr: (e) => translateText(lang, e),
       bookLabel: (n) => labelFor(n, lang),
     }),
     [lang, setLang]

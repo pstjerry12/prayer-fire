@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { X, BookHeart, Lightbulb } from 'lucide-react';
 import { WISDOM_CHAPTERS, COLOR_CLASSES } from '../data/wisdomData';
+import { useI18n } from '@/app/i18n';
 
 interface Props {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function DailyWisdomModal({ isOpen, onClose }: Props) {
+  const { t } = useI18n();
   const chapter = useMemo(() => {
     const idx = new Date().getDate() % WISDOM_CHAPTERS.length;
     return WISDOM_CHAPTERS[idx];
@@ -25,7 +27,7 @@ export default function DailyWisdomModal({ isOpen, onClose }: Props) {
         <div className={`px-5 py-4 border-b border-edge flex items-center justify-between`}>
           <div className="flex items-center gap-2">
             <BookHeart className="w-5 h-5 text-acc-strong" />
-            <h2 className="font-bold text-ink">Wisdom of the Day</h2>
+            <h2 className="font-bold text-ink">{t('dailyWisdomModal.wisdomOfTheDay')}</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
             <X className="w-5 h-5" />
@@ -52,9 +54,7 @@ export default function DailyWisdomModal({ isOpen, onClose }: Props) {
           <button
             onClick={onClose}
             className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover transition-all"
-          >
-            Continue 🙏
-          </button>
+          >{t('dailyWisdomModal.continue')}</button>
         </div>
       </div>
     </div>

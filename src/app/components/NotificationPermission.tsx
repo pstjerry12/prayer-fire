@@ -9,6 +9,7 @@ import {
   requestAlarmPermission,
 } from '@/lib/capacitorAlarm';
 import AlarmPermissionFlow from './AlarmPermissionFlow';
+import { useI18n } from '@/app/i18n';
 
 // Set once the full Android permission sequence (notifications, exact
 // alarms, full-screen intent, battery exemption) has run on first open —
@@ -28,6 +29,7 @@ const NATIVE_ALARM_ONBOARD_KEY = 'pfm_native_alarm_onboarded';
  * └──────────────────────────────────────────────────────────┘
  */
 export default function NotificationPermission() {
+  const { t } = useI18n();
   const [state, setState] = useState<'hidden' | 'asking' | 'granted' | 'full_flow'>('hidden');
 
   useEffect(() => {
@@ -145,12 +147,10 @@ export default function NotificationPermission() {
             <BellRing className="w-5 h-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-ink font-bold text-sm">Enable Prayer Alarms</p>
-            <p className="text-ink-muted text-xs mt-0.5 leading-relaxed">
-              Allow notifications so your phone rings at your prayer times (12am · 12pm · 4am).
-            </p>
+            <p className="text-ink font-bold text-sm">{t('notificationPermission.enablePrayerAlarms')}</p>
+            <p className="text-ink-muted text-xs mt-0.5 leading-relaxed">{t('notificationPermission.allowNotificationsSoYourPhone')}</p>
           </div>
-          <button onClick={dismiss} className="p-1 text-ink-faint hover:text-ink" title="Not now">
+          <button onClick={dismiss} className="p-1 text-ink-faint hover:text-ink" title={t('alarmPermissionFlow.notNow')}>
             <X className="w-4 h-4" />
           </button>
         </div>

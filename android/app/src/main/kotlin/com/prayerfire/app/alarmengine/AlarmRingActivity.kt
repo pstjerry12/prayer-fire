@@ -119,7 +119,7 @@ class AlarmRingActivity : AppCompatActivity() {
         }
 
         root.addView(TextView(this).apply {
-            text = "🔥 Prayer Time"
+            text = AlarmText.get(this@AlarmRingActivity, "title", "🔥 Prayer Time")
             setTextColor(Color.WHITE)
             textSize = 30f
             gravity = Gravity.CENTER
@@ -177,7 +177,7 @@ class AlarmRingActivity : AppCompatActivity() {
         root.addView(View(this), LinearLayout.LayoutParams(1, dp(16)))
 
         // Main button first: Pray Now, or Join Live Prayer for a group prayer time.
-        val main = roundedButton(if (alarm.isGroup) "Join Live Prayer" else "Pray Now", PRIMARY, Color.WHITE).apply {
+        val main = roundedButton(if (alarm.isGroup) AlarmText.get(this, "joinLive", "Join Live Prayer") else AlarmText.get(this, "prayNow", "Pray Now"), PRIMARY, Color.WHITE).apply {
             setOnClickListener {
                 AlarmRingService.prayNow(this@AlarmRingActivity, alarm.kind, alarm.callUrl)
                 finish()
@@ -185,7 +185,7 @@ class AlarmRingActivity : AppCompatActivity() {
         }
         root.addView(main)
 
-        val snooze = roundedButton("Snooze ${AlarmScheduler.SNOOZE_MINUTES} min", Color.TRANSPARENT, Color.WHITE, CARD_EDGE).apply {
+        val snooze = roundedButton(AlarmText.get(this, "snooze", "Snooze {n} min").replace("{n}", AlarmScheduler.SNOOZE_MINUTES.toString()), Color.TRANSPARENT, Color.WHITE, CARD_EDGE).apply {
             setOnClickListener {
                 AlarmRingService.stopRinging(this@AlarmRingActivity)
                 AlarmScheduler.snooze(this@AlarmRingActivity, alarm)
@@ -194,7 +194,7 @@ class AlarmRingActivity : AppCompatActivity() {
         }
         root.addView(snooze)
 
-        val stop = roundedButton("Stop", Color.TRANSPARENT, MUTED, CARD_EDGE).apply {
+        val stop = roundedButton(AlarmText.get(this, "stop", "Stop"), Color.TRANSPARENT, MUTED, CARD_EDGE).apply {
             setOnClickListener {
                 AlarmRingService.stopRinging(this@AlarmRingActivity)
                 finish()

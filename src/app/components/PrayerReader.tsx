@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { cn } from '../utils/cn';
+import { useI18n } from '@/app/i18n';
 
 export interface ReaderItem {
   id: string;
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export default function PrayerReader({ items, initialIndex, onClose }: Props) {
+  const { t } = useI18n();
   const [index, setIndex] = useState(initialIndex);
 
   const current = items[index];
@@ -34,7 +36,7 @@ export default function PrayerReader({ items, initialIndex, onClose }: Props) {
         {/* Header */}
         <div className="px-5 py-4 border-b border-edge flex items-center justify-between flex-shrink-0">
           <div>
-            <p className="text-[0.625rem] font-bold uppercase tracking-wider text-acc-strong">Prayer Point</p>
+            <p className="text-[0.625rem] font-bold uppercase tracking-wider text-acc-strong">{t('prayerReader.prayerPoint')}</p>
             <p className="text-ink-muted text-xs tabular-nums">{index + 1} of {items.length}</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">

@@ -6,6 +6,7 @@ import { KJV_BIBLE_VERSES } from '../data/bibleVerses';
 import { BIBLE_BOOKS } from '../data/bibleBooks';
 import { loadChapter } from '@/lib/bible/loadTranslation';
 import { getSelectedTranslation, getTranslationMeta, DEFAULT_TRANSLATION, type TranslationId } from '@/lib/bible/translations';
+import { useI18n } from '@/app/i18n';
 
 interface Props {
   isOpen: boolean;
@@ -40,6 +41,7 @@ function parseReference(reference: string): { osis: string; chapter: number; sta
 }
 
 export default function DailyVerseModal({ isOpen, onClose }: Props) {
+  const { t } = useI18n();
   const fallback = useMemo(() => {
     const idx = dayOfYear(new Date()) % KJV_BIBLE_VERSES.length;
     return KJV_BIBLE_VERSES[idx];
@@ -94,7 +96,7 @@ export default function DailyVerseModal({ isOpen, onClose }: Props) {
         <div className="px-5 py-4 border-b border-edge flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-acc-strong" />
-            <h2 className="font-bold text-ink">Verse of the Day</h2>
+            <h2 className="font-bold text-ink">{t('dailyVerseModal.verseOfTheDay')}</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-card-3 rounded-full text-ink-muted">
             <X className="w-5 h-5" />
@@ -109,13 +111,11 @@ export default function DailyVerseModal({ isOpen, onClose }: Props) {
             &ldquo;{displayText}&rdquo;
           </p>
           <p className="text-ink-faint text-[0.6875rem] mt-3">{translationName}</p>
-          <p className="text-ink-muted text-xs mt-5">Start your day with the Word of God.</p>
+          <p className="text-ink-muted text-xs mt-5">{t('dailyVerseModal.startYourDayWithThe')}</p>
           <button
             onClick={onClose}
             className="mt-5 w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover transition-all"
-          >
-            Amen 🙏
-          </button>
+          >{t('dailyVerseModal.amen')}</button>
         </div>
       </div>
     </div>

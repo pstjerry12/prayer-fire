@@ -10,8 +10,10 @@ import { PRICING_PLANS, CURRENCIES, getDefaultCurrency, formatPrice, type Curren
 import { useApp } from '@/app/context';
 import PlaySubscription from '@/app/components/PlaySubscription';
 import { usePlanConfig } from '@/lib/usePlanConfig';
+import { useI18n } from '@/app/i18n';
 
 export default function PartnerPage() {
+  const { t, tr } = useI18n();
   const { isPremium, upgrade, isAndroidApp, freeMode } = useApp();
   const config = usePlanConfig();
   const [currency, setCurrency] = useState<Currency>(getDefaultCurrency);
@@ -29,16 +31,16 @@ export default function PartnerPage() {
           <div className="w-12 h-12 rounded-full bg-acc-soft text-acc-strong flex items-center justify-center mx-auto mb-3">
             <Crown className="w-6 h-6" />
           </div>
-          <h1 className="font-serif-heading text-2xl font-bold text-ink">Prayer Fire Plans</h1>
-          <p className="text-ink-muted text-sm mt-1">Free for everyone. Partner and Leader are optional.</p>
+          <h1 className="font-serif-heading text-2xl font-bold text-ink">{t('partner.prayerFirePlans')}</h1>
+          <p className="text-ink-muted text-sm mt-1">{t('partner.freeForEveryonePartnerAnd')}</p>
         </div>
 
         {freeMode.active ? (
           <div className="bg-acc-soft border border-acc-edge rounded-2xl p-6 text-center">
             <div className="text-4xl mb-3">🎁</div>
-            <h2 className="text-acc-strong font-bold text-lg mb-1">Premium is free for a limited time</h2>
-            <p className="text-ink-muted text-sm">Everything in Prayer Fire Partner and Leader is open to you right now.</p>
-            <Link href="/network" className="inline-block mt-4 px-4 py-2 bg-acc text-on-acc rounded-xl text-sm font-bold hover:bg-acc-hover">Go to Partner Network →</Link>
+            <h2 className="text-acc-strong font-bold text-lg mb-1">{t('pricingPage.premiumIsFreeForA')}</h2>
+            <p className="text-ink-muted text-sm">{t('partner.everythingInPrayerFirePartner')}</p>
+            <Link href="/network" className="inline-block mt-4 px-4 py-2 bg-acc text-on-acc rounded-xl text-sm font-bold hover:bg-acc-hover">{t('partner.goToPartnerNetwork')}</Link>
           </div>
         ) : isAndroidApp ? (
           // The Android app sells Partner and Leader through Google Play only.
@@ -46,9 +48,9 @@ export default function PartnerPage() {
         ) : isPremium ? (
           <div className="bg-acc-soft border border-acc-edge rounded-2xl p-6 text-center">
             <div className="text-4xl mb-3">👑</div>
-            <h2 className="text-acc-strong font-bold text-lg mb-1">You are a Prayer Fire Partner!</h2>
-            <p className="text-ink-muted text-sm">Your premium features are now active. Enjoy the full intercessory community.</p>
-            <Link href="/network" className="inline-block mt-4 px-4 py-2 bg-acc text-on-acc rounded-xl text-sm font-bold hover:bg-acc-hover">Go to Partner Network →</Link>
+            <h2 className="text-acc-strong font-bold text-lg mb-1">{t('partner.youAreAPrayerFire')}</h2>
+            <p className="text-ink-muted text-sm">{t('partner.yourPremiumFeaturesAreNow')}</p>
+            <Link href="/network" className="inline-block mt-4 px-4 py-2 bg-acc text-on-acc rounded-xl text-sm font-bold hover:bg-acc-hover">{t('partner.goToPartnerNetwork')}</Link>
           </div>
         ) : (
           <>
@@ -61,8 +63,8 @@ export default function PartnerPage() {
                 </select>
               </div>
               <div className="flex bg-card-3 rounded-lg p-1">
-                <button onClick={() => setBilling('monthly')} className={cn('px-3 py-1.5 rounded-md text-xs font-semibold transition-all', billing === 'monthly' ? 'bg-acc text-on-acc' : 'text-ink-muted')}>Monthly</button>
-                <button onClick={() => setBilling('yearly')} className={cn('px-3 py-1.5 rounded-md text-xs font-semibold transition-all', billing === 'yearly' ? 'bg-acc text-on-acc' : 'text-ink-muted')}>Yearly <span className={billing === 'yearly' ? 'opacity-90' : 'text-acc-strong'}>2 months free</span></button>
+                <button onClick={() => setBilling('monthly')} className={cn('px-3 py-1.5 rounded-md text-xs font-semibold transition-all', billing === 'monthly' ? 'bg-acc text-on-acc' : 'text-ink-muted')}>{t('playSubscription.monthly')}</button>
+                <button onClick={() => setBilling('yearly')} className={cn('px-3 py-1.5 rounded-md text-xs font-semibold transition-all', billing === 'yearly' ? 'bg-acc text-on-acc' : 'text-ink-muted')}>{t('playSubscription.yearly')} <span className={billing === 'yearly' ? 'opacity-90' : 'text-acc-strong'}>{t('playSubscription.2MonthsFree')}</span></button>
               </div>
             </div>
 
@@ -73,42 +75,42 @@ export default function PartnerPage() {
                 return (
                   <div key={plan.id} className={cn('rounded-2xl border p-5 flex flex-col', plan.highlighted ? 'border-acc bg-acc-soft/50 shadow-lg shadow-acc/10' : 'border-edge bg-card')}>
                     {plan.highlighted && (
-                      <span className="self-start mb-3 inline-flex items-center gap-1 bg-acc text-on-acc text-[0.625rem] font-bold px-2 py-0.5 rounded-full"><Crown className="w-3 h-3" /> MOST POPULAR</span>
+                      <span className="self-start mb-3 inline-flex items-center gap-1 bg-acc text-on-acc text-[0.625rem] font-bold px-2 py-0.5 rounded-full"><Crown className="w-3 h-3" /> {t('partner.mostPopular')}</span>
                     )}
                     <div className="text-2xl mb-1">{plan.icon}</div>
-                    <h3 className="text-ink font-bold">{copy.name}</h3>
-                    <p className="text-ink-muted text-xs mt-1 mb-3">{copy.tagline}</p>
+                    <h3 className="text-ink font-bold">{tr(copy.name)}</h3>
+                    <p className="text-ink-muted text-xs mt-1 mb-3">{tr(copy.tagline)}</p>
                     <div className="mb-4">
                       {price === 0 ? (
-                        <span className="text-3xl font-bold text-ink">Free</span>
+                        <span className="text-3xl font-bold text-ink">{t('playSubscription.free')}</span>
                       ) : (
                         <>
                           <div className="flex items-baseline gap-1.5">
                             <span className="text-3xl font-bold text-acc-strong">$0.00</span>
-                            <span className="text-ink-muted text-xs">/ 7 days free</span>
+                            <span className="text-ink-muted text-xs">{t('pricingPage.7DaysFree')}</span>
                           </div>
                           <div className="text-ink-faint text-sm line-through mt-0.5">
-                            {formatPrice(price, currency)}/{billing === 'monthly' ? 'mo' : 'yr'} after
+                            {t(billing === 'monthly' ? 'ui.perMonthAfter' : 'ui.perYearAfter', { price: formatPrice(price, currency) })}
                           </div>
                         </>
                       )}
                     </div>
                     <ul className="space-y-2 mb-5 flex-1">
                       {copy.features.map((f) => (
-                        <li key={f.text} className="flex items-start gap-2 text-ink-muted text-xs"><Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> <span>{f.text}{f.soon && <span className="ml-1.5 align-middle rounded-full bg-card-3 text-ink-soft text-[0.5625rem] font-bold px-1.5 py-0.5">SOON</span>}</span></li>
+                        <li key={f.text} className="flex items-start gap-2 text-ink-muted text-xs"><Check className="w-3.5 h-3.5 text-acc-strong mt-0.5 flex-shrink-0" /> <span>{tr(f.text)}{f.soon && <span className="ml-1.5 align-middle rounded-full bg-card-3 text-ink-soft text-[0.5625rem] font-bold px-1.5 py-0.5">{t('playSubscription.soon')}</span>}</span></li>
                       ))}
                     </ul>
                     {price === 0 ? (
-                      <button onClick={() => window.location.href = '/'} className="w-full py-2.5 rounded-xl text-sm font-bold border border-edge-strong text-ink-soft hover:bg-card-2">Start Free</button>
+                      <button onClick={() => window.location.href = '/'} className="w-full py-2.5 rounded-xl text-sm font-bold border border-edge-strong text-ink-soft hover:bg-card-2">{t('partner.startFree')}</button>
                     ) : (
-                      <button onClick={upgrade} className={cn('w-full py-2.5 rounded-xl text-sm font-bold transition-all', plan.highlighted ? 'bg-acc text-on-acc hover:bg-acc-hover' : 'border border-edge-strong text-ink-soft hover:bg-card-2')}>{plan.cta}</button>
+                      <button onClick={upgrade} className={cn('w-full py-2.5 rounded-xl text-sm font-bold transition-all', plan.highlighted ? 'bg-acc text-on-acc hover:bg-acc-hover' : 'border border-edge-strong text-ink-soft hover:bg-card-2')}>{tr(plan.cta)}</button>
                     )}
                   </div>
                 );
               })}
             </div>
 
-            <p className="text-center text-ink-muted text-xs mt-5">🎁 7-day free trial · No charge today · Pay after your trial</p>
+            <p className="text-center text-ink-muted text-xs mt-5">{t('pricingPage.7DayFreeTrialNo')}</p>
           </>
         )}
       </main>

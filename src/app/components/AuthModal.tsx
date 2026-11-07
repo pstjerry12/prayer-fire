@@ -19,6 +19,7 @@ import { apiRegister, apiLogin, getLastLogin, AuthError, type AuthUser } from '@
 import { startGoogleSignIn } from '@/lib/googleSignIn';
 import { TERMS_SECTIONS, PRIVACY_SECTIONS } from '@/app/data/legal';
 import LegalModal from './LegalModal';
+import { useI18n } from '@/app/i18n';
 
 interface Props {
   isOpen: boolean;
@@ -34,6 +35,7 @@ interface Props {
 type Mode = 'login' | 'register';
 
 function GoogleButton() {
+  const { t } = useI18n();
   return (
     <button
       type="button"
@@ -46,12 +48,13 @@ function GoogleButton() {
         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
       </svg>
-      Continue with Google
+      {t('authModal.continueWithGoogle')}
     </button>
   );
 }
 
 export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'login', gated = false, notice = null }: Props) {
+  const { t, tr } = useI18n();
   const [mode, setMode] = useState<Mode>(initialMode);
   // Who last signed in on this device: their email/phone is filled in for them.
   const [remembered] = useState(() => getLastLogin());
@@ -122,7 +125,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!identifier.trim() || !loginPassword) {
-      setError('Please enter your email/phone and password.');
+      setError(t('ui.pleaseEnterYourEmailPhone'));
       return;
     }
     setLoading(true);
@@ -133,7 +136,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
       onSuccess(user);
     } catch (err) {
       setGoogleOnly(err instanceof AuthError && err.googleOnly);
-      setError(err instanceof Error ? err.message : 'Sign-in failed.');
+      setError(err instanceof Error ? err.message : t('ui.signInFailed'));
     } finally {
       setLoading(false);
     }
@@ -142,23 +145,23 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError(t('ui.passwordMustBeAtLeast'));
       return;
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t('ui.passwordsDoNotMatch'));
       return;
     }
     if (!email.trim() && !phone.trim()) {
-      setError('Please provide an email address or phone number.');
+      setError(t('ui.pleaseProvideAnEmailAddress'));
       return;
     }
     if (!isHuman) {
-      setError('Please confirm you are human to continue.');
+      setError(t('ui.pleaseConfirmYouAreHuman'));
       return;
     }
     if (!agreedTerms) {
-      setError('Please agree to the Terms of Service and Privacy Policy to continue.');
+      setError(t('ui.pleaseAgreeToTheTerms'));
       return;
     }
     setLoading(true);
@@ -173,7 +176,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
       });
       onSuccess(user);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed.');
+      setError(err instanceof Error ? err.message : t('ui.registrationFailed'));
     } finally {
       setLoading(false);
     }
@@ -190,19 +193,19 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
           <div className="p-5 border-b border-edge flex items-start justify-between shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-danger-soft ring-1 ring-danger-edge flex items-center justify-center overflow-hidden">
-                <img src="/logo-sm.png" width={192} height={192} decoding="async" alt="Prayer Fire" className="w-full h-full object-cover" />
+                <img src="/logo-sm.png" width={192} height={192} decoding="async" alt={t('app.name')} className="w-full h-full object-cover" />
               </div>
               <div>
                 <h2 className="font-serif-heading text-lg font-bold text-ink">
-                  {mode === 'login' ? 'Welcome Back' : 'Join Prayer Fire'}
+                  {mode === 'login' ? 'Welcome Back' : t('ui.joinPrayerFire')}
                 </h2>
                 <p className="text-ink-muted text-xs">
-                  {mode === 'login' ? 'Sign in to continue your prayer journey' : 'Create your Prayer Fire account'}
+                  {mode === 'login' ? t('ui.signInToContinueYour') : t('ui.createYourPrayerFireAccount')}
                 </p>
               </div>
             </div>
             {!gated && (
-              <button onClick={onClose} className="p-2 hover:bg-card-3 rounded-full text-ink-muted" aria-label="Close">
+              <button onClick={onClose} className="p-2 hover:bg-card-3 rounded-full text-ink-muted" aria-label={t('authModal.close')}>
                 <X className="w-5 h-5" />
               </button>
             )}
@@ -218,9 +221,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   ? 'text-acc-strong border-acc'
                   : 'text-ink-faint border-transparent hover:text-ink-muted'
               )}
-            >
-              Sign In
-            </button>
+            >{t('authModal.signIn')}</button>
             <button
               onClick={() => switchMode('register')}
               className={cn(
@@ -229,29 +230,25 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   ? 'text-acc-strong border-acc'
                   : 'text-ink-faint border-transparent hover:text-ink-muted'
               )}
-            >
-              Create Account
-            </button>
+            >{t('authModal.createAccount')}</button>
           </div>
 
           <div className="p-5 space-y-4 overflow-y-auto min-h-0">
             {notice && (
-              <div className="bg-card-2 border border-edge rounded-xl p-3 text-xs text-ink-muted">{notice}</div>
+              <div className="bg-card-2 border border-edge rounded-xl p-3 text-xs text-ink-muted">{tr(notice)}</div>
             )}
 
             {/* Returning Google user: one tap, no password exists for this account */}
             {mode === 'login' && rememberedGoogle && (
               <div className="space-y-3 text-center">
-                <p className="text-xs text-ink-muted">You signed in with Google as</p>
+                <p className="text-xs text-ink-muted">{t('authModal.youSignedInWithGoogle')}</p>
                 <p className="font-bold text-ink text-sm break-all">{remembered?.id}</p>
                 <GoogleButton />
                 <button
                   type="button"
                   onClick={() => setOtherAccount(true)}
                   className="text-acc-strong text-xs font-semibold hover:underline"
-                >
-                  Use a different account
-                </button>
+                >{t('authModal.useADifferentAccount')}</button>
               </div>
             )}
 
@@ -261,7 +258,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 <GoogleButton />
                 <div className="flex items-center gap-3">
                   <div className="h-px flex-1 bg-card-3" />
-                  <span className="text-ink-faint text-xs">or</span>
+                  <span className="text-ink-faint text-xs">{t('authModal.or')}</span>
                   <div className="h-px flex-1 bg-card-3" />
                 </div>
               </>
@@ -269,7 +266,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
 
             {error && (
               <div className="bg-danger-soft border border-danger-edge rounded-xl p-3 text-danger text-xs">
-                {error}
+                {tr(error)}
               </div>
             )}
 
@@ -279,7 +276,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
                   <input
                     type="text"
-                    placeholder="Email or phone number"
+                    placeholder={t('authModal.emailOrPhoneNumber')}
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
@@ -289,7 +286,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
                   <input
                     type={showLoginPassword ? 'text' : 'password'}
-                    placeholder="Password"
+                    placeholder={t('authModal.password')}
                     autoFocus={!!identifier}
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
@@ -313,9 +310,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 </button>
                 <p className="text-center text-ink-muted text-xs">
                   No account?{' '}
-                  <button type="button" onClick={() => switchMode('register')} className="text-acc-strong font-semibold hover:text-acc-strong">
-                    Create one
-                  </button>
+                  <button type="button" onClick={() => switchMode('register')} className="text-acc-strong font-semibold hover:text-acc-strong">{t('authModal.createOne')}</button>
                 </p>
               </form>
             ) : (
@@ -324,7 +319,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
                   <input
                     type="text"
-                    placeholder="Full name (optional)"
+                    placeholder={t('authModal.fullNameOptional')}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
@@ -334,7 +329,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
                   <input
                     type="email"
-                    placeholder="Email address"
+                    placeholder={t('authModal.emailAddress')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
@@ -361,7 +356,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   </div>
                   <input
                     type="tel"
-                    placeholder="Phone number (optional)"
+                    placeholder={t('authModal.phoneNumberOptional')}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="flex-1 min-w-0 bg-card border border-edge-strong rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
@@ -371,7 +366,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Password (min. 6 characters)"
+                    placeholder={t('authModal.passwordMin6Characters')}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-11 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
@@ -409,7 +404,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Confirm password"
+                    placeholder={t('authModal.confirmPassword')}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-3 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
@@ -428,9 +423,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   >
                     {isHuman && <Check className="w-3.5 h-3.5 text-on-acc" />}
                   </button>
-                  <span className="text-ink-muted text-xs leading-relaxed">
-                    I confirm I am human. My prayer points are private and protected.
-                  </span>
+                  <span className="text-ink-muted text-xs leading-relaxed">{t('authModal.iConfirmIAmHuman')}</span>
                 </label>
 
                 {/* Terms & Privacy */}
@@ -447,13 +440,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   </button>
                   <span className="text-ink-muted text-xs leading-relaxed">
                     I agree to the{' '}
-                    <button type="button" onClick={() => setLegalDoc('terms')} className="text-acc-strong font-semibold hover:underline">
-                      Terms of Service
-                    </button>{' '}
+                    <button type="button" onClick={() => setLegalDoc('terms')} className="text-acc-strong font-semibold hover:underline">{t('legal.terms')}</button>{' '}
                     and{' '}
-                    <button type="button" onClick={() => setLegalDoc('privacy')} className="text-acc-strong font-semibold hover:underline">
-                      Privacy Policy
-                    </button>
+                    <button type="button" onClick={() => setLegalDoc('privacy')} className="text-acc-strong font-semibold hover:underline">{t('legal.privacy')}</button>
                     .
                   </span>
                 </label>
@@ -474,9 +463,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
               <button
                 onClick={onClose}
                 className="w-full text-center text-ink-faint text-xs hover:text-ink-muted transition-colors py-1"
-              >
-                Continue as guest
-              </button>
+              >{t('authModal.continueAsGuest')}</button>
             )}
           </div>
         </div>
@@ -485,13 +472,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
       {/* Terms / Privacy modals */}
       <LegalModal
         isOpen={legalDoc === 'terms'}
-        title="Terms of Service"
+        title={t('legal.terms')}
         sections={TERMS_SECTIONS}
         onClose={() => setLegalDoc(null)}
       />
       <LegalModal
         isOpen={legalDoc === 'privacy'}
-        title="Privacy Policy"
+        title={t('legal.privacy')}
         sections={PRIVACY_SECTIONS}
         onClose={() => setLegalDoc(null)}
       />
