@@ -134,7 +134,7 @@ jobs:
           ./gradlew clean bundleRelease --no-daemon
           ./gradlew assembleRelease --no-daemon
 
-      - name: Check the release build has Prayer Fire's real AdMob app id and no test id
+      - name: Check the release build has Prayer Fire's real AdMob app id, the AD_ID permission and no test id
         working-directory: android
         run: |
           # The merged manifest of the RELEASE variant is what ends up in the AAB.
@@ -147,7 +147,10 @@ jobs:
           if grep -q '3940256099942544' $MANIFESTS; then
             echo "::error::A Google TEST AdMob id is in the release manifest."; exit 1
           fi
-          echo "Release manifest: real AdMob app id present, no test id."
+          if ! grep -q 'com.google.android.gms.permission.AD_ID' $MANIFESTS; then
+            echo "::error::The release manifest does not declare the AD_ID permission (Google Play requires it when the app uses the advertising ID)."; exit 1
+          fi
+          echo "Release manifest: real AdMob app id present, AD_ID permission declared, no test id."
 
       - name: Build debug APK (optional)
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_debug_apk }}
