@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core';
-import type { AdsConfig } from './adsRules';
+import { bannerFor, type AdsConfig } from './adsRules';
 
 /**
  * Talks to the AdMob plugin (Android app only). Everything is wrapped so that a missing plugin, an old build without it, or an
@@ -21,6 +21,20 @@ async function load(): Promise<AdMobModule | null> {
     return await import('@capacitor-community/admob');
   } catch {
     return null;
+  }
+}
+
+/**
+ * True only for a DEBUG (development) build of the Android app. Those carry the version suffix "-debug" (and the app id suffix ".debug"),
+ * see android/app/build.gradle. A release build, and anything that cannot be read, counts as a release build: real ids, no test mode.
+ */
+export async function isDebugBuild(): Promise<boolean> {
+  try {
+    const { App } = await import('@capacitor/app');
+    const info = await App.getInfo();
+    return /-debug$/i.test(String(info.version)) || /\.debug$/i.test(String(info.id));
+  } catch {
+    return false;
   }
 }
 
@@ -59,14 +73,15 @@ export async function openAdPrivacyOptions(): Promise<void> {
 }
 
 /** Shows the Home banner at the very bottom of the screen. `onSize` gets its height so the tab bar can sit above it, never under it. */
-export async function showHomeBanner(config: AdsConfig, onSize: (heightPx: number) => void): Promise<boolean> {
+export async function showHomeBanner(config: AdsConfig, onSize: (heightPx: number) => void, debugBuild: boolean): Promise<boolean> {
   const mod = await load();
   if (!mod) return false;
   try {
     const { AdMob, BannerAdSize, BannerAdPosition, BannerAdPluginEvents } = mod;
     bannerListeners.push(await AdMob.addListener(BannerAdPluginEvents.SizeChanged, (size) => onSize(size.height)));
     bannerListeners.push(await AdMob.addListener(BannerAdPluginEvents.FailedToLoad, () => onSize(0)));
-    await AdMob.showBanner({ adId: config.bannerUnitId, adSize: BannerAdSize.ADAPTIVE_BANNER, position: BannerAdPosition.BOTTOM_CENTER, margin: 0, isTesting: config.testing });
+    const { adId, isTesting } = bannerFor(config, debugBuild);
+    await AdMob.showBanner({ adId, adSize: BannerAdSize.ADAPTIVE_BANNER, position: BannerAdPosition.BOTTOM_CENTER, margin: 0, isTesting });
     return true;
   } catch {
     onSize(0);

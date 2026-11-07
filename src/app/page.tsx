@@ -20,7 +20,7 @@ export default function HomePage() {
     <>
       <Navbar />
 
-      <main className="bg-page min-h-screen pb-32 md:pb-16">
+      <main className="bg-page min-h-screen pb-[calc(8rem+var(--ad-offset,0px))] md:pb-16">
         {/* ── First screen: heading, the two prayer cards, the schedule bar, today's verse, four tiles ── */}
         <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-4 md:pt-8">
           {/* ── Urgent Global Prayer Alert (nothing here when there is none) ── */}

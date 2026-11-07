@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DEBUG builds only (npm run ... assembleDebug). Google's SAMPLE AdMob app id replaces the real one, so a development build can never
+  request or tap real ads. The release build (the one uploaded to Google Play) does not include this file.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application>
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713"
+            tools:replace="android:value" />
+    </application>
+
+</manifest>

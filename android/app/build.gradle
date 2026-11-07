@@ -42,12 +42,8 @@ android {
         versionCode rootProject.ext.appVersionCode
         versionName rootProject.ext.appVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        // The Google Mobile Ads SDK (AdMob plugin) refuses to start without an AdMob APP ID in the manifest. The real one comes
-        // from the ADMOB_APP_ID build secret / environment variable / gradle property (see PROJECT_HANDOFF.md, "Ads"). Until the
-        // owner sets it, Google's own SAMPLE app id is used: it cannot show real ads or earn anything, but it stops the app
-        // from crashing at start-up. Ads are also switched off in the app until the admin turns them on.
-        def admobAppId = (project.findProperty('ADMOB_APP_ID') ?: System.getenv('ADMOB_APP_ID') ?: '').toString().trim()
-        manifestPlaceholders = [admobAppId: admobAppId ?: 'ca-app-pub-3940256099942544~3347511713']
+        // AdMob: the real app id is written straight into AndroidManifest.xml (release builds). Debug builds replace it with Google's
+        // sample id from android/app/src/debug/AndroidManifest.xml, so development never touches real ads.
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61

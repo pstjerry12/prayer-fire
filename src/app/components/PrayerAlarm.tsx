@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { suppressAdsForSession } from '@/lib/adsGuard';
 import { useApp } from '@/app/context';
 import { buildAlarmContent } from '@/lib/alarmContent';
 import { GROUP_ALARMS_EVENT, groupAppointments } from '@/lib/groupAlarms';
@@ -89,12 +90,17 @@ export default function PrayerAlarm() {
         setNativeAlarmContent(buildAlarmContent());
 
         // The alarm's "Pray Now" button opens the app on the prayer session, not the home screen.
-        listenPrayNow(() => routerRef.current.push('/startup')).then((fn) => {
+        // (An alarm opening the app also switches ads off for this session: see lib/adsGuard.ts.)
+        listenPrayNow(() => {
+          suppressAdsForSession();
+          routerRef.current.push('/startup');
+        }).then((fn) => {
           if (cancelled) fn();
           else cleanupFns.push(fn);
         });
 
         listenNotificationTap((data) => {
+          suppressAdsForSession();
           playAlarmTone(DEFAULT_TONE);
           setAlarmLabel(data.label || 'Prayer Time');
           if (typeof window !== 'undefined') window.focus();
