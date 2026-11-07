@@ -13,7 +13,7 @@ Links to paste:
 Click **Policy and programs > App content > Ads** and change the answer to **Yes, my app contains ads** (AdMob banner on the Home screen). Do this once ads are switched on in Admin -> Pricing -> Ads.
 
 ## 2. App content > Advertising ID
-Answer **Yes, the app uses advertising ID**, purpose **Advertising or marketing**. (AdMob uses it. The app adds the AD_ID permission through the AdMob library.)
+Answer **Yes, the app uses advertising ID**, purpose **Advertising or marketing**. (AdMob uses it. The app declares the AD_ID permission in its own manifest from build 34 on; older uploaded builds without it show a Play Console error until they are replaced or retired.)
 
 ## 3. App content > Data safety
 Open **Data safety > Manage** and declare:

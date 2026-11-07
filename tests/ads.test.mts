@@ -60,6 +60,7 @@ const debugManifest = readFileSync(new URL('../android/app/src/debug/AndroidMani
 const gradle = readFileSync(new URL('../android/app/build.gradle', import.meta.url), 'utf8');
 assert.ok(manifest.includes(`android:value="${PRAYER_FIRE_APP_ID}"`), 'main manifest carries the real app id'); checks++;
 assert.ok(!manifest.includes('3940256099942544'), 'main (release) manifest has no test id'); checks++;
+assert.ok(/<uses-permission[^>]*android:name="com.google.android.gms.permission.AD_ID"/.test(manifest), 'main manifest declares the AD_ID permission (Play requires it with the advertising ID declaration)'); checks++;
 assert.ok(debugManifest.includes('ca-app-pub-3940256099942544~3347511713') && debugManifest.includes('tools:replace="android:value"'), 'the debug manifest swaps in the sample id'); checks++;
 assert.ok(!gradle.includes('3940256099942544'), 'build.gradle has no test id'); checks++;
 assert.ok(/debug\s*\{[^}]*versionNameSuffix "-debug"/.test(gradle), 'debug builds carry the -debug version suffix the app uses to detect them'); checks++;

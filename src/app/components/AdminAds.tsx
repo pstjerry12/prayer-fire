@@ -57,7 +57,7 @@ export default function AdminAds() {
           className="mt-1 w-full rounded-lg border border-edge-strong bg-card-2 px-3 py-2 text-sm text-ink" />
       </label>
       {!unitOk && <p className="text-danger text-xs">That does not look like an ad unit id.</p>}
-      <p className="text-ink-faint text-[0.6875rem] leading-relaxed">With the id empty, the app uses Prayer Fire&apos;s own Home banner unit. Real ads need Android build 33 (1.0.32) or newer, which carries the real AdMob <strong>app</strong> id. Google&apos;s test ads only ever show in development (debug) builds, never in the app from Google Play.</p>
+      <p className="text-ink-faint text-[0.6875rem] leading-relaxed">With the id empty, the app uses Prayer Fire&apos;s own Home banner unit. Real ads need Android build 34 (1.0.33) or newer, which carries the real AdMob <strong>app</strong> id. Google&apos;s test ads only ever show in development (debug) builds, never in the app from Google Play.</p>
       {message && <p role="status" className={message.kind === 'ok' ? 'text-sm text-acc-strong bg-acc-soft border border-acc-edge rounded-xl p-3' : 'text-sm text-danger bg-danger-soft border border-danger-edge rounded-xl p-3'}>{message.text}</p>}
       <button onClick={save} disabled={busy} className="w-full py-2.5 rounded-xl bg-acc text-on-acc font-bold text-sm disabled:opacity-60 flex items-center justify-center gap-2">{busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Save ad settings</button>
     </section>
