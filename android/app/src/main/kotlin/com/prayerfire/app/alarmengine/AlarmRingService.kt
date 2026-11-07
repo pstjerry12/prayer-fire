@@ -240,20 +240,20 @@ class AlarmRingService : Service() {
             flags
         )
 
-        val body = if (alarm.isGroup) "${alarm.label} — your group is praying together." else "${alarm.label} — it's time to pray!"
+        val body = (if (alarm.isGroup) AlarmText.get(this, "groupBody", "{label} — your group is praying together.") else AlarmText.get(this, "body", "{label} — it's time to pray!")).replace("{label}", alarm.label)
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentTitle("🔥 Prayer Time")
+            .setContentTitle(AlarmText.get(this, "title", "🔥 Prayer Time"))
             .setContentText(body)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .setContentIntent(fullScreenPendingIntent)
-            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", stopPendingIntent)
-            .addAction(android.R.drawable.ic_lock_idle_alarm, "Snooze ${AlarmScheduler.SNOOZE_MINUTES} min", snoozePendingIntent)
+            .addAction(android.R.drawable.ic_menu_close_clear_cancel, AlarmText.get(this, "stop", "Stop"), stopPendingIntent)
+            .addAction(android.R.drawable.ic_lock_idle_alarm, AlarmText.get(this, "snooze", "Snooze {n} min").replace("{n}", AlarmScheduler.SNOOZE_MINUTES.toString()), snoozePendingIntent)
             .addAction(
                 android.R.drawable.ic_menu_send,
-                if (alarm.isGroup) "Join Live Prayer" else "Pray Now",
+                if (alarm.isGroup) AlarmText.get(this, "joinLive", "Join Live Prayer") else AlarmText.get(this, "prayNow", "Pray Now"),
                 prayPendingIntent
             )
             .setOngoing(true)

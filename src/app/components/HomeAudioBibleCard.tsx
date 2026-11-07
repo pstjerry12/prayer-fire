@@ -103,8 +103,8 @@ export default function HomeAudioBibleCard() {
           onClick={() => (state === 'playing' ? controller.current?.pause() : state === 'paused' ? controller.current?.resume() : play())}
           aria-label={
             reading
-              ? state === 'playing' ? 'Pause the Bible reading' : 'Resume the Bible reading'
-              : place ? `Audio Bible, continue ${where(current)}` : 'Audio Bible, start listening'
+              ? state === 'playing' ? t('ui.pauseTheBibleReading') : t('ui.resumeTheBibleReading')
+              : place ? `Audio Bible, continue ${where(current)}` : t('ui.audioBibleStartListening')
           }
           className="flex h-full min-h-[3.75rem] w-full items-center gap-3 rounded-2xl bg-card border border-edge p-3 text-left active:scale-[0.98] transition-transform"
         >
@@ -119,7 +119,7 @@ export default function HomeAudioBibleCard() {
         {reading && (
           <button
             onClick={() => controller.current?.stop()}
-            aria-label="Stop the Bible reading"
+            aria-label={t('homeAudioBibleCard.stopTheBibleReading')}
             className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-ink text-page active:scale-95"
           >
             <Square className="w-4 h-4 fill-current" />
@@ -127,9 +127,7 @@ export default function HomeAudioBibleCard() {
         )}
       </div>
       {problem && (
-        <p role="alert" className="col-span-2 text-xs text-danger">
-          Could not play right now. Open the Bible to read, or check the phone&apos;s text-to-speech voice.
-        </p>
+        <p role="alert" className="col-span-2 text-xs text-danger">{t('homeAudioBibleCard.couldNotPlayRightNow')}</p>
       )}
     </>
   );

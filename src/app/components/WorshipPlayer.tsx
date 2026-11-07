@@ -8,8 +8,10 @@ import { cn } from '../utils/cn';
 import { useApp } from '@/app/context';
 import { getSongBlob } from '@/lib/audioStore';
 import type { WorshipSong } from '@/app/types';
+import { useI18n } from '@/app/i18n';
 
 export default function WorshipPlayer({ compact = false }: { compact?: boolean }) {
+  const { t } = useI18n();
   const { songs, addSongFiles, addSongUrl, removeSong } = useApp();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -135,13 +137,13 @@ export default function WorshipPlayer({ compact = false }: { compact?: boolean }
       <div className="px-4 py-3 border-b border-edge flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Music className="w-4 h-4 text-acc-strong" />
-          <span className="font-bold text-sm text-ink">Praise & Worship Songs</span>
+          <span className="font-bold text-sm text-ink">{t('worshipPlayer.praiseWorshipSongs')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => setShowUrl(!showUrl)}
             className="p-1.5 text-ink-muted hover:text-ink rounded-lg hover:bg-card-2 transition-colors"
-            title="Add song by link"
+            title={t('worshipPlayer.addSongByLink')}
           >
             <Link2 className="w-4 h-4" />
           </button>
@@ -190,20 +192,20 @@ export default function WorshipPlayer({ compact = false }: { compact?: boolean }
         <div className="px-4 py-3 border-b border-edge space-y-2">
           <input
             type="text"
-            placeholder="Song title"
+            placeholder={t('worshipPlayer.songTitle')}
             value={urlName}
             onChange={(e) => setUrlName(e.target.value)}
             className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
           />
           <input
             type="url"
-            placeholder="Audio link (mp3/m4a URL)"
+            placeholder={t('worshipPlayer.audioLinkMp3M4aUrl')}
             value={urlLink}
             onChange={(e) => setUrlLink(e.target.value)}
             className="w-full bg-card border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
           />
           <div className="flex gap-2">
-            <button onClick={handleUrl} className="flex-1 py-2 bg-acc text-on-acc rounded-lg text-xs font-bold hover:bg-acc-hover">Add Song</button>
+            <button onClick={handleUrl} className="flex-1 py-2 bg-acc text-on-acc rounded-lg text-xs font-bold hover:bg-acc-hover">{t('worshipPlayer.addSong')}</button>
             <button onClick={() => setShowUrl(false)} className="px-3 py-2 bg-card-3 text-ink-muted rounded-lg text-xs font-semibold hover:bg-card-2"><X className="w-4 h-4" /></button>
           </div>
         </div>
@@ -214,8 +216,8 @@ export default function WorshipPlayer({ compact = false }: { compact?: boolean }
         {songs.length === 0 ? (
           <div className="text-center py-6 px-4">
             <Music className="w-8 h-8 text-ink-ghost mx-auto mb-2" />
-            <p className="text-ink-muted text-sm">No songs yet</p>
-            <p className="text-ink-faint text-xs mt-1">Upload worship songs to play during your Praise & Worship session.</p>
+            <p className="text-ink-muted text-sm">{t('worshipPlayer.noSongsYet')}</p>
+            <p className="text-ink-faint text-xs mt-1">{t('worshipPlayer.uploadWorshipSongsToPlay')}</p>
           </div>
         ) : (
           songs.map((song) => {
@@ -238,7 +240,7 @@ export default function WorshipPlayer({ compact = false }: { compact?: boolean }
                   <p className={cn('text-sm font-semibold truncate', active ? 'text-acc-strong' : 'text-ink')}>{song.name}</p>
                   <p className="text-[0.625rem] text-ink-muted">{song.source === 'file' ? 'Uploaded song' : 'Streamed link'}</p>
                 </div>
-                <button onClick={() => handleRemove(song)} className="p-1.5 text-ink-faint hover:text-danger transition-colors" title="Remove">
+                <button onClick={() => handleRemove(song)} className="p-1.5 text-ink-faint hover:text-danger transition-colors" title={t('customizablePrayerSchedule.remove')}>
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>

@@ -8,9 +8,10 @@ import { KJV_BIBLE_VERSES } from '@/app/data/bibleVerses';
 import { loadChapter } from '@/lib/bible/loadTranslation';
 import { announceNavigation } from '@/lib/navFeedback';
 import { parseReferenceInput } from '@/lib/bible/reference';
-import { getSelectedTranslation, getTranslationMeta, DEFAULT_TRANSLATION, type TranslationId } from '@/lib/bible/translations';
+import { getSelectedTranslation, getTranslationMeta, DEFAULT_TRANSLATION, TRANSLATION_EVENT, type TranslationId } from '@/lib/bible/translations';
 import { useReadAloud } from '@/lib/useReadAloud';
 import ReadAloudBar from './ReadAloudBar';
+import { useI18n } from '@/app/i18n';
 
 function dayOfYear(date: Date): number {
   const start = new Date(date.getFullYear(), 0, 0);
@@ -28,6 +29,7 @@ const POSITION_KEY = 'pfm_bible_position';
  * the play/stop control stays on the card (no floating player).
  */
 export default function VerseOfTheDayCard({ showRead = true, compact = false }: { showRead?: boolean; compact?: boolean }) {
+  const { t } = useI18n();
   const router = useRouter();
   const reader = useReadAloud();
   const verse = useMemo(() => KJV_BIBLE_VERSES[dayOfYear(new Date()) % KJV_BIBLE_VERSES.length], []);
@@ -41,6 +43,9 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
     // The saved translation is only readable on the client, after mount.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setTranslationId(getSelectedTranslation());
+    const onChange = () => setTranslationId(getSelectedTranslation());
+    window.addEventListener(TRANSLATION_EVENT, onChange);
+    return () => window.removeEventListener(TRANSLATION_EVENT, onChange);
   }, []);
 
   useEffect(() => {
@@ -86,7 +91,7 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
 
   if (compact) {
     return (
-      <section className="rounded-2xl bg-card border border-edge p-3.5" aria-label="Verse of the Day">
+      <section className="rounded-2xl bg-card border border-edge p-3.5" aria-label={t('dailyVerseModal.verseOfTheDay')}>
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
           <p className="flex items-center gap-1.5 text-[0.6875rem] font-bold uppercase tracking-wider text-acc-strong">
             <Sparkles className="w-3.5 h-3.5" /> Verse of the Day
@@ -99,20 +104,18 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
         <button
           onClick={() => setExpanded((e) => !e)}
           aria-expanded={expanded}
-          aria-label={expanded ? 'Show less of the verse' : 'Show the whole verse'}
+          aria-label={expanded ? t('ui.showLessOfTheVerse') : t('ui.showTheWholeVerse')}
           className="mt-1.5 flex w-full items-start gap-2 text-left"
         >
           <p className={cn('flex-1 font-serif-heading text-sm leading-relaxed text-ink italic', !expanded && 'line-clamp-2')}>&ldquo;{text}&rdquo;</p>
           <ChevronDown className={cn('mt-1 h-4 w-4 shrink-0 text-ink-faint transition-transform', expanded && 'rotate-180')} />
         </button>
         {expanded && (
-          <button onClick={open} className="mt-1 text-xs font-bold text-acc-strong">
-            Open this verse &rsaquo;
-          </button>
+          <button onClick={open} className="mt-1 text-xs font-bold text-acc-strong">{t('verseOfTheDayCard.openThisVerse')}</button>
         )}
         <button
           onClick={toggleListen}
-          aria-label={reader.reading ? 'Stop listening to the verse of the day' : 'Listen to the verse of the day'}
+          aria-label={reader.reading ? t('ui.stopListeningToTheVerse') : t('ui.listenToTheVerseOf')}
           className={cn(
             'mt-2.5 flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-bold active:scale-[0.98]',
             reader.reading ? 'bg-ink text-page' : 'bg-acc hover:bg-acc-hover text-on-acc'
@@ -147,7 +150,7 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
         )}
         <button
           onClick={toggleListen}
-          aria-label={reader.reading ? 'Stop listening' : 'Listen to the verse of the day'}
+          aria-label={reader.reading ? 'Stop listening' : t('ui.listenToTheVerseOf')}
           className={cn(
             'flex-1 flex items-center justify-center gap-1.5 h-11 rounded-xl text-sm font-bold active:scale-95',
             reader.reading ? 'bg-ink text-page' : 'bg-acc hover:bg-acc-hover text-on-acc'
@@ -157,7 +160,7 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
           {reader.reading ? 'Stop' : 'Listen'}
         </button>
       </div>
-      <ReadAloudBar state={reader.state} label="Reading the verse of the day" onPause={reader.pause} onResume={reader.resume} onStop={reader.stop} />
+      <ReadAloudBar state={reader.state} label={t('verseOfTheDayCard.readingTheVerseOfThe')} onPause={reader.pause} onResume={reader.resume} onStop={reader.stop} />
     </section>
   );
 }

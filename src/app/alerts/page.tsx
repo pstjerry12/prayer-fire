@@ -5,8 +5,10 @@ import { ChevronLeft, Siren } from 'lucide-react';
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
 import GlobalAlerts from '@/app/components/GlobalAlerts';
+import { useI18n } from '@/app/i18n';
 
 export default function AlertsPage() {
+  const { t } = useI18n();
   return (
     <>
       <Navbar />
@@ -19,8 +21,8 @@ export default function AlertsPage() {
             <Siren className="w-6 h-6 text-on-acc" />
           </div>
           <div>
-            <h1 className="font-serif-heading text-2xl font-bold text-ink">Global Prayer Alerts</h1>
-            <p className="text-xs text-ink-muted">Urgent needs the whole world is praying for. Free for everyone.</p>
+            <h1 className="font-serif-heading text-2xl font-bold text-ink">{t('feat.alerts')}</h1>
+            <p className="text-xs text-ink-muted">{t('alerts.urgentNeedsTheWholeWorld')}</p>
           </div>
         </div>
         <GlobalAlerts />

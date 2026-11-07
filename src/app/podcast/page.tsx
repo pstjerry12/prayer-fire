@@ -8,9 +8,11 @@ import Footer from '@/app/components/Footer';
 import VideoPlayer from '@/app/components/VideoPlayer';
 import { useCachedJson } from '@/lib/cachedJson';
 import { thumbnailUrl, type Video } from '@/lib/videos';
+import { useI18n } from '@/app/i18n';
 
 /** The Prayer Fire podcast and short teachings, newest first. Free. */
 export default function PodcastPage() {
+  const { t } = useI18n();
   const podcast = useCachedJson<{ videos: Video[] }>('/api/videos?kind=podcast&limit=60', 5 * 60 * 1000);
   const teachings = useCachedJson<{ videos: Video[] }>('/api/videos?kind=teaching&limit=60', 5 * 60 * 1000);
   const [playing, setPlaying] = useState<Video | null>(null);
@@ -26,14 +28,14 @@ export default function PodcastPage() {
         <div className="flex items-center gap-3 mb-5">
           <div className="w-11 h-11 rounded-xl bg-acc flex items-center justify-center"><Mic className="w-6 h-6 text-on-acc" /></div>
           <div>
-            <h1 className="font-serif-heading text-2xl font-bold text-ink">Podcast and teachings</h1>
-            <p className="text-xs text-ink-muted">Short teachings to grow your prayer life. Free.</p>
+            <h1 className="font-serif-heading text-2xl font-bold text-ink">{t('podcast.podcastAndTeachings')}</h1>
+            <p className="text-xs text-ink-muted">{t('podcast.shortTeachingsToGrowYour')}</p>
           </div>
         </div>
         {loading && items.length === 0 ? (
-          <p className="text-ink-muted text-sm">Loading...</p>
+          <p className="text-ink-muted text-sm">{t('globalAlerts.loading')}</p>
         ) : items.length === 0 ? (
-          <div className="bg-card rounded-2xl border border-edge p-8 text-center"><p className="text-ink-muted text-sm">The first episode is coming soon.</p></div>
+          <div className="bg-card rounded-2xl border border-edge p-8 text-center"><p className="text-ink-muted text-sm">{t('podcast.theFirstEpisodeIsComing')}</p></div>
         ) : (
           <ul className="space-y-3">
             {items.map((v) => (

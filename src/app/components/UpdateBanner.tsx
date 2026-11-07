@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { RefreshCw, Download, X, Sparkles } from 'lucide-react';
 import { pushBackHandler } from '@/lib/backHandlerStack';
 import { getAppVersionInfo, getNativePlatform, PLAY_STORE_URL } from '@/lib/capacitorAlarm';
+import { useI18n } from '@/app/i18n';
 
 const CLIENT_BUILD = process.env.NEXT_PUBLIC_BUILD_SHA || '';
 const CHECK_INTERVAL_MS = 60_000;
@@ -41,6 +42,7 @@ function snooze(latest: number, ms: number): void {
 //    on by entering the new build number (Admin → Settings → App Updates).
 // Checks on launch and whenever the app comes back to the foreground.
 export default function UpdateBanner() {
+  const { t } = useI18n();
   const [update, setUpdate] = useState<Update>(null);
   const [dismissed, setDismissed] = useState(false);
   const lastCheck = useRef(0);
@@ -128,8 +130,8 @@ export default function UpdateBanner() {
             <div className="mx-auto w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center mb-3">
               <Sparkles className="w-7 h-7" />
             </div>
-            <h2 id="pfm-update-title" className="font-heading text-xl font-black">New version available</h2>
-            <p className="text-sm text-white/90 mt-1">Update Prayer Fire to get the latest features and fixes.</p>
+            <h2 id="pfm-update-title" className="font-heading text-xl font-black">{t('updateBanner.newVersionAvailable')}</h2>
+            <p className="text-sm text-white/90 mt-1">{t('updateBanner.updatePrayerFireToGet')}</p>
           </div>
           <div className="px-6 py-5">
             {update.message && (
@@ -156,9 +158,7 @@ export default function UpdateBanner() {
               type="button"
               onClick={later}
               className="w-full mt-2 py-2.5 text-ink-muted text-sm font-semibold hover:text-ink transition-colors"
-            >
-              Remind me later
-            </button>
+            >{t('updateBanner.remindMeLater')}</button>
           </div>
         </div>
       </div>
@@ -173,18 +173,16 @@ export default function UpdateBanner() {
       >
         <RefreshCw className="w-5 h-5 shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold leading-tight">A new update is ready</p>
-          <p className="text-xs text-white/85 leading-snug">Tap Refresh to get the latest features.</p>
+          <p className="text-sm font-bold leading-tight">{t('updateBanner.aNewUpdateIsReady')}</p>
+          <p className="text-xs text-white/85 leading-snug">{t('updateBanner.tapRefreshToGetThe')}</p>
         </div>
         <button
           onClick={() => window.location.reload()}
           className="shrink-0 bg-white text-acc-strong rounded-full px-3 py-1.5 text-xs font-bold"
-        >
-          Refresh
-        </button>
+        >{t('updateBanner.refresh')}</button>
         <button
           onClick={() => setDismissed(true)}
-          aria-label="Dismiss"
+          aria-label={t('groupModeration.dismiss')}
           className="shrink-0 p-1 -mr-1 rounded-full text-white/80 hover:text-white"
         >
           <X className="w-4 h-4" />

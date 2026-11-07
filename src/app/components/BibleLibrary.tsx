@@ -5,12 +5,14 @@ import Link from 'next/link';
 import { ScrollText, Search } from 'lucide-react';
 import { KJV_BIBLE_CATEGORIES, KJV_BIBLE_VERSES } from '@/app/data/bibleVerses';
 import PrayerVerseCard from './PrayerVerseCard';
+import { useI18n } from '@/app/i18n';
 
 /**
  * Prayer Verses home: a grid of topics. Tapping a topic opens it on its own
  * page (/bible/topic/<id>); typing in the search box lists matching verses here.
  */
 export default function BibleLibrary() {
+  const { t } = useI18n();
   const [search, setSearch] = useState('');
 
   const counts = useMemo(() => {
@@ -32,8 +34,8 @@ export default function BibleLibrary() {
       <div className="px-5 py-4 border-b border-edge flex items-center gap-3">
         <div className="p-2 rounded-lg bg-acc-soft text-acc-strong"><ScrollText className="w-5 h-5" /></div>
         <div>
-          <h2 className="font-bold text-ink">Prayer Verses</h2>
-          <p className="text-xs text-ink-muted">Themed verses for your prayer life</p>
+          <h2 className="font-bold text-ink">{t('feat.verses')}</h2>
+          <p className="text-xs text-ink-muted">{t('bibleLibrary.themedVersesForYourPrayer')}</p>
         </div>
       </div>
       <div className="p-4">
@@ -41,7 +43,7 @@ export default function BibleLibrary() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
           <input
             type="text"
-            placeholder="Search verses..."
+            placeholder={t('bibleLibrary.searchVerses')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-card border border-edge-strong rounded-xl pl-10 pr-4 py-2 text-sm text-ink placeholder-ink-faint focus:outline-none focus:ring-2 focus:ring-acc-hover/40 focus:border-acc-hover"
@@ -51,10 +53,10 @@ export default function BibleLibrary() {
         {searching ? (
           <div className="space-y-3 max-h-[60vh] overflow-y-auto">
             {results.length === 0 ? (
-              <p className="text-center text-ink-muted py-8">No verses found</p>
+              <p className="text-center text-ink-muted py-8">{t('bibleLibrary.noVersesFound')}</p>
             ) : (
               <>
-                <p className="text-[0.6875rem] text-ink-muted">Tap a verse to open it · hold a verse for copy, read aloud and bookmark</p>
+                <p className="text-[0.6875rem] text-ink-muted">{t('category.tapAVerseToOpen')}</p>
                 {results.map((verse) => (
                   <PrayerVerseCard key={verse.id} verse={verse} />
                 ))}
@@ -76,7 +78,7 @@ export default function BibleLibrary() {
                 </Link>
               ))}
             </div>
-            <p className="text-center text-ink-muted text-xs pt-4">Tap a topic to open its verses, or search above</p>
+            <p className="text-center text-ink-muted text-xs pt-4">{t('bibleLibrary.tapATopicToOpen')}</p>
           </>
         )}
       </div>

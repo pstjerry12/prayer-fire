@@ -5,6 +5,7 @@ import { BarChart3, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { GroupAnalytics as Analytics } from '@/lib/groups';
 import { fetchAnalytics } from '@/lib/groupsClient';
+import { useI18n } from '@/app/i18n';
 
 const METRICS = [
   { key: 'requests', label: 'Prayer requests' },
@@ -15,7 +16,7 @@ const METRICS = [
 ] as const;
 type MetricKey = (typeof METRICS)[number]['key'];
 
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const WEEKDAYS = ['weekday.mon', 'weekday.tue', 'weekday.wed', 'weekday.thu', 'weekday.fri', 'weekday.sat', 'weekday.sun'] as const;
 
 const dayLabel = (day: string, withWeekday = false) =>
   new Date(`${day}T12:00:00`).toLocaleDateString([], withWeekday ? { weekday: 'short', day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short' });
@@ -54,6 +55,7 @@ function Tile({ title, value, note }: { title: string; value: number; note: stri
 
 /** The leader's dashboard for one group: counts, charts for the last 7 or 30 days, busiest days. Numbers only, no member details. */
 export default function GroupAnalytics({ groupId }: { groupId: string }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<Analytics | null>(null);
   const [error, setError] = useState('');
@@ -86,18 +88,18 @@ export default function GroupAnalytics({ groupId }: { groupId: string }) {
   return (
     <div className="bg-card rounded-2xl border border-edge p-3">
       <button onClick={toggle} aria-expanded={open} className="w-full flex items-center justify-between text-[0.625rem] font-bold uppercase tracking-wider text-ink-muted">
-        <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> Group analytics</span>
+        <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {t('groupAnalytics.groupAnalytics')}</span>
         {open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
       </button>
 
       {open && (
         <div className="mt-3 space-y-3">
-          {loading && !data && <p className="text-ink-muted text-sm flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Counting...</p>}
+          {loading && !data && <p className="text-ink-muted text-sm flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> {t('groupAnalytics.counting')}</p>}
           {error && <p role="alert" className="text-danger text-xs">{error}</p>}
 
           {data && (
             <>
-              <div className="grid grid-cols-2 gap-1.5" role="group" aria-label="Time range">
+              <div className="grid grid-cols-2 gap-1.5" role="group" aria-label={t('groupAnalytics.timeRange')}>
                 {([7, 30] as const).map((r) => (
                   <button key={r} onClick={() => setRange(r)} aria-pressed={range === r}
                     className={cn('py-1.5 rounded-lg border-2 text-xs font-bold', range === r ? 'border-acc bg-acc-soft text-acc-strong' : 'border-edge bg-card-2 text-ink-muted')}>
@@ -107,19 +109,19 @@ export default function GroupAnalytics({ groupId }: { groupId: string }) {
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <Tile title="Members" value={data.members.total} note="in the group now" />
-                <Tile title="New members" value={newMembers} note={`joined in the last ${range} days`} />
-                <Tile title="Prayer requests" value={data.requests[win]} note={`${data.requests.total} in all`} />
-                <Tile title="Testimonies" value={data.testimonies[win]} note={`${data.testimonies.total} in all`} />
-                <Tile title="I'm praying" value={data.praying[win]} note={`${data.praying.total} in all`} />
+                <Tile title={t('groupAnalytics.members')} value={data.members.total} note="in the group now" />
+                <Tile title={t('groupAnalytics.newMembers')} value={newMembers} note={`joined in the last ${range} days`} />
+                <Tile title={t('groupAnalytics.prayerRequests')} value={data.requests[win]} note={`${data.requests.total} in all`} />
+                <Tile title={t('groupAnalytics.testimonies')} value={data.testimonies[win]} note={`${data.testimonies.total} in all`} />
+                <Tile title={t('groupAnalytics.iMPraying')} value={data.praying[win]} note={`${data.praying.total} in all`} />
               </div>
 
               {quiet ? (
-                <p className="text-ink-faint text-xs text-center py-4">Nothing has happened in this group in the last 30 days yet. Share a prayer request to get started.</p>
+                <p className="text-ink-faint text-xs text-center py-4">{t('groupAnalytics.nothingHasHappenedInThis')}</p>
               ) : (
                 <>
                   <div>
-                    <div className="flex flex-wrap gap-1.5 mb-2" role="group" aria-label="Chart">
+                    <div className="flex flex-wrap gap-1.5 mb-2" role="group" aria-label={t('groupAnalytics.chart')}>
                       {METRICS.map((m) => (
                         <button key={m.key} onClick={() => setMetric(m.key)} aria-pressed={metric === m.key}
                           className={cn('px-2.5 py-1 rounded-full text-[0.6875rem] font-bold border', metric === m.key ? 'bg-acc text-on-acc border-acc' : 'bg-card-2 text-ink-muted border-edge')}>
@@ -132,16 +134,16 @@ export default function GroupAnalytics({ groupId }: { groupId: string }) {
                   </div>
 
                   <div>
-                    <p className="text-xs font-bold text-ink mb-1">Most active days of the week <span className="font-normal text-ink-faint">(last 30 days)</span></p>
-                    <Bars short label="Activity by day of the week" data={data.weekday.map((w) => ({ key: String(w.dow), label: WEEKDAYS[w.dow - 1], value: w.activity }))} />
+                    <p className="text-xs font-bold text-ink mb-1">{t('ui.mostActiveDays')} <span className="font-normal text-ink-faint">{t('groupAnalytics.last30Days')}</span></p>
+                    <Bars short label={t('groupAnalytics.activityByDayOfThe')} data={data.weekday.map((w) => ({ key: String(w.dow), label: t(WEEKDAYS[w.dow - 1]), value: w.activity }))} />
                     {busiestWeekday && busiestWeekday.activity > 0 && (
-                      <p className="text-[0.6875rem] text-ink-muted mt-1">Busiest weekday: <strong className="text-ink">{WEEKDAYS[busiestWeekday.dow - 1]}</strong></p>
+                      <p className="text-[0.6875rem] text-ink-muted mt-1">{t('ui.busiestWeekday')} <strong className="text-ink">{t(WEEKDAYS[busiestWeekday.dow - 1])}</strong></p>
                     )}
                   </div>
 
                   {data.topDays.length > 0 && (
                     <div>
-                      <p className="text-xs font-bold text-ink mb-1">Busiest dates</p>
+                      <p className="text-xs font-bold text-ink mb-1">{t('groupAnalytics.busiestDates')}</p>
                       <ul className="space-y-1">
                         {data.topDays.map((d) => (
                           <li key={d.day} className="flex items-center justify-between bg-card-2 rounded-lg px-3 py-1.5 text-xs">
@@ -152,7 +154,7 @@ export default function GroupAnalytics({ groupId }: { groupId: string }) {
                       </ul>
                     </div>
                   )}
-                  <p className="text-[0.625rem] text-ink-faint leading-relaxed">Activity counts posts, comments, &ldquo;I&apos;m praying&rdquo; taps and &ldquo;I prayed today&rdquo; check-ins. Hidden posts are not counted. These are totals only: no member details are shown here.</p>
+                  <p className="text-[0.625rem] text-ink-faint leading-relaxed">{t('groupAnalytics.activityCountsPostsCommentsI')}</p>
                 </>
               )}
             </>

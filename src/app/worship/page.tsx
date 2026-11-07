@@ -5,8 +5,10 @@ import { ChevronLeft, Music } from 'lucide-react';
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
 import WorshipPlayer from '@/app/components/WorshipPlayer';
+import { useI18n } from '@/app/i18n';
 
 export default function WorshipPage() {
+  const { t } = useI18n();
   return (
     <>
       <Navbar />
@@ -19,14 +21,12 @@ export default function WorshipPage() {
             <Music className="w-6 h-6 text-on-acc" />
           </div>
           <div>
-            <h1 className="font-serif-heading text-2xl font-bold text-ink">Praise & Worship</h1>
-            <p className="text-xs text-ink-muted">Upload songs and play them during your worship session</p>
+            <h1 className="font-serif-heading text-2xl font-bold text-ink">{t('feat.worship')}</h1>
+            <p className="text-xs text-ink-muted">{t('worship.uploadSongsAndPlayThem')}</p>
           </div>
         </div>
         <WorshipPlayer />
-        <p className="text-center text-ink-faint text-xs mt-4">
-          Songs are stored privately on your device. Use the ▶ Start-Up Prayer → Step 4 to play them during worship.
-        </p>
+        <p className="text-center text-ink-faint text-xs mt-4">{t('worship.songsAreStoredPrivatelyOn')}</p>
       </main>
       <Footer />
     </>

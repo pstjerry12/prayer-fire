@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Ban, ChevronDown, ChevronUp, EyeOff, Flag, ShieldCheck, Trash2, UserMinus, Users } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { GroupDetail } from '@/lib/groups';
+import { useI18n } from '@/app/i18n';
 
 type Act = (body: Record<string, unknown>) => Promise<unknown>;
 
@@ -12,6 +13,7 @@ export const REPORT_REASONS = ['Spam or advertising', 'Rude or offensive', 'Not 
 
 /** The queue of reported posts and comments, for the group's leaders and co-leaders. */
 export function ReportsQueue({ detail, busy, act }: { detail: GroupDetail; busy: boolean; act: Act }) {
+  const { t } = useI18n();
   const items = detail.reports;
   if (!detail.canModerate) return null;
   return (
@@ -20,14 +22,14 @@ export function ReportsQueue({ detail, busy, act }: { detail: GroupDetail; busy:
         <Flag className="w-3 h-3" /> Reports{items.length ? ` (${items.length})` : ''}
       </p>
       {items.length === 0 ? (
-        <p className="text-ink-faint text-xs">Nothing reported. Members can report a post or comment, and it will appear here.</p>
+        <p className="text-ink-faint text-xs">{t('groupModeration.nothingReportedMembersCanReport')}</p>
       ) : (
         <div className="space-y-2">
           {items.map((r) => (
             <div key={r.id} className="bg-card-2 rounded-lg p-3 space-y-1.5">
               <p className="text-[0.6875rem] text-ink-muted">
                 <span className="font-bold uppercase">{r.targetType}</span> by <span className="font-semibold text-ink">{r.authorName}</span>
-                {r.hidden && <span className="ml-1.5 bg-acc-soft text-acc-strong px-1.5 py-0.5 rounded-full font-bold">hidden</span>}
+                {r.hidden && <span className="ml-1.5 bg-acc-soft text-acc-strong px-1.5 py-0.5 rounded-full font-bold">{t('groupModeration.hidden')}</span>}
               </p>
               <p className="text-sm text-ink-soft whitespace-pre-wrap break-words line-clamp-4">{r.text}</p>
               <p className="text-[0.6875rem] text-danger-strong">
@@ -36,12 +38,12 @@ export function ReportsQueue({ detail, busy, act }: { detail: GroupDetail; busy:
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {!r.hidden && (
                   <button disabled={busy} onClick={() => act({ action: 'resolveReport', reportId: r.id, resolution: 'hide' })}
-                    className="px-2.5 py-1.5 bg-acc-soft text-acc-strong rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-60"><EyeOff className="w-3.5 h-3.5" /> Hide</button>
+                    className="px-2.5 py-1.5 bg-acc-soft text-acc-strong rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-60"><EyeOff className="w-3.5 h-3.5" /> {t('groupModeration.hide')}</button>
                 )}
                 <button disabled={busy} onClick={() => { if (confirm(`Delete this ${r.targetType} for everyone?`)) act({ action: 'resolveReport', reportId: r.id, resolution: 'delete' }); }}
-                  className="px-2.5 py-1.5 bg-danger text-white rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-60"><Trash2 className="w-3.5 h-3.5" /> Delete</button>
+                  className="px-2.5 py-1.5 bg-danger text-white rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-60"><Trash2 className="w-3.5 h-3.5" /> {t('groupModeration.delete')}</button>
                 <button disabled={busy} onClick={() => act({ action: 'resolveReport', reportId: r.id, resolution: 'dismiss' })}
-                  className="px-2.5 py-1.5 bg-card-3 text-ink-soft rounded-lg text-xs font-bold disabled:opacity-60">Dismiss</button>
+                  className="px-2.5 py-1.5 bg-card-3 text-ink-soft rounded-lg text-xs font-bold disabled:opacity-60">{t('groupModeration.dismiss')}</button>
               </div>
             </div>
           ))}
@@ -53,6 +55,7 @@ export function ReportsQueue({ detail, busy, act }: { detail: GroupDetail; busy:
 
 /** Active members and blocked people: appoint co-leaders, remove or block members. The database enforces who may do what. */
 export function MembersManager({ detail, busy, act }: { detail: GroupDetail; busy: boolean; act: Act }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [hidePosts, setHidePosts] = useState(true);
   if (!detail.canModerate) return null;
@@ -89,13 +92,13 @@ export function MembersManager({ detail, busy, act }: { detail: GroupDetail; bus
                     {iAmLeader && (
                       <button disabled={busy} onClick={() => act({ action: 'setRole', groupId: gid, userId: m.userId, role: m.role === 'co_leader' ? 'member' : 'co_leader' })}
                         className="px-2 py-1 bg-acc-soft text-acc-strong rounded-lg text-[0.6875rem] font-bold disabled:opacity-60">
-                        {m.role === 'co_leader' ? 'Remove co-leader' : 'Make co-leader'}
+                        {m.role === 'co_leader' ? t('ui.removeCoLeader') : t('ui.makeCoLeader')}
                       </button>
                     )}
                     <button disabled={busy} onClick={() => { if (confirm(`Remove ${m.displayName} from the group? They can ask to join again.`)) act({ action: 'removeMember', groupId: gid, userId: m.userId, block: false, hidePosts }); }}
-                      className="px-2 py-1 bg-card-3 text-ink-soft rounded-lg text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60"><UserMinus className="w-3 h-3" /> Remove</button>
+                      className="px-2 py-1 bg-card-3 text-ink-soft rounded-lg text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60"><UserMinus className="w-3 h-3" /> {t('customizablePrayerSchedule.remove')}</button>
                     <button disabled={busy} onClick={() => { if (confirm(`Block ${m.displayName}? They are removed and cannot join this group again until you unblock them.`)) act({ action: 'removeMember', groupId: gid, userId: m.userId, block: true, hidePosts }); }}
-                      className="px-2 py-1 bg-danger text-white rounded-lg text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60"><Ban className="w-3 h-3" /> Block</button>
+                      className="px-2 py-1 bg-danger text-white rounded-lg text-[0.6875rem] font-bold flex items-center gap-1 disabled:opacity-60"><Ban className="w-3 h-3" /> {t('groupModeration.block')}</button>
                   </div>
                 )}
               </div>
@@ -108,7 +111,7 @@ export function MembersManager({ detail, busy, act }: { detail: GroupDetail; bus
                 <div key={m.userId} className="flex items-center justify-between gap-2 bg-card-2 rounded-lg px-3 py-2 mb-1.5">
                   <span className="text-sm text-ink-soft truncate">{m.displayName}</span>
                   <button disabled={busy} onClick={() => act({ action: 'unblock', groupId: gid, userId: m.userId })}
-                    className="px-2 py-1 bg-card-3 text-ink-soft rounded-lg text-[0.6875rem] font-bold shrink-0 disabled:opacity-60">Unblock</button>
+                    className="px-2 py-1 bg-card-3 text-ink-soft rounded-lg text-[0.6875rem] font-bold shrink-0 disabled:opacity-60">{t('groupModeration.unblock')}</button>
                 </div>
               ))}
             </div>

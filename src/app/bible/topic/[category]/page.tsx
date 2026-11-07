@@ -6,9 +6,11 @@ import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
 import PrayerVerseCard from '@/app/components/PrayerVerseCard';
 import { KJV_BIBLE_CATEGORIES, KJV_BIBLE_VERSES } from '@/app/data/bibleVerses';
+import { useI18n } from '@/app/i18n';
 
 /** All the verses of one Prayer Verses topic, on their own page. */
 export default function TopicPage() {
+  const { t } = useI18n();
   const params = useParams<{ category: string }>();
   const router = useRouter();
   const id = decodeURIComponent(params.category ?? '');
@@ -25,10 +27,8 @@ export default function TopicPage() {
 
         {!category ? (
           <div className="bg-card rounded-2xl border border-edge p-8 text-center">
-            <p className="text-ink-muted text-sm">That topic could not be found.</p>
-            <button onClick={() => router.push('/bible')} className="mt-4 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">
-              Back to the Bible
-            </button>
+            <p className="text-ink-muted text-sm">{t('category.thatTopicCouldNotBe')}</p>
+            <button onClick={() => router.push('/bible')} className="mt-4 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">{t('id.backToTheBible')}</button>
           </div>
         ) : (
           <>
@@ -41,7 +41,7 @@ export default function TopicPage() {
                 </p>
               </div>
             </div>
-            <p className="mb-4 text-[0.6875rem] text-ink-muted">Tap a verse to open it · hold a verse for copy, read aloud and bookmark</p>
+            <p className="mb-4 text-[0.6875rem] text-ink-muted">{t('category.tapAVerseToOpen')}</p>
             <div className="space-y-3">
               {verses.map((verse) => (
                 <PrayerVerseCard key={verse.id} verse={verse} />

@@ -6,12 +6,14 @@ import { ChevronRight, Mic, Play } from 'lucide-react';
 import { useCachedJson } from '@/lib/cachedJson';
 import { thumbnailUrl, type Video } from '@/lib/videos';
 import VideoPlayer from './VideoPlayer';
+import { useI18n } from '@/app/i18n';
 
 /**
  * Home: the newest podcast episode and short teachings as a swipeable row of thumbnails, with the "How to use Prayer Fire"
  * link. Shows nothing at all until the admin has added videos, so Home is unchanged until then. Free.
  */
 export default function HomeVideos() {
+  const { t } = useI18n();
   const podcast = useCachedJson<{ videos: Video[] }>('/api/videos?kind=podcast&limit=1', 10 * 60 * 1000);
   const teachings = useCachedJson<{ videos: Video[] }>('/api/videos?kind=teaching&limit=8', 10 * 60 * 1000);
   const tutorials = useCachedJson<{ videos: Video[] }>('/api/videos?kind=tutorial&limit=1', 10 * 60 * 1000);
@@ -23,12 +25,12 @@ export default function HomeVideos() {
   if (row.length === 0 && !hasTutorials) return null;
 
   return (
-    <section className="mt-4 md:mt-6" aria-label="Videos" data-testid="home-videos">
+    <section className="mt-4 md:mt-6" aria-label={t('homeVideos.videos')} data-testid="home-videos">
       {row.length > 0 && (
         <>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="font-serif-heading font-bold text-ink">Watch and listen</h2>
-            <Link href="/podcast" className="text-acc-strong text-xs font-bold flex items-center gap-0.5">All episodes <ChevronRight className="w-3.5 h-3.5" /></Link>
+            <h2 className="font-serif-heading font-bold text-ink">{t('homeVideos.watchAndListen')}</h2>
+            <Link href="/podcast" className="text-acc-strong text-xs font-bold flex items-center gap-0.5">{t('ui.allEpisodes')} <ChevronRight className="w-3.5 h-3.5" /></Link>
           </div>
           <div className="-mx-4 px-4 scroll-px-4 flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2" role="list">
             {row.map((v) => (
@@ -54,8 +56,8 @@ export default function HomeVideos() {
         <Link href="/how-to" data-testid="home-howto" className="mt-1 flex items-center gap-3 bg-card border border-edge rounded-2xl px-4 py-3 hover:border-acc-edge">
           <span className="w-9 h-9 rounded-full bg-acc-soft text-acc-strong flex items-center justify-center flex-shrink-0"><Play className="w-4 h-4" /></span>
           <span className="flex-1 min-w-0">
-            <span className="block text-sm font-bold text-ink">How to use Prayer Fire</span>
-            <span className="block text-xs text-ink-muted">Short videos, one for each feature</span>
+            <span className="block text-sm font-bold text-ink">{t('homeVideos.howToUsePrayerFire')}</span>
+            <span className="block text-xs text-ink-muted">{t('homeVideos.shortVideosOneForEach')}</span>
           </span>
           <ChevronRight className="w-4 h-4 text-ink-muted" />
         </Link>

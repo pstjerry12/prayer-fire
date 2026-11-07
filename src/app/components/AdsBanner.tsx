@@ -6,7 +6,8 @@ import { useApp } from '@/app/context';
 import { useAndroidApp } from '@/lib/useAndroidApp';
 import { useCachedJson } from '@/lib/cachedJson';
 import { ADS_OFF, parseAdsConfig, shouldShowBanner } from '@/lib/adsRules';
-import { hideHomeBanner, initAds, showHomeBanner } from '@/lib/adsClient';
+import { hideHomeBanner, initAds, isDebugBuild, showHomeBanner } from '@/lib/adsClient';
+import { AD_LAUNCH_DELAY_MS, ADS_SUPPRESS_EVENT, adsSuppressed } from '@/lib/adsGuard';
 
 /**
  * The one AdMob banner of the app: on the Home screen only, in the Android app only, never for Partner or Leader subscribers
@@ -20,32 +21,59 @@ export default function AdsBanner() {
   const data = useCachedJson<unknown>('/api/ads-config', 10 * 60 * 1000);
   const config = useMemo(() => (data ? parseAdsConfig(data) : ADS_OFF), [data]);
   const [canRequestAds, setCanRequestAds] = useState(false);
+  // null until we know whether this is a development (debug) build; release builds use the real ids with test mode off.
+  const [debug, setDebug] = useState<boolean | null>(null);
+  // Nothing is requested or shown in the first seconds after the app opens, or at all after an alarm opened the app.
+  const [launchDone, setLaunchDone] = useState(false);
+  const [suppressed, setSuppressed] = useState(false);
 
-  // Consent and initialisation happen once, and only when ads are on for an app user who is not a subscriber.
-  const wanted = config.enabled && android && authChecked && !isPremium;
   useEffect(() => {
-    if (!wanted) return;
+    if (!android) return;
     let alive = true;
-    initAds(config.testing).then((ok) => alive && setCanRequestAds(ok));
+    isDebugBuild().then((d) => alive && setDebug(d));
     return () => {
       alive = false;
     };
-  }, [wanted, config.testing]);
+  }, [android]);
 
-  const show = shouldShowBanner({ config, androidApp: android, premium: isPremium || !authChecked, pathname, canRequestAds });
   useEffect(() => {
-    const setOffset = (px: number) => document.documentElement.style.setProperty('--ad-offset', `${Math.max(0, Math.round(px))}px`);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSuppressed(adsSuppressed());
+    const onSuppress = () => setSuppressed(true);
+    window.addEventListener(ADS_SUPPRESS_EVENT, onSuppress);
+    const timer = window.setTimeout(() => setLaunchDone(true), AD_LAUNCH_DELAY_MS);
+    return () => {
+      window.removeEventListener(ADS_SUPPRESS_EVENT, onSuppress);
+      window.clearTimeout(timer);
+    };
+  }, []);
+
+  // Consent and initialisation happen once, and only when ads are on for an app user who is not a subscriber.
+  const wanted = config.enabled && android && authChecked && !isPremium && launchDone && !suppressed && debug !== null;
+  useEffect(() => {
+    if (!wanted || debug === null) return;
+    let alive = true;
+    initAds(debug).then((ok) => alive && setCanRequestAds(ok));
+    return () => {
+      alive = false;
+    };
+  }, [wanted, debug]);
+
+  const show = wanted && shouldShowBanner({ config, androidApp: android, premium: isPremium || !authChecked, pathname, canRequestAds });
+  useEffect(() => {
+    // The tab bar sits 8px ABOVE the ad, never touching it, so a tap on the tab bar's bottom edge cannot land on the ad.
+    const setOffset = (px: number) => document.documentElement.style.setProperty('--ad-offset', px > 0 ? `${Math.round(px) + 8}px` : '0px');
     if (!show) {
       setOffset(0);
       hideHomeBanner();
       return;
     }
-    showHomeBanner(config, setOffset);
+    showHomeBanner(config, setOffset, debug === true);
     return () => {
       setOffset(0);
       hideHomeBanner();
     };
-  }, [show, config]);
+  }, [show, config, debug]);
 
   return null;
 }

@@ -92,6 +92,13 @@ class AlarmEnginePlugin : Plugin() {
         call.resolve()
     }
 
+    /** The wording of the alarm screen and notification in the chosen language: an object of short texts (see AlarmText). */
+    @PluginMethod
+    fun setAlarmText(call: PluginCall) {
+        AlarmText.save(context, call.data.toString())
+        call.resolve()
+    }
+
     /** The fire streak for the home-screen widget (days in a row with a prayer check-in). */
     @PluginMethod
     fun setStreak(call: PluginCall) {

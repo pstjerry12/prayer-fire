@@ -2,6 +2,7 @@
 
 import { useCachedJson } from '@/lib/cachedJson';
 import { Play, Camera, MessageCircle, Music2 } from 'lucide-react';
+import { useI18n } from '@/app/i18n';
 
 interface Links {
   youtube: string;
@@ -12,6 +13,7 @@ interface Links {
 }
 
 export default function SocialLinks() {
+  const { t } = useI18n();
   const links = useCachedJson<Links>('/api/social-links', 10 * 60 * 1000);
 
   if (!links) return null;
@@ -28,7 +30,7 @@ export default function SocialLinks() {
 
   return (
     <div className="flex flex-col items-center gap-2 mt-4">
-      <p className="text-ink-faint text-[0.625rem] uppercase tracking-wider font-bold">Follow Us</p>
+      <p className="text-ink-faint text-[0.625rem] uppercase tracking-wider font-bold">{t('socialLinks.followUs')}</p>
       <div className="flex items-center justify-center gap-3">
         {items.map(({ key, href, label, icon: Icon, className }) => (
           <a

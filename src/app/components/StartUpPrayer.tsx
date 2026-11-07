@@ -12,6 +12,7 @@ import { fetchIntercessoryPrayers } from '@/lib/intercessoryPrayersClient';
 import type { IntercessoryPrayer } from '@/app/types';
 import PrayerReader, { type ReaderItem } from './PrayerReader';
 import WorshipPlayer from './WorshipPlayer';
+import { useI18n } from '@/app/i18n';
 
 function Wind({ className }: { className?: string }) {
   return (
@@ -24,6 +25,7 @@ function Wind({ className }: { className?: string }) {
 }
 
 export default function StartUpPrayer() {
+  const { t } = useI18n();
   const { user, prayers, intercessoryPrayers, categories } = useApp();
   const [step, setStep] = useState(1);
   const [isActive, setIsActive] = useState(false);
@@ -62,13 +64,13 @@ export default function StartUpPrayer() {
   }, [totalSeconds]);
 
   const steps = [
-    { id: 1, title: 'Mercy Prayer', subtitle: 'Cleansing & Confession', verse: '1 John 1:9', verseText: 'If we confess our sins, he is faithful and just to forgive us our sins, and to cleanse us from all unrighteousness.', icon: <Droplets className="w-6 h-6" />, duration: stepDurations[0] },
-    { id: 2, title: 'Thanksgiving', subtitle: 'Appreciate God\'s Goodness', verse: 'Psalm 100:4', verseText: 'Enter into his gates with thanksgiving, and into his courts with praise.', icon: <Award className="w-6 h-6" />, duration: stepDurations[1] },
-    { id: 3, title: 'Invite Holy Spirit', subtitle: 'Holy Spirit Assistance', verse: 'John 14:26', verseText: 'But the Comforter, which is the Holy Ghost, whom the Father will send in my name, he shall teach you all things.', icon: <Wind className="w-6 h-6" />, duration: stepDurations[2] },
-    { id: 4, title: 'Praise & Worship', subtitle: 'Sing Unto the Lord', verse: 'Psalm 95:1-2', verseText: 'O come, let us sing unto the Lord: let us make a joyful noise to the rock of our salvation.', icon: <Music className="w-6 h-6" />, duration: stepDurations[3] },
-    { id: 5, title: 'My Prayer List', subtitle: 'Family Prayers', verse: '', verseText: '', icon: <Heart className="w-6 h-6" />, duration: stepDurations[4], isPrayerList: true },
-    { id: 6, title: 'Special Prayer', subtitle: 'Praying like Daniel', verse: 'Daniel 6:10', verseText: 'Now when Daniel knew that the writing was signed, he went into his house; and his windows being open in his chamber toward Jerusalem, he kneeled upon his knees three times a day, and prayed, and gave thanks before his God, as he did aforetime.', icon: <Sparkles className="w-6 h-6" />, duration: stepDurations[5], isSpecialPrayer: true },
-    { id: 7, title: 'Intercessory Prayer', subtitle: 'Pray for Others', verse: '', verseText: '', icon: <Users className="w-6 h-6" />, duration: stepDurations[6], isIntercessory: true },
+    { id: 1, title: t('ui.mercyPrayer'), subtitle: t('ui.cleansingConfession'), verse: '1 John 1:9', verseText: t('ui.ifWeConfessOurSins'), icon: <Droplets className="w-6 h-6" />, duration: stepDurations[0] },
+    { id: 2, title: t('ui.thanksgiving'), subtitle: t('ui.appreciateGodSGoodness'), verse: 'Psalm 100:4', verseText: t('ui.enterIntoHisGatesWith'), icon: <Award className="w-6 h-6" />, duration: stepDurations[1] },
+    { id: 3, title: t('ui.inviteHolySpirit'), subtitle: t('ui.holySpiritAssistance'), verse: 'John 14:26', verseText: t('ui.butTheComforterWhichIs'), icon: <Wind className="w-6 h-6" />, duration: stepDurations[2] },
+    { id: 4, title: t('feat.worship'), subtitle: t('ui.singUntoTheLord'), verse: 'Psalm 95:1-2', verseText: t('ui.oComeLetUsSing'), icon: <Music className="w-6 h-6" />, duration: stepDurations[3] },
+    { id: 5, title: t('ui.myPrayerList'), subtitle: t('ui.familyPrayers'), verse: '', verseText: '', icon: <Heart className="w-6 h-6" />, duration: stepDurations[4], isPrayerList: true },
+    { id: 6, title: t('ui.specialPrayer'), subtitle: t('app.subtagline'), verse: 'Daniel 6:10', verseText: t('ui.nowWhenDanielKnewThat'), icon: <Sparkles className="w-6 h-6" />, duration: stepDurations[5], isSpecialPrayer: true },
+    { id: 7, title: t('ui.intercessoryPrayer'), subtitle: t('ui.prayForOthers'), verse: '', verseText: '', icon: <Users className="w-6 h-6" />, duration: stepDurations[6], isIntercessory: true },
   ];
 
   useEffect(() => {
@@ -186,8 +188,8 @@ export default function StartUpPrayer() {
       {/* Top bar */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="font-serif-heading text-xl font-bold text-ink">Start-Up Prayer</h1>
-          <p className="text-xs text-ink-muted">7-step guided prayer · Praying like Daniel</p>
+          <h1 className="font-serif-heading text-xl font-bold text-ink">{t('startUpPrayer.startUpPrayer')}</h1>
+          <p className="text-xs text-ink-muted">{t('startUpPrayer.7StepGuidedPrayerPraying')}</p>
         </div>
         <Link href="/" className="flex items-center gap-1.5 px-3 py-1.5 bg-card-3 hover:bg-card-3 rounded-full text-ink-muted text-xs font-semibold transition-colors">
           <Home className="w-4 h-4" /> Home
@@ -200,12 +202,10 @@ export default function StartUpPrayer() {
           <div className="flex items-center gap-2 min-w-0">
             <Clock className="w-4 h-4 text-acc-strong flex-shrink-0" />
             <div className="min-w-0">
-              <p className="text-xs text-ink-muted font-semibold">Total Prayer Time</p>
+              <p className="text-xs text-ink-muted font-semibold">{t('startUpPrayer.totalPrayerTime')}</p>
               <p className="text-sm font-bold text-ink">
                 {formatTime(totalSeconds)}
-                <span className="text-ink-faint font-normal text-[0.6875rem] ml-1">
-                  · 30s Mercy · 30s Thanks · 30s Holy Spirit · rest shared
-                </span>
+                <span className="text-ink-faint font-normal text-[0.6875rem] ml-1">{t('startUpPrayer.30sMercy30sThanks30s')}</span>
               </p>
             </div>
           </div>
@@ -220,11 +220,11 @@ export default function StartUpPrayer() {
                 onChange={(e) => setTotalMinutesInput(e.target.value)}
                 className="w-16 bg-card border border-edge-strong rounded-lg px-2 py-1.5 text-sm font-bold text-ink text-center focus:outline-none focus:ring-2 focus:ring-acc-hover/40"
               />
-              <span className="text-ink-muted text-xs">min</span>
+              <span className="text-ink-muted text-xs">{t('startUpPrayer.min')}</span>
               <button
                 onClick={saveTotal}
                 className="p-1.5 bg-acc text-on-acc rounded-lg hover:bg-acc-hover"
-                title="Save duration"
+                title={t('startUpPrayer.saveDuration')}
               >
                 <Check className="w-4 h-4" />
               </button>
@@ -266,7 +266,7 @@ export default function StartUpPrayer() {
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-3xl font-bold text-ink">{formatTime(timer)}</span>
-            <span className="text-xs text-ink-muted">remaining</span>
+            <span className="text-xs text-ink-muted">{t('startUpPrayer.remaining')}</span>
           </div>
         </div>
       </div>
@@ -279,7 +279,7 @@ export default function StartUpPrayer() {
         </div>
         <h3 className="text-xl font-bold text-ink mb-1">{currentStep?.title}</h3>
         <p className="text-ink-muted text-sm">{currentStep?.subtitle}</p>
-        <p className="text-ink-faint text-[0.6875rem] mt-1">‹ Swipe left for next</p>
+        <p className="text-ink-faint text-[0.6875rem] mt-1">{t('startUpPrayer.swipeLeftForNext')}</p>
       </div>
 
       {currentStep?.verse && (
@@ -305,8 +305,8 @@ export default function StartUpPrayer() {
           {prayers.length === 0 ? (
             <div className="bg-card-2 rounded-xl p-3 border border-edge text-center">
               <Sparkles className="w-6 h-6 text-ink-ghost mx-auto mb-1" />
-              <p className="text-ink-muted text-xs">No special prayers yet.</p>
-              <p className="text-ink-faint text-[0.625rem] mt-0.5">Add them in the Prayer Workshop → Special Prayer.</p>
+              <p className="text-ink-muted text-xs">{t('startUpPrayer.noSpecialPrayersYet')}</p>
+              <p className="text-ink-faint text-[0.625rem] mt-0.5">{t('startUpPrayer.addThemInThePrayer')}</p>
             </div>
           ) : (
             prayers.map((prayer, idx) => (
@@ -327,7 +327,7 @@ export default function StartUpPrayer() {
 
       {specialOpenIndex !== null && (
         <PrayerReader
-          items={prayers.map((p) => ({ id: p.id, title: p.title, category: p.category, subCategory: 'Special Prayer', details: p.notes, scripture: p.scripture }))}
+          items={prayers.map((p) => ({ id: p.id, title: p.title, category: p.category, subCategory: t('ui.specialPrayer'), details: p.notes, scripture: p.scripture }))}
           initialIndex={specialOpenIndex}
           onClose={() => setSpecialOpenIndex(null)}
         />
@@ -336,19 +336,17 @@ export default function StartUpPrayer() {
       {currentStep?.isIntercessory && (
         <div className="mb-5 space-y-3">
           {!user && (
-            <p className="text-ink-faint text-[0.625rem] text-center">
-              Sign in to have your prayer points saved and available here every time you pray.
-            </p>
+            <p className="text-ink-faint text-[0.625rem] text-center">{t('startUpPrayer.signInToHaveYour')}</p>
           )}
 
           <div className="max-h-48 overflow-y-auto space-y-2">
             {loadingIntercessory ? (
               <div className="bg-card-2 rounded-xl p-3 border border-edge text-center flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 text-ink-faint animate-spin" />
-                <p className="text-ink-muted text-xs">Loading your prayers…</p>
+                <p className="text-ink-muted text-xs">{t('startUpPrayer.loadingYourPrayers')}</p>
               </div>
             ) : displayedIntercessory.length === 0 ? (
-              <div className="bg-card-2 rounded-xl p-3 border border-edge text-center"><p className="text-ink-muted text-xs">No prayers added yet.</p></div>
+              <div className="bg-card-2 rounded-xl p-3 border border-edge text-center"><p className="text-ink-muted text-xs">{t('startUpPrayer.noPrayersAddedYet')}</p></div>
             ) : (
               displayedIntercessory.map((prayer, idx) => (
                 <button
@@ -368,7 +366,7 @@ export default function StartUpPrayer() {
 
       {intercessoryOpenIndex !== null && (
         <PrayerReader
-          items={displayedIntercessory.map((p) => ({ id: p.id, title: p.title, category: p.category, subCategory: 'Intercessory Prayer', details: p.details }))}
+          items={displayedIntercessory.map((p) => ({ id: p.id, title: p.title, category: p.category, subCategory: t('ui.intercessoryPrayer'), details: p.details }))}
           initialIndex={intercessoryOpenIndex}
           onClose={() => setIntercessoryOpenIndex(null)}
         />
@@ -391,18 +389,16 @@ export default function StartUpPrayer() {
           <div className="bg-card rounded-3xl w-full max-w-sm border border-edge shadow-2xl overflow-hidden">
             <div className="bg-navy px-6 py-8 text-center">
               <div className="text-5xl mb-3">🎉🙏🎊</div>
-              <h2 className="font-serif-heading text-2xl font-bold text-cream mb-1">Congratulations!</h2>
-              <p className="text-cream/90 text-sm">Your prayer session is complete</p>
+              <h2 className="font-serif-heading text-2xl font-bold text-cream mb-1">{t('startUpPrayer.congratulations')}</h2>
+              <p className="text-cream/90 text-sm">{t('startUpPrayer.yourPrayerSessionIsComplete')}</p>
             </div>
             <div className="p-6 text-center space-y-4">
-              <p className="text-ink-soft text-sm leading-relaxed">
-                Well done! You have spent time in the presence of God. He sees you, He hears you, and He will answer you. Keep the fire burning! 🔥
-              </p>
+              <p className="text-ink-soft text-sm leading-relaxed">{t('startUpPrayer.wellDoneYouHaveSpent')}</p>
               <div className="bg-acc-soft border border-acc-edge rounded-xl p-4">
-                <p className="text-acc-strong text-xs font-semibold uppercase tracking-wider mb-1">📖 James 5:16</p>
-                <p className="text-ink-soft text-sm italic">"The effectual fervent prayer of a righteous man availeth much."</p>
+                <p className="text-acc-strong text-xs font-semibold uppercase tracking-wider mb-1">{t('startUpPrayer.james516')}</p>
+                <p className="text-ink-soft text-sm italic">{t('startUpPrayer.theEffectualFerventPrayerOf')}</p>
               </div>
-              <Link href="/" onClick={resetAll} className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover transition-all flex items-center justify-center">Amen 🙏</Link>
+              <Link href="/" onClick={resetAll} className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover transition-all flex items-center justify-center">{t('dailyVerseModal.amen')}</Link>
             </div>
           </div>
         </div>
@@ -413,6 +409,7 @@ export default function StartUpPrayer() {
 
 // Step 5: only the FAMILY prayer list (from the Prayer Workshop → Session 1).
 function FamilyPrayersList() {
+  const { t } = useI18n();
   const { categories } = useApp();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
@@ -433,8 +430,8 @@ function FamilyPrayersList() {
     return (
       <div className="mb-5 bg-card-2 rounded-xl p-4 border border-edge text-center">
         <Heart className="w-8 h-8 text-ink-ghost mx-auto mb-2" />
-        <p className="text-ink-muted text-sm">No family prayers yet.</p>
-        <p className="text-ink-faint text-xs mt-1">Add them in the Prayer Workshop → My Family Prayers.</p>
+        <p className="text-ink-muted text-sm">{t('startUpPrayer.noFamilyPrayersYet')}</p>
+        <p className="text-ink-faint text-xs mt-1">{t('startUpPrayer.addThemInThePrayer2')}</p>
       </div>
     );
   }

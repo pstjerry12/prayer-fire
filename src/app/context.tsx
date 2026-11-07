@@ -31,6 +31,7 @@ import { syncSystemBars, syncThemeColorMeta } from '@/lib/systemBars';
 import { clearGroupAlarms } from '@/lib/groupAlarms';
 import { useAndroidApp } from '@/lib/useAndroidApp';
 import { LATEST_RELEASE, WHATS_NEW_SEEN_KEY } from './data/whatsNew';
+import { savedLang, translateText } from '@/lib/i18n/messages';
 
 // useNativeAlarm defaults to true so every user gets the loud, full-screen
 // "ring like an alarm" experience out of the box (Android only — a no-op
@@ -451,7 +452,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteAccount = () => {
-    if (!confirm('Are you absolutely sure? This will delete ALL your data permanently.')) return;
+    if (!confirm(translateText(savedLang(), 'Are you absolutely sure? This will delete ALL your data permanently.'))) return;
     if (user) apiDeleteAccount().catch(() => {});
     localStorage.clear();
     window.location.reload();

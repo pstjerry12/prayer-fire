@@ -7,6 +7,7 @@ import { HIGHLIGHT_COLORS, type HighlightColor } from '@/lib/studyMerge';
 import { HIGHLIGHT_STYLES } from '@/lib/highlightStyles';
 import type { ShareResult } from '@/lib/shareVerse';
 import { shareImageCard, shareToWhatsApp } from '@/lib/shareImage';
+import { useI18n } from '@/app/i18n';
 
 interface Props {
   /** "John 3:16" or "John 3:16, 18 (3 verses)" */
@@ -52,6 +53,7 @@ function Row({ icon, label, hint, onClick, active }: { icon: ReactNode; label: s
 
 /** The long-press menu for a verse (or several selected verses). */
 export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, onShare, card, bookmarked, onToggleBookmark, highlight, sermon }: Props) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   const [showColors, setShowColors] = useState(false);
   const [shareNote, setShareNote] = useState<string | null>(null);
@@ -71,10 +73,10 @@ export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, 
     if (!onShare) return;
     const result = await onShare();
     if (result === 'copied') {
-      setShareNote('Copied with the link. Paste it into WhatsApp or a message.');
+      setShareNote(t('ui.copiedWithTheLinkPaste'));
       setTimeout(onClose, 1800);
     } else if (result === 'failed') {
-      setShareNote('Could not share on this device.');
+      setShareNote(t('ui.couldNotShareOnThis'));
     } else {
       onClose();
     }
@@ -82,16 +84,16 @@ export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, 
 
   async function handleImage() {
     if (!card) return;
-    setImageNote('Making your picture...');
+    setImageNote(t('ui.makingYourPicture'));
     const result = await shareImageCard(card.body, card.reference, card.line);
     if (result === 'saved') {
-      setImageNote('Picture saved to your downloads. Send it from your gallery.');
+      setImageNote(t('ui.pictureSavedToYourDownloads'));
       setTimeout(onClose, 2200);
     } else if (result === 'copied') {
-      setImageNote('Copied the text with the link. Paste it into WhatsApp or a message.');
+      setImageNote(t('ui.copiedTheTextWithThe'));
       setTimeout(onClose, 1800);
     } else if (result === 'failed') {
-      setImageNote('Could not make the picture on this device.');
+      setImageNote(t('ui.couldNotMakeThePicture'));
     } else {
       onClose();
     }
@@ -105,11 +107,11 @@ export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, 
 
   return (
     <div className="fixed inset-0 z-[85] flex items-end sm:items-center justify-center" role="dialog" aria-modal="true" aria-label={`Actions for ${title}`}>
-      <button aria-label="Close menu" className="absolute inset-0 bg-black/45 backdrop-blur-[2px]" onClick={onClose} />
+      <button aria-label={t('menu.close')} className="absolute inset-0 bg-black/45 backdrop-blur-[2px]" onClick={onClose} />
       <div className="relative w-full sm:max-w-sm bg-card rounded-t-3xl sm:rounded-3xl border border-edge shadow-2xl overflow-hidden pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-center justify-between px-4 py-3 border-b border-edge">
           <p className="font-serif-heading font-bold text-ink truncate">{title}</p>
-          <button onClick={onClose} aria-label="Close" className="p-1.5 rounded-full text-ink-muted hover:bg-card-3">
+          <button onClick={onClose} aria-label={t('authModal.close')} className="p-1.5 rounded-full text-ink-muted hover:bg-card-3">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -124,30 +126,30 @@ export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, 
           {onShare && (
             <Row
               icon={<Share2 className="w-4 h-4" />}
-              label="Share"
-              hint={shareNote ?? 'Send the verse with a link to the Bible in Prayer Fire'}
+              label={t('prayerGroups.share')}
+              hint={shareNote ?? t('ui.sendTheVerseWithA')}
               onClick={handleShare}
             />
           )}
           {card && (
             <Row
               icon={<ImageIcon className="w-4 h-4" />}
-              label="Share as picture"
-              hint={imageNote ?? 'A branded Prayer Fire card for WhatsApp, Instagram and more'}
+              label={t('verseActionSheet.shareAsPicture')}
+              hint={imageNote ?? t('ui.aBrandedPrayerFireCard')}
               onClick={handleImage}
             />
           )}
           {card && (
             <Row
               icon={<MessageCircle className="w-4 h-4" />}
-              label="Send on WhatsApp"
-              hint="Opens WhatsApp with the verse and link ready"
+              label={t('verseActionSheet.sendOnWhatsapp')}
+              hint={t('ui.opensWhatsappWithTheVerse')}
               onClick={handleWhatsApp}
             />
           )}
           <Row
             icon={<Volume2 className="w-4 h-4" />}
-            label="Read Aloud"
+            label={t('verseActionSheet.readAloud')}
             onClick={() => {
               onReadAloud();
               onClose();
@@ -155,7 +157,7 @@ export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, 
           />
           <Row
             icon={<BookmarkIcon className={cn('w-4 h-4', bookmarked && 'fill-current')} />}
-            label={bookmarked ? 'Remove bookmark' : 'Bookmark'}
+            label={bookmarked ? t('ui.removeBookmark') : 'Bookmark'}
             onClick={() => {
               onToggleBookmark();
               onClose();
@@ -166,8 +168,8 @@ export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, 
             <div>
               <Row
                 icon={<Highlighter className="w-4 h-4" />}
-                label="Highlight colour"
-                hint={highlight.current ? HIGHLIGHT_STYLES[highlight.current].label : 'Choose a colour'}
+                label={t('verseActionSheet.highlightColour')}
+                hint={highlight.current ? HIGHLIGHT_STYLES[highlight.current].label : t('ui.chooseAColour')}
                 onClick={() => setShowColors((v) => !v)}
               />
               {showColors && (
@@ -195,9 +197,7 @@ export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, 
                       onClose();
                     }}
                     className="ml-auto text-xs font-bold text-ink-muted hover:text-ink px-2 py-1"
-                  >
-                    Remove
-                  </button>
+                  >{t('customizablePrayerSchedule.remove')}</button>
                 </div>
               )}
             </div>
@@ -205,8 +205,8 @@ export default function VerseActionSheet({ title, onClose, onCopy, onReadAloud, 
           {sermon && (
             <Row
               icon={<BookOpenText className="w-4 h-4" />}
-              label="Add to Sermon Notes"
-              hint={sermon.activeTitle ? `Into: ${sermon.activeTitle}` : 'Start a sermon session first'}
+              label={t('verseActionSheet.addToSermonNotes')}
+              hint={sermon.activeTitle ? `Into: ${sermon.activeTitle}` : t('ui.startASermonSessionFirst')}
               onClick={() => {
                 sermon.onAdd();
                 onClose();

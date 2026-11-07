@@ -5,6 +5,7 @@ import { BookOpen, Copy, Check, Volume2, MicOff } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { SCRIPTURE_CARDS } from '@/app/data/bibleVerses';
 import { speakText, stopSpeech } from '@/lib/readAloud';
+import { useI18n } from '@/app/i18n';
 
 const LANGS = [
   { code: 'en', label: 'English', flag: '🇺🇸' },
@@ -15,6 +16,7 @@ const LANGS = [
 ];
 
 export default function ScriptureVault() {
+  const { t } = useI18n();
   const [lang, setLang] = useState('en');
   const [copied, setCopied] = useState<string | null>(null);
   const [speaking, setSpeaking] = useState<string | null>(null);
@@ -45,8 +47,8 @@ export default function ScriptureVault() {
       <div className="px-5 py-4 border-b border-edge flex items-center gap-3">
         <div className="p-2 rounded-lg bg-acc-soft text-acc-strong"><BookOpen className="w-5 h-5" /></div>
         <div>
-          <h2 className="font-bold text-ink">Scripture Vault</h2>
-          <p className="text-xs text-ink-muted">Key verses in five languages</p>
+          <h2 className="font-bold text-ink">{t('scriptureVault.scriptureVault')}</h2>
+          <p className="text-xs text-ink-muted">{t('scriptureVault.keyVersesInFiveLanguages')}</p>
         </div>
       </div>
       <div className="p-4">

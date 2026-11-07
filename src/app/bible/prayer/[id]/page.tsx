@@ -16,9 +16,11 @@ import { shareVerse } from '@/lib/shareVerse';
 import { formatVerse, isPrayerBookmarked, togglePrayerBookmark, useStudy } from '@/lib/study';
 import { useReadAloud } from '@/lib/useReadAloud';
 import { BOOKMARK_BG } from '@/lib/highlightStyles';
+import { useI18n } from '@/app/i18n';
 
 /** One Prayer Verse on its own full page: large, easy-to-read text that scrolls. */
 export default function PrayerVersePage() {
+  const { t } = useI18n();
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const study = useStudy();
@@ -59,10 +61,8 @@ export default function PrayerVersePage() {
 
         {!verse ? (
           <div className="bg-card rounded-2xl border border-edge p-8 text-center">
-            <p className="text-ink-muted text-sm">That prayer verse could not be found.</p>
-            <button onClick={() => router.push('/bible')} className="mt-4 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">
-              Back to the Bible
-            </button>
+            <p className="text-ink-muted text-sm">{t('id.thatPrayerVerseCouldNot')}</p>
+            <button onClick={() => router.push('/bible')} className="mt-4 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">{t('id.backToTheBible')}</button>
           </div>
         ) : (
           <article className="bg-card rounded-3xl border border-edge shadow-sm overflow-hidden">
@@ -74,9 +74,9 @@ export default function PrayerVersePage() {
                   </p>
                 )}
                 <h1 className="font-serif-heading text-2xl font-bold text-acc-strong mt-1">{verse.reference}</h1>
-                <p className="text-xs text-ink-muted mt-0.5">King James Version</p>
+                <p className="text-xs text-ink-muted mt-0.5">{t('id.kingJamesVersion')}</p>
               </div>
-              {bookmarked && <BookmarkIcon className="w-6 h-6 fill-current text-acc-strong shrink-0" aria-label="Bookmarked" />}
+              {bookmarked && <BookmarkIcon className="w-6 h-6 fill-current text-acc-strong shrink-0" aria-label={t('id.bookmarked')} />}
             </header>
 
             <LongPressable
@@ -86,7 +86,7 @@ export default function PrayerVersePage() {
             >
               <p className="font-serif-heading text-[1.65rem] leading-[1.75] text-ink">&ldquo;{verse.text}&rdquo;</p>
             </LongPressable>
-            <p className="px-6 pt-2 text-[0.6875rem] text-ink-faint">Hold the verse for a menu: copy, read aloud, bookmark</p>
+            <p className="px-6 pt-2 text-[0.6875rem] text-ink-faint">{t('id.holdTheVerseForA')}</p>
 
             {reader.problem && (
               <p className="mx-6 mt-3 rounded-lg bg-acc-soft border border-acc-edge px-3 py-2 text-xs text-ink-soft">

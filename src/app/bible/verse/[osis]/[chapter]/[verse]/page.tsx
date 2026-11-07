@@ -13,9 +13,11 @@ import { formatVerse, isVerseBookmarked, toggleBookmarks, useStudy, type VerseIn
 import { copyText } from '@/lib/clipboard';
 import { useReadAloud } from '@/lib/useReadAloud';
 import ReadAloudBar from '@/app/components/ReadAloudBar';
+import { useI18n } from '@/app/i18n';
 
 /** One verse on its own page — opened by tapping a verse in the Bible reader. */
 export default function VersePage() {
+  const { t } = useI18n();
   const params = useParams<{ osis: string; chapter: string; verse: string }>();
   const router = useRouter();
   const study = useStudy();
@@ -107,10 +109,8 @@ export default function VersePage() {
 
         {!book || !Number.isFinite(chapter) || !Number.isFinite(verseNumber) || state === 'missing' ? (
           <div className="bg-card rounded-2xl border border-edge p-8 text-center">
-            <p className="text-ink-muted text-sm">That verse could not be found.</p>
-            <button onClick={() => router.push('/bible')} className="mt-4 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">
-              Open the Bible
-            </button>
+            <p className="text-ink-muted text-sm">{t('verse.thatVerseCouldNotBe')}</p>
+            <button onClick={() => router.push('/bible')} className="mt-4 px-4 py-2 bg-acc text-on-acc rounded-lg text-sm font-bold">{t('verse.openTheBible')}</button>
           </div>
         ) : (
           <div className="bg-card rounded-2xl border border-edge shadow-sm overflow-hidden">

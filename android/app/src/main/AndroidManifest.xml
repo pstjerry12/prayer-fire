@@ -100,10 +100,11 @@
 
         </activity>
 
-        <!-- AdMob app id (see android/app/build.gradle: real id from the ADMOB_APP_ID secret, Google's sample id until then). -->
+        <!-- AdMob APP id: Prayer Fire's real id, used by every RELEASE build. Debug builds swap it for Google's sample id
+             (android/app/src/debug/AndroidManifest.xml). The ad UNIT id for the Home banner is in src/lib/adsRules.ts. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="${admobAppId}" />
+            android:value="ca-app-pub-4222770426649249~2306815627" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { BookHeart, ChevronDown, ChevronRight, Check, Award, Lightbulb } from 'lucide-react';
 import { WISDOM_CHAPTERS, COLOR_CLASSES } from '@/app/data/wisdomData';
 import { playChime } from '@/lib/clientUtils';
+import { useI18n } from '@/app/i18n';
 
 export default function WisdomSection() {
+  const { t } = useI18n();
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
   const [readingProgress, setReadingProgress] = useState<Record<number, boolean>>(() => {
     if (typeof window === 'undefined') return {};
@@ -39,7 +41,7 @@ export default function WisdomSection() {
           <div className="text-center"><p className="text-ink-muted text-sm font-medium italic">{currentChapter.subtitle}</p></div>
           {currentChapter.verses.map((verse, idx) => (
             <div key={idx} className="bg-acc-soft border-l-4 border-acc rounded-r-xl p-4">
-              <p className="text-acc-strong text-xs font-bold uppercase tracking-wider mb-2">📖 Scripture</p>
+              <p className="text-acc-strong text-xs font-bold uppercase tracking-wider mb-2">{t('wisdomSection.scripture')}</p>
               <p className="text-ink-soft text-sm leading-relaxed italic">"{verse}"</p>
             </div>
           ))}
@@ -50,20 +52,20 @@ export default function WisdomSection() {
             <div className="flex items-start gap-3">
               <div className={`w-10 h-10 rounded-full ${colors.badge} flex items-center justify-center flex-shrink-0 text-acc-strong`}><Lightbulb className="w-5 h-5" /></div>
               <div className="flex-1">
-                <p className="text-ink-muted text-xs font-bold uppercase tracking-wider mb-2">Key Takeaway</p>
+                <p className="text-ink-muted text-xs font-bold uppercase tracking-wider mb-2">{t('wisdomSection.keyTakeaway')}</p>
                 <p className="text-ink text-sm leading-relaxed font-medium italic">"{currentChapter.highlight}"</p>
               </div>
             </div>
           </div>
           <div className="space-y-2 pt-2">
             {!readingProgress[currentChapter.id] ? (
-              <button onClick={() => markAsRead(currentChapter.id)} className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover transition-all flex items-center justify-center gap-2"><Check className="w-4 h-4" /> Mark as Read</button>
+              <button onClick={() => markAsRead(currentChapter.id)} className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold hover:bg-acc-hover transition-all flex items-center justify-center gap-2"><Check className="w-4 h-4" /> {t('wisdomSection.markAsRead')}</button>
             ) : (
-              <div className="w-full py-3 bg-acc-soft text-acc-strong rounded-xl font-bold border border-acc-edge flex items-center justify-center gap-2"><Check className="w-4 h-4" /> Completed ✓</div>
+              <div className="w-full py-3 bg-acc-soft text-acc-strong rounded-xl font-bold border border-acc-edge flex items-center justify-center gap-2"><Check className="w-4 h-4" /> {t('wisdomSection.completed')}</div>
             )}
             <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => { if (currentChapter.id > 1) setSelectedChapter(currentChapter.id - 1); }} disabled={currentChapter.id === 1} className="py-2.5 bg-card text-ink-soft rounded-xl text-sm font-semibold border border-edge hover:bg-card-2 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1">← Previous</button>
-              <button onClick={() => { if (currentChapter.id < WISDOM_CHAPTERS.length) setSelectedChapter(currentChapter.id + 1); else setSelectedChapter(null); }} className="py-2.5 bg-card text-ink-soft rounded-xl text-sm font-semibold border border-edge hover:bg-card-2 flex items-center justify-center gap-1">{currentChapter.id < WISDOM_CHAPTERS.length ? 'Next →' : 'Done ✓'}</button>
+              <button onClick={() => { if (currentChapter.id > 1) setSelectedChapter(currentChapter.id - 1); }} disabled={currentChapter.id === 1} className="py-2.5 bg-card text-ink-soft rounded-xl text-sm font-semibold border border-edge hover:bg-card-2 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1">{t('ui.previousArrow')}</button>
+              <button onClick={() => { if (currentChapter.id < WISDOM_CHAPTERS.length) setSelectedChapter(currentChapter.id + 1); else setSelectedChapter(null); }} className="py-2.5 bg-card text-ink-soft rounded-xl text-sm font-semibold border border-edge hover:bg-card-2 flex items-center justify-center gap-1">{currentChapter.id < WISDOM_CHAPTERS.length ? t('ui.nextArrow') : t('ui.doneCheck')}</button>
             </div>
           </div>
         </div>
@@ -77,9 +79,9 @@ export default function WisdomSection() {
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-xl bg-acc-soft flex items-center justify-center text-acc-strong"><BookHeart className="w-5 h-5" /></div>
           <div className="flex-1">
-            <h2 className="font-bold text-ink text-lg">Learn to Pray</h2>
-            <p className="text-ink-muted text-xs italic">The Pray 3x guide — pray three times a day</p>
-            <p className="text-ink-muted text-[0.6875rem]">From Pastor Jerry C.&apos;s book — to deepen your daily prayer life</p>
+            <h2 className="font-bold text-ink text-lg">{t('wisdomSection.learnToPray')}</h2>
+            <p className="text-ink-muted text-xs italic">{t('wisdomSection.thePray3xGuidePray')}</p>
+            <p className="text-ink-muted text-[0.6875rem]">{t('wisdomSection.fromPastorJerryCS')}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 mt-3">
@@ -99,7 +101,7 @@ export default function WisdomSection() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className="text-[0.625rem] font-bold text-acc-strong uppercase tracking-wider">Chapter {chapter.id}</span>
-                    {isRead && <span className="bg-acc-soft-2 text-acc-strong text-[0.5625rem] px-1.5 py-0.5 rounded-full font-bold">✓ READ</span>}
+                    {isRead && <span className="bg-acc-soft-2 text-acc-strong text-[0.5625rem] px-1.5 py-0.5 rounded-full font-bold">{t('wisdomSection.read')}</span>}
                   </div>
                   <h3 className="text-ink font-bold text-sm truncate">{chapter.title}</h3>
                   <p className="text-ink-muted text-[0.6875rem] italic truncate">{chapter.subtitle}</p>
@@ -112,8 +114,8 @@ export default function WisdomSection() {
         {readCount === WISDOM_CHAPTERS.length && (
           <div className="mt-4 bg-acc-soft border border-acc-edge rounded-xl p-4 text-center">
             <Award className="w-8 h-8 text-acc-strong mx-auto mb-2" />
-            <p className="text-acc-strong font-bold text-sm">All Chapters Completed!</p>
-            <p className="text-acc-strong/80 text-xs">You've finished all wisdom teachings. May they transform your prayer life.</p>
+            <p className="text-acc-strong font-bold text-sm">{t('wisdomSection.allChaptersCompleted')}</p>
+            <p className="text-acc-strong/80 text-xs">{t('wisdomSection.youVeFinishedAllWisdom')}</p>
           </div>
         )}
       </div>

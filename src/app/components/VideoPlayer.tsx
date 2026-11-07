@@ -3,12 +3,14 @@
 import { useEffect } from 'react';
 import { ExternalLink, X } from 'lucide-react';
 import { embedUrl, watchUrl, type Video } from '@/lib/videos';
+import { useI18n } from '@/app/i18n';
 
 /**
  * Plays a video inside the app (YouTube's privacy-friendly embed) with an "Open in YouTube" link as the way out if the phone
  * cannot play it. Back or the X closes it. Free; nothing is tracked by this app.
  */
 export default function VideoPlayer({ video, onClose }: { video: Pick<Video, 'youtubeId' | 'title'>; onClose: () => void }) {
+  const { t } = useI18n();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
@@ -25,7 +27,7 @@ export default function VideoPlayer({ video, onClose }: { video: Pick<Video, 'yo
       <div className="w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-3 mb-2">
           <h2 className="text-white font-bold text-sm leading-snug">{video.title}</h2>
-          <button onClick={onClose} aria-label="Close video" className="p-1.5 rounded-full bg-white/15 text-white flex-shrink-0"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} aria-label={t('videoPlayer.closeVideo')} className="p-1.5 rounded-full bg-white/15 text-white flex-shrink-0"><X className="w-5 h-5" /></button>
         </div>
         <div className="relative aspect-video rounded-xl overflow-hidden bg-black">
           <iframe

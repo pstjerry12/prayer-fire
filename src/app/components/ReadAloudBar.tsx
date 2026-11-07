@@ -2,6 +2,7 @@
 
 import { Pause, Play, Square } from 'lucide-react';
 import type { ReaderState } from '@/lib/readAloud';
+import { useI18n } from '@/app/i18n';
 
 interface Props {
   state: ReaderState;
@@ -14,12 +15,13 @@ interface Props {
 
 /** The small floating player shown while something is being read aloud. */
 export default function ReadAloudBar({ state, label, onPause, onResume, onStop }: Props) {
+  const { t } = useI18n();
   if (state === 'idle') return null;
   return (
     <div
       className="fixed left-1/2 -translate-x-1/2 z-[60] bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-6 w-[calc(100%-1.5rem)] max-w-md"
       role="region"
-      aria-label="Read aloud player"
+      aria-label={t('readAloudBar.readAloudPlayer')}
     >
       <div className="flex items-center gap-3 bg-card border border-edge-strong shadow-2xl rounded-2xl pl-4 pr-2 py-2">
         <span className="relative flex h-2.5 w-2.5 shrink-0">
@@ -34,7 +36,7 @@ export default function ReadAloudBar({ state, label, onPause, onResume, onStop }
         >
           {state === 'playing' ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
         </button>
-        <button onClick={onStop} aria-label="Stop" className="grid h-10 w-10 place-items-center rounded-xl bg-card-2 text-ink-soft hover:bg-card-3 active:scale-95">
+        <button onClick={onStop} aria-label={t('customizablePrayerSchedule.stop')} className="grid h-10 w-10 place-items-center rounded-xl bg-card-2 text-ink-soft hover:bg-card-3 active:scale-95">
           <Square className="w-4 h-4 fill-current" />
         </button>
       </div>

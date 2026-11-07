@@ -17,6 +17,7 @@ import {
   openAppNotificationSettings,
 } from '@/lib/capacitorAlarm';
 import AlarmPermissionFlow from './AlarmPermissionFlow';
+import { useI18n } from '@/app/i18n';
 
 export interface PrayerAppointment {
   id: string;
@@ -71,6 +72,7 @@ function iconFor(id: string) {
 const RANK: Record<string, number> = { midnight: 0, noon: 1, morning: 2 };
 
 export default function CustomizablePrayerSchedule({ appointments, onUpdate }: Props) {
+  const { t, tr } = useI18n();
   const { markPrayedToday } = useApp();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [alarmFor, setAlarmFor] = useState<string | null>(null);
@@ -160,7 +162,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
   const add = () => {
     const now = new Date();
     const pad = (n: number) => n.toString().padStart(2, '0');
-    onUpdate([...appointments, { id: Date.now().toString(), time: `${pad(now.getHours())}:${pad(now.getMinutes())}`, label: 'New Prayer Watch', enabled: true, useNativeAlarm: true }]);
+    onUpdate([...appointments, { id: Date.now().toString(), time: `${pad(now.getHours())}:${pad(now.getMinutes())}`, label: t('ui.newPrayerWatch'), enabled: true, useNativeAlarm: true }]);
   };
 
   return (
@@ -172,8 +174,8 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
             <Bell className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="font-bold text-ink">My Prayer Daily Schedule</h2>
-            <p className="text-xs text-ink-muted">Tap a session when you complete it</p>
+            <h2 className="font-bold text-ink">{t('customizablePrayerSchedule.myPrayerDailySchedule')}</h2>
+            <p className="text-xs text-ink-muted">{t('customizablePrayerSchedule.tapASessionWhenYou')}</p>
           </div>
         </div>
         <button onClick={add} className="flex items-center gap-1 px-3 py-1.5 bg-acc text-on-acc rounded-lg text-xs font-semibold hover:bg-acc-hover">
@@ -186,8 +188,8 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
           <BellRing className="w-4 h-4 text-acc-strong" />
           <span>
             {notificationGranted
-              ? 'Alarms are ON — you will be notified at each prayer time.'
-              : 'Enable notifications in your browser to get prayer-time alarms.'}
+              ? t('ui.alarmsAreOnYouWill')
+              : t('ui.enableNotificationsInYourBrowser')}
           </span>
         </div>
 
@@ -200,7 +202,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                 if (isAndroid) {
                   setShowNotificationsOffPrompt(true);
                 } else {
-                  alert('Please allow notifications first, then try again.');
+                  alert(t('ui.pleaseAllowNotificationsFirstThen'));
                 }
                 return;
               }
@@ -208,7 +210,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
             }
             try {
               const n = new Notification('🔥 Prayer Time', {
-                body: 'Test alarm — your prayer alarm is working! ✅',
+                body: t('ui.testAlarmYourPrayerAlarm'),
                 icon: '/logo.png',
                 badge: '/logo.png',
                 tag: 'prayer-alarm-test',
@@ -226,13 +228,13 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
           className="mb-4 flex items-center gap-2 px-4 py-2.5 bg-acc text-on-acc rounded-xl text-sm font-bold hover:bg-acc-hover transition-colors shadow-md"
         >
           <Zap className="w-4 h-4" />
-          Test Alarm Now
+          {t('customizablePrayerSchedule.testAlarmNow')}
         </button>
 
         {sorted.length === 0 ? (
           <div className="text-center py-6">
             <Clock className="w-8 h-8 text-ink-ghost mx-auto mb-2" />
-            <p className="text-ink-muted text-sm">No prayer times yet</p>
+            <p className="text-ink-muted text-sm">{t('customizablePrayerSchedule.noPrayerTimesYet')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -263,7 +265,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                   {/* Time (editable) — card expands full width so both pickers visible */}
                   {isEditing ? (
                     <div className="mb-2 flex flex-col gap-2">
-                      <label className="text-[0.625rem] font-semibold text-ink-muted text-left">Set prayer time</label>
+                      <label className="text-[0.625rem] font-semibold text-ink-muted text-left">{t('customizablePrayerSchedule.setPrayerTime')}</label>
                       <div className="flex gap-2 items-center justify-center">
                         <select
                           value={appt.time.split(':')[0]}
@@ -310,24 +312,24 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                         : 'bg-card-3 text-ink-muted hover:bg-acc-soft-2 hover:text-acc-strong border border-dashed border-edge-strong'
                     )}
                   >
-                    {isDone ? (<><Check className="w-3.5 h-3.5" /> Done</>) : 'Mark done'}
+                    {isDone ? (<><Check className="w-3.5 h-3.5" /> {t('customizablePrayerSchedule.done')}</>) : 'Mark done'}
                   </button>
 
                   {/* Edit / alarm / remove controls */}
                   <div className="flex items-center justify-center gap-2 mt-2">
                     {!isEditing && (
-                      <button onClick={() => setEditingId(appt.id)} className="p-1 text-ink-faint hover:text-acc-strong" title="Edit time">
+                      <button onClick={() => setEditingId(appt.id)} className="p-1 text-ink-faint hover:text-acc-strong" title={t('customizablePrayerSchedule.editTime')}>
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                     )}
                     <button
                       onClick={() => setAlarmFor(appt.id)}
                       className={cn('p-1 transition-colors', appt.enabled ? 'text-acc-strong' : 'text-ink-ghost')}
-                      title="Alarm settings"
+                      title={t('customizablePrayerSchedule.alarmSettings2')}
                     >
                       <Bell className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={() => remove(appt.id)} className="p-1 text-ink-faint hover:text-danger" title="Remove">
+                    <button onClick={() => remove(appt.id)} className="p-1 text-ink-faint hover:text-danger" title={t('customizablePrayerSchedule.remove')}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -349,7 +351,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                 <Bell className="w-4 h-4" />
               </span>
               <div>
-                <p className="font-bold text-ink text-sm">Alarm Settings</p>
+                <p className="font-bold text-ink text-sm">{t('customizablePrayerSchedule.alarmSettings')}</p>
                 <p className="text-ink-muted text-xs">{alarmAppt.label}</p>
               </div>
             </div>
@@ -362,7 +364,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
             {/* Time + on/off */}
             <div className="flex items-center justify-between gap-3">
               <div>
-                <label className="text+xs font-semibold text-ink-muted">Prayer time</label>
+                <label className="text+xs font-semibold text-ink-muted">{t('customizablePrayerSchedule.prayerTime')}</label>
                 <div className="mt-1 flex gap-1 items-center">
                   <select
                     value={alarmAppt.time.split(':')[0]}
@@ -408,10 +410,8 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                     <AlarmClock className="w-4 h-4" />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-ink">Ring like an alarm</p>
-                    <p className="text-[0.6875rem] text-ink-muted leading-relaxed">
-                      Rings loudly for 3 minutes and wakes the screen, like a real alarm clock. Stop or Snooze it without opening the app.
-                    </p>
+                    <p className="text-sm font-bold text-ink">{t('customizablePrayerSchedule.ringLikeAnAlarm')}</p>
+                    <p className="text-[0.6875rem] text-ink-muted leading-relaxed">{t('customizablePrayerSchedule.ringsLoudlyFor3Minutes')}</p>
                   </div>
                 </div>
                 <button
@@ -420,7 +420,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                     'shrink-0 relative w-11 h-6 rounded-full transition-colors',
                     alarmAppt.useNativeAlarm ? 'bg-acc' : 'bg-card-3'
                   )}
-                  title="Ring like an alarm"
+                  title={t('customizablePrayerSchedule.ringLikeAnAlarm')}
                 >
                   <span
                     className={cn(
@@ -435,7 +435,7 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
             {/* Tune picker */}
             <div>
               <label className="text-xs font-semibold text-ink-muted flex items-center gap-1 mb-2">
-                <Music className="w-3.5 h-3.5" /> Choose your alarm sound
+                <Music className="w-3.5 h-3.5" /> {t('alarm.chooseSound')}
               </label>
               <div className="space-y-1.5">
                 {ALARM_TONES.map((tone) => {
@@ -450,13 +450,13 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
                     >
                       <span className="text-xl">{tone.emoji}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-ink">{tone.name}</p>
-                        <p className="text-[0.6875rem] text-ink-muted truncate">{tone.description}</p>
+                        <p className="text-sm font-bold text-ink">{tr(tone.name)}</p>
+                        <p className="text-[0.6875rem] text-ink-muted truncate">{tr(tone.description)}</p>
                       </div>
                       <button
                         onClick={() => { ensurePreloaded(); previewAlarmTone(tone.id); }}
                         className="p-2 rounded-lg text-ink-muted hover:text-acc-strong hover:bg-card-3"
-                        title="Preview"
+                        title={t('customizablePrayerSchedule.preview')}
                       >
                         <Volume2 className="w-4 h-4" />
                       </button>
@@ -483,14 +483,10 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
               >
                 <Volume2 className="w-4 h-4" /> Test Alarm
               </button>
-              <button onClick={() => stopAlarm()} className="px-4 py-2.5 bg-card-3 text-ink-muted rounded-xl font-bold text-sm hover:bg-card">
-                Stop
-              </button>
+              <button onClick={() => stopAlarm()} className="px-4 py-2.5 bg-card-3 text-ink-muted rounded-xl font-bold text-sm hover:bg-card">{t('customizablePrayerSchedule.stop')}</button>
             </div>
 
-            <button onClick={() => { stopAlarm(); setAlarmFor(null); }} className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover">
-              Done
-            </button>
+            <button onClick={() => { stopAlarm(); setAlarmFor(null); }} className="w-full py-3 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover">{t('customizablePrayerSchedule.done')}</button>
           </div>
         </div>
       </div>
@@ -514,29 +510,23 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-danger-soft text-danger mb-3">
             <BellRing className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-bold text-ink mb-1">Notifications are off</h3>
-          <p className="text-ink-muted text-sm mb-5">
-            Turn on notifications for Prayer Fire so your prayer alarms can ring, then come back and try again.
-          </p>
+          <h3 className="text-lg font-bold text-ink mb-1">{t('customizablePrayerSchedule.notificationsAreOff')}</h3>
+          <p className="text-ink-muted text-sm mb-5">{t('customizablePrayerSchedule.turnOnNotificationsForPrayer')}</p>
           <div className="flex gap-2">
             <button
               onClick={() => setShowNotificationsOffPrompt(false)}
               className="flex-1 py-2.5 bg-card-3 text-ink-muted rounded-xl font-bold text-sm hover:bg-card"
-            >
-              Cancel
-            </button>
+            >{t('customizablePrayerSchedule.cancel')}</button>
             <button
               onClick={async () => {
                 const opened = await openAppNotificationSettings();
                 if (!opened) {
-                  alert('Open your phone Settings → Apps → Prayer Fire → Notifications, turn them on, then try again.');
+                  alert(t('ui.openYourPhoneSettingsApps'));
                 }
                 setShowNotificationsOffPrompt(false);
               }}
               className="flex-1 py-2.5 bg-acc text-on-acc rounded-xl font-bold text-sm hover:bg-acc-hover"
-            >
-              Open Settings
-            </button>
+            >{t('customizablePrayerSchedule.openSettings')}</button>
           </div>
         </div>
       </div>
@@ -548,19 +538,13 @@ export default function CustomizablePrayerSchedule({ appointments, onUpdate }: P
         <div className="animate-bounce mb-4">
           <span className="text-7xl">🔥</span>
         </div>
-        <h1 className="text-3xl font-black text-white mb-2 text-center">
-          Alarm Ringing!
-        </h1>
-        <p className="text-xl text-acc-strong font-bold mb-8 text-center">
-          Test Alarm
-        </p>
+        <h1 className="text-3xl font-black text-white mb-2 text-center">{t('customizablePrayerSchedule.alarmRinging')}</h1>
+        <p className="text-xl text-acc-strong font-bold mb-8 text-center">{t('customizablePrayerSchedule.testAlarm')}</p>
         <button
           onClick={() => { stopAlarm(); setTestAlarmActive(false); }}
           className="px-12 py-5 bg-danger hover:bg-danger text-white rounded-2xl text-2xl font-black shadow-2xl transition-all active:scale-95"
-        >
-          DISMISS
-        </button>
-        <p className="text-white/50 text-sm mt-4">Tap to stop the alarm</p>
+        >{t('customizablePrayerSchedule.dismiss')}</button>
+        <p className="text-white/50 text-sm mt-4">{t('customizablePrayerSchedule.tapToStopTheAlarm')}</p>
       </div>
     )}
     </>

@@ -28,7 +28,7 @@ import { CURRENCIES, type Currency } from '../data/pricingPlans';
 import type { AuthUser } from '@/app/types';
 import { getAppVersionInfo, PLAY_STORE_URL } from '@/lib/capacitorAlarm';
 import { useI18n } from '@/app/i18n';
-import { LANGUAGES } from '@/lib/i18n/languages';
+import LanguageMenu from './LanguageMenu';
 import { TEXT_SCALE_OPTIONS, getStoredTextScale, setTextScale } from '@/lib/textScale';
 
 interface Props {
@@ -115,7 +115,7 @@ export default function AccountSettings({
           <div className="p-5 space-y-6">
             {/* Account */}
             <div>
-              <h3 className="text-ink-soft text-sm font-semibold mb-3">Account</h3>
+              <h3 className="text-ink-soft text-sm font-semibold mb-3">{t('menu.account')}</h3>
               {user ? (
                 <div className="bg-card-2 rounded-xl p-4 border border-edge">
                   <div className="flex items-center gap-3">
@@ -129,9 +129,7 @@ export default function AccountSettings({
                       {displayIdentifier && (
                         <p className="text-ink-muted text-xs truncate">{displayIdentifier}</p>
                       )}
-                      <span className="inline-block mt-1 bg-acc-soft-2 text-acc-strong text-[0.625rem] font-bold px-2 py-0.5 rounded-full">
-                        SIGNED IN
-                      </span>
+                      <span className="inline-block mt-1 bg-acc-soft-2 text-acc-strong text-[0.625rem] font-bold px-2 py-0.5 rounded-full">{t('accountSettings.signedIn')}</span>
                     </div>
                   </div>
                   <button
@@ -150,8 +148,8 @@ export default function AccountSettings({
                 >
                   <LogIn className="w-5 h-5 text-acc-strong" />
                   <div className="flex-1 text-left">
-                    <p className="text-acc-strong font-bold text-sm">Sign In / Create Account</p>
-                    <p className="text-ink-muted text-xs">Sync your identity across the community</p>
+                    <p className="text-acc-strong font-bold text-sm">{t('accountSettings.signInCreateAccount')}</p>
+                    <p className="text-ink-muted text-xs">{t('accountSettings.syncYourIdentityAcrossThe')}</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-acc-strong" />
                 </button>
@@ -163,17 +161,17 @@ export default function AccountSettings({
               <div className="bg-card-2 rounded-xl py-3 px-1 text-center border border-edge">
                 <Flame className="w-5 h-5 text-acc-strong mx-auto mb-1" />
                 <p className="text-ink font-bold text-xl">{streakCount}</p>
-                <p className="text-ink-muted text-[0.625rem]">Day Streak</p>
+                <p className="text-ink-muted text-[0.625rem]">{t('accountSettings.dayStreak')}</p>
               </div>
               <div className="bg-card-2 rounded-xl py-3 px-1 text-center border border-edge">
                 <Heart className="w-5 h-5 text-danger mx-auto mb-1" />
                 <p className="text-ink font-bold text-xl">{prayerCount}</p>
-                <p className="text-ink-muted text-[0.625rem]">Personal</p>
+                <p className="text-ink-muted text-[0.625rem]">{t('accountSettings.personal')}</p>
               </div>
               <div className="bg-card-2 rounded-xl py-3 px-1 text-center border border-edge">
                 <Users className="w-5 h-5 text-acc-strong mx-auto mb-1" />
                 <p className="text-ink font-bold text-xl">{intercessoryCount}</p>
-                <p className="text-ink-muted text-[0.625rem]">Intercessory</p>
+                <p className="text-ink-muted text-[0.625rem]">{t('accountSettings.intercessory')}</p>
               </div>
             </div>
 
@@ -184,8 +182,8 @@ export default function AccountSettings({
             >
               <MessageSquareHeart className="w-5 h-5 text-acc-strong shrink-0" />
               <div className="flex-1 text-left">
-                <p className="text-acc-strong font-bold text-sm">Send Feedback</p>
-                <p className="text-ink-muted text-xs">Report a problem or suggest an idea</p>
+                <p className="text-acc-strong font-bold text-sm">{t('accountSettings.sendFeedback')}</p>
+                <p className="text-ink-muted text-xs">{t('accountSettings.reportAProblemOrSuggest')}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-acc-strong" />
             </button>
@@ -195,8 +193,8 @@ export default function AccountSettings({
               <h3 className="text-ink-soft text-sm font-semibold mb-1 flex items-center gap-2">
                 <Type className="w-4 h-4 text-acc-strong" /> Text Size
               </h3>
-              <p className="text-ink-muted text-xs mb-3">Make words bigger and easier to read across the whole app.</p>
-              <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="Text size">
+              <p className="text-ink-muted text-xs mb-3">{t('accountSettings.makeWordsBiggerAndEasier')}</p>
+              <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={t('accountSettings.textSize')}>
                 {TEXT_SCALE_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
@@ -220,10 +218,8 @@ export default function AccountSettings({
                 ))}
               </div>
               <div className="mt-3 bg-card-2 rounded-xl p-3 border border-edge">
-                <p className="text-ink text-sm leading-relaxed font-serif-heading">
-                  &ldquo;Call unto me, and I will answer thee, and shew thee great and mighty things, which thou knowest not.&rdquo;
-                </p>
-                <p className="text-ink-faint text-xs mt-1">Jeremiah 33:3 · Preview</p>
+                <p className="text-ink text-sm leading-relaxed font-serif-heading">{t('accountSettings.callUntoMeAndI')}</p>
+                <p className="text-ink-faint text-xs mt-1">{t('accountSettings.jeremiah333Preview')}</p>
               </div>
             </div>
 
@@ -253,14 +249,18 @@ export default function AccountSettings({
             </div>
 
             {/* Language */}
-            <LanguagePicker />
+            <div className="space-y-2">
+              <h3 className="text-ink-soft text-sm font-semibold">{t('settings.language')}</h3>
+              <p className="text-xs text-ink-muted">{t('settings.languageHint')}</p>
+              <LanguageMenu variant="settings" />
+            </div>
 
             {/* Low-data mode */}
             <LowDataToggle />
 
             {/* Rate Us */}
             <div className="space-y-2">
-              <h3 className="text-ink-soft text-sm font-semibold">Support Us</h3>
+              <h3 className="text-ink-soft text-sm font-semibold">{t('accountSettings.supportUs')}</h3>
               <a
                 href={PLAY_STORE_URL}
                 target="_blank"
@@ -268,30 +268,30 @@ export default function AccountSettings({
                 className="w-full flex items-center gap-3 p-3 bg-acc-soft rounded-xl border border-acc-edge hover:bg-acc-soft-2 transition-colors"
               >
                 <Star className="w-4 h-4 text-acc-strong fill-warn shrink-0" />
-                <span className="flex-1 text-sm text-ink-soft font-semibold">Enjoying the app? Leave us a review</span>
+                <span className="flex-1 text-sm text-ink-soft font-semibold">{t('accountSettings.enjoyingTheAppLeaveUs')}</span>
                 <ChevronRight className="w-4 h-4 text-acc-strong" />
               </a>
             </div>
 
             {/* Privacy */}
             <div className="space-y-2">
-              <h3 className="text-ink-soft text-sm font-semibold">Privacy & Data</h3>
+              <h3 className="text-ink-soft text-sm font-semibold">{t('accountSettings.privacyData')}</h3>
               <button
                 onClick={onOpenPrivacy}
                 className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3"
               >
                 <ShieldCheck className="w-4 h-4 text-acc-strong" />
-                <span className="flex-1 text-sm text-ink-soft">Privacy Policy</span>
+                <span className="flex-1 text-sm text-ink-soft">{t('legal.privacy')}</span>
                 <ChevronRight className="w-4 h-4 text-ink-faint" />
               </button>
               <a href="/terms" className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3">
                 <ShieldCheck className="w-4 h-4 text-acc-strong" />
-                <span className="flex-1 text-sm text-ink-soft">Terms of Service</span>
+                <span className="flex-1 text-sm text-ink-soft">{t('legal.terms')}</span>
                 <ChevronRight className="w-4 h-4 text-ink-faint" />
               </a>
               <a href="/community-guidelines" className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3">
                 <ShieldCheck className="w-4 h-4 text-acc-strong" />
-                <span className="flex-1 text-sm text-ink-soft">Community Guidelines</span>
+                <span className="flex-1 text-sm text-ink-soft">{t('legal.guidelines')}</span>
                 <ChevronRight className="w-4 h-4 text-ink-faint" />
               </a>
               {adChoices && (
@@ -300,7 +300,7 @@ export default function AccountSettings({
                   className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3"
                 >
                   <ShieldCheck className="w-4 h-4 text-acc-strong" />
-                  <span className="flex-1 text-sm text-ink-soft">Ad privacy choices</span>
+                  <span className="flex-1 text-sm text-ink-soft">{t('accountSettings.adPrivacyChoices')}</span>
                   <ChevronRight className="w-4 h-4 text-ink-faint" />
                 </button>
               )}
@@ -309,7 +309,7 @@ export default function AccountSettings({
                 className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3"
               >
                 <Download className="w-4 h-4 text-acc-strong" />
-                <span className="flex-1 text-sm text-ink-soft">Export my data (JSON)</span>
+                <span className="flex-1 text-sm text-ink-soft">{t('accountSettings.exportMyDataJson')}</span>
                 <ChevronRight className="w-4 h-4 text-ink-faint" />
               </button>
               <button
@@ -317,7 +317,7 @@ export default function AccountSettings({
                 className="w-full flex items-center gap-3 p-3 bg-danger-soft rounded-xl border border-danger-edge text-left hover:bg-danger-soft-2"
               >
                 <Trash2 className="w-4 h-4 text-danger" />
-                <span className="flex-1 text-sm text-danger">Delete all data</span>
+                <span className="flex-1 text-sm text-danger">{t('accountSettings.deleteAllData')}</span>
                 <ChevronRight className="w-4 h-4 text-danger" />
               </button>
             </div>
@@ -325,11 +325,11 @@ export default function AccountSettings({
             {/* About */}
             <div className="bg-card-2 rounded-xl p-4 border border-edge text-center">
               <p className="text-ink-muted text-xs leading-relaxed">
-                <span className="text-acc-strong font-bold">Prayer Fire</span>
+                <span className="text-acc-strong font-bold">{t('app.name')}</span>
                 <br />
-                A Cure For Prayerlessness.
+                {t('accountSettings.aCureForPrayerlessness')}
                 <br />
-                <span className="text-ink-faint">Write it. Speak it. Pray it. Trust God.</span>
+                <span className="text-ink-faint">{t('accountSettings.writeItSpeakItPray')}</span>
               </p>
               {appVersion && (
                 <p className="text-ink-faint text-[0.625rem] mt-2">
@@ -359,42 +359,16 @@ export default function AccountSettings({
 }
 
 
-/** The app language: one button per language. The Bible follows it where the app has a Bible in that language. */
-function LanguagePicker() {
-  const { t, lang, setLang } = useI18n();
-  return (
-    <div className="space-y-2">
-      <h3 className="text-ink-soft text-sm font-semibold">{t('settings.language')}</h3>
-      <p className="text-xs text-ink-muted">{t('settings.languageHint')}</p>
-      <div role="radiogroup" aria-label={t('settings.language')} className="grid grid-cols-2 gap-2">
-        {LANGUAGES.map((l) => (
-          <button
-            key={l.code}
-            role="radio"
-            aria-checked={lang === l.code}
-            onClick={() => setLang(l.code)}
-            lang={l.code}
-            className={cn(
-              'h-11 rounded-xl border px-3 text-sm font-bold text-left transition-colors',
-              lang === l.code ? 'bg-acc-soft text-acc-strong border-acc-edge' : 'bg-card-2 text-ink-soft border-edge hover:bg-card-3'
-            )}
-          >
-            {l.native}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 /** Switch for low-data mode: no background loading of screens and no optional pictures, to save mobile data. */
 function LowDataToggle() {
+  const { t } = useI18n();
   const [on, setOn] = useState(false);
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setOn(isLowDataSwitchOn()); }, []);
   return (
     <div className="space-y-2">
-      <h3 className="text-ink-soft text-sm font-semibold">Data saver</h3>
+      <h3 className="text-ink-soft text-sm font-semibold">{t('accountSettings.dataSaver')}</h3>
       <button
         role="switch"
         aria-checked={on}
@@ -402,8 +376,8 @@ function LowDataToggle() {
         className="w-full flex items-center gap-3 p-3 bg-card-2 rounded-xl border border-edge text-left hover:bg-card-3"
       >
         <span className="flex-1">
-          <span className="block text-sm text-ink-soft font-semibold">Low-data mode</span>
-          <span className="block text-xs text-ink-muted">Loads less in the background and skips optional pictures. Good for slow or costly data.</span>
+          <span className="block text-sm text-ink-soft font-semibold">{t('accountSettings.lowDataMode')}</span>
+          <span className="block text-xs text-ink-muted">{t('accountSettings.loadsLessInTheBackground')}</span>
         </span>
         <span className={`w-10 h-6 rounded-full p-0.5 transition-colors ${on ? 'bg-acc' : 'bg-edge-strong'}`}>
           <span className={`block w-5 h-5 rounded-full bg-white transition-transform ${on ? 'translate-x-4' : ''}`} />

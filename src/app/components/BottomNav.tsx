@@ -7,6 +7,7 @@ import { cn } from '../utils/cn';
 import { useApp } from '../context';
 import { useT } from '../i18n';
 import type { MessageKey } from '@/lib/i18n/messages';
+import { useI18n } from '@/app/i18n';
 
 const TABS: { href: string; label: MessageKey; icon: typeof Home; exact: boolean }[] = [
   { href: '/', label: 'nav.home', icon: Home, exact: true },
@@ -50,12 +51,12 @@ export default function BottomNav() {
       </div>
       {/* Jerry's name — always visible above phone's home bar */}
       <div className="relative text-center py-1 border-t border-edge/50">
-        <span className="text-ink-muted text-[0.5625rem] font-medium">Pastor Jerry C.</span>
+        <span className="text-ink-muted text-[0.5625rem] font-medium">{t('bottomNav.pastorJerryC')}</span>
         {/* Quick access to the Text Size setting */}
         <button
           type="button"
           onClick={() => setShowSettings(true)}
-          aria-label="Text size settings"
+          aria-label={t('bottomNav.textSizeSettings')}
           className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 px-2 py-0.5 rounded-full border border-edge text-ink-muted hover:text-acc-strong hover:border-acc-edge text-[0.625rem] font-bold"
         >
           <Type className="w-3 h-3" />

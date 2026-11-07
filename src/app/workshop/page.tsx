@@ -6,8 +6,10 @@ import { ChevronLeft, Flame } from 'lucide-react';
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
 import PrayerWorkshop from '@/app/components/PrayerWorkshop';
+import { useI18n } from '@/app/i18n';
 
 export default function WorkshopPage() {
+  const { t } = useI18n();
   return (
     <>
       <Navbar />
@@ -20,8 +22,8 @@ export default function WorkshopPage() {
             <Flame className="w-6 h-6 text-on-acc" />
           </div>
           <div>
-            <h1 className="font-serif-heading text-2xl font-bold text-ink">Write Your Prayer Point</h1>
-            <p className="text-xs text-ink-muted">Prayer Workshop</p>
+            <h1 className="font-serif-heading text-2xl font-bold text-ink">{t('workshop.writeYourPrayerPoint')}</h1>
+            <p className="text-xs text-ink-muted">{t('workshop.prayerWorkshop')}</p>
           </div>
         </div>
         <Suspense fallback={null}>

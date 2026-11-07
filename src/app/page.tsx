@@ -9,9 +9,11 @@ import TestimonyCard from './components/TestimonyCard';
 import AnnouncementBanner from './components/AnnouncementBanner';
 import DailyExaltation from './components/DailyExaltation';
 import HomeFold from './components/HomeFold';
+import HomeFeatureRow from './components/HomeFeatureRow';
 import { useT } from './i18n';
 import HomeVideos from './components/HomeVideos';
 import HomeAlertCard from './components/HomeAlertCard';
+import { useI18n } from '@/app/i18n';
 
 export default function HomePage() {
   const t = useT();
@@ -19,7 +21,7 @@ export default function HomePage() {
     <>
       <Navbar />
 
-      <main className="bg-page min-h-screen pb-32 md:pb-16">
+      <main className="bg-page min-h-screen pb-[calc(8rem+var(--ad-offset,0px))] md:pb-16">
         {/* ── First screen: heading, the two prayer cards, the schedule bar, today's verse, four tiles ── */}
         <div className="max-w-2xl md:max-w-5xl mx-auto px-4 pt-4 md:pt-8">
           {/* ── Urgent Global Prayer Alert (nothing here when there is none) ── */}
@@ -30,7 +32,7 @@ export default function HomePage() {
               <Flame className="w-3.5 h-3.5" /> {t('home.badge')}
             </span>
             <h1 className="font-serif-heading text-3xl md:text-5xl font-bold text-ink mt-2">
-              Prayer Fire
+              {t('app.name')}
             </h1>
             <p className="text-base md:text-xl text-acc-strong font-serif-heading font-semibold mt-1">
               {t('home.tagline')}
@@ -39,6 +41,11 @@ export default function HomePage() {
               {t('home.daniel')}
             </p>
           </section>
+
+          {/* ── Every feature, newest first: swipe, or use the arrows at the edges ── */}
+          <div className="md:max-w-2xl md:mx-auto">
+            <HomeFeatureRow />
+          </div>
 
           <div className="mt-5 md:max-w-2xl md:mx-auto space-y-4">
             {/* ── Two prayer cards, side by side ── */}
@@ -138,8 +145,8 @@ export default function HomePage() {
               <span className="text-xl md:text-2xl">📖</span>
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-ink font-bold text-sm md:text-base">User Manual &amp; Benefits</h3>
-              <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">Discover how this app transforms your prayer life — and the spiritual power of each feature</p>
+              <h3 className="text-ink font-bold text-sm md:text-base">{t('nav.manualCard')}</h3>
+              <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">{t('app.discoverHowThisAppTransforms')}</p>
             </div>
             <span className="text-ink-faint text-lg md:text-xl">›</span>
           </Link>
@@ -153,8 +160,8 @@ export default function HomePage() {
               <Crown className="w-5 h-5 md:w-7 md:h-7" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-ink font-bold text-sm md:text-base">Become a Prayer Fire Partner</p>
-              <p className="text-ink-muted text-[0.6875rem] md:text-sm">Unlock the full intercessory community</p>
+              <p className="text-ink font-bold text-sm md:text-base">{t('pricingPage.becomeAPrayerFirePartner')}</p>
+              <p className="text-ink-muted text-[0.6875rem] md:text-sm">{t('app.unlockTheFullIntercessoryCommunity')}</p>
             </div>
             <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-acc-strong" />
           </Link>

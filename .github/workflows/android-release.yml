@@ -129,19 +129,29 @@ jobs:
 
       - name: Build release AAB + universal APK
         working-directory: android
-        env:
-          # The real AdMob app id (repo secret ADMOB_APP_ID). Empty = Google's sample id, so the app still starts.
-          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
         run: |
           chmod +x ./gradlew
           ./gradlew clean bundleRelease --no-daemon
           ./gradlew assembleRelease --no-daemon
 
+      - name: Check the release build has Prayer Fire's real AdMob app id and no test id
+        working-directory: android
+        run: |
+          # The merged manifest of the RELEASE variant is what ends up in the AAB.
+          MANIFESTS=$(find app/build/intermediates -ipath '*merged_manifest*release*' -name AndroidManifest.xml)
+          [ -n "$MANIFESTS" ] || { echo "::error::No merged release manifest found to check."; exit 1; }
+          echo "$MANIFESTS"
+          if ! grep -q 'ca-app-pub-4222770426649249~2306815627' $MANIFESTS; then
+            echo "::error::The release manifest does not contain Prayer Fire's real AdMob app id."; exit 1
+          fi
+          if grep -q '3940256099942544' $MANIFESTS; then
+            echo "::error::A Google TEST AdMob id is in the release manifest."; exit 1
+          fi
+          echo "Release manifest: real AdMob app id present, no test id."
+
       - name: Build debug APK (optional)
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_debug_apk }}
         working-directory: android
-        env:
-          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
         run: ./gradlew assembleDebug --no-daemon
 
       - name: Verify signature

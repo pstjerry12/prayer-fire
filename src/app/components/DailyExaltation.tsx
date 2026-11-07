@@ -3,6 +3,7 @@
 import { useCachedJson } from '@/lib/cachedJson';
 import { Play } from 'lucide-react';
 import { extractYouTubeVideoId } from '../utils/youtube';
+import { useI18n } from '@/app/i18n';
 
 interface DailyVideo {
   dailyYoutubeUrl: string;
@@ -11,6 +12,7 @@ interface DailyVideo {
 }
 
 export default function DailyExaltation() {
+  const { t } = useI18n();
   const data = useCachedJson<DailyVideo>('/api/social-links', 10 * 60 * 1000);
 
   if (!data || !(data.dailyYoutubeUrl ?? '').trim()) return null;
@@ -41,7 +43,7 @@ export default function DailyExaltation() {
         </div>
       )}
       <div className="p-4 md:p-5">
-        <p className="text-danger text-[0.625rem] font-bold uppercase tracking-wider">📺 Daily Morning Exaltation</p>
+        <p className="text-danger text-[0.625rem] font-bold uppercase tracking-wider">{t('dailyExaltation.dailyMorningExaltation')}</p>
         <h3 className="text-ink font-bold text-sm md:text-base mt-1">{data.dailyYoutubeTitle || 'Watch on YouTube'}</h3>
         {data.dailyYoutubeSubtitle && (
           <p className="text-ink-muted text-[0.6875rem] md:text-sm mt-0.5">{data.dailyYoutubeSubtitle}</p>

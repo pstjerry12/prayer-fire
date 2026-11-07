@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 import { consumeBackPress } from '@/lib/backHandlerStack';
+import { useI18n } from '@/app/i18n';
 
 const EXIT_WINDOW_MS = 2000;
 
@@ -30,6 +31,7 @@ const EXIT_WINDOW_MS = 2000;
  * registration unconditionally is safe in a plain browser too.
  */
 export default function BackButtonExit() {
+  const { t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
   const pathnameRef = useRef(pathname);
@@ -91,7 +93,7 @@ export default function BackButtonExit() {
     <div className="fixed inset-x-0 bottom-24 z-[9999] flex justify-center px-4 pointer-events-none safe-bottom">
       <div className="flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-ink text-page shadow-2xl border border-white/10 animate-[toast-in_0.22s_ease-out]">
         <LogOut className="w-4 h-4 text-acc-strong shrink-0" />
-        <span className="text-sm font-semibold">Tap back again to exit</span>
+        <span className="text-sm font-semibold">{t('backButtonExit.tapBackAgainToExit')}</span>
       </div>
     </div>
   );
