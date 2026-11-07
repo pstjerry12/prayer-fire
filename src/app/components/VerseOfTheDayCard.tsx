@@ -8,7 +8,7 @@ import { KJV_BIBLE_VERSES } from '@/app/data/bibleVerses';
 import { loadChapter } from '@/lib/bible/loadTranslation';
 import { announceNavigation } from '@/lib/navFeedback';
 import { parseReferenceInput } from '@/lib/bible/reference';
-import { getSelectedTranslation, getTranslationMeta, DEFAULT_TRANSLATION, type TranslationId } from '@/lib/bible/translations';
+import { getSelectedTranslation, getTranslationMeta, DEFAULT_TRANSLATION, TRANSLATION_EVENT, type TranslationId } from '@/lib/bible/translations';
 import { useReadAloud } from '@/lib/useReadAloud';
 import ReadAloudBar from './ReadAloudBar';
 
@@ -41,6 +41,9 @@ export default function VerseOfTheDayCard({ showRead = true, compact = false }: 
     // The saved translation is only readable on the client, after mount.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setTranslationId(getSelectedTranslation());
+    const onChange = () => setTranslationId(getSelectedTranslation());
+    window.addEventListener(TRANSLATION_EVENT, onChange);
+    return () => window.removeEventListener(TRANSLATION_EVENT, onChange);
   }, []);
 
   useEffect(() => {

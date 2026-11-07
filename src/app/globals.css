@@ -95,6 +95,7 @@
   --color-on-bar: var(--on-bar);
   --color-bar-edge: var(--bar-edge);
   --color-bar-hover: var(--bar-hover);
+  --color-bar-accent: var(--bar-accent); /* light green used on the evergreen bar and the side menu */
   /* "acc" = the accent. acc = green FILL (buttons), on-acc = text on that fill, acc-strong = accent TEXT and icons,
      acc-soft / acc-soft-2 = the mint tint, acc-edge = a tinted outline, acc-hover = pressed/hover. */
   --color-acc: var(--acc);
@@ -384,6 +385,7 @@
   --on-bar: #f3eee4;
   --bar-edge: #0a5a43;
   --bar-hover: rgba(243, 238, 228, 0.14);
+  --bar-accent: #9ad9bc;
   --acc: var(--color-leaf);
   --on-acc: #ffffff;
   --acc-hover: var(--color-leaf-dark);
@@ -432,6 +434,7 @@
   --on-bar: var(--color-night-ink);
   --bar-edge: #0f5a43;
   --bar-hover: rgba(243, 238, 228, 0.14);
+  --bar-accent: #9ad9bc;
   --acc: var(--color-leaf-light);
   --on-acc: var(--color-night);
   --acc-hover: #10b981;

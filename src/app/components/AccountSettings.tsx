@@ -28,7 +28,7 @@ import { CURRENCIES, type Currency } from '../data/pricingPlans';
 import type { AuthUser } from '@/app/types';
 import { getAppVersionInfo, PLAY_STORE_URL } from '@/lib/capacitorAlarm';
 import { useI18n } from '@/app/i18n';
-import { LANGUAGES } from '@/lib/i18n/languages';
+import LanguageMenu from './LanguageMenu';
 import { TEXT_SCALE_OPTIONS, getStoredTextScale, setTextScale } from '@/lib/textScale';
 
 interface Props {
@@ -253,7 +253,11 @@ export default function AccountSettings({
             </div>
 
             {/* Language */}
-            <LanguagePicker />
+            <div className="space-y-2">
+              <h3 className="text-ink-soft text-sm font-semibold">{t('settings.language')}</h3>
+              <p className="text-xs text-ink-muted">{t('settings.languageHint')}</p>
+              <LanguageMenu variant="settings" />
+            </div>
 
             {/* Low-data mode */}
             <LowDataToggle />
@@ -359,33 +363,6 @@ export default function AccountSettings({
 }
 
 
-/** The app language: one button per language. The Bible follows it where the app has a Bible in that language. */
-function LanguagePicker() {
-  const { t, lang, setLang } = useI18n();
-  return (
-    <div className="space-y-2">
-      <h3 className="text-ink-soft text-sm font-semibold">{t('settings.language')}</h3>
-      <p className="text-xs text-ink-muted">{t('settings.languageHint')}</p>
-      <div role="radiogroup" aria-label={t('settings.language')} className="grid grid-cols-2 gap-2">
-        {LANGUAGES.map((l) => (
-          <button
-            key={l.code}
-            role="radio"
-            aria-checked={lang === l.code}
-            onClick={() => setLang(l.code)}
-            lang={l.code}
-            className={cn(
-              'h-11 rounded-xl border px-3 text-sm font-bold text-left transition-colors',
-              lang === l.code ? 'bg-acc-soft text-acc-strong border-acc-edge' : 'bg-card-2 text-ink-soft border-edge hover:bg-card-3'
-            )}
-          >
-            {l.native}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 /** Switch for low-data mode: no background loading of screens and no optional pictures, to save mobile data. */
 function LowDataToggle() {

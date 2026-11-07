@@ -10,7 +10,7 @@ type I18n = {
   lang: Lang;
   setLang: (lang: Lang) => void;
   /** Screen text in the chosen language (English where a language has no wording yet). */
-  t: (key: MessageKey, vars?: Record<string, string>) => string;
+  t: (key: MessageKey, vars?: Record<string, string | number>) => string;
   /** A Bible book name for the screen ("Jean" for John in French). */
   bookLabel: (englishName: string) => string;
 };
@@ -43,7 +43,15 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     let next: Lang = DEFAULT_LANG;
     try {
       const stored = window.localStorage.getItem(LANG_KEY);
-      next = isLang(stored) ? stored : detectLanguage(navigator.languages?.length ? navigator.languages : [navigator.language]);
+      if (isLang(stored)) {
+        next = stored;
+      } else {
+        // First launch (or an old choice that is no longer offered): follow the phone's language, English if it is not supported.
+        next = detectLanguage(navigator.languages?.length ? navigator.languages : [navigator.language]);
+        window.localStorage.setItem(LANG_KEY, next);
+        // ...and open the Bible in that language, unless the person already picked a Bible themselves.
+        if (!window.localStorage.getItem('upp_bible_translation')) setSelectedTranslation(translationForLanguage(next));
+      }
     } catch {
       next = detectLanguage([navigator.language]);
     }

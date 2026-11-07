@@ -8,7 +8,7 @@ import AuthModal from './AuthModal';
 import { IDLE_MINUTES_KEY, IDLE_NOTICE_KEY } from './SessionGuard';
 
 // Pages anyone can read without an account (Play Store / legal requirement).
-const PUBLIC_PREFIXES = ['/privacy', '/terms', '/community-guidelines', '/delete-account'];
+const PUBLIC_PREFIXES = ['/privacy', '/terms', '/community-guidelines', '/delete-account', '/about'];
 
 /** True when the app should show the sign-in wall instead of its content. */
 export function useSignInRequired(): boolean {

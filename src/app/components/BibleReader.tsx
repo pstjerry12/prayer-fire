@@ -31,11 +31,10 @@ import {
   getSelectedTranslation,
   setSelectedTranslation,
   getTranslationMeta,
-  hasBibleIn,
+  TRANSLATION_EVENT,
   CHAPTER_WORD,
   type TranslationId,
 } from '@/lib/bible/translations';
-import { LANGUAGES } from '@/lib/i18n/languages';
 import { useI18n } from '@/app/i18n';
 import LongPressable from './LongPressable';
 import VerseActionSheet from './VerseActionSheet';
@@ -91,7 +90,7 @@ function readPosition(): SavedPosition | null {
 }
 
 export default function BibleReader() {
-  const { t, lang, bookLabel } = useI18n();
+  const { t, bookLabel } = useI18n();
   const study = useStudy();
   const sermon = activeSermon(study);
 
@@ -139,6 +138,13 @@ export default function BibleReader() {
   const otBooks = BIBLE_BOOKS.filter((b) => b.testament === 'OT');
   const ntBooks = BIBLE_BOOKS.filter((b) => b.testament === 'NT');
   const translationMeta = getTranslationMeta(translationId);
+
+  // The language switch (or another screen) can change the Bible while this one is open.
+  useEffect(() => {
+    const onChange = () => setTranslationId(getSelectedTranslation());
+    window.addEventListener(TRANSLATION_EVENT, onChange);
+    return () => window.removeEventListener(TRANSLATION_EVENT, onChange);
+  }, []);
 
   useEffect(() => {
     // These saved values are only readable on the client, after mount.
@@ -443,12 +449,6 @@ export default function BibleReader() {
           );
         })}
       </div>
-
-      {lang !== 'en' && !hasBibleIn(lang) && (
-        <p className="text-xs text-ink-muted -mt-2" role="note">
-          {t('bible.fallbackNote', { language: LANGUAGES.find((l) => l.code === lang)?.native ?? lang })}
-        </p>
-      )}
 
       {/* ── Reading voice: the phone's own (free) or a premium voice (subscribers); only shown once premium voices are switched on ── */}
       <PremiumVoicePicker translation={translationId} book={currentBook.osis} bookName={currentBook.name} chapter={chapter} chapters={currentBook.chapters} onChange={setPremiumVoiceState} />

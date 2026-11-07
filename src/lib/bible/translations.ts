@@ -41,6 +41,8 @@ export function hasBibleIn(language: string): boolean {
 export const DEFAULT_TRANSLATION: TranslationId = 'kjv';
 
 const STORAGE_KEY = 'upp_bible_translation';
+/** Fired on `window` whenever the chosen Bible translation changes. */
+export const TRANSLATION_EVENT = 'pfm-bible-translation';
 
 function isTranslationId(value: string | null): value is TranslationId {
   return !!value && BIBLE_TRANSLATIONS.some((t) => t.id === value);
@@ -60,6 +62,8 @@ export function getSelectedTranslation(): TranslationId {
 export function setSelectedTranslation(id: TranslationId): void {
   try {
     localStorage.setItem(STORAGE_KEY, id);
+    // Tell any Bible screen that is already open (the language switch changes the Bible too).
+    window.dispatchEvent(new Event(TRANSLATION_EVENT));
   } catch {
     // ignore quota/availability errors — falls back to DEFAULT_TRANSLATION next load
   }
