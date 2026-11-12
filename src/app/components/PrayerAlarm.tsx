@@ -67,6 +67,34 @@ export default function PrayerAlarm() {
     });
   }, [t]);
 
+  // The alarm's "Pray Now" button opens the app on the prayer session, not the home screen. Listened for once, as
+  // soon as the app starts (not after the prayer times have loaded), and the prayer session page is fetched ahead of
+  // time, so Pray Now lands there quickly. (An alarm opening the app also switches ads off for this session: see
+  // lib/adsGuard.ts.)
+  useEffect(() => {
+    let cancelled = false;
+    let off: (() => void) | null = null;
+    isNativePlatformAsync().then((native) => {
+      if (!native || cancelled) return;
+      try {
+        routerRef.current.prefetch('/startup');
+      } catch {
+        // prefetch is only a speed-up
+      }
+      listenPrayNow(() => {
+        suppressAdsForSession();
+        routerRef.current.push('/startup');
+      }).then((fn) => {
+        if (cancelled) fn();
+        else off = fn;
+      });
+    });
+    return () => {
+      cancelled = true;
+      off?.();
+    };
+  }, []);
+
   // The Android home-screen widget shows the fire streak (a no-op on web).
   useEffect(() => {
     setNativeWidgetStreak(streak);
@@ -104,16 +132,6 @@ export default function PrayerAlarm() {
         scheduleAlarmEngineAlarms(appointmentsRef.current);
         // Today's prayer point and verse for the full-screen alarm (Android only).
         setNativeAlarmContent(buildAlarmContent().map((c) => ({ ...c, point: textRef.current.tr(c.point) })));
-
-        // The alarm's "Pray Now" button opens the app on the prayer session, not the home screen.
-        // (An alarm opening the app also switches ads off for this session: see lib/adsGuard.ts.)
-        listenPrayNow(() => {
-          suppressAdsForSession();
-          routerRef.current.push('/startup');
-        }).then((fn) => {
-          if (cancelled) fn();
-          else cleanupFns.push(fn);
-        });
 
         listenNotificationTap((data) => {
           suppressAdsForSession();

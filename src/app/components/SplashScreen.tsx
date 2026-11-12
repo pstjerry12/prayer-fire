@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Flame } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useI18n } from '@/app/i18n';
+import { launchedByPrayNow } from '@/lib/capacitorAlarm';
 
 const BOOT_MESSAGES = [
   'Igniting the prayer fire…',
@@ -47,12 +48,22 @@ export default function SplashScreen() {
       // ignore
     }
 
+    // Opened by the alarm's Pray Now button: no boot animation, go straight to the prayer session.
+    let skipped = false;
+    launchedByPrayNow().then((pray) => {
+      if (!pray) return;
+      skipped = true;
+      clearInterval(interval);
+      setHidden(true);
+    });
+
     let value = 0;
     const interval = window.setInterval(() => {
       value += (100 * STEP_MS) / TOTAL_MS;
       if (value >= 100) {
         value = 100;
         clearInterval(interval);
+        if (skipped) return;
         window.setTimeout(() => setFading(true), 300);
         window.setTimeout(() => setHidden(true), 800);
       }

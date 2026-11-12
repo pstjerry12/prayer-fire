@@ -435,6 +435,21 @@ export function isPrayNowLink(url: string): boolean {
   return /^[a-z0-9.]+:\/\/pray\/?(\?.*)?$/i.test(url);
 }
 
+/**
+ * True when this start of the app was caused by the alarm's Pray Now button (the app was closed and Pray Now opened
+ * it). The boot animation is skipped then, so the person lands on the prayer session without a 3-second wait.
+ */
+export async function launchedByPrayNow(): Promise<boolean> {
+  try {
+    if (!(await isNativePlatformAsync())) return false;
+    const { App } = await import('@capacitor/app');
+    const launch = await App.getLaunchUrl();
+    return !!launch?.url && isPrayNowLink(launch.url);
+  } catch {
+    return false;
+  }
+}
+
 export async function cancelAllAlarmEngineAlarms(): Promise<void> {
   const { plugin: engine } = await getAlarmEngine();
   if (!engine) return;
