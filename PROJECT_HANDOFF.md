@@ -255,6 +255,7 @@ Owner brief said "keep Midnight and Ember", but the app had already moved to the
 - **Ringtone choices:** beep, bells, chime, classic, digital, praise.
 - **Not tested on a real phone** (the Kotlin was compiled by the Android build workflow only): lock-screen vs in-use behaviour, the three buttons, snooze and the deep link need a real-phone check on build 31.
 
+- **Pray Now speed (2026-11-12, web only):** when Pray Now opens a closed app, the 2.6-second boot animation is skipped (`launchedByPrayNow()` in `capacitorAlarm.ts` reads Capacitor `App.getLaunchUrl()`; `SplashScreen.tsx`), and the Pray Now listener is registered once at start-up in its own effect (not inside the appointments effect) with `router.prefetch('/startup')`. What still takes time on a cold start: the WebView loading the live site over the network. Not yet done (needs a native build): open `/startup` directly from `MainActivity` when launched by Pray Now; re-arm alarms on `MY_PACKAGE_REPLACED` / `TIME_SET` / `TIMEZONE_CHANGED` (today only on boot, plus every time the app opens).
 ### Prayer Workshop (`/workshop`) ✅
 - Users write prayer points: Family, Special and Intercessory.
 - Voice-to-text uses the browser Web Speech API.
