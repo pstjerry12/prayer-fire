@@ -1,7 +1,7 @@
 # Prayer Fire — Project Handoff
 
 > **Read this first.** This file is the single source of truth for resuming work on Prayer Fire in a fresh session.
-> Last updated: **2026-11-02** (speed and single start-up, Android build 30 / 1.0.29, see §5 "Speed and start-up"; green "Evergreen" palette across the app, Android build 29 / 1.0.28, see §5 "Colour palette"; before that **2026-11-01**: rebrand to the "Midnight and Ember" palette, Android build 28 / 1.0.27, see §5 "Colour palette"; home and Bible screens redesigned again, Android build 27 / 1.0.26 prepared, see §5 "Home screen" and "Bible"; Google Play Billing: Partner + Leader via RevenueCat, admin Pricing, Free Premium Mode, see §5 "Premium tiers" and §8; home screen redesign, see §5 "Home screen"). Before that **2026-10-24**, after the "Audio Bible" visibility changes (Bible tab, Verse of the Day card, Listen button, store copy, first-launch welcome slides, verse Share; Android build 25 prepared).
+> Last updated: **2026-11-12** (app transferred to the Nexus Digital Collective Ltd organisation Play Console, see §11 "Developer account transfer"). Earlier: **2026-11-02** (speed and single start-up, Android build 30 / 1.0.29, see §5 "Speed and start-up"; green "Evergreen" palette across the app, Android build 29 / 1.0.28, see §5 "Colour palette"; before that **2026-11-01**: rebrand to the "Midnight and Ember" palette, Android build 28 / 1.0.27, see §5 "Colour palette"; home and Bible screens redesigned again, Android build 27 / 1.0.26 prepared, see §5 "Home screen" and "Bible"; Google Play Billing: Partner + Leader via RevenueCat, admin Pricing, Free Premium Mode, see §5 "Premium tiers" and §8; home screen redesign, see §5 "Home screen"). Before that **2026-10-24**, after the "Audio Bible" visibility changes (Bible tab, Verse of the Day card, Listen button, store copy, first-launch welcome slides, verse Share; Android build 25 prepared).
 > No secrets appear in this file. Credentials are listed by **name only**, with where they live.
 
 ---
@@ -19,7 +19,7 @@
 
 | Item | Value |
 |---|---|
-| Owner / founder | Credited in-app as **"Pastor Jerry C."**. GitHub `pstjerry12`, Play Console developer account "Prayer Fire Movement" (personal account). Based in **Nigeria**. |
+| Owner / founder | Credited in-app as **"Pastor Jerry C."**. GitHub `pstjerry12`. **Play Console: since 2026-11-12 the app is in the organisation account "Nexus Digital Collective" (NEXUS DIGITAL COLLECTIVE LTD, developer account ID 6202479642124337067)**; it was in the personal account "Prayer Fire Movement" (ID 7332412495815922552) before. Based in **Nigeria**. |
 | Audience | Christians of all ages, starting in Nigeria and Africa, then worldwide. This includes church members, intercessors, prayer groups and pastors. Many users are older, which is why the Text Size setting exists. |
 | App name | **"Prayer Fire"**. Renamed from "Prayer Fire Movement" in PR #56. **"Prayer Fire Movement" is intentionally kept as the name of the default in-app prayer group** (`SEED_GROUP_ID = 'group-prayer-fire-movement'` in `src/app/context.tsx`). Do not rename that group. |
 | Android package / applicationId | `com.prayerfireaction.prayerfire`. **Permanent: the owner decided on 2026-10-06 to keep it** (see §8, decision 12). Do not propose changing it. |
@@ -711,6 +711,14 @@ Notes:
 
 ---
 
+### Developer account transfer (2026-11-12)
+- The app moved from the personal account "Prayer Fire Movement" (ID 7332412495815922552, pstjerryn@gmail.com) to the organisation account **"Nexus Digital Collective"** (ID **6202479642124337067**, owner nexusdigitalcollectiveltd@gmail.com, payments profile NEXUS DIGITAL COLLECTIVE LTD 0582-9896-6900). Requested 8–9 Nov, accepted 10 Nov, done 12 Nov 2026. Package name unchanged.
+- Public listing on 12 Nov 2026: developer "Nexus Digital Collective", About the developer = NEXUS DIGITAL COLLECTIVE LTD (company email, Port Harcourt address, +234 phone), "In-app purchases", no "Contains ads" label.
+- Per Google: users, ratings, subscriptions, store listing and App content declarations move; **test groups, licence testers, service-account permissions and integration links do not**; orders made before the transfer stay in the old account (refund them there). So the RevenueCat/billing-admin **service account must be re-invited** in the new account's Users and permissions, and the closed-testing list recreated.
+- Full click-by-click audit with healthy states and fixes: **`docs/PLAY-TRANSFER-AUDIT.md`**. No new Android build is needed for the transfer; the privacy policy and About page still name "Prayer Fire Movement" as operator (web text change pending owner wording).
+
+---
+
 ## 12. Known issues and bugs
 1. **React hydration mismatch (#418) on the Home page.**
    - It is pre-existing. React then re-renders the root and drops attributes set on `<html>` by pre-paint scripts.
@@ -761,6 +769,7 @@ Notes:
 ## 14. Recent change log (closed-test period, newest first)
 | PR | Change |
 |---|---|
+| next | **Play account transfer (2026-11-12):** app moved to the Nexus Digital Collective Ltd organisation Play Console (ID 6202479642124337067); post-transfer audit in `docs/PLAY-TRANSFER-AUDIT.md`. |
 | next | **Combined update (2026-11-07):** 4 languages from `locales/*.json` with a Language button (Home header, side menu, Settings) and instant switch; Home feature-card row (later replaced by the Features page, see "Features page and side menu"); dark evergreen side menu; real AdMob ids (build 34 / 1.0.33), ads on Home only, 4 s launch delay, off after an alarm; native alarm text localised. |
 | next | **Legal & compliance (Phase 11):** rewritten Privacy Policy (AdMob, NDPA 2023, third parties), Terms (subscriptions, UGC, ads, deletion), new Community Guidelines page, public `/delete-account` page, legal links in footer and Settings, Terms link on plans screen, donation note (voluntary, unlocks nothing), account deletion now also removes server study notes, intercessory prayers, reports and alert data; Play Console checklist in `docs/PLAY-CONSOLE-UPDATES.md`. See §5 "Legal" |
 | next | **Languages (Phase 10):** App language switcher (English, French, Spanish, Portuguese, Swahili, Korean, Tagalog) in Settings, follows the phone's language on first visit; main screens translated; Bibles added: Louis Segond 1910 (fr), Reina-Valera 1909 (es), Bíblia Livre/Almeida (pt, CC BY: credit shown); book names and read-aloud voice follow the Bible language; Bible search accepts local book names. Details: `docs/BIBLE-TRANSLATIONS.md`, `docs/LANGUAGES.md`. See §5 "Languages" |
